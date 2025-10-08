@@ -24,12 +24,14 @@ body {
 
 /* --- Header Styling --- */
 .desktop-header {
-    display: none; /* Sembunyikan di mobile secara default */
+    display: none;
     background-color: var(--card-white);
     padding: 1rem 5%;
     align-items: center;
     justify-content: space-between;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: relative; /* PERBAIKAN: Mengaktifkan stacking context */
+    z-index: 10;        /* PERBAIKAN: Menempatkan di lapisan atas */
 }
 
 .logo {
@@ -80,6 +82,8 @@ body {
     padding: 1rem;
     background-color: var(--primary-green);
     color: var(--text-dark);
+    position: relative; /* PERBAIKAN: Mengaktifkan stacking context */
+    z-index: 10;        /* PERBAIKAN: Menempatkan di lapisan atas */
 }
 
 .mobile-header .menu-btn {
@@ -115,8 +119,8 @@ body {
 .hero {
     background-color: var(--primary-green);
     text-align: center;
-    padding: 2rem 1rem 4rem; /* Beri ruang lebih di bawah untuk gambar */
-    position: relative;
+    padding: 2rem 1rem 4rem;
+    position: relative; /* Ini adalah pemicu masalahnya */
 }
 
 .hero h1 {
@@ -127,7 +131,7 @@ body {
 
 .hero-cats {
     position: absolute;
-    bottom: -30px; /* Tarik gambar ke bawah */
+    bottom: -30px;
     left: 50%;
     transform: translateX(-50%);
     width: 80%;
@@ -151,7 +155,7 @@ body {
     font-weight: 600;
     border: 2px solid var(--primary-yellow);
     background-color: transparent;
-    color: var(--primary-yellow);
+    color: var(--text-dark); /* Diperbaiki dari yellow agar lebih terbaca */
     border-radius: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -270,10 +274,10 @@ textarea {
 /* --- Responsive (Desktop View) --- */
 @media (min-width: 768px) {
     .mobile-header {
-        display: none; /* Sembunyikan header mobile di desktop */
+        display: none;
     }
     .desktop-header {
-        display: flex; /* Tampilkan header desktop */
+        display: flex;
     }
     .hero h1 {
         font-size: 4rem;

@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="/styles/report.css">
     <link rel="stylesheet" href="/styles/style.css">
     
-    <link rel="preconnect" href="https.googleapis.com">
-    <link rel="preconnect" href="https.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
@@ -17,19 +17,26 @@
 <body>
 
     <header class="desktop-header">
-        <div class="logo">
-            <img src="/assets/img/cattake.png" alt="Logo CatTake"> 
-        </div>
-        <nav>
-            <a href="/index.html">Beranda</a> <a href="#" class="active">Lapor</a>
-            <a href="/pages/adopt.html">Adopsi</a>
-            <a href="/pages/faq.html">FAQ</a>
-            <a href="/pages/community.html">Komunitas</a>
-            <a href="/pages/donasi.html">Donasi</a>
-        </nav>
-        <div class="user-profile">
-            <img src="/assets/img/diana.png" alt="Avatar Diana"> 
-            <span>Diana</span>
+        <div class="container">
+            <div class="logo">
+                <img src="../assets/img/cattake.png" alt="CatTake Logo">
+            </div>
+            
+            <nav class="desktop-nav">
+                <ul>
+                    <li><a href="../index.html">Beranda</a></li>
+                    <li><a href="report.html" class="active">Lapor</a></li>
+                    <li><a href="adopt.html">Adopsi</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="community.html">Komunitas</a></li>
+                    <li><a href="donasi.html">Donasi</a></li>
+                </ul>
+            </nav>
+
+            <div class="user-profile">
+                <img src="../assets/img/diana.png" alt="Avatar Diana">
+                <span>Diana</span>
+            </div>
         </div>
     </header>
 
@@ -37,7 +44,7 @@
         <button class="menu-btn"><i class="fas fa-bars"></i></button>
         <span class="page-title">Lapor</span>
         <div class="user-profile">
-            <img src="/assets/img/diana.png" alt="Avatar Diana"> 
+            <img src="../assets/img/diana.png" alt="Avatar Diana"> 
             <span>Diana</span>
         </div>
     </header>
@@ -46,7 +53,7 @@
         <section class="hero">
             <div class="hero-content">
                 <h1>Lapor Kucing!</h1>
-                <img src="/assets/img/tigakucing.png" alt="Tiga anak kucing" class="hero-cats">
+                <img src="../assets/img/tigakucing.png" alt="Tiga anak kucing" class="hero-cats">
             </div>
         </section>
 
@@ -93,7 +100,7 @@
         </section>
     </main>
 
-    <script src="/script/script.js"></script>
+    <script src="../script/script.js"></script>
 
 </body>
 </html>
