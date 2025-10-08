@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CatTake - Adopsi Kucing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/styles/style.css">
+    <link rel="stylesheet" href="/styles/adopt.css">
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <div class="logo">
+                <img src="/assets/img/cattake.png" alt="CatTake Logo">
+            </div>
+            
+            <nav class="desktop-nav">
+                <ul>
+                    <li><a href="index.html">Beranda</a></li>
+                    <li><a href="#">Lapor</a></li>
+                    <li><a href="adopt.html" class="active">Adopsi</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Komunitas</a></li>
+                    <li><a href="#">Donasi</a></li>
+                </ul>
+            </nav>
+
+            <div class="user-profile">
+                <img src="/assets/img/diana.png" alt="Avatar Diana">
+                <span>Diana</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero-adopt">
+            <div class="hero-content">
+                <div class="hero-image-container">
+                    <img src="/assets/img/cathelo.png" alt="Kucing abu-abu melambai" class="cat-image">
+                    <div class="green-blob"></div>
+                </div>
+                <div class="hero-text">
+                    <h1>Berikan Rumah, Dapatkan Cinta.</h1>
+                    <p>Mari bersama menciptakan cerita baru bagi mereka, dari kesepian menuju rumah yang hangat dan penuh cinta.</p>
+                    <a href="#" class="btn btn-primary">Adopsi Sekarang</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="filter-container">
+            <div class="filter-bar">
+                <button class="filter-btn active">Semua</button>
+                <div class="filter-dropdown">
+                    <select name="filter">
+                        <option value="semua">Filter</option>
+                        <option value="jantan">Jantan</option>
+                        <option value="betina">Betina</option>
+                        <option value="terdekat">Lokasi Terdekat</option>
+                    </select>
+                </div>
+                <button class="filter-btn">Favorit</button>
+            </div>
+        </section>
+
+        <section class="cat-grid-section">
+            <div class="cat-grid">
+                <div class="cat-card" data-gender="jantan">
+                    <img src="/assets/img/oyencat.png" alt="Kucing Oyen">
+                    <div class="card-content">
+                        <div class="card-info">
+                            <p><strong>Nama:</strong> Oyen</p>
+                            <p><strong>Jenis Kelamin:</strong> Jantan</p>
+                        </div>
+                        <button class="fav-btn"><i class="fas fa-heart"></i></button>
+                    </div>
+                    <a href="#" class="btn btn-details">Rincian</a>
+                </div>
+
+                <div class="cat-card">
+                    <img src="/assets/img/minicat.png" alt="Kucing Abul">
+                    <div class="card-content">
+                        <div class="card-info">
+                            <p><strong>Nama:</strong> Abul</p>
+                            <p><strong>Jenis Kelamin:</strong> Jantan</p>
+                        </div>
+                        <button class="fav-btn"><i class="far fa-heart"></i></button>
+                    </div>
+                    <a href="#" class="btn btn-details">Rincian</a>
+                </div>
+
+                <div class="cat-card">
+                    <img src="/assets/img/bradercat.png" alt="Kucing Maine Coon">
+                    <div class="card-content">
+                        <div class="card-info">
+                            <p><strong>Nama:</strong> Simba</p>
+                            <p><strong>Jenis Kelamin:</strong> Jantan</p>
+                        </div>
+                         <button class="fav-btn"><i class="far fa-heart"></i></button>
+                    </div>
+                    <a href="#" class="btn btn-details">Rincian</a>
+                </div>
+
+                <div class="cat-card" data-gender="betina">
+                    <img src="/assets/img/mochacat.png" alt="Kucing Persia">
+                    <div class="card-content">
+                        <div class="card-info">
+                            <p><strong>Nama:</strong> Mueza</p>
+                            <p><strong>Jenis Kelamin:</strong> Betina</p>
+                        </div>
+                         <button class="fav-btn"><i class="fas fa-heart"></i></button>
+                    </div>
+                    <a href="#" class="btn btn-details">Rincian</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    </main>
+
+    <script>
+    // --- Skrip untuk tombol hati (dari sebelumnya) ---
+    const favoriteButtons = document.querySelectorAll('.fav-btn');
+    favoriteButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const heartIcon = button.querySelector('i');
+            heartIcon.classList.toggle('far');
+            heartIcon.classList.toggle('fas');
+        });
+    });
+
+    // --- Skrip BARU untuk Filter Dinamis ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Pilih semua elemen yang kita butuhkan
+        const allButton = document.querySelector('.filter-btn.active'); // Tombol "Semua"
+        const favoriteButton = document.querySelectorAll('.filter-btn')[1]; // Tombol "Favorit"
+        const genderFilter = document.querySelector('.filter-dropdown select');
+        const catCards = document.querySelectorAll('.cat-card');
+
+        // Fungsi utama untuk menjalankan filter
+        function filterCats(filterType, value = '') {
+            catCards.forEach(card => {
+                let shouldShow = false;
+
+                switch (filterType) {
+                    case 'all':
+                        shouldShow = true;
+                        break;
+                    
+                    case 'favorite':
+                        const isLiked = card.querySelector('.fav-btn .fas.fa-heart');
+                        if (isLiked) {
+                            shouldShow = true;
+                        }
+                        break;
+                        
+                    case 'gender':
+                        if (card.dataset.gender === value) {
+                            shouldShow = true;
+                        }
+                        break;
+                }
+
+                // Tampilkan atau sembunyikan kartu berdasarkan hasil filter
+                if (shouldShow) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // 2. Tambahkan event listener untuk setiap tombol/filter
+
+        // Saat tombol "Semua" diklik
+        allButton.addEventListener('click', () => {
+            // Hapus status aktif dari tombol lain
+            favoriteButton.classList.remove('active');
+            allButton.classList.add('active');
+            genderFilter.value = 'semua'; // Reset dropdown
+            filterCats('all');
+        });
+
+        // Saat tombol "Favorit" diklik
+        favoriteButton.addEventListener('click', () => {
+            // Atur status aktif
+            allButton.classList.remove('active');
+            favoriteButton.classList.add('active');
+            genderFilter.value = 'semua'; // Reset dropdown
+            filterCats('favorite');
+        });
+
+        // Saat nilai dropdown "Filter" berubah
+        genderFilter.addEventListener('change', (event) => {
+            const selectedGender = event.target.value;
+            if (selectedGender !== 'semua') {
+                 // Hapus status aktif dari tombol lain
+                allButton.classList.remove('active');
+                favoriteButton.classList.remove('active');
+                filterCats('gender', selectedGender);
+            } else {
+                allButton.click(); // Jika memilih "Filter", kembali ke "Semua"
+            }
+        });
+    });
+</script>
+</body>
+    </body>
+</html>
+</body>
+</html>

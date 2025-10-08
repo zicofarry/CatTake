@@ -1,0 +1,308 @@
+/* Import Font (jika diperlukan, biasanya sudah ada di style.css) */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+/* Gaya Lanjutan untuk Header */
+header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #f0f2f5;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-weight: 600;
+    color: #333;
+}
+
+.user-profile img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+nav.desktop-nav a.active {
+    color: #2D5B4D;
+    font-weight: 700;
+}
+
+/* Hero Section */
+.hero-adopt {
+    padding: 60px 0;
+    overflow: hidden;
+}
+
+.hero-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.hero-image-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.hero-image-container .cat-image {
+    width: 350px;
+    position: relative;
+    z-index: 2;
+}
+
+.green-blob {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 400px;
+    background-color: #3a6557;
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    z-index: 1;
+}
+
+.hero-text h1 {
+    font-size: 48px;
+    font-weight: 700;
+    color: #333;
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+
+.hero-text p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.hero-text .btn-primary {
+    background-color: #FBC02D;
+    color: #333;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+}
+
+/* Filter Section */
+.filter-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    margin-top: -50px; /* Tarik ke atas menimpa section hero */
+    position: relative;
+    z-index: 5;
+}
+
+.filter-bar {
+    display: flex;
+    gap: 15px;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 50px;
+    /* GANTI BARIS DI BAWAH INI */
+    box-shadow: 0 10px 30px rgba(45, 91, 77, 0.5); /* Warna hijau #2D5B4D dengan transparansi */
+}
+
+.filter-btn, .filter-dropdown select {
+    background-color: transparent;
+    border: 1px solid #ddd;
+    padding: 10px 25px;
+    border-radius: 50px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #555;
+}
+
+.filter-btn.active {
+    background-color: #2D5B4D;
+    color: #fff;
+    border-color: #2D5B4D;
+}
+
+.filter-dropdown select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 1em;
+    padding-right: 40px;
+}
+
+
+/* Cat Grid Section */
+.cat-grid-section {
+    background-color: #3a6557;
+    padding: 100px 20px 60px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cat-grid-section::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    background-color: #fff;
+    border-radius: 50%;
+}
+
+.cat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.cat-card {
+    background-color: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.cat-card img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.cat-card .card-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+}
+
+.card-info p {
+    margin: 0;
+    color: #333;
+    line-height: 1.5;
+}
+
+/* Cari selector ini di adopt.css */
+.fav-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer; /* UBAH KURSOR MENJADI TANGAN SAAT DIARAHKAN */
+    color: #ddd;
+}
+
+/* TAMBAHKAN SELECTOR BARU INI UNTUK EFEK TRANSISI */
+.fav-btn i {
+    transition: color 0.2s ease-in-out; /* EFEK PERUBAHAN WARNA JADI HALUS */
+}
+
+/* Biarkan selector ini seperti semula */
+.fav-btn .fa-heart {
+    color: #e53935; 
+}
+
+.btn-details {
+    display: block;
+    width: calc(100% - 40px);
+    margin: 0 20px 20px;
+    text-align: center;
+    background-color: #FBC02D;
+    color: #333;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 50px;
+}
+
+/* =============================================== */
+/* ==      ATURAN RESPONSIVE UNTUK MOBILE       == */
+/* =============================================== */
+@media (max-width: 768px) {
+
+    /* --- Pengaturan Header Mobile --- */
+    .desktop-nav {
+        display: none; /* HANYA sembunyikan navigasi desktop */
+    }
+
+    .mobile-header-content {
+        display: flex; /* Tampilkan header mobile */
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .hamburger-icon {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        cursor: pointer;
+    }
+
+    .hamburger-icon span {
+        display: block;
+        width: 25px;
+        height: 3px;
+        background-color: #333;
+        border-radius: 3px;
+    }
+
+
+    /* --- Mengatur Ulang Hero Section menjadi Vertikal --- */
+    .hero-content {
+        flex-direction: column; /* Ubah dari baris menjadi kolom */
+        text-align: center;
+    }
+
+    .hero-text h1 {
+        font-size: 36px; /* Perkecil ukuran judul */
+    }
+
+    .hero-image-container .cat-image {
+        width: 280px; /* Perkecil gambar kucing */
+    }
+
+    .green-blob {
+        width: 320px; /* Perkecil blob hijau */
+        height: 320px;
+    }
+
+    /* --- Mengatur Ulang Filter Bar menjadi Vertikal --- */
+    .filter-bar {
+        flex-direction: column; /* Ubah dari baris menjadi kolom */
+        border-radius: 20px; /* Kurangi radius sudut agar tidak terlalu bulat */
+        align-items: stretch; /* Buat tombol membentang penuh */
+    }
+
+    .filter-bar .filter-dropdown select {
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* --- Mengatur ulang Grid Kucing --- */
+    .cat-grid {
+        /* Gridnya sudah responsif, tapi kita bisa kurangi gap */
+        gap: 20px;
+    }
+}
