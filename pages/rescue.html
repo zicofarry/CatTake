@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CatTake - Lapor Kucing</title>
+    <link rel="stylesheet" href="/styles/rescue.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <header>
+        <div class="container">
+            <a href="#" class="logo">CatTake</a>
+            <nav>
+                <ul>
+                    <li><a href="#">Beranda</a></li>
+                    <li><a href="#" class="active">Lapor</a></li>
+                    <li><a href="#">Adopsi</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Komunitas</a></li>
+                    <li><a href="#">Donasi</a></li>
+                </ul>
+            </nav>
+            <a href="#" class="signup-btn">Signup/Login</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Lapor Kucing!</h1>
+            </div>
+            <div class="hero-image">
+                <img src="https://i.ibb.co/6PdhHj2/cats-image-not-transparent.png" alt="Tiga anak kucing">
+            </div>
+        </section>
+
+        <section class="report-options">
+            <button class="option-btn active" id="stray-cat-btn">Kucing Liar</button>
+            <button class="option-btn" id="lost-cat-btn">Kucing Hilang</button>
+        </section>
+
+        <section class="form-section">
+            <div class="form-card">
+                <form action="#">
+                    <div class="form-group" id="owner-name-field">
+                        <label for="pemilik">Nama Pemilik</label>
+                        <input type="text" id="pemilik" name="pemilik">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lokasi">Lokasi</label>
+                        <div class="location-input">
+                            <button type="button" class="map-icon" id="map-button"
+                                title="Pilih lokasi dari peta"></button>
+                            <input type="text" id="lokasi" name="lokasi"
+                                placeholder="Pilih lokasi dari peta atau ketik di sini">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deskripsi">Deskripsi</label>
+                        <input type="text" id="deskripsi" name="deskripsi">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="foto">Foto</label>
+                        <div class="drop-zone">
+                            <p>Drag&Drop files here</p>
+                            <p class="or-text">or</p>
+                            <label for="file-upload" class="browse-btn">Browse File</label>
+                            <input type="file" id="file-upload" name="foto" hidden>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Selesai</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <div id="map-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Pilih Lokasi di Peta</h2>
+                <button id="close-modal-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="map-container">
+                    Peta akan muncul di sini.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="select-location-btn">Pilih Lokasi Ini</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/script/script.js"></script>
+
+</body>
+
+</html>
