@@ -8,7 +8,7 @@ body {
     align-items: center;
     min-height: 100vh;
     background: #f0f2f5; /* Fallback background */
-    overflow: hidden; /* Mencegah scroll karena pseudo-elements */
+    /* overflow: hidden;  <-- HAPUS BARIS INI */
     position: relative;
 }
 
@@ -101,14 +101,18 @@ body::after {
     color: #aaa;
 }
 
+/* GANTI BLOK CSS INI */
 .input-group input {
     width: 100%;
-    padding: 12px 15px 12px 40px; /* Padding kiri untuk ikon */
+    padding: 12px 15px 12px 40px; 
     border: 1px solid #ddd;
     border-radius: 10px;
-    box-sizing: border-box; /* Agar padding tidak menambah lebar */
+    box-sizing: border-box; 
     font-family: 'Poppins', sans-serif;
     font-size: 16px;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    /* TAMBAHKAN SHADOW STANDAR YANG LEMBUT */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.36); 
 }
 
 .input-group input:focus {
@@ -129,13 +133,16 @@ body::after {
     font-family: 'Poppins', sans-serif;
 }
 
+/* GANTI JUGA BLOK CSS INI */
 .btn-login {
-    width: auto; /* Mengubah lebar menjadi otomatis sesuai konten */
-    padding-left: 60px; /* Memberi ruang di sisi kiri */
-    padding-right: 60px; /* Memberi ruang di sisi kanan */
+    width: auto;
+    padding-left: 60px;
+    padding-right: 60px;
     background-color: #FBC02D;
     color: #333;
     margin-top: 10px;
+    /* UBAH WARNA SHADOW MENJADI KUNING */
+    box-shadow: 0 4px 20px rgba(251, 192, 45, 0.75); 
 }
 
 .btn-login:hover {
