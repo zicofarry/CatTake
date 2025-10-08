@@ -72,7 +72,6 @@ body::after {
 
 .logo-image {
     width: 250px; /* Atur lebar logo sesuai keinginan */
-    /* width: 70%;    */
     height: auto; /* Biarkan tinggi otomatis agar gambar tidak gepeng */
 }
 
@@ -111,7 +110,7 @@ body::after {
 /* GANTI BLOK CSS INI */
 .input-group input {
     width: 100%;
-    padding: 12px 15px 12px 40px; 
+    padding: 12px 15px;
     border: 1px solid #ddd;
     border-radius: 10px;
     box-sizing: border-box; 
@@ -145,8 +144,8 @@ body::after {
     width: auto;
     padding-left: 60px;
     padding-right: 60px;
-    border-radius: 50px;
     background-color: #FBC02D;
+    border-radius: 50px;
     color: #ffffff;
     margin-top: 10px;
     /* UBAH WARNA SHADOW MENJADI KUNING */
