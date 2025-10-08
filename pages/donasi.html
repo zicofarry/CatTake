@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CatTake | Donasi</title>
+  <style>
+    :root{
+      --green: #578D76;
+      --yellow: #E8C32A;
+      --gray-shape: #e6e6e6;
+      --page-max-width: 1100px;
+    }
+    html { scroll-behavior: smooth; }
+    body{
+      margin:0;
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:#ffffff;
+      color:#222;
+      -webkit-font-smoothing:antialiased;
+    }
+    .wrap{
+      max-width: var(--page-max-width);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ===== NAVBAR ===== */
+    .navbar {
+      background-color: var(--green);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-radius: 50px;
+      margin: 20px auto;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+    .navbar .logo { font-weight:700; font-size:20px; display:flex; align-items:center; gap:10px }
+    .navbar ul{ display:flex; gap:22px; list-style:none; margin:0; padding:0; align-items:center }
+    .navbar a{ color:#fff; text-decoration:none; font-weight:500 }
+    .navbar a.active{ color:var(--yellow); font-weight:600 }
+    .profile{ display:flex; align-items:center; gap:10px }
+    .profile img{ width:36px; height:36px; border-radius:50%; object-fit:cover }
+
+    /* ===== HERO ===== */
+    .hero{
+      display:flex;
+      gap:48px;
+      align-items:center;
+      justify-content:space-between;
+      padding: 56px 0;
+      background: #fff;
+    }
+    .hero-img{ width:44%; min-width:320px }
+    .hero-img img{ width:100%; border-radius:12px; display:block }
+    .hero-text{ width:50% }
+    .hero-text h1{
+      color: var(--green);
+      font-size:40px;
+      margin:0 0 18px 0;
+      line-height:1.05;
+    }
+    .hero-text p{ margin:0 0 26px 0; color:#333; line-height:1.6 }
+    .btn-donasi{
+      display:inline-block;
+      background: var(--yellow);
+      color:#fff;
+      padding:12px 26px;
+      border-radius:28px;
+      font-weight:600;
+      text-decoration:none;
+      transition:background .18s ease;
+    }
+    .btn-donasi:hover{ background:#cfac24 }
+
+    /* ===== FORM SECTION ===== */
+    /* ===== FORM SECTION ===== */
+.form-section {
+  background: var(--green);
+  color: #fff;
+  padding: 140px 6% 120px;
+  position: relative;
+  overflow: visible;
+}
+
+.form-wrap {
+  position: relative;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.form-card {
+  background: #f6f6f6;
+  color: #222;
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(9,30,66,0.10);
+  padding: 60px 60px 70px;
+  position: relative;
+  z-index: 3;
+}
+
+.form-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #e6e6e6;
+  border-radius: 32px;
+  top: 18px;
+  left: 18px;
+  right: -18px;
+  bottom: -18px;
+  z-index: -1;
+  box-shadow: 0 18px 40px rgba(9,30,66,0.10);
+}
+
+.form-card h2 {
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 28px;
+  color: var(--green);
+}
+
+/* Form elements tetap seperti sebelumnya */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+  color: #333;
+}
+
+select,
+input[type="file"] {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 15px;
+  color: #333;
+}
+
+.submit-btn {
+  background: var(--yellow);
+  color: #111;
+  font-weight: 700;
+  padding: 12px 28px;
+  border-radius: 28px;
+  border: none;
+  cursor: pointer;
+  display: block;
+  margin: 30px auto 0;
+  transition: background 0.2s ease;
+}
+.submit-btn:hover {
+  background: #cfac24;
+}
+
+
+    /* ===== GRAY SHAPE (NOW UNDER FORM) ===== */
+    .shape-card {
+      position: absolute;
+      left: 50%;
+      top: calc(100% - 90px); /* posisinya di bawah form tapi masih di area hijau */
+      transform: translateX(-50%);
+      width: min(880px, 86%);
+      height: 140px;
+      background: var(--gray-shape);
+      border-radius: 18px;
+      z-index: 2;
+      box-shadow: 0 10px 40px rgba(9,30,66,0.10);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 920px){
+      .hero{ flex-direction: column-reverse; gap:20px }
+      .hero-img, .hero-text{ width:100% }
+      .shape-card{ height:120px; top: calc(100% - 70px); }
+    }
+    @media (max-width: 560px){
+      .navbar ul{ display:none }
+      .shape-card{ width:92%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <!-- NAVBAR -->
+    <nav class="navbar">
+      <div class="logo">🐾 <span style="letter-spacing:0.2px">CatTake</span></div>
+      <ul>
+        <li><a href="#">Beranda</a></li>
+        <li><a href="#">Lapor</a></li>
+        <li><a href="#">Adopsi</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Komunitas</a></li>
+        <li><a class="active" href="#formDonasi">Donasi</a></li>
+      </ul>
+      <div class="profile">
+        <img src="https://i.pravatar.cc/100?img=47" alt="Diana">
+        <span>Diana</span>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-img">
+        <img src="https://images.unsplash.com/photo-1601758125946-6ec2ef642b1b?auto=format&fit=crop&w=900&q=80" alt="Ilustrasi kucing donasi">
+      </div>
+      <div class="hero-text">
+        <h1>Satu Donasi, Seribu Harapan.</h1>
+        <p>Bersama mendukung langkah kecil mereka, dari jalanan penuh bahaya menuju tempat yang aman, sehat, dan dicintai.</p>
+        <a class="btn-donasi" href="#formDonasi">Donasi Sekarang</a>
+      </div>
+    </section>
+  </div>
+
+  <!-- FORM SECTION -->
+  <!-- FORM SECTION -->
+<section id="formDonasi" class="form-section">
+  <div class="form-wrap wrap">
+    <div class="form-card">
+      <h2>Form Donasi</h2>
+
+      <form>
+        <div>
+          <label for="shelter">Shelter Tujuan</label>
+          <select id="shelter" required>
+            <option value="">-- Pilih Shelter --</option>
+            <option value="cathouse">CatHouse</option>
+            <option value="pawcare">PawCare</option>
+            <option value="meowhaven">Meow Haven</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="metode">Metode Pembayaran</label>
+          <select id="metode" required>
+            <option value="">-- Pilih Metode --</option>
+            <option value="qris">QRIS</option>
+            <option value="bri">Transfer BRI - 123456789 a/n CatTake Shelter</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="buktiTf">Upload Bukti Transfer</label>
+          <input id="buktiTf" type="file" accept="image/*" required />
+        </div>
+
+        <button class="submit-btn" type="submit">Selesai</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+
+    <!-- abu-abu di bawah form tapi masih di atas background hijau -->
+    <div class="shape-card" aria-hidden="true"></div>
+  </section>
+
+</body>
+</html>
