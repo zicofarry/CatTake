@@ -1,277 +1,183 @@
-/* --- Variabel Warna Sesuai Permintaan --- */
 :root {
-    --primary-green: #578D76;
-    --primary-yellow: #E8C32A;
-    --white: #FFFFFF;
-    --dark-text: #333333;
-    --light-gray: #E0E0E0;
-    --background-gray: #F9F9F9;
+  --green: #578D76;
+  --yellow: #E8C32A;
+  --page-max-width: 1100px;
 }
 
-/* --- Reset dan Pengaturan Dasar --- */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
+html { scroll-behavior: smooth; }
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--primary-green);
-    color: var(--dark-text);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
+  margin: 0;
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: #fff;
+  color: #222;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* --- Header dan Navigasi (PERBAIKAN) --- */
-.main-header {
-    width: 100%;
-    padding: 25px 5%;
-    position: absolute; /* Navbar mengambang di atas background */
-    top: 0;
-    left: 0;
-    z-index: 10;
+.wrap {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 24px;
 }
 
+/* ===== NAVBAR ===== */
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
+  background-color: var(--green);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-radius: 50px;
+  margin: 20px auto;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+.navbar .logo {
+  font-weight: 700;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.navbar ul {
+  display: flex;
+  gap: 22px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+.navbar a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+}
+.navbar a.active {
+  color: var(--yellow);
+  font-weight: 600;
+}
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.profile img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
-.logo {
-    font-weight: 700;
-    font-size: 24px;
-    color: var(--white); /* Teks jadi putih */
+/* ===== HERO ===== */
+.hero {
+  display: flex;
+  gap: 48px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 80px 0 320px; /* dipanjangkan bagian putih */
 }
-
-.nav-links {
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 35px; /* Sedikit memperlebar jarak */
+.hero-img { width: 44%; min-width: 320px; }
+.hero-img img {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
 }
-
-.nav-links a {
-    text-decoration: none;
-    color: var(--white); /* Teks jadi putih */
-    font-weight: 500;
-    font-size: 16px;
-    transition: opacity 0.3s;
-}
-
-.nav-links a:hover {
-    opacity: 0.8;
-}
-
-.nav-links .donate-button-nav {
-    background-color: rgba(255, 255, 255, 0.25); /* Latar belakang transparan */
-    color: var(--white);
-    padding: 10px 22px;
-    border-radius: 20px;
-    font-weight: 600;
-}
-
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--white); /* Teks jadi putih */
-}
-
-.user-profile img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid var(--white); /* Menambahkan border putih seperti di gambar */
-    object-fit: cover;
-}
-
-.user-profile span {
-    font-weight: 600;
-}
-
-/* --- Konten Utama --- */
-.main-content {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 80px; /* Jarak antara kiri dan kanan diperlebar */
-    padding: 120px 5% 50px 5%; /* Padding atas ditambah agar tidak tertutup navbar */
-    max-width: 1200px;
-    width: 100%;
-    flex-wrap: wrap;
-}
-
-/* --- Bagian Kiri (Hero) --- */
-.hero-section {
-    flex: 1;
-    max-width: 450px;
-    text-align: left;
-    color: var(--white);
-    padding-top: 20px; /* Sedikit penyesuaian posisi */
-}
-
-.hero-graphic img {
-    width: 100%;
-    max-width: 350px;
-    margin-bottom: 30px;
-}
-
+.hero-text { width: 50%; }
 .hero-text h1 {
-    font-size: 48px;
-    font-weight: 700;
-    line-height: 1.2;
-    margin-bottom: 20px;
+  color: var(--green);
+  font-size: 40px;
+  margin: 0 0 18px 0;
+  line-height: 1.05;
 }
-
 .hero-text p {
-    font-size: 16px;
-    line-height: 1.6;
-    margin-bottom: 30px;
-    opacity: 0.9;
+  margin: 0 0 26px 0;
+  color: #333;
+  line-height: 1.6;
+}
+.btn-donasi {
+  display: inline-block;
+  background: var(--yellow);
+  color: #fff;
+  padding: 12px 26px;
+  border-radius: 28px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .18s ease;
+}
+.btn-donasi:hover { background: #cfac24; }
+
+/* ===== FORM SECTION ===== */
+.form-section {
+  background: var(--green);
+  color: #fff;
+  padding: 140px 6% 160px;
+  margin-top: 40px;
 }
 
-.cta-button {
-    background-color: var(--primary-yellow); /* Warna kuning baru */
-    color: var(--primary-green); /* Teks warna hijau */
-    border: none;
-    padding: 15px 30px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+.form-inner {
+  max-width: 920px;
+  margin: 0 auto;
+  background: #fff;
+  color: #222;
+  border-radius: 24px;
+  padding: 60px 60px 70px;
+  box-shadow: 0 18px 40px rgba(9,30,66,0.10);
 }
 
-.cta-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+.form-inner h2 {
+  font-size: 28px;
+  text-align: center;
+  margin: 0 0 28px 0;
+  color: #000;
 }
 
-/* --- Bagian Kanan (Formulir Donasi) --- */
-.donation-form-container {
-    flex: 1;
-    max-width: 500px;
-    background-color: var(--white);
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+/* ===== FORM ELEMENTS ===== */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+  color: #333;
+}
+select, input[type="file"] {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #333;
+  font-size: 15px;
+}
+select:focus, input[type="file"]:focus {
+  outline: none;
+  border-color: var(--yellow);
 }
 
-.accordion-item {
-    border: 1px solid var(--light-gray);
-    border-radius: 10px;
-    margin-bottom: 15px;
-    overflow: hidden;
+.submit-btn {
+  background: var(--yellow);
+  color: #111;
+  font-weight: 700;
+  padding: 12px 28px;
+  border-radius: 28px;
+  border: none;
+  cursor: pointer;
+  display: block;
+  margin: 28px auto 0;
+  transition: background 0.2s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
+.submit-btn:hover { background: #cfac24; }
 
-.accordion-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.accordion-item.active {
-    border-color: var(--primary-green);
-}
-
-.arrow-up, .arrow-down, .arrow-up-small, .arrow-down-small {
-    width: 0;
-    height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-}
-
-.arrow-down, .arrow-down-small {
-    border-top: 6px solid #555;
-}
-
-.arrow-up, .arrow-up-small {
-    border-bottom: 6px solid #555;
-}
-
-.accordion-content {
-    padding: 0 20px 20px 20px;
-}
-
-/* --- Styling dalam Accordion --- */
-.payment-method {
-    border: 1px solid var(--light-gray);
-    border-radius: 8px;
-    margin-bottom: 10px;
-}
-
-.payment-method.active-method {
-    background-color: var(--background-gray);
-    border-color: transparent;
-}
-
-.method-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-    font-weight: 500;
-}
-
-.method-header span:last-child {
-    margin-left: auto;
-}
-
-.payment-logo {
-    height: 20px;
-}
-
-.method-details {
-    padding: 0 15px 15px 15px;
-}
-
-.method-details h4 {
-    margin-bottom: 15px;
-    font-weight: 600;
-}
-
-.method-details ol {
-    list-style-position: inside;
-    padding-left: 5px;
-    font-size: 14px;
-    line-height: 1.8;
-    color: #666;
-}
-
-.method-details ol li {
-    margin-bottom: 10px;
-}
-
-.method-details strong {
-    color: #E53935; /* Warna merah untuk nomor rekening */
-    font-weight: 600;
-}
-
-/* --- Tombol Selesai --- */
-.submit-button {
-    width: 100%;
-    background-color: var(--primary-yellow); /* Warna kuning baru */
-    color: var(--primary-green); /* Teks warna hijau */
-    border: none;
-    padding: 18px;
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 15px;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.submit-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+/* ===== RESPONSIVE ===== */
+@media (max-width: 920px) {
+  .hero {
+    flex-direction: column-reverse;
+    gap: 20px;
+    padding: 60px 0;
+  }
+  .hero-img, .hero-text { width: 100%; }
+  .form-inner { padding: 40px 30px 50px; }
 }
