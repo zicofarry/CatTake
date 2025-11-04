@@ -7,20 +7,20 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
 # How to Install and Run
 1. Clone repository ke local dulu, bisa 2 cara:
    ```terminal
-    git clone https://github.com/zicofarry/CatTake.git
+   git clone https://github.com/zicofarry/CatTake.git
    ```
    atau dengan clone menggunakan GitHub Desktop.
 
 2. Install vue-router
    dengan command:
    ```
-    npm install vue-router@4
-    ```
+   npm install vue-router@4
+   ```
 
 3. Jalankan server
    dengan command:
    ```
    npm run dev
-    ```
+   ```
 
 Website dengan framework vue harusnya sudah bisa dijalankan.
