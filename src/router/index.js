@@ -9,6 +9,7 @@ import FAQPage from '../pages/FAQPage.vue'
 import DonationPage from '../pages/DonationPage.vue'
 import LoginPage from '../pages/LoginPage.vue' // <-- Komponen Baru
 import SignupPage from '../pages/SignupPage.vue' // <-- Komponen Baru
+import CommunityPage from '../pages/CommunityPage.vue'
 
 
 const router = createRouter({
@@ -22,6 +23,7 @@ const router = createRouter({
     // Contoh rute dinamis untuk detail adopsi
     { path: '/adopsi/:id', name: 'AdopsiDetail', component: AdoptionDetail }, 
     { path: '/faq', name: 'FAQ', component: FAQPage },
+    { path: '/komunitas', name: 'Komunitas', component: CommunityPage }, // <-- Rute Baru
     { path: '/donasi', name: 'Donasi', component: DonationPage },
     { path: '/login', name: 'Login', component: LoginPage }, // <-- Rute Login
     { path: '/signup', name: 'Signup', component: SignupPage }, // <-- Rute Sign Up
