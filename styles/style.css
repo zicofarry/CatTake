@@ -1,15 +1,12 @@
-/* ==================
-   General Styles & Variables
-   ================== */
+/* ===== PENGATURAN DASAR ===== */
 :root {
-    --primary-green: #638870;
-    --primary-yellow: #E0C048;
-    --dark-text: #2c2c2c;
-    --body-text: #555;
-    --white: #ffffff;
-    --light-gray-bg: #f8f9fa;
-    --border-radius-sm: 8px;
-    --border-radius-md: 25px;
+    --bg-dark: #1A3A34;
+    --bg-widget: #2D4A45;
+    --bg-light: #FFFFFF;
+    --text-light: #FFFFFF;
+    --text-dark: #333333;
+    --text-secondary: #B0B0B0;
+    --accent: #78C89F; /* Perkiraan warna hijau aksen */
 }
 
 * {
@@ -20,238 +17,282 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    color: var(--dark-text);
-    background: linear-gradient(to top, #f0f0f0, var(--white) 50%);
-    min-height: 100vh;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
 }
 
-.container, .hero-container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
+a {
+    text-decoration: none;
+    color: inherit;
 }
 
-/* ==================
-   Header & Navigation
-   ================== */
-header {
-    padding: 1rem 0;
-}
-
-header .container {
+/* ===== NAVIGASI ===== */
+.navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 20px 40px;
+    background-color: var(--bg-dark);
+    border-bottom: 1px solid var(--bg-widget);
 }
 
-.logo {
+.nav-left {
     display: flex;
     align-items: center;
-    font-weight: 700;
-    font-size: 1.5rem;
-    gap: 0.5rem; /* Hanya untuk desktop */
+    gap: 20px;
 }
 
-.logo img {
-    height: 70px;
-    display: none; /* Sembunyikan di mobile, tampilkan di desktop */
+.nav-left .logo {
+    height: 30px;
 }
 
-.desktop-nav {
-    display: none; /* Sembunyikan di mobile */
+.nav-left a {
+    color: var(--text-light);
+    padding: 8px 16px;
+    border-radius: 20px;
 }
 
-.menu-toggle {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.beranda-mobile {
+.nav-left a.active {
+    background-color: var(--accent);
+    color: var(--bg-dark);
     font-weight: 600;
-    font-size: 1.25rem;
 }
 
-.hamburger-icon {
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-right .profile-pic {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* ===== LAYOUT KONTEN UTAMA ===== */
+.container {
+    display: flex;
+    padding: 20px 40px;
+    gap: 30px;
+}
+
+.main-content {
+    flex: 2; /* Mengambil 2/3 bagian */
+}
+
+.sidebar {
+    flex: 1; /* Mengambil 1/3 bagian */
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    cursor: pointer;
+    gap: 20px;
 }
 
-.hamburger-icon span {
+/* ===== FEED UTAMA (KIRI) ===== */
+.main-content h1 {
+    font-size: 36px;
+    font-weight: 700;
+}
+
+.main-content > p {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.feed {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.post-card {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.post-profile-pic {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+}
+
+.post-header div {
+    flex-grow: 1;
+}
+
+.post-header strong {
     display: block;
-    width: 25px;
-    height: 3px;
-    background-color: var(--dark-text);
-    border-radius: 3px;
+    font-size: 16px;
 }
 
-/* ==================
-   Buttons
-   ================== */
-.btn {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: var(--border-radius-md);
+.post-header span {
+    font-size: 14px;
+    color: #888;
+}
+
+.post-menu {
+    height: 24px; /* Sesuaikan ukuran 'titik 3.png' */
+}
+
+.post-body {
+    margin-top: 15px;
+}
+
+.post-body strong {
+    font-size: 20px;
     font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    text-align: center;
 }
 
-.btn-primary {
-    background-color: var(--primary-yellow);
-    color: var(--dark-text);
-    font-size: 1.1rem;
-    box-shadow: 0 4px 15px rgba(224, 192, 72, 0.4);
+.post-body p {
+    margin-top: 5px;
 }
 
-.btn-secondary {
-    background-color: var(--primary-green);
-    color: var(--white);
-    padding: 0.6rem 1.2rem;
+.post-body a {
+    color: var(--accent);
+    font-weight: 600;
+    display: block;
+    margin-top: 5px;
 }
 
-/* ==================
-   Hero Section (Mobile First)
-   ================== */
-.hero-container {
+.post-image {
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 15px;
+    object-fit: cover;
+}
+
+.post-footer {
     display: flex;
-    flex-direction: column;
+    gap: 20px;
+    margin-top: 15px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 15px;
+}
+
+.footer-icon {
+    display: flex;
     align-items: center;
-    text-align: center;
-    padding: 2rem 0;
+    gap: 8px;
+    color: #555;
 }
 
-.hero-image {
-    order: 1; /* Pindah gambar ke atas */
+.footer-icon img {
+    height: 20px; /* Sesuaikan ukuran 'like.png' dan 'comment.png' */
+}
+
+/* ===== SIDEBAR (KANAN) ===== */
+.search-bar {
+    background-color: var(--bg-light);
+    border-radius: 25px;
+    padding: 10px 15px;
+}
+
+.search-bar input {
+    border: none;
+    outline: none;
     width: 100%;
-    max-width: 500px;
-    margin-bottom: 2rem;
+    background-color: transparent;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+.search-bar input::placeholder {
+    color: #aaa;
 }
 
-.hero-image img {
-    width: 100%;
-    height: auto;
+
+.widget {
+    background-color: var(--bg-widget);
+    border-radius: 16px;
+    padding: 20px;
 }
 
-.hero-text {
-    order: 2; /* Pindah teks ke bawah */
+.widget h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
 }
 
-.hero-text h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    line-height: 1.2;
-    margin-bottom: 1rem;
+/* Widget: Event */
+.event-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
 }
 
-.hero-text p {
-    font-size: 1rem;
-    color: var(--body-text);
-    margin-bottom: 2rem;
-    max-width: 400px;
+.event-item img {
+    width: 30px; /* Sesuaikan ukuran ikon */
 }
 
-/* ============================
-   Desktop Styles (Media Query)
-   ============================ */
-@media (min-width: 768px) {
-    .logo img, .logo span {
-        display: block;
-    }
-
-    .menu-toggle {
-        display: none; /* Sembunyikan menu mobile */
-    }
-
-    .desktop-nav {
-        display: flex;
-        background-color: var(--primary-green);
-        border-radius: var(--border-radius-md);
-        padding: 0.5rem;
-    }
-
-    .desktop-nav ul {
-        display: flex;
-        list-style: none;
-        gap: 1.5rem;
-        align-items: center;
-        padding: 0 1rem;
-    }
-
-    .desktop-nav a {
-        color: var(--white);
-        text-decoration: none;
-        font-weight: 400;
-        font-size: 1rem;
-    }
-
-    .desktop-nav a.active {
-        color: var(--primary-yellow);
-        font-weight: 600;
-    }
-
-    .hero-container {
-        flex-direction: row;
-        text-align: left;
-        align-items: center;
-        min-height: 70vh;
-        gap: 2rem;
-    }
-
-    .hero-image {
-        order: 2; /* Pindah gambar ke kanan */
-        flex: 1;
-    }
-
-    .hero-text {
-        order: 1; /* Pindah teks ke kiri */
-        flex: 1;
-    }
-
-    .hero-text h1 {
-        font-size: 3.5rem;
-    }
-
-    .hero-text p {
-        font-size: 1.1rem;
-        max-width: 500px;
-    }
+.event-item strong {
+    display: block;
+    font-size: 15px;
 }
 
-/* ==================
-   Image Stack Styles
-   ================== */
-
-/* 1. Atur wadah sebagai "kanvas" */
-.image-stack {
-    position: relative; /* Ini adalah kunci utamanya */
-    width: 100%;
-    /* Atur tinggi atau aspect ratio agar gambar tidak gepeng */
-    aspect-ratio: 1 / 1; /* Contoh rasio 1:1, sesuaikan jika perlu */
+.event-item span {
+    font-size: 13px;
+    color: var(--text-secondary);
 }
 
-/* 2. Atur kedua gambar agar "melayang" di dalam wadah */
-.image-stack img {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    object-fit: contain; /* Agar gambar tidak terdistorsi */
+/* Widget: Sobat Paws */
+.active-member {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
 }
 
-/* 3. Atur urutan tumpukan dengan z-index */
-.ellipse-bg {
-    z-index: 1; /* Elips di lapisan bawah */
+.active-member img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
 }
 
-.cat-image {
-    /* position: absolute; */
-    z-index: 2;
-    /* top: 100%; */
-    /* transform: scale(1,2); */
+/* Widget: Postingan Populer */
+.popular-post {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.popular-post img {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+/* Widget: Fakta Kucing */
+.cat-fact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cat-fact img {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.more-facts {
+    display: block;
+    text-align: right;
+    margin-top: 15px;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 14px;
 }
