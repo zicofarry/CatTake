@@ -67,11 +67,11 @@ import CatCard from '../components/CatCard.vue';
 
 // 1. MOCK DATA (Data Kucing - Menggantikan data statis di HTML)
 const catData = ref([
-  { id: 1, name: 'Oyen', shelter: 'CatHouse', gender: 'male', age: '1 Tahun', image: 'kucing-1.jpg', isFavorite: false },
-  { id: 2, name: 'Bulu', shelter: 'PawCare', gender: 'female', age: '5 Bulan', image: 'kucing-2.jpg', isFavorite: true },
-  { id: 3, name: 'Tobby', shelter: 'Meow Haven', gender: 'male', age: '2 Tahun', image: 'kucing-3.jpg', isFavorite: false },
-  { id: 4, name: 'Milo', shelter: 'CatHouse', gender: 'male', age: '8 Bulan', image: 'kucing-4.jpg', isFavorite: false },
-  { id: 5, name: 'Kitty', shelter: 'PawCare', gender: 'female', age: '3 Tahun', image: 'kucing-5.jpg', isFavorite: false },
+  { id: 1, name: 'Oyen', shelter: 'CatHouse', gender: 'male', age: '1 Tahun', image: 'oyencat.png', isFavorite: false },
+  { id: 2, name: 'Abul', shelter: 'PawCare', gender: 'female', age: '5 Bulan', image: 'minicat.png', isFavorite: true },
+  { id: 3, name: 'Simba', shelter: 'Meow Haven', gender: 'male', age: '2 Tahun', image: 'bradercat.png', isFavorite: false },
+  { id: 4, name: 'Mueza', shelter: 'CatHouse', gender: 'female', age: '8 Bulan', image: 'mochacat.png', isFavorite: false },
+  { id: 5, name: 'Kitty', shelter: 'PawCare', gender: 'female', age: '3 Tahun', image: 'kucing-5.png', isFavorite: false },
 ]);
 
 // 2. STATE REAKTIF (Untuk Filter)
