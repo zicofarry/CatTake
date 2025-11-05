@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* src/assets/base.css - Dipindahkan dari style.css dan faq.css */
 :root {
     --primary-green: #638870;

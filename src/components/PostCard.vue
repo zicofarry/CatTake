@@ -1,30 +1,29 @@
 <template>
-    <article class="post-card">
-        <div class="post-header">
-            <!-- Path gambar profile diambil dari prop -->
-            <img :src="post.profilePic" :alt="'Profile ' + post.author" class="post-profile-pic">
-            <div>
-                <strong>{{ post.group }}</strong>
-                <span>{{ post.author }} · {{ post.time }}</span>
+    <article class="bg-white text-gray-800 rounded-2xl p-5 shadow-lg">
+        <div class="flex items-center gap-3">
+            <img :src="post.profilePic" :alt="'Profile ' + post.author" class="w-11 h-11 rounded-full object-cover">
+            <div class="flex-grow">
+                <strong class="block text-base">{{ post.group }}</strong>
+                <span class="text-sm text-gray-500">{{ post.author }} · {{ post.time }}</span>
             </div>
-            <!-- Menggunakan ikon Font Awesome untuk menu titik tiga -->
-            <i class="fas fa-ellipsis-v post-menu-icon" @click.stop="toggleMenu"></i>
+            <i class="fas fa-ellipsis-v text-xl text-gray-500 cursor-pointer p-1" @click.stop="toggleMenu"></i>
         </div>
-        <div class="post-body">
-            <strong>{{ post.title }}</strong>
-            <p>{{ post.contentSnippet }}</p>
-            <a href="#">Lihat selengkapnya</a>
-            <!-- Path gambar postingan diambil dari prop -->
-            <img :src="post.postImage" :alt="post.title" class="post-image">
+        <div class="mt-4">
+            <strong class="text-xl font-semibold block">{{ post.title }}</strong>
+            <p class="mt-1">{{ post.contentSnippet }}</p>
+            <a href="#" class="text-indigo-600 font-semibold block mt-1 hover:underline">Lihat selengkapnya</a>
+            <img :src="post.postImage" :alt="post.title" class="w-full rounded-xl mt-4 object-cover">
         </div>
-        <div class="post-footer">
-            <div class="footer-icon" @click="toggleLike">
-                <!-- Menggunakan Font Awesome untuk Like/Unlike -->
-                <i :class="['fas', 'fa-heart', { 'liked': isLiked }]" :style="{ color: isLiked ? '#E74C3C' : '#555' }"></i>
+        <div class="flex gap-5 mt-4 pt-4 border-t border-gray-200">
+            <div class="flex items-center gap-2 text-gray-600 cursor-pointer transition duration-200 hover:text-red-500" @click="toggleLike">
+                <i 
+                    :class="['fas', 'fa-heart', { 'text-red-500': isLiked }]" 
+                    :style="{ color: isLiked ? '#E74C3C' : '' }"
+                ></i>
                 <span>{{ formattedLikes }}</span>
             </div>
-            <div class="footer-icon">
-                <i class="far fa-comment-alt"></i>
+            <div class="flex items-center gap-2 text-gray-600 cursor-pointer transition duration-200 hover:text-indigo-600">
+                <i class="far fa-comment-alt text-xl"></i>
                 <span>{{ post.comments }}</span>
             </div>
         </div>
@@ -77,74 +76,3 @@ function toggleMenu() {
     // Logika menampilkan pop-up menu
 }
 </script>
-
-<style scoped>
-/* CSS dari community.css yang spesifik untuk post-card */
-.post-card {
-    background-color: var(--bg-light);
-    color: var(--text-dark);
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-.post-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.post-profile-pic {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-}
-.post-header div { flex-grow: 1; }
-.post-header strong { display: block; font-size: 16px; }
-.post-header span { font-size: 14px; color: #888; }
-
-.post-menu-icon {
-    font-size: 1.2rem;
-    color: #888;
-    cursor: pointer;
-    padding: 5px; /* Tambahan padding untuk target klik yang lebih besar */
-}
-
-.post-body { margin-top: 15px; }
-.post-body strong { font-size: 20px; font-weight: 600; }
-.post-body p { margin-top: 5px; }
-.post-body a { color: var(--accent); font-weight: 600; display: block; margin-top: 5px; }
-.post-image {
-    width: 100%;
-    border-radius: 12px;
-    margin-top: 15px;
-    object-fit: cover;
-}
-
-.post-footer {
-    display: flex;
-    gap: 20px;
-    margin-top: 15px;
-    border-top: 1px solid #f0f0f0;
-    padding-top: 15px;
-}
-.footer-icon {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #555;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-/* Style untuk ikon Like */
-.footer-icon i.fa-heart {
-    color: #ddd; /* Warna default */
-    transition: color 0.2s;
-}
-.footer-icon i.fa-heart.liked {
-    color: #E74C3C !important; /* Warna merah saat di-like */
-}
-
-/* Mengganti ikon gambar dengan Font Awesome */
-.footer-icon i.fa-comment-alt {
-    font-size: 1.2rem;
-}
-</style>
