@@ -10,6 +10,7 @@ import DonationPage from '../pages/DonationPage.vue'
 import LoginPage from '../pages/LoginPage.vue' // <-- Komponen Baru
 import SignupPage from '../pages/SignupPage.vue' // <-- Komponen Baru
 import CommunityPage from '../pages/CommunityPage.vue'
+import DetailPage from '../pages/DetailPage.vue'
 
 
 const router = createRouter({
@@ -27,6 +28,7 @@ const router = createRouter({
     { path: '/donasi', name: 'Donasi', component: DonationPage },
     { path: '/login', name: 'Login', component: LoginPage }, // <-- Rute Login
     { path: '/signup', name: 'Signup', component: SignupPage }, // <-- Rute Sign Up
+    { path: '/profile', name: 'Profile', component: DetailPage }, // <-- Rute Sign Up
   ],
 
   // Pastikan halaman di-scroll ke atas saat berpindah rute

@@ -1,9 +1,6 @@
 <template>
   <div class="auth-wrapper flex justify-center items-center min-h-screen bg-gray-100 relative p-5 z-20">
-    <div class="login-box bg-white p-10 rounded-xl shadow-2xl w-full max-w-md text-center relative z-30">
-      <div class="mb-5">
-        <img src="/assets/img/catTakePutih.png" alt="Logo CatTake" class="w-64 h-auto mx-auto">
-      </div>
+    <div class="login-box bg-white p-8 md:p-10 rounded-2xl shadow-2xl w-full max-w-sm text-center relative z-30">
       
       <h2 class="mt-0 text-3xl font-bold text-gray-800">Sign Up</h2>
       <p class="text-gray-500 mb-8">Please enter your details</p>
@@ -11,24 +8,24 @@
       <form @submit.prevent="handleSignup">
         <div class="relative mb-5">
           <input type="text" v-model="fullName" placeholder="Full Name" required
-                 class="w-full py-3 px-4 border border-gray-300 rounded-xl font-sans text-base shadow-sm">
+                 class="w-full py-3 px-4 border border-gray-200 rounded-xl font-sans text-base shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
         </div>
         <div class="relative mb-5">
           <input type="text" v-model="signupUsername" placeholder="Username" required
-                 class="w-full py-3 px-4 border border-gray-300 rounded-xl font-sans text-base shadow-sm">
+                 class="w-full py-3 px-4 border border-gray-200 rounded-xl font-sans text-base shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
         </div>
         <div class="relative mb-5">
           <input type="password" v-model="signupPassword" placeholder="Password" required
-                 class="w-full py-3 px-4 border border-gray-300 rounded-xl font-sans text-base shadow-sm">
+                 class="w-full py-3 px-4 border border-gray-200 rounded-xl font-sans text-base shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
         </div>
         <div class="relative mb-5">
           <input type="password" v-model="confirmPassword" placeholder="Confirm Password" required
-                 class="w-full py-3 px-4 border border-gray-300 rounded-xl font-sans text-base shadow-sm">
+                 class="w-full py-3 px-4 border border-gray-200 rounded-xl font-sans text-base shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
         </div>
         
         <button type="submit" 
-          class="inline-block w-auto py-3 px-16 bg-amber-500 hover:bg-amber-600 border-none rounded-full text-white mt-3 font-semibold cursor-pointer shadow-lg transition duration-300"
-          style="box-shadow: 0 4px 20px rgba(251, 192, 45, 0.4);"
+          class="inline-block w-40 py-3 bg-yellow-500 hover:bg-yellow-600 border-none rounded-full text-gray-800 mt-5 font-bold cursor-pointer shadow-lg transition duration-300"
+          style="background: linear-gradient(180deg, #FBC02D 0%, #E0C048 100%); box-shadow: 0 4px 10px rgba(251, 192, 45, 0.4);"
         >
           Sign Up
         </button>
@@ -40,7 +37,7 @@
         <div class="flex-grow border-b border-gray-300 mx-2"></div>
       </div>
       
-      <button class="w-full bg-white text-gray-700 border border-gray-300 flex justify-center items-center gap-2 py-3 rounded-xl font-semibold cursor-pointer hover:bg-gray-50">
+      <button class="w-full bg-white text-gray-700 border border-gray-300 flex justify-center items-center gap-2 py-3 rounded-xl font-semibold cursor-pointer hover:bg-gray-50 shadow-sm">
         <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" class="w-5 h-5">
         Sign Up with Google
       </button>
@@ -75,7 +72,7 @@ function handleSignup() {
 </script>
 
 <style scoped>
-/* Gaya yang menggunakan ::before/::after harus dipertahankan di sini */
+/* Background Wave dari Figma */
 .auth-wrapper::before {
     content: '';
     position: absolute;
@@ -83,7 +80,7 @@ function handleSignup() {
     left: 0;
     width: 100%;
     height: 65%;
-    background: #2D5B4D; 
+    background: #4A6C55; /* Warna atas pada Figma */
     clip-path: ellipse(80% 60% at 50% 40%);
     z-index: 1; 
 }
@@ -94,9 +91,8 @@ function handleSignup() {
     left: 0;
     width: 100%;
     height: 65%;
-    background: #E8EAE3; 
+    background: #E8EAE3; /* Warna bawah pada Figma */
     clip-path: ellipse(85% 60% at 50% 70%);
     z-index: 0;
 }
-/* Hapus semua CSS lainnya yang sudah dikonversi ke Tailwind */
 </style>
