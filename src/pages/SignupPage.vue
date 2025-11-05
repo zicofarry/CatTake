@@ -1,40 +1,53 @@
 <template>
-  <div class="auth-wrapper">
-    <div class="login-box">
-      <div class="logo-header">
-        <img src="/assets/img/catTakePutih.png" alt="Logo CatTake" class="logo-image">
+  <div class="auth-wrapper flex justify-center items-center min-h-screen bg-gray-100 relative p-5 z-20">
+    <div class="login-box bg-white p-10 rounded-xl shadow-2xl w-full max-w-md text-center relative z-30">
+      <div class="mb-5">
+        <img src="/assets/img/catTakePutih.png" alt="Logo CatTake" class="w-64 h-auto mx-auto">
       </div>
       
-      <h2>Sign Up</h2>
-      <p class="subtitle">Please enter your details</p>
+      <h2 class="mt-0 text-3xl font-bold text-gray-800">Sign Up</h2>
+      <p class="text-gray-500 mb-8">Please enter your details</p>
       
       <form @submit.prevent="handleSignup">
-        <div class="input-group">
-          <input type="text" v-model="fullName" placeholder="Full Name" required>
+        <div class="relative mb-5">
+          <input type="text" v-model="fullName" placeholder="Full Name" required
+                 class="w-full py-3 px-4 border border-gray-300 rounded-xl font-sans text-base shadow-sm">
         </div>
-        <div class="input-group">
-          <input type="text" v-model="signupUsername" placeholder="Username" required>
+        <div class="relative mb-5">
+          <input type="text" v-model="signupUsername" placeholder="Username" required
+                 class="w-full py-3 px-4 border border-gray-300 rounded-xl font-sans text-base shadow-sm">
         </div>
-        <div class="input-group">
-          <input type="password" v-model="signupPassword" placeholder="Password" required>
+        <div class="relative mb-5">
+          <input type="password" v-model="signupPassword" placeholder="Password" required
+                 class="w-full py-3 px-4 border border-gray-300 rounded-xl font-sans text-base shadow-sm">
         </div>
-        <div class="input-group">
-          <input type="password" v-model="confirmPassword" placeholder="Confirm Password" required>
+        <div class="relative mb-5">
+          <input type="password" v-model="confirmPassword" placeholder="Confirm Password" required
+                 class="w-full py-3 px-4 border border-gray-300 rounded-xl font-sans text-base shadow-sm">
         </div>
         
-        <button type="submit" class="btn btn-auth">Sign Up</button>
+        <button type="submit" 
+          class="inline-block w-auto py-3 px-16 bg-amber-500 hover:bg-amber-600 border-none rounded-full text-white mt-3 font-semibold cursor-pointer shadow-lg transition duration-300"
+          style="box-shadow: 0 4px 20px rgba(251, 192, 45, 0.4);"
+        >
+          Sign Up
+        </button>
       </form>
       
-      <div class="separator"><span>or</span></div>
+      <div class="flex items-center text-center text-gray-400 my-6">
+        <div class="flex-grow border-b border-gray-300 mx-2"></div>
+        <span>or</span>
+        <div class="flex-grow border-b border-gray-300 mx-2"></div>
+      </div>
       
-      <button class="btn-google">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo">
+      <button class="w-full bg-white text-gray-700 border border-gray-300 flex justify-center items-center gap-2 py-3 rounded-xl font-semibold cursor-pointer hover:bg-gray-50">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" class="w-5 h-5">
         Sign Up with Google
       </button>
       
-      <div class="auth-link">
+      <div class="mt-6 text-sm text-gray-600">
         <p>Already have an account? 
-          <router-link to="/login">Login</router-link>
+          <router-link to="/login" class="text-amber-500 hover:text-amber-600 font-semibold no-underline">Login</router-link>
         </p>
       </div>
     </div>
@@ -58,30 +71,11 @@ function handleSignup() {
   }
   
   alert(`Attempting to sign up user: ${signupUsername.value}`);
-  // Jika registrasi sukses, Anda mungkin ingin mengarahkan ke halaman login
-  // router.push('/login'); 
 }
 </script>
 
 <style scoped>
-/* ====================================
-   Gaya Auth (Dipindahkan dari login.css & signup.css)
-   Semua gaya di sini identik dengan LoginPage.vue, kecuali penanganan ikon input
-   ==================================== */
-
-/* Container Utama dan Latar Belakang Gelombang */
-.auth-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: #f0f2f5; 
-    position: relative;
-    padding: 20px;
-    z-index: 2; 
-}
-
-/* Gelombang Atas (Hijau Tua) */
+/* Gaya yang menggunakan ::before/::after harus dipertahankan di sini */
 .auth-wrapper::before {
     content: '';
     position: absolute;
@@ -93,8 +87,6 @@ function handleSignup() {
     clip-path: ellipse(80% 60% at 50% 40%);
     z-index: 1; 
 }
-
-/* Gelombang Bawah (Hijau Muda/Abu) */
 .auth-wrapper::after {
     content: '';
     position: absolute;
@@ -106,121 +98,5 @@ function handleSignup() {
     clip-path: ellipse(85% 60% at 50% 70%);
     z-index: 0;
 }
-
-/* Kotak Form */
-.login-box {
-    background-color: #ffffff;
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-    position: relative;
-    z-index: 3; 
-}
-
-/* Logo */
-.logo-header {
-    margin-bottom: 20px;
-}
-.logo-image {
-    width: 250px;
-    height: auto;
-}
-
-/* Judul */
-.login-box h2 {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 700;
-    color: #333;
-}
-.login-box .subtitle {
-    color: #888;
-    margin-bottom: 30px;
-}
-
-/* Input Group */
-.input-group {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.input-group input {
-    width: 100%;
-    padding: 12px 15px; 
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
-    /* Input Sign Up TIDAK memiliki ikon, jadi padding normal */
-    padding-left: 15px; 
-}
-
-/* Tombol Auth */
-.btn-auth {
-    width: auto;
-    padding: 12px 60px;
-    background-color: #FBC02D;
-    border: none;
-    border-radius: 50px;
-    color: #ffffff;
-    margin-top: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 4px 20px rgba(rgba(251, 192, 45, 0.75)); 
-    transition: background-color 0.3s;
-}
-.btn-auth:hover {
-    background-color: #f9a825;
-}
-
-/* Separator "or" */
-.separator {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    color: #aaa;
-    margin: 25px 0;
-}
-.separator::before, .separator::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid #ddd;
-    margin: 0 .5em;
-}
-
-/* Tombol Google */
-.btn-google {
-    background-color: #fff;
-    color: #555;
-    border: 1px solid #ddd;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    padding: 12px;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    width: 100%;
-}
-.btn-google img {
-    width: 20px;
-    height: 20px;
-}
-
-/* Link Bawah */
-.auth-link {
-    margin-top: 25px;
-    font-size: 14px;
-    color: #555;
-}
-.auth-link a {
-    color: #FBC02D;
-    text-decoration: none;
-    font-weight: 600;
-}
+/* Hapus semua CSS lainnya yang sudah dikonversi ke Tailwind */
 </style>
