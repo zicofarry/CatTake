@@ -1,26 +1,27 @@
 <template>
-  <div class="wrap-page">
-    <section class="hero-donasi">
-      <div class="hero-donasi-inner wrap">
-        <div class="hero-img">
-          <img src="../assets/img/Ellipse.png" alt="Ilustrasi kucing donasi">
+  <div class="max-w-6xl mx-auto px-6 lg:px-8">
+    <section class="py-20 lg:py-32">
+      <div class="flex flex-col-reverse gap-5 items-center justify-between lg:flex-row lg:gap-12">
+        <div class="lg:w-1/2">
+          <img src="../assets/img/Ellipse.png" alt="Ilustrasi kucing donasi" class="w-full rounded-xl block">
         </div>
-        <div class="hero-text">
-          <h1>Satu Donasi, Seribu Harapan.</h1>
-          <p>Bersama mendukung langkah kecil mereka, dari jalanan penuh bahaya menuju tempat yang aman, sehat, dan dicintai.</p>
-          <a class="btn-donasi" href="#formDonasi">Donasi Sekarang</a>
+        <div class="lg:w-1/2 text-center lg:text-left">
+          <h1 class="text-4xl lg:text-5xl font-extrabold text-green-700 mb-4 leading-tight">Satu Donasi, Seribu Harapan.</h1>
+          <p class="mb-6 text-gray-700 leading-relaxed">Bersama mendukung langkah kecil mereka, dari jalanan penuh bahaya menuju tempat yang aman, sehat, dan dicintai.</p>
+          <a class="inline-block bg-amber-500 hover:bg-amber-600 text-white py-3 px-8 rounded-full font-semibold transition duration-200" href="#formDonasi">Donasi Sekarang</a>
         </div>
       </div>
     </section>
 
-    <section id="formDonasi" class="form-section">
-      <div class="form-inner wrap">
-        <h2>Form Donasi</h2>
+    <section id="formDonasi" class="bg-green-700 text-white pt-36 pb-40 -mt-60 lg:-mt-60">
+      <div class="max-w-4xl mx-auto bg-white text-gray-800 rounded-3xl p-8 md:p-16 shadow-2xl">
+        <h2 class="text-3xl font-semibold text-center mb-8 text-gray-900">Form Donasi</h2>
 
-        <form @submit.prevent="submitDonation">
+        <form @submit.prevent="submitDonation" class="flex flex-col gap-5">
           <div>
-            <label for="shelter">Shelter Tujuan</label>
-            <select id="shelter" v-model="form.shelter" required>
+            <label for="shelter" class="font-semibold mb-1 block text-gray-700">Shelter Tujuan</label>
+            <select id="shelter" v-model="form.shelter" required
+                    class="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-700 text-base">
               <option value="" disabled>-- Pilih Shelter --</option>
               <option value="cathouse">CatHouse</option>
               <option value="pawcare">PawCare</option>
@@ -29,8 +30,9 @@
           </div>
 
           <div>
-            <label for="metode">Metode Pembayaran</label>
-            <select id="metode" v-model="form.method" required>
+            <label for="metode" class="font-semibold mb-1 block text-gray-700">Metode Pembayaran</label>
+            <select id="metode" v-model="form.method" required
+                    class="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-700 text-base">
               <option value="" disabled>-- Pilih Metode --</option>
               <option value="qris">QRIS</option>
               <option value="bri">Transfer BRI - 123456789 a/n CatTake Shelter</option>
@@ -38,18 +40,24 @@
           </div>
 
           <div>
-            <label for="buktiTf">Upload Bukti Transfer</label>
+            <label for="buktiTf" class="font-semibold mb-1 block text-gray-700">Upload Bukti Transfer</label>
             <input 
                 id="buktiTf" 
                 type="file" 
                 accept="image/*" 
                 @change="handleFileUpload" 
                 required 
+                class="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-700 text-base file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
             />
-            <p v-if="fileName" class="file-status">File terpilih: {{ fileName }}</p>
+            <p v-if="fileName" class="mt-1 text-sm text-gray-600">File terpilih: {{ fileName }}</p>
           </div>
 
-          <button class="submit-btn" type="submit">Selesai</button>
+          <button class="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-3 px-7 rounded-full border-none cursor-pointer block mt-7 mx-auto shadow-md"
+            type="submit"
+            style="box-shadow: 0 6px 18px rgba(0,0,0,0.08);"
+          >
+            Selesai
+          </button>
         </form>
       </div>
     </section>
@@ -81,7 +89,6 @@ function handleFileUpload(event) {
 function submitDonation() {
     if (form.value.shelter && form.value.method && form.value.proof) {
         alert(`Donasi ke ${form.value.shelter} melalui ${form.value.method} berhasil diajukan! Bukti transfer: ${form.value.proof.name}`);
-        // Logika pengiriman data ke backend
     } else {
         alert('Mohon lengkapi semua field donasi.');
     }
@@ -89,136 +96,5 @@ function submitDonation() {
 </script>
 
 <style scoped>
-/* Pindahkan CSS dari donasi.css */
-
-:root {
-  --green: #578D76;
-  --yellow: #E8C32A;
-  --page-max-width: 1100px;
-}
-
-.wrap-page {
-    /* Menggantikan fungsi .wrap di HTML lama, kita gunakan padding di sini */
-    max-width: var(--page-max-width);
-    margin: 0 auto;
-    padding: 0 24px;
-}
-
-/* ===== HERO ===== */
-.hero-donasi {
-    padding: 80px 0 320px; 
-}
-.hero-donasi-inner {
-    display: flex;
-    gap: 48px;
-    align-items: center;
-    justify-content: space-between;
-}
-.hero-img { width: 44%; min-width: 320px; }
-.hero-img img {
-  width: 100%;
-  border-radius: 12px;
-  display: block;
-}
-.hero-text { width: 50%; }
-.hero-text h1 {
-  color: var(--green);
-  font-size: 40px;
-  margin: 0 0 18px 0;
-  line-height: 1.05;
-}
-.hero-text p {
-  margin: 0 0 26px 0;
-  color: #333;
-  line-height: 1.6;
-}
-.btn-donasi {
-  display: inline-block;
-  background: var(--yellow);
-  color: #fff;
-  padding: 12px 26px;
-  border-radius: 28px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background .18s ease;
-}
-.btn-donasi:hover { background: #cfac24; }
-
-/* ===== FORM SECTION ===== */
-.form-section {
-  background: var(--green);
-  color: #fff;
-  padding: 140px 6% 160px;
-  margin-top: -240px; /* Tarik ke atas menutupi bagian putih hero */
-}
-
-.form-inner {
-  max-width: 920px;
-  margin: 0 auto;
-  background: #fff;
-  color: #222;
-  border-radius: 24px;
-  padding: 60px 60px 70px;
-  box-shadow: 0 18px 40px rgba(9,30,66,0.10);
-}
-
-.form-inner h2 {
-  font-size: 28px;
-  text-align: center;
-  margin: 0 0 28px 0;
-  color: #000;
-}
-
-/* ===== FORM ELEMENTS ===== */
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-label {
-  font-weight: 600;
-  margin-bottom: 6px;
-  display: block;
-  color: #333;
-}
-select, input[type="file"] {
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  background: #fff;
-  color: #333;
-  font-size: 15px;
-}
-
-.file-status {
-    margin-top: 5px;
-    font-size: 0.9rem;
-    color: #666;
-}
-
-.submit-btn {
-  background: var(--yellow);
-  color: #111;
-  font-weight: 700;
-  padding: 12px 28px;
-  border-radius: 28px;
-  border: none;
-  cursor: pointer;
-  display: block;
-  margin: 28px auto 0;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 920px) {
-    .hero-donasi-inner {
-        flex-direction: column-reverse;
-        gap: 20px;
-    }
-    .hero-img, .hero-text { width: 100%; }
-    .hero-donasi { padding: 60px 0; }
-    .form-section { margin-top: 0; padding: 40px 6% 80px; }
-    .form-inner { padding: 40px 30px 50px; }
-}
+/* CSS Lama Dihapus */
 </style>

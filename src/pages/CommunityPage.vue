@@ -1,64 +1,57 @@
 <template>
-    <main class="community-layout-wrapper">
-        <div class="container community-container">
+    <main class="bg-gray-800 text-white min-h-screen py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8 md:flex-row md:gap-8">
             
-            <!-- KONTEN UTAMA (FEED) -->
-            <div class="main-content">
-                <h1>Komunitas</h1>
-                <p class="subtitle">Tempat berbagi cerita dan menolong kucing bersama</p>
+            <div class="main-content flex-auto md:w-2/3">
+                <h1 class="text-4xl font-bold">Komunitas</h1>
+                <p class="text-gray-400 mb-5">Tempat berbagi cerita dan menolong kucing bersama</p>
 
-                <div class="feed">
-                    <!-- Iterasi menggunakan komponen PostCard -->
+                <div class="flex flex-col gap-5">
                     <PostCard v-for="post in posts" :key="post.id" :post="post" />
                 </div>
             </div>
 
-            <!-- SIDEBAR -->
-            <aside class="sidebar">
+            <aside class="flex flex-col gap-6 md:w-1/3 md:order-2 order-1">
                 
-                <div class="search-bar">
-                    <input type="text" placeholder="Cari di komuni..." v-model="searchQuery">
+                <div class="bg-white rounded-3xl p-3 shadow-md">
+                    <input type="text" placeholder="Cari di komuni..." v-model="searchQuery"
+                           class="border-none outline-none w-full bg-transparent font-sans text-sm text-gray-800 placeholder-gray-400">
                 </div>
 
-                <!-- Widget: Event Mendatang -->
-                <section class="widget">
-                    <h3>Event Mendatang</h3>
-                    <div v-for="(event, index) in events" :key="index" class="event-item">
-                        <!-- Menggunakan ikon Font Awesome sebagai pengganti gambar statis -->
-                        <i :class="event.icon"></i>
+                <section class="bg-gray-700 rounded-xl p-5 shadow-lg">
+                    <h3 class="text-lg font-semibold mb-4">Event Mendatang</h3>
+                    <div v-for="(event, index) in events" :key="index" class="flex items-center gap-3 mb-4">
+                        <i :class="[event.icon, 'w-8 text-xl text-green-400 text-center']"></i>
                         <div>
-                            <strong>{{ event.title }}</strong>
-                            <span>{{ event.detail }}</span>
+                            <strong class="block text-base">{{ event.title }}</strong>
+                            <span class="text-sm text-gray-400">{{ event.detail }}</span>
                         </div>
                     </div>
                 </section>
 
-                <!-- Widget: Sobat Paws Teraktif -->
-                <section class="widget">
-                    <h3>Sobat Paws Teraktif</h3>
-                    <div v-for="(member, index) in activeMembers" :key="index" class="active-member">
-                        <img :src="member.profilePic" :alt="member.name">
+                <section class="bg-gray-700 rounded-xl p-5 shadow-lg">
+                    <h3 class="text-lg font-semibold mb-4">Sobat Paws Teraktif</h3>
+                    <div v-for="(member, index) in activeMembers" :key="index" class="flex items-center gap-3 mb-2">
+                        <img :src="member.profilePic" :alt="member.name" class="w-10 h-10 rounded-full object-cover">
                         <span>{{ member.name }}</span>
                     </div>
                 </section>
                 
-                <!-- Widget: Postingan Populer -->
-                <section class="widget">
-                    <h3>Postingan Populer</h3>
-                    <div v-for="(popular, index) in popularPosts" :key="index" class="popular-post">
-                        <img :src="popular.image" :alt="popular.title">
+                <section class="bg-gray-700 rounded-xl p-5 shadow-lg">
+                    <h3 class="text-lg font-semibold mb-4">Postingan Populer</h3>
+                    <div v-for="(popular, index) in popularPosts" :key="index" class="flex items-center gap-3 mb-4">
+                        <img :src="popular.image" :alt="popular.title" class="w-12 h-12 rounded-lg object-cover">
                         <span>{{ popular.title }}</span>
                     </div>
                 </section>
 
-                <!-- Widget: Fakta Kucing -->
-                <section class="widget">
-                    <h3>Fakta Kucing</h3>
-                    <div class="cat-fact">
-                        <img :src="catFact.image" alt="Kucing tidur">
-                        <p>{{ catFact.fact }}</p>
+                <section class="bg-gray-700 rounded-xl p-5 shadow-lg">
+                    <h3 class="text-lg font-semibold mb-4">Fakta Kucing</h3>
+                    <div class="flex items-center gap-3">
+                        <img :src="catFact.image" alt="Kucing tidur" class="w-12 h-12 rounded-lg object-cover">
+                        <p class="text-sm">{{ catFact.fact }}</p>
                     </div>
-                    <a href="#" class="more-facts">Fakta Lainnya</a>
+                    <a href="#" class="block text-right mt-4 text-green-400 font-semibold text-sm hover:underline">Fakta Lainnya</a>
                 </section>
 
             </aside>
@@ -69,35 +62,11 @@
 <script setup>
 import { ref } from 'vue';
 import PostCard from '../components/PostCard.vue';
-// Font Awesome sudah diasumsikan dimuat secara global di index.html
-// import { fas } from '@fortawesome/free-solid-svg-icons'; 
 
-// Data Kucing (Mock Data)
+// ... (Logika JS Anda tetap sama) ...
 const posts = ref([
-    { 
-        id: 1, 
-        group: 'CatCare Hub', 
-        author: 'Repa', 
-        time: '2j', 
-        title: 'Kenapa Sterilisasi itu Penting?', 
-        contentSnippet: 'Halo semua, aku mau share pengalaman tentang sterilisasi kucing...', 
-        profilePic: '/assets/img/profile repa.png',
-        postImage: '/assets/img/postingan 1.png', 
-        likes: 2158, 
-        comments: 1009 
-    },
-    { 
-        id: 2, 
-        group: 'Pawfect Home', 
-        author: 'Nana', 
-        time: '18j', 
-        title: '3 Anak Kucing Butuh Rumah Baru', 
-        contentSnippet: 'Halo Cat Lovers! Aku lagi foster 3 anak kucing manis yang ditemukan...', 
-        profilePic: '/assets/img/profile nana.png',
-        postImage: '/assets/img/postingan 2.png', 
-        likes: 1112, 
-        comments: 970 
-    },
+    { id: 1, group: 'CatCare Hub', author: 'Repa', time: '2j', title: 'Kenapa Sterilisasi itu Penting?', contentSnippet: 'Halo semua, aku mau share pengalaman tentang sterilisasi kucing...', profilePic: '/assets/img/profile repa.png', postImage: '/assets/img/postingan 1.png', likes: 2158, comments: 1009 },
+    { id: 2, group: 'Pawfect Home', author: 'Nana', time: '18j', title: '3 Anak Kucing Butuh Rumah Baru', contentSnippet: 'Halo Cat Lovers! Aku lagi foster 3 anak kucing manis yang ditemukan...', profilePic: '/assets/img/profile nana.png', postImage: '/assets/img/postingan 2.png', likes: 1112, comments: 970 },
 ]);
 
 const events = ref([
@@ -122,184 +91,8 @@ const catFact = ref({
 });
 
 const searchQuery = ref('');
-
-// Tambahkan logika computed untuk filtering posts berdasarkan searchQuery jika diperlukan
-// const filteredPosts = computed(() => { ... });
 </script>
 
 <style scoped>
-/* ===== PENGATURAN DASAR (Dipindahkan dari community.css) ===== */
-:root {
-    --bg-dark: #1A3A34;
-    --bg-widget: #2D4A45;
-    --bg-light: #FFFFFF;
-    --text-light: #FFFFFF;
-    --text-dark: #333333;
-    --text-secondary: #B0B0B0;
-    --accent: #78C89F; 
-}
-
-.community-layout-wrapper {
-    background-color: var(--bg-dark);
-    color: var(--text-light);
-    min-height: 100vh;
-    padding-top: 20px; /* Tambahan padding agar tidak menempel header */
-}
-
-/* ===== LAYOUT KONTEN UTAMA ===== */
-.community-container {
-    display: flex;
-    padding: 20px 40px;
-    gap: 30px;
-}
-
-.main-content {
-    flex: 2; 
-}
-
-.sidebar {
-    flex: 1; 
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* ===== FEED UTAMA (KIRI) ===== */
-.main-content h1 {
-    font-size: 36px;
-    font-weight: 700;
-}
-
-.main-content .subtitle {
-    color: var(--text-secondary);
-    margin-bottom: 20px;
-}
-
-.feed {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* ===== SIDEBAR (KANAN) ===== */
-.search-bar {
-    background-color: var(--bg-light);
-    border-radius: 25px;
-    padding: 10px 15px;
-}
-
-.search-bar input {
-    border: none;
-    outline: none;
-    width: 100%;
-    background-color: transparent;
-    font-family: 'Poppins', sans-serif;
-    font-size: 14px;
-    color: var(--text-dark);
-}
-.search-bar input::placeholder {
-    color: #aaa;
-}
-
-
-.widget {
-    background-color: var(--bg-widget);
-    border-radius: 16px;
-    padding: 20px;
-}
-
-.widget h3 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-/* Widget: Event */
-.event-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 15px;
-}
-
-.event-item i {
-    width: 30px; 
-    font-size: 1.2rem;
-    color: var(--accent);
-    text-align: center;
-}
-
-.event-item strong {
-    display: block;
-    font-size: 15px;
-}
-
-.event-item span {
-    font-size: 13px;
-    color: var(--text-secondary);
-}
-
-/* Widget: Sobat Paws */
-.active-member {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
-}
-
-.active-member img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-}
-
-/* Widget: Postingan Populer */
-.popular-post {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 15px;
-}
-
-.popular-post img {
-    width: 50px;
-    height: 50px;
-    border-radius: 8px;
-    object-fit: cover;
-}
-
-/* Widget: Fakta Kucing */
-.cat-fact {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.cat-fact img {
-    width: 50px;
-    height: 50px;
-    border-radius: 8px;
-    object-fit: cover;
-}
-
-.more-facts {
-    display: block;
-    text-align: right;
-    margin-top: 15px;
-    color: var(--accent);
-    font-weight: 600;
-    font-size: 14px;
-}
-
-
-/* Media Query Mobile */
-@media (max-width: 768px) {
-    .community-container {
-        flex-direction: column;
-        padding: 20px 15px;
-    }
-    .sidebar {
-        order: -1; /* Pindah sidebar ke atas di mobile */
-    }
-}
+/* CSS Lama Dihapus */
 </style>

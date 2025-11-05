@@ -1,57 +1,66 @@
 <template>
-    <main class="detail-page-main">
-        <div class="content-wrapper">
+    <main class="bg-gray-100 py-5">
+        <div class="max-w-5xl mx-auto px-4 md:px-6 my-10">
             
-            <section class="cat-detail-header">
-                <div class="cat-photo-container">
-                    <img :src="cat.photoUrl" :alt="'Foto ' + cat.name">
+            <section class="flex flex-col md:flex-row items-stretch gap-8 mb-10">
+                <div class="bg-white p-4 rounded-3xl shadow-lg flex-none md:w-2/5">
+                    <img :src="cat.photoUrl" :alt="'Foto ' + cat.name" class="w-full h-full object-cover rounded-2xl">
                 </div>
-                <div class="cat-info-card">
-                    <p><strong>Nama:</strong> {{ cat.name }}</p>
-                    <p><strong>Umur:</strong> {{ cat.age }}</p>
-                    <p><strong>Jenis Kelamin:</strong> {{ cat.gender }}</p>
-                    <p><strong>Ras:</strong> {{ cat.breed }}</p>
-                    <p><strong>Karakteristik:</strong> {{ cat.character }}</p>
-                    <p><strong>Lokasi:</strong> {{ cat.location }}</p>
+                <div class="bg-gray-200 rounded-2xl p-6 md:p-8 flex flex-col justify-center flex-grow md:w-3/5">
+                    <p class="my-2 text-lg text-gray-800"><strong>Nama:</strong> {{ cat.name }}</p>
+                    <p class="my-2 text-lg text-gray-800"><strong>Umur:</strong> {{ cat.age }}</p>
+                    <p class="my-2 text-lg text-gray-800"><strong>Jenis Kelamin:</strong> {{ cat.gender }}</p>
+                    <p class="my-2 text-lg text-gray-800"><strong>Ras:</strong> {{ cat.breed }}</p>
+                    <p class="my-2 text-lg text-gray-800"><strong>Karakteristik:</strong> {{ cat.character }}</p>
+                    <p class="my-2 text-lg text-gray-800"><strong>Lokasi:</strong> {{ cat.location }}</p>
                 </div>
             </section>
             
-            <div class="adopt-button-container">
-                <a href="#form-adopsi" class="btn btn-adopt-now">Adopsi Sekarang!</a>
+            <div class="text-center mb-10">
+                <a href="#form-adopsi" 
+                   class="inline-block bg-amber-500 hover:bg-amber-600 text-gray-800 py-4 px-12 text-lg font-bold no-underline rounded-full shadow-lg transition duration-200 hover:translate-y-[-3px]"
+                   style="box-shadow: 0 5px 15px rgba(251, 192, 45, 0.4);"
+                >
+                    Adopsi Sekarang!
+                </a>
             </div>
 
-            <section class="adoption-form-section" id="form-adopsi">
-                <form class="adoption-form" @submit.prevent="submitAdoption">
+            <section class="pb-12" id="form-adopsi">
+                <form class="bg-white p-6 md:p-8 rounded-2xl shadow-xl text-center" @submit.prevent="submitAdoption">
                     
                     <AccordionItem 
                         header="Verifikasi Data Pengadopsi" 
-                        class="form-style" 
+                        :form-style="true" 
                         :model-value="true" 
                     >
-                        <div class="form-content-padding">
-                            <input type="text" placeholder="Nama Pengadopsi" required>
-                            <input type="text" placeholder="NIK" required>
-                            <input type="tel" placeholder="Nomor Handphone" required>
-                            <input type="email" placeholder="Email" required>
-                            <input type="text" placeholder="Pekerjaan" required>
-                            <textarea placeholder="Alamat" rows="3" required></textarea>
+                        <div class="p-0 pb-5 md:px-1">
+                            <input type="text" placeholder="Nama Pengadopsi" required class="w-full p-4 mb-4 border border-gray-300 rounded-xl bg-white font-sans text-base shadow-sm">
+                            <input type="text" placeholder="NIK" required class="w-full p-4 mb-4 border border-gray-300 rounded-xl bg-white font-sans text-base shadow-sm">
+                            <input type="tel" placeholder="Nomor Handphone" required class="w-full p-4 mb-4 border border-gray-300 rounded-xl bg-white font-sans text-base shadow-sm">
+                            <input type="email" placeholder="Email" required class="w-full p-4 mb-4 border border-gray-300 rounded-xl bg-white font-sans text-base shadow-sm">
+                            <input type="text" placeholder="Pekerjaan" required class="w-full p-4 mb-4 border border-gray-300 rounded-xl bg-white font-sans text-base shadow-sm">
+                            <textarea placeholder="Alamat" rows="3" required class="w-full p-4 mb-4 border border-gray-300 rounded-xl bg-white font-sans text-base shadow-sm"></textarea>
                         </div>
                     </AccordionItem>
                     
                     <AccordionItem 
                         header="Foto KTP/SIM/Passport" 
-                        class="form-style" 
+                        :form-style="true" 
                         :model-value="false"
                     >
-                        <div class="form-content-padding file-upload-group">
+                        <div class="p-0 pb-5 md:px-1">
                             <input type="file" id="file-upload" hidden @change="handleFileUpload">
-                            <label for="file-upload" class="file-upload-label">
-                                Pilih File <span class="file-name-display">{{ fileName || '(Belum ada file)' }}</span>
+                            <label for="file-upload" class="flex justify-between items-center w-full p-4 border border-gray-300 rounded-xl bg-gray-100 font-sans text-base shadow-sm cursor-pointer hover:bg-gray-200">
+                                Pilih File <span class="text-gray-500">{{ fileName || '(Belum ada file)' }}</span>
                             </label>
                         </div>
                     </AccordionItem>
 
-                    <button type="submit" class="btn btn-submit">Selesai</button>
+                    <button type="submit" 
+                      class="inline-block w-auto py-4 px-16 bg-amber-500 hover:bg-amber-600 border-none rounded-full text-lg font-bold cursor-pointer mt-5 transition duration-200"
+                    >
+                        Selesai
+                    </button>
                 </form>
             </section>
         </div>
@@ -63,27 +72,23 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import AccordionItem from '../components/AccordionItem.vue';
 
-// Menggantikan data kucing statis (ini idealnya diambil dari API)
+// ... (Logika JS Anda tetap sama) ...
 const mockCatData = [
     { id: 1, name: 'Oyen', age: '6 Bulan', gender: 'Jantan', breed: 'American Shorthair', character: 'Agresif, playful', photoUrl: '/assets/img/oyencat.png', location: 'Jakarta Selatan' },
-    // ... Tambahkan data kucing lainnya
 ];
 
 const route = useRoute();
 const fileName = ref('');
-const cat = ref({}); // State untuk menampung data kucing yang dilihat
+const cat = ref({}); 
 
-// Cari data kucing berdasarkan ID dari URL
 onMounted(() => {
-    // ID diambil dari rute: /adopsi/:id
     const catId = parseInt(route.params.id); 
     const foundCat = mockCatData.find(c => c.id === catId);
 
     if (foundCat) {
         cat.value = foundCat;
     } else {
-        // Fallback jika ID tidak ditemukan
-        cat.value = mockCatData[0]; // Tampilkan kucing pertama sebagai default
+        cat.value = mockCatData[0];
     }
 });
 
@@ -93,117 +98,9 @@ function handleFileUpload(event) {
 
 function submitAdoption() {
     alert(`Formulir adopsi untuk ${cat.value.name} dikirim!`);
-    // Lakukan proses pengiriman data ke server
 }
 </script>
 
 <style scoped>
-/* Pindahkan CSS dari adoptdetail.css ke sini */
-
-/* --- Gaya Konten Utama --- */
-.detail-page-main {
-    padding-top: 20px;
-    background-color: #f5f5f5; /* Latar belakang cerah */
-}
-
-.content-wrapper {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 0 20px;
-}
-.cat-detail-header {
-    display: flex;
-    align-items: stretch;
-    gap: 30px;
-    margin-bottom: 40px;
-}
-.cat-photo-container {
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 30px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    flex-basis: 40%;
-}
-.cat-photo-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 20px;
-}
-.cat-info-card {
-    background-color: #E8EAE3;
-    border-radius: 20px;
-    padding: 30px;
-    flex-basis: 60%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-.cat-info-card p { margin: 8px 0; font-size: 18px; color: #333; }
-.cat-info-card p strong { font-weight: 700; }
-
-.adopt-button-container { text-align: center; margin-bottom: 40px; }
-.btn-adopt-now {
-    display: inline-block;
-    background-color: #FBC02D;
-    color: #333;
-    padding: 15px 50px;
-    font-size: 18px;
-    font-weight: 700;
-    text-decoration: none;
-    border-radius: 50px;
-    box-shadow: 0 5px 15px rgba(251, 192, 45, 0.4);
-    transition: transform 0.2s ease;
-}
-.btn-adopt-now:hover { transform: translateY(-3px); }
-
-/* --- Gaya Form & Accordion --- */
-.adoption-form-section {
-    padding-bottom: 50px;
-}
-.adoption-form {
-    background: #fff;
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-    text-align: center;
-}
-
-/* Padding internal untuk konten Accordion */
-.form-content-padding { 
-    padding: 0 5px 20px; 
-}
-.form-content-padding input, 
-.form-content-padding textarea {
-    width: 100%;
-    padding: 15px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    background-color: #ffffff;
-    font-family: 'Poppins', sans-serif;
-    font-size: 16px;
-    box-sizing: border-box;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.btn-submit {
-    display: inline-block;
-    width: auto;
-    padding: 15px 60px;
-    background-color: #FBC02D;
-    border: none;
-    border-radius: 50px;
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 20px;
-}
-
-/* Media Query */
-@media (max-width: 992px) {
-    .cat-detail-header {
-        flex-direction: column;
-    }
-}
+/* CSS Lama Dihapus */
 </style>
