@@ -21,7 +21,7 @@
                 
                 <div class="flex justify-center md:flex-none">
                     <div class="w-48 h-48 rounded-full shadow-xl p-2 bg-white flex items-center justify-center">
-                        <img src="../assets/img/diana.png" alt="Profile Diana" class="w-full h-full object-cover rounded-full">
+                        <img src="/assets/img/diana.png" alt="Profile Diana" class="w-full h-full object-cover rounded-full">
                     </div>
                 </div>
 

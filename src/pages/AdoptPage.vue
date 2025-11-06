@@ -1,102 +1,66 @@
 <template>
-  <div class="min-h-screen bg-white font-sans overflow-x-hidden">
-    
-    <div class="max-w-7xl mx-auto px-6 lg:px-8 pt-10 pb-40 md:pb-48">
-      <div class="flex flex-col-reverse md:flex-row items-center gap-8 md:gap-16">
-        
-        <div class="relative flex justify-center items-center">
-            <div class="absolute bg-[#3A5F50] w-[320px] h-[300px] md:w-[500px] md:h-[450px] rounded-[48%_52%_68%_32%/60%_45%_55%_40%] rotate-[-8deg] -z-10 opacity-95"></div>
-            <img src="../assets/img/Ellipse.png" alt="Latar belakang elips hijau" 
-                                class="absolute w-[120%] h-[120%] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 object-contain z-10"
-                                style="filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));"
-                            > 
-            <img
-              src="../assets/img/cathelo.png"
-              alt="Kucing"
-              class="relative z-10 max-w-[340px] md:max-w-[480px] lg:max-w-[550px] object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-500"
-            />
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <main class="container">
+      <section class="py-10 overflow-hidden">
+        <div class="flex flex-col text-center items-center justify-center gap-8 md:flex-row md:text-left">
+          
+          <div class="md:flex-1">
+            <h1 class="text-4xl lg:text-5xl font-bold text-green-700 mb-2">Selamat Datang di Rumah Kucing!</h1>
+            <p class="text-lg text-gray-600">Telusuri ribuan kucing yang siap diadopsi dan berikan mereka rumah yang penuh kasih.</p>
           </div>
-        <div class="w-full md:w-1/2 text-left space-y-6 pl-0 md:pl-8">
-          <h1 class="text-5xl md:text-6xl lg:text-[4rem] font-serif font-bold text-[#1F1F1F] leading-[1.1] tracking-tight">
-            Berikan Rumah,<br>    
-            Dapatkan Cinta.
-          </h1>
-          <p class="text-lg md:text-xl text-gray-600 max-w-lg leading-relaxed font-medium">
-            Mari bersama menciptakan cerita baru bagi mereka, dari kesepian menuju rumah yang hangat dan penuh cinta.
-          </p>
-          <div class="pt-6">
-            <button class="bg-[#EBCD5E] hover:bg-[#e0c355] text-white font-bold text-lg px-10 py-4 rounded-full shadow-[0_10px_20px_-10px_rgba(235,205,94,1)] transition-all hover:-translate-y-1 active:scale-95">
-              Adopsi Sekarang
-            </button>
+
+          <div class="relative w-72 h-72 md:flex-1 flex justify-center items-center">
+            <div class="absolute w-80 h-80 bg-green-300 rounded-full z-10 opacity-70"></div>
+            <img src="../assets/img/cathelo.png" alt="Kucing di tengah" class="relative w-72 h-72 object-cover rounded-full z-20 shadow-xl">
           </div>
+
         </div>
-      </div>
-    </div>
+      </section>
 
-    <div class="relative mt-10 z-10">
-        
-        <div class="absolute left-0 right-0 -top-8 z-30 px-4 pointer-events-none">
-            <div class="max-w-3xl mx-auto flex flex-wrap justify-center items-center gap-4 p-4 pointer-events-auto">
-            
-            <button 
-                class="flex-1 min-w-[120px] py-3 px-6 bg-white text-gray-800 font-bold text-base rounded-full transition-all duration-300 hover:-translate-y-1"
-                :class="activeFilter === 'all' && genderFilter === 'all' ? '!bg-[#EBCD5E] !text-white shadow-[0_15px_30px_-5px_rgba(235,205,94,0.6)]' : 'shadow-[0_15px_35px_-10px_rgba(58,95,80,0.5)]'"
-                @click="setActiveFilter('all')"
-            >
-                Semua
-            </button>
+      <section class="my-10 px-4">
+        <div class="flex flex-col gap-4 bg-gray-50 p-4 rounded-2xl max-w-3xl mx-auto md:flex-row md:gap-4 md:p-6 md:max-w-full">
+          
+          <button 
+            class="filter-btn py-3 px-4 border-2 border-green-700 bg-white text-green-700 font-semibold rounded-2xl cursor-pointer transition duration-200 w-full md:w-auto md:flex-grow" 
+            :class="{ 'bg-green-700 text-white': activeFilter === 'all' }"
+            @click="setActiveFilter('all')"
+          >
+            Semua
+          </button>
 
-            <div class="flex-1 min-w-[140px] relative group">
-                <select 
-                    class="w-full appearance-none py-3 pl-6 pr-10 bg-white text-gray-800 font-bold text-base rounded-full cursor-pointer focus:outline-none transition-all duration-300 hover:-translate-y-1 text-left"
-                    :class="activeFilter === 'gender' ? '!bg-[#EBCD5E] !text-white shadow-[0_15px_30px_-5px_rgba(235,205,94,0.6)]' : 'shadow-[0_15px_35px_-10px_rgba(58,95,80,0.5)]'"
-                    :value="genderFilter"
-                    @change="setGenderFilter($event.target.value)"
-                >
-                    <option value="all" class="text-gray-800 bg-white py-2">Filter</option>
-                    <option value="male" class="text-gray-800 bg-white py-2">Jantan</option>
-                    <option value="female" class="text-gray-800 bg-white py-2">Betina</option>
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center" :class="activeFilter === 'gender' ? 'text-white' : 'text-gray-800'">
-                  <i class="fas fa-caret-down"></i>
-                </div>
-            </div>
+          <button 
+            class="filter-btn py-3 px-4 border-2 border-green-700 bg-white text-green-700 font-semibold rounded-2xl cursor-pointer transition duration-200 w-full md:w-auto md:flex-grow" 
+            :class="{ 'bg-green-700 text-white': activeFilter === 'favorite' }"
+            @click="setActiveFilter('favorite')"
+          >
+            Favorit ({{ favoriteCatsCount }})
+          </button>
 
-            <button 
-                class="flex-1 min-w-[120px] py-3 px-6 bg-white text-gray-800 font-bold text-base rounded-full transition-all duration-300 hover:-translate-y-1"
-                :class="activeFilter === 'favorite' ? '!bg-[#EBCD5E] !text-white shadow-[0_15px_30px_-5px_rgba(235,205,94,0.6)]' : 'shadow-[0_15px_35px_-10px_rgba(58,95,80,0.5)]'"
-                @click="setActiveFilter('favorite')"
-            >
-                Favorit 
-                <span v-if="favoriteCatsCount > 0" class="ml-1">({{ favoriteCatsCount }})</span>
-            </button>
+          <select 
+            class="w-full py-3 px-4 border border-gray-300 rounded-2xl bg-white text-base cursor-pointer md:w-auto md:flex-grow"
+            :value="genderFilter"
+            @change="setGenderFilter($event.target.value)"
+          >
+            <option value="all">Filter Gender</option>
+            <option value="male">Jantan</option>
+            <option value="female">Betina</option>
+          </select>
+        </div>
+      </section>
 
-            </div>
+      <section class="cat-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4 sm:px-0">
+        <div v-if="filteredCats.length === 0" class="col-span-full text-center py-12 text-lg text-gray-600">
+            <p>Tidak ada kucing yang cocok dengan filter Anda.</p>
         </div>
 
-        <div class="bg-[#3A5F50] pt-36 pb-28 px-6 rounded-t-[50px] md:rounded-t-[80px] min-h-[700px]">
-            <div class="max-w-6xl mx-auto">
-                
-                <transition name="fade" mode="out-in">
-                  
-                  <div v-if="filteredCats.length === 0" class="flex flex-col items-center justify-center py-32 text-white/80 text-center">
-                      <i class="fas fa-cat text-7xl mb-4 opacity-60"></i>
-                      <h3 class="text-2xl font-bold">Tidak ditemukan</h3>
-                      <button @click="setActiveFilter('all')" class="mt-4 px-6 py-2 bg-white/10 rounded-full hover:bg-white/20 transition">Reset Filter</button>
-                  </div>
-                
-                  <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
-                       <div v-for="cat in filteredCats" :key="cat.id" class="h-full">
-                          <CatCard :cat="cat" @toggle-favorite="handleToggleFavorite" />
-                       </div>
-                  </div>
-
-                </transition>
-
-            </div>
-        </div>
-
-    </div>
+        <CatCard 
+          v-for="cat in filteredCats" 
+          :key="cat.id" 
+          :cat="cat"
+          @toggle-favorite="handleToggleFavorite"
+        />
+      </section>
+    </main>
   </div>
 </template>
 
@@ -104,31 +68,29 @@
 import { ref, computed } from 'vue';
 import CatCard from '../components/CatCard.vue';
 
-// --- DATA ---
+// ... (Logika JS Anda tetap sama) ...
 const catData = ref([
   { id: 1, name: 'Oyen', shelter: 'CatHouse', gender: 'male', age: '1 Tahun', image: 'oyencat.png', isFavorite: false },
-  { id: 2, name: 'Abul', shelter: 'PawCare', gender: 'male', age: '5 Bulan', image: 'minicat.png', isFavorite: false },
+  { id: 2, name: 'Abul', shelter: 'PawCare', gender: 'female', age: '5 Bulan', image: 'minicat.png', isFavorite: true },
   { id: 3, name: 'Simba', shelter: 'Meow Haven', gender: 'male', age: '2 Tahun', image: 'bradercat.png', isFavorite: false },
   { id: 4, name: 'Mueza', shelter: 'CatHouse', gender: 'female', age: '8 Bulan', image: 'mochacat.png', isFavorite: false },
   { id: 5, name: 'Kitty', shelter: 'PawCare', gender: 'female', age: '3 Tahun', image: 'kucing-5.png', isFavorite: false },
 ]);
 
-// --- STATE FILTER ---
 const activeFilter = ref('all'); 
 const genderFilter = ref('all');
 
-// --- METHODS ---
 function setActiveFilter(filter) {
   activeFilter.value = filter;
   genderFilter.value = 'all'; 
 }
 
 function setGenderFilter(gender) {
-    if (gender === 'all') {
-        setActiveFilter('all');
-    } else {
+    if (gender !== 'all') {
         activeFilter.value = 'gender';
         genderFilter.value = gender;
+    } else {
+        setActiveFilter('all');
     }
 }
 
@@ -139,21 +101,23 @@ function handleToggleFavorite(catId) {
   }
 }
 
-// --- COMPUTED ---
-const favoriteCatsCount = computed(() => catData.value.filter(cat => cat.isFavorite).length);
+const favoriteCatsCount = computed(() => {
+  return catData.value.filter(cat => cat.isFavorite).length;
+});
 
 const filteredCats = computed(() => {
   let list = catData.value;
+
   if (activeFilter.value === 'favorite') {
     list = list.filter(cat => cat.isFavorite);
   } else if (activeFilter.value === 'gender' && genderFilter.value !== 'all') {
     list = list.filter(cat => cat.gender === genderFilter.value);
   }
+
   return list;
 });
 </script>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active { transition: all 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(10px); }
+/* CSS Lama Dihapus */
 </style>

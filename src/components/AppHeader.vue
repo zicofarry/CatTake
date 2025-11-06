@@ -4,7 +4,7 @@
       
       <div class="flex items-center font-bold text-xl">
         <router-link to="/">
-            <img src="../assets/img/cattake.png" alt="CatTake Logo" class="h-10 md:h-[70px]">
+            <img src="/assets/img/cattake.png" alt="CatTake Logo" class="h-10 md:h-[70px]">
         </router-link>
       </div>
 
@@ -28,7 +28,7 @@
                 @click="toggleProfileDropdown"
                 class="flex items-center gap-2 bg-green-700 text-white py-1.5 pr-2 pl-1 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
             >
-                <img src="../assets/img/diana.png" alt="Avatar Diana" class="h-9 w-9 rounded-full object-cover">
+                <img src="/assets/img/diana.png" alt="Avatar Diana" class="h-9 w-9 rounded-full object-cover">
                 <span>Diana</span>
             </button>
 
@@ -77,7 +77,7 @@
       
       <router-link to="/profile">
       <div v-if="isLoggedIn" class="flex items-center gap-3 bg-green-700 text-white py-2 px-4 rounded-full font-semibold mx-4 mb-4 shadow-lg">
-          <img src="../assets/img/diana.png" alt="Avatar Diana" class="h-9 w-9 rounded-full object-cover">
+          <img src="/assets/img/diana.png" alt="Avatar Diana" class="h-9 w-9 rounded-full object-cover">
           <span>Diana</span>
         </div>
       </router-link>

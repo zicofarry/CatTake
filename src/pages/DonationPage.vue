@@ -1,20 +1,17 @@
 <template>
-  <div class="max-w-6xl mx-auto px-6 lg:px-8">
-    <section class="py-20 lg:py-32">
-      <div class="flex flex-col-reverse gap-5 items-center justify-between lg:flex-row lg:gap-12">
-        <div class="lg:w-1/2">
-          <img src="../assets/img/Ellipse.png" alt="Ilustrasi kucing donasi" class="w-full rounded-xl block">
-        </div>
-        <div class="lg:w-1/2 text-center lg:text-left">
-          <h1 class="text-4xl lg:text-5xl font-extrabold text-green-700 mb-4 leading-tight">Satu Donasi, Seribu Harapan.</h1>
-          <p class="mb-6 text-gray-700 leading-relaxed">Bersama mendukung langkah kecil mereka, dari jalanan penuh bahaya menuju tempat yang aman, sehat, dan dicintai.</p>
-          <a class="inline-block bg-amber-500 hover:bg-amber-600 text-white py-3 px-8 rounded-full font-semibold transition duration-200" href="#formDonasi">Donasi Sekarang</a>
-        </div>
-      </div>
-    </section>
+  <div class="">
+    <HeroSection 
+      title="Satu Donasi, Seribu Harapan."
+      subtitle="Bersama mendukung langkah kecil mereka, dari jalanan penuh bahaya menuju tempat yang aman, sehat, dan dicintai."
+      buttonText="Donasi Sekarang"
+      buttonLink="#formDonasi"
+    />
+  </div>
 
-    <section id="formDonasi" class="bg-green-700 text-white pt-36 pb-40 -mt-60 lg:-mt-60">
-      <div class="max-w-4xl mx-auto bg-white text-gray-800 rounded-3xl p-8 md:p-16 shadow-2xl">
+  <div>
+
+    <section id="formDonasi" class="bg-gradient-to-b from-[#558a74] to-[#1d2f28] text-white pt-30 pb-30 !mt-20 lg:-mt-60">
+      <div class="max-w-4xl mx-auto bg-white text-gray-800 rounded-3xl p-8 md:p-16 shadow-2xl shadow-[0_10px_30px_rgba(0,0,0,1)]">
         <h2 class="text-3xl font-semibold text-center mb-8 text-gray-900">Form Donasi</h2>
 
         <form @submit.prevent="submitDonation" class="flex flex-col gap-5">
@@ -47,15 +44,13 @@
                 accept="image/*" 
                 @change="handleFileUpload" 
                 required 
-                class="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-700 text-base file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
-            />
+                class="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-700 text-base file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"/>
             <p v-if="fileName" class="mt-1 text-sm text-gray-600">File terpilih: {{ fileName }}</p>
           </div>
 
-          <button class="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-3 px-7 rounded-full border-none cursor-pointer block mt-7 mx-auto shadow-md"
+          <button class="bg-[#E8C32A] hover:bg-amber-500 text-gray-900 font-bold py-3 px-7 rounded-full border-none cursor-pointer block mt-7 mx-auto shadow-md"
             type="submit"
-            style="box-shadow: 0 6px 18px rgba(0,0,0,0.08);"
-          >
+            style="box-shadow: 0 6px 18px rgba(0,0,0,0.08);">
             Selesai
           </button>
         </form>
@@ -66,6 +61,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import HeroSection from '../components/HeroSection.vue';
 
 const form = ref({
     shelter: '',
@@ -96,5 +92,4 @@ function submitDonation() {
 </script>
 
 <style scoped>
-/* CSS Lama Dihapus */
 </style>
