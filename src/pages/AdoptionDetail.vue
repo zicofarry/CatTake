@@ -74,7 +74,7 @@ import AccordionItem from '../components/AccordionItem.vue';
 
 // ... (Logika JS Anda tetap sama) ...
 const mockCatData = [
-    { id: 1, name: 'Oyen', age: '6 Bulan', gender: 'Jantan', breed: 'American Shorthair', character: 'Agresif, playful', photoUrl: '/assets/img/oyencat.png', location: 'Jakarta Selatan' },
+    { id: 1, name: 'Oyen', age: '6 Bulan', gender: 'Jantan', breed: 'American Shorthair', character: 'Agresif, playful', photoUrl: '../assets/img/oyencat.png', location: 'Jakarta Selatan' },
 ];
 
 const route = useRoute();

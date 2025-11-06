@@ -65,8 +65,8 @@ import PostCard from '../components/PostCard.vue';
 
 // ... (Logika JS Anda tetap sama) ...
 const posts = ref([
-    { id: 1, group: 'CatCare Hub', author: 'Repa', time: '2j', title: 'Kenapa Sterilisasi itu Penting?', contentSnippet: 'Halo semua, aku mau share pengalaman tentang sterilisasi kucing...', profilePic: '/assets/img/profile repa.png', postImage: '/assets/img/postingan 1.png', likes: 2158, comments: 1009 },
-    { id: 2, group: 'Pawfect Home', author: 'Nana', time: '18j', title: '3 Anak Kucing Butuh Rumah Baru', contentSnippet: 'Halo Cat Lovers! Aku lagi foster 3 anak kucing manis yang ditemukan...', profilePic: '/assets/img/profile nana.png', postImage: '/assets/img/postingan 2.png', likes: 1112, comments: 970 },
+    { id: 1, group: 'CatCare Hub', author: 'Repa', time: '2j', title: 'Kenapa Sterilisasi itu Penting?', contentSnippet: 'Halo semua, aku mau share pengalaman tentang sterilisasi kucing...', profilePic: '../assets/img/profile repa.png', postImage: '../assets/img/postingan 1.png', likes: 2158, comments: 1009 },
+    { id: 2, group: 'Pawfect Home', author: 'Nana', time: '18j', title: '3 Anak Kucing Butuh Rumah Baru', contentSnippet: 'Halo Cat Lovers! Aku lagi foster 3 anak kucing manis yang ditemukan...', profilePic: '../assets/img/profile nana.png', postImage: '../assets/img/postingan 2.png', likes: 1112, comments: 970 },
 ]);
 
 const events = ref([
@@ -76,18 +76,18 @@ const events = ref([
 ]);
 
 const activeMembers = ref([
-    { name: 'Anas', profilePic: '/assets/img/profile anas.png' },
-    { name: 'Azmi', profilePic: '/assets/img/profile azmi.png' },
+    { name: 'Anas', profilePic: '../assets/img/profile anas.png' },
+    { name: 'Azmi', profilePic: '../assets/img/profile azmi.png' },
 ]);
 
 const popularPosts = ref([
-    { title: 'Tips membuat raw food untuk kucing', image: '/assets/img/postingan populer 1.png' },
-    { title: 'Oyen sembuh setelah di sterili...', image: '/assets/img/postingan populer 2.png' },
+    { title: 'Tips membuat raw food untuk kucing', image: '../assets/img/postingan populer 1.png' },
+    { title: 'Oyen sembuh setelah di sterili...', image: '../assets/img/postingan populer 2.png' },
 ]);
 
 const catFact = ref({
     fact: 'Kucing tidur 12-16 jam sehari',
-    image: '/assets/img/kucingtidur.png' 
+    image: '../assets/img/kucingtidur.png' 
 });
 
 const searchQuery = ref('');

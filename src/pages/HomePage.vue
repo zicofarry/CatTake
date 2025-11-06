@@ -6,12 +6,12 @@
             <div class="w-full max-w-sm mb-8 order-1 md:order-2 md:flex-1 md:max-w-none">
                 <div class="relative w-full aspect-square md:h-[450px] md:w-auto">
                     <!-- ELLIPSE BACKGROUND (HIJAU TUA) -->
-                    <img src="/assets/img/Ellipse.png" alt="Latar belakang elips hijau" 
+                    <img src="../assets/img/Ellipse.png" alt="Latar belakang elips hijau" 
                         class="absolute w-[120%] h-[120%] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 object-contain z-10"
                         style="filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));"
                     >
                     <!-- KUCING DI TENGAH -->
-                    <img src="/assets/img/kucingtidur.png" alt="Seekor kucing oranye berbaring" 
+                    <img src="../assets/img/kucingtidur.png" alt="Seekor kucing oranye berbaring" 
                         class="absolute w-full h-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 object-contain z-20"
                     >
                 </div>
