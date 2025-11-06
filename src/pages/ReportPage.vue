@@ -61,8 +61,9 @@
           <div>
             <label for="location" class="block text-xl font-bold text-[#1F1F1F] mb-4">Lokasi</label>
             <div class="flex gap-4">
-              <div class="w-36 h-36 flex-none bg-gray-200 rounded-2xl overflow-hidden border-2 border-white shadow-sm">
-                 <img src="../assets/img/map-placeholder.png" alt="Peta Lokasi" class="w-full h-full object-cover opacity-70">
+              <div class="w-36 h-36 flex-none bg-gray-200 rounded-2xl overflow-hidden border-2 border-white shadow-sm relative">
+                 <img src="../assets/img/maps.png" alt="Peta Lokasi" class="w-full h-full object-cover opacity-70">
+                 <img src="../assets/img/map.png" alt="Lokasi Saat Ini" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8">
               </div>
               <textarea 
                 id="location" 
@@ -175,7 +176,6 @@ function handleDrop(event) {
 
 function submitReport() {
   alert(`Laporan berhasil dikirim!`);
-  // Reset form logic here if needed
 }
 </script>
 
