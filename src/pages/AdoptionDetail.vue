@@ -11,7 +11,7 @@
         
         <div class="bg-white p-3 rounded-[35px] shadow-xl flex-none w-full md:w-[280px] h-[280px] flex justify-center items-center">
            <img 
-            :src="cat.image ? `/public/img/${cat.image}` : ''" 
+            :src="cat.image ? `/img/${cat.image}` : ''" 
             :alt="cat.name || 'Kucing'" 
             class="w-full h-full object-cover rounded-[28px]"
            >
