@@ -1,75 +1,183 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
-    <main>
-      <div class="text-center pt-8 pb-4">
-        <h1 class="text-5xl font-bold text-gray-800">Lapor Kucing!</h1>
+  <div class="min-h-screen bg-gray-50 font-sans overflow-x-hidden pt-20 pb-32 relative">
+    
+    <div class="relative w-full h-[400px] overflow-visible bg-[#A0C8B1] z-0">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#A0C8B1] to-[#60997E] opacity-90 overflow-hidden"></div>
+        
+        <div class="relative z-10 h-full max-w-6xl mx-auto px-6 flex items-center justify-center gap-12">
+            <div class="flex-shrink-0">
+               <h1 class="text-6xl md:text-7xl font-bold text-[#1F1F1F] drop-shadow-sm leading-tight">
+                  Lapor<br>Kucing!
+               </h1>
+            </div>
+            <div class="h-full flex items-end">
+                <img 
+                  src="../assets/img/tigakucing.png" 
+                  alt="Tiga Kucing" 
+                  class="h-[85%] md:h-[135%] w-auto object-contain object-bottom md:translate-y-16"
+                >
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-6 relative z-10 mt-12 md:mt-32">
+      
+      <div class="flex flex-wrap justify-center gap-6 mb-12">
+        <div class="bg-gray-200/80 backdrop-blur-sm p-3 rounded-[30px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]">
+            <button 
+              @click="setActiveReportType('stray')"
+              class="min-w-[200px] py-4 px-8 rounded-[25px] font-bold text-xl transition-all duration-300"
+              :class="activeReportType === 'stray' ? 'bg-[#EBCD5E] text-white shadow-md' : 'bg-transparent text-gray-700 hover:bg-white/50'"
+            >
+              Kucing Liar
+            </button>
+        </div>
+        <div class="bg-gray-200/80 backdrop-blur-sm p-3 rounded-[30px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]">
+            <button 
+              @click="setActiveReportType('missing')"
+              class="min-w-[200px] py-4 px-8 rounded-[25px] font-bold text-xl transition-all duration-300"
+              :class="activeReportType === 'missing' ? 'bg-[#E9B92F] text-white shadow-md' : 'bg-transparent text-gray-700 hover:bg-white/50'"
+            >
+              Kucing Hilang
+            </button>
+        </div>
       </div>
 
-      <ReportTypeButtons v-model="reportType" />
-
-      <section class="p-4 md:p-8">
-        <form 
-          id="report-form" 
-          @submit.prevent="submitReport"
-          class="bg-white p-6 md:p-8 rounded-3xl shadow-xl max-w-3xl mx-auto"
-        >
+      <div class="bg-white p-8 md:p-12 rounded-[50px] shadow-2xl relative z-20">
+        <form @submit.prevent="submitReport" class="space-y-8">
           
-          <div class="mb-6" v-if="reportType === 'lost'">
-            <label for="owner-name" class="block font-semibold mb-2">Nama Pemilik</label>
-            <input type="text" id="owner-name" name="owner-name" placeholder="Masukkan nama Anda"
-                   class="w-full p-4 border-none bg-gray-100 rounded-xl font-sans text-base">
+          <div v-if="activeReportType === 'missing'">
+            <label for="ownerName" class="block text-xl font-bold text-[#1F1F1F] mb-4">Nama Pemilik</label>
+            <input 
+              type="text" 
+              id="ownerName" 
+              v-model="reportForm.ownerName" 
+              required
+              placeholder="Masukkan nama Anda"
+              class="w-full p-5 bg-gray-200 rounded-2xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg"
+            >
           </div>
-          
-          <div class="mb-6">
-            <label for="location" class="block font-semibold mb-2">Lokasi</label>
-            <div class="flex items-center bg-gray-100 rounded-xl">
-              <div class="p-4 bg-gray-300 rounded-l-xl">
-                <i class="fas fa-map-marker-alt text-gray-700"></i>
+
+          <div>
+            <label for="location" class="block text-xl font-bold text-[#1F1F1F] mb-4">Lokasi</label>
+            <div class="flex gap-4">
+              <div class="w-36 h-36 flex-none bg-gray-200 rounded-2xl overflow-hidden border-2 border-white shadow-sm">
+                 <img src="../assets/img/map-placeholder.png" alt="Peta Lokasi" class="w-full h-full object-cover opacity-70">
               </div>
-              <input type="text" id="location" name="location" placeholder="Masukkan lokasi atau alamat"
-                     class="flex-grow p-4 border-none bg-transparent rounded-r-xl font-sans text-base">
+              <textarea 
+                id="location" 
+                v-model="reportForm.location" 
+                required 
+                rows="4" 
+                placeholder="Masukkan alamat lengkap..."
+                class="flex-grow p-5 bg-gray-200 rounded-2xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg resize-none"
+              ></textarea>
             </div>
           </div>
 
-          <div class="mb-6">
-            <label for="description" class="block font-semibold mb-2">Deskripsi</label>
-            <textarea id="description" name="description" rows="4" placeholder="Ciri-ciri kucing, kondisi, dll."
-                      class="w-full p-4 border-none bg-gray-100 rounded-xl font-sans text-base"></textarea>
+          <div>
+            <label for="description" class="block text-xl font-bold text-[#1F1F1F] mb-4">Deskripsi</label>
+            <textarea 
+              id="description" 
+              v-model="reportForm.description" 
+              required 
+              rows="4"
+              placeholder="Jelaskan ciri-ciri kucing, kondisi, dll."
+              class="w-full p-5 bg-gray-200 rounded-2xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg resize-none"
+            ></textarea>
           </div>
 
-          <div class="mb-6">
-            <label for="photo" class="block font-semibold mb-2">Foto</label>
-            <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-100">
-              <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
-              <p class="mt-2 mb-1 font-semibold">Drag & Drop file di sini</p>
-              <span class="text-gray-500 mb-4 block">atau</span>
-              <label for="file-input" class="inline-block border border-green-800 text-green-800 py-2 px-4 rounded-lg cursor-pointer hover:bg-green-100 transition duration-200">Pilih File</label>
-              <input type="file" id="file-input" hidden multiple>
+          <div>
+            <label class="block text-xl font-bold text-[#1F1F1F] mb-4">Foto</label>
+            <div 
+              @click="triggerFileInput"
+              @dragover.prevent="handleDragOver"
+              @dragleave.prevent="handleDragLeave"
+              @drop.prevent="handleDrop"
+              :class="{ 'border-[#EBCD5E] bg-gray-100': isDragging }"
+              class="bg-gray-200 rounded-2xl p-12 text-center cursor-pointer border-2 border-dashed border-gray-400 transition-all duration-300 group hover:border-[#EBCD5E]"
+            >
+              <p class="text-2xl font-semibold text-gray-500 mb-4 group-hover:text-gray-700 transition">Drag & Drop files here</p>
+              <p class="text-xl text-gray-400 mb-6">or</p>
+              
+              <input 
+                type="file" 
+                ref="fileInput" 
+                class="hidden" 
+                accept="image/png, image/jpeg, image/jpg"
+                @change="handleFileChange"
+              >
+              
+              <button type="button" class="bg-transparent border-2 border-[#3A5F50] text-[#3A5F50] font-bold py-3 px-10 rounded-xl transition-all group-hover:bg-[#3A5F50] group-hover:text-white pointer-events-none">
+                Browse File
+              </button>
+              
+              <p v-if="reportForm.file" class="mt-6 text-[#3A5F50] font-medium text-lg break-all">
+                File terpilih: {{ reportForm.file.name }}
+              </p>
             </div>
           </div>
 
-          <button type="submit" 
-            class="w-full p-4 text-xl font-bold bg-yellow-500 hover:bg-yellow-600 text-gray-800 border-none rounded-xl cursor-pointer mt-4 shadow-md transition duration-200"
-          >
-            Selesai
-          </button>
+          <div class="pt-8 text-center">
+            <button type="submit" class="inline-block bg-[#EBCD5E] hover:bg-[#e0c355] text-white text-xl font-bold py-4 px-24 rounded-full shadow-[0_6px_20px_rgba(235,205,94,0.4)] transition-transform hover:-translate-y-1 active:scale-95 border-none cursor-pointer">
+              Selesai
+            </button>
+          </div>
+
         </form>
-      </section>
-    </main>
+      </div>
+
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import ReportTypeButtons from '../components/ReportTypeButtons.vue';
+import { ref, reactive } from 'vue';
 
-const reportType = ref('stray'); 
+const activeReportType = ref('stray'); 
+const isDragging = ref(false);
+const fileInput = ref(null);
+
+const reportForm = reactive({
+  ownerName: '',
+  location: '',
+  description: '',
+  file: null,
+});
+
+function setActiveReportType(type) {
+  activeReportType.value = type;
+  if (type === 'stray') reportForm.ownerName = '';
+}
+
+function triggerFileInput() {
+  fileInput.value.click();
+}
+
+function handleFileChange(event) {
+  const file = event.target.files[0];
+  if (file) reportForm.file = file;
+}
+
+function handleDragOver() {
+  isDragging.value = true;
+}
+
+function handleDragLeave() {
+  isDragging.value = false;
+}
+
+function handleDrop(event) {
+  isDragging.value = false;
+  const file = event.dataTransfer.files[0];
+  if (file) reportForm.file = file;
+}
 
 function submitReport() {
-  alert(`Laporan ${reportType.value === 'stray' ? 'Kucing Liar' : 'Kucing Hilang'} berhasil diajukan!`);
+  alert(`Laporan berhasil dikirim!`);
+  // Reset form logic here if needed
 }
 </script>
 
 <style scoped>
-/* CSS Lama Dihapus */
 </style>
