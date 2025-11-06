@@ -1,78 +1,79 @@
-<template>
-    <article class="bg-white text-gray-800 rounded-2xl p-5 shadow-lg">
-        <div class="flex items-center gap-3">
-            <img :src="post.profilePic" :alt="'Profile ' + post.author" class="w-11 h-11 rounded-full object-cover">
-            <div class="flex-grow">
-                <strong class="block text-base">{{ post.group }}</strong>
-                <span class="text-sm text-gray-500">{{ post.author }} · {{ post.time }}</span>
-            </div>
-            <i class="fas fa-ellipsis-v text-xl text-gray-500 cursor-pointer p-1" @click.stop="toggleMenu"></i>
-        </div>
-        <div class="mt-4">
-            <strong class="text-xl font-semibold block">{{ post.title }}</strong>
-            <p class="mt-1">{{ post.contentSnippet }}</p>
-            <a href="#" class="text-indigo-600 font-semibold block mt-1 hover:underline">Lihat selengkapnya</a>
-            <img :src="post.postImage" :alt="post.title" class="w-full rounded-xl mt-4 object-cover">
-        </div>
-        <div class="flex gap-5 mt-4 pt-4 border-t border-gray-200">
-            <div class="flex items-center gap-2 text-gray-600 cursor-pointer transition duration-200 hover:text-red-500" @click="toggleLike">
-                <i 
-                    :class="['fas', 'fa-heart', { 'text-red-500': isLiked }]" 
-                    :style="{ color: isLiked ? '#E74C3C' : '' }"
-                ></i>
-                <span>{{ formattedLikes }}</span>
-            </div>
-            <div class="flex items-center gap-2 text-gray-600 cursor-pointer transition duration-200 hover:text-indigo-600">
-                <i class="far fa-comment-alt text-xl"></i>
-                <span>{{ post.comments }}</span>
-            </div>
-        </div>
-    </article>
-</template>
-
 <script setup>
-import { defineProps, ref, computed } from 'vue';
+import { ref } from 'vue'
 
 const props = defineProps({
-    post: {
-        type: Object,
-        required: true,
-        default: () => ({ 
-            id: 0, 
-            group: 'Anonim', 
-            author: 'Guest', 
-            time: '0j', 
-            title: 'No Title', 
-            contentSnippet: 'No Content', 
-            postImage: '', 
-            profilePic: '',
-            likes: 0, 
-            comments: 0 
-        })
-    }
-});
+  postData: Object
+})
 
-// State reaktif untuk toggle like
-const isLiked = ref(false);
-const currentLikes = ref(props.post.likes);
+// --- LOGIKA LIKE BARU (BISA DI-TOGGLE) ---
+const isLiked = ref(false)
+const currentLikes = ref(props.postData.likes) // cth: '2.158'
 
-// Computed property untuk memformat angka (misal: 2158 -> 2.158)
-const formattedLikes = computed(() => {
-    return currentLikes.value.toLocaleString('id-ID');
-});
+// 1. Kita simpan jumlah like ASLI sebagai angka
+const originalLikeCount = parseInt(props.postData.likes.replace(/\./g, '')) // cth: 2158
 
-function toggleLike() {
-    isLiked.value = !isLiked.value;
-    // Tambahkan atau kurangi jumlah like
-    if (isLiked.value) {
-        currentLikes.value++;
-    } else {
-        currentLikes.value--;
-    }
+// 2. Kita ubah nama fungsi menjadi 'toggleLike'
+function likePost() {
+  
+  // 3. Balik status 'isLiked' (dari false -> true, atau true -> false)
+  isLiked.value = !isLiked.value
+
+  if (isLiked.value) {
+    // 4. JIKA BARU DI-LIKE:
+    // Tambah 1 dari angka ASLI
+    const newCount = originalLikeCount + 1
+    // Format ulang ke string (cth: '2.159')
+    currentLikes.value = newCount.toLocaleString('id-ID')
+  } else {
+    // 5. JIKA DI-BATALKAN (UNLIKE):
+    // Kembalikan ke string ASLI
+    currentLikes.value = props.postData.likes
+  }
 }
-
-function toggleMenu() {
-    alert(`Menu untuk postingan: ${props.post.title}`);
-    // Logika menampilkan pop-up menu
-}
+// --- AKHIR LOGIKA LIKE ---
 </script>
+
+<template>
+  <article class="bg-white text-gray-800 rounded-xl p-5 shadow-md font-sans">
+      
+      <div class="flex items-center gap-3">
+          <img :src="postData.profileImg" :alt="postData.author" class="w-11 h-11 rounded-full" />
+          <div class="flex-grow">
+              <strong class="block text-base">{{ postData.community }}</strong>
+              <span class="text-sm text-gray-500">{{ postData.author }} · {{ postData.time }}</span>
+          </div>
+          <img src="/img/titik3.png" alt="menu" class="h-6 w-6" />
+      </div>
+      
+      <div class="mt-4">
+          <strong class="text-xl font-semibold">{{ postData.title }}</strong>
+          <p class="mt-1 text-gray-700">{{ postData.excerpt }}</p>
+
+          <router-link 
+            :to="'/post/' + postData.id" 
+            class="text-[#78C89F] font-semibold block mt-1 hover:underline">
+            Lihat selengkapnya
+          </router-link>
+
+          <img :src="postData.postImg" :alt="postData.title" class="w-full rounded-lg mt-4" />
+      </div>
+
+      <div class="flex gap-5 mt-4 border-t border-gray-100 pt-4">
+          
+          <div 
+            @click="likePost" 
+            :class="{ 'text-[#FF5757]': isLiked, 'text-gray-600': !isLiked }"
+            class="flex items-center gap-2 cursor-pointer transition-colors"
+          >
+              <img src="/img/like.png" alt="Like" class="h-5 w-5" />
+              <span>{{ currentLikes }}</span>
+          </div>
+
+          <router-link :to="'/post/' + postData.id" class="flex items-center gap-2 text-gray-600 cursor-pointer">
+              <img src="/img/comment.png" alt="Comment" class="h-5 w-5" />
+              <span>{{ postData.comments }}</span>
+          </router-link>
+
+      </div>
+  </article>
+</template>
