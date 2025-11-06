@@ -106,7 +106,7 @@ import CatCard from '../components/CatCard.vue';
 
 // --- DATA ---
 const catData = ref([
-  { id: 1, name: 'Oyen', shelter: 'CatHouse', gender: 'male', age: '1 Tahun', image: 'oyencat.png', isFavorite: false },
+  { id: 1, name: 'Oyen', shelter: 'CatHouse', gender: 'male', age: '6 Bulan', image: 'oyencat.png', isFavorite: false },
   { id: 2, name: 'Abul', shelter: 'PawCare', gender: 'male', age: '5 Bulan', image: 'minicat.png', isFavorite: false },
   { id: 3, name: 'Simba', shelter: 'Meow Haven', gender: 'male', age: '2 Tahun', image: 'bradercat.png', isFavorite: false },
   { id: 4, name: 'Mueza', shelter: 'CatHouse', gender: 'female', age: '8 Bulan', image: 'mochacat.png', isFavorite: false },
