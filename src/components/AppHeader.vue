@@ -26,7 +26,7 @@
         <div v-if="isLoggedIn" class="relative">
             <button 
                 @click="toggleProfileDropdown"
-                class="flex items-center gap-2 bg-green-700 text-white py-1.5 pr-2 pl-1 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
+                class="flex items-center gap-2 bg-green-700 text-white py-1.5 pr-8 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
             >
                 <img src="../assets/img/diana.png" alt="Avatar Diana" class="h-9 w-9 rounded-full object-cover">
                 <span>Diana</span>
@@ -160,6 +160,7 @@ function toggleMobileMenu() {
 function toggleProfileDropdown() {
     isProfileDropdownOpen.value = !isProfileDropdownOpen.value;
 }
+
 
 function handleSignOut() {
     // Kirim event ke App.vue untuk mengubah status login
