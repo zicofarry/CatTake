@@ -7,7 +7,7 @@
       
       <div class="mb-4">
         <img 
-          :src="`../assets/img/${cat.image}`" 
+          :src="`/img/${cat.image}`"
           :alt="cat.name" 
           class="w-full h-56 object-cover rounded-[25px] shadow-sm"
         >
