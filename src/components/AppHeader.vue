@@ -8,7 +8,7 @@
         </router-link>
       </div>
 
-      <nav class="hidden md:flex bg-green-700 rounded-full p-2 shadow-lg">
+      <nav class="hidden md:flex bg-[#578d76] rounded-full p-2 shadow-lg">
         <ul class="flex list-none gap-4 items-center px-2 m-0 p-0">
           <li v-for="link in navLinks" :key="link.name">
             <router-link 
@@ -26,7 +26,7 @@
         <div v-if="isLoggedIn" class="relative">
             <button 
                 @click="toggleProfileDropdown"
-                class="flex items-center gap-2 bg-green-700 text-white py-1.5 pr-8 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
+                class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-8 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
             >
                 <img src="../assets/img/diana.png" alt="Avatar Diana" class="h-9 w-9 rounded-full object-cover">
                 <span>Diana</span>
@@ -41,7 +41,7 @@
             </div>
         </div>
 
-        <router-link v-else to="/login" class="bg-green-700 hover:bg-green-800 text-white font-semibold py-2 px-6 rounded-full transition duration-200 shadow-lg">
+        <router-link v-else to="/login" class="bg-[#578d76] hover:bg-green-800 text-white font-semibold py-2 px-6 rounded-full transition duration-200 shadow-lg">
             Signup/Login
         </router-link>
       </div>
@@ -76,7 +76,7 @@
       <div class="p-4 mb-4 text-white text-2xl font-bold border-b border-green-900">MENU</div>
       
       <router-link to="/profile">
-      <div v-if="isLoggedIn" class="flex items-center gap-3 bg-green-700 text-white py-2 px-4 rounded-full font-semibold mx-4 mb-4 shadow-lg">
+      <div v-if="isLoggedIn" class="flex items-center gap-3 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold mx-4 mb-4 shadow-lg">
           <img src="../assets/img/diana.png" alt="Avatar Diana" class="h-9 w-9 rounded-full object-cover">
           <span>Diana</span>
         </div>
