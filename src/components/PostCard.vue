@@ -42,7 +42,7 @@ function likePost() {
               <strong class="block text-base">{{ postData.community }}</strong>
               <span class="text-sm text-gray-500">{{ postData.author }} · {{ postData.time }}</span>
           </div>
-          <img src="/img/titik3.png" alt="menu" class="h-6 w-6" />
+          <img src="../assets/img/titik3.png" alt="menu" class="h-6 w-6" />
       </div>
       
       <div class="mt-4">
@@ -65,12 +65,12 @@ function likePost() {
             :class="{ 'text-[#FF5757]': isLiked, 'text-gray-600': !isLiked }"
             class="flex items-center gap-2 cursor-pointer transition-colors"
           >
-              <img src="/img/like.png" alt="Like" class="h-5 w-5" />
+              <img src="../assets/img/like.png" alt="Like" class="h-5 w-5" />
               <span>{{ currentLikes }}</span>
           </div>
 
           <router-link :to="'/post/' + postData.id" class="flex items-center gap-2 text-gray-600 cursor-pointer">
-              <img src="/img/comment.png" alt="Comment" class="h-5 w-5" />
+              <img src="../assets/img/comment.png" alt="Comment" class="h-5 w-5" />
               <span>{{ postData.comments }}</span>
           </router-link>
 

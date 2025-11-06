@@ -41,7 +41,7 @@ function addComment() {
                 <strong class="block text-base text-gray-900">{{ post.community }}</strong>
                 <span class="text-sm text-gray-500">{{ post.author }} · {{ post.time }}</span>
             </div>
-            <img src="/img/titik3.png" alt="menu" class="h-6 w-6" />
+            <img src="../assets/img/titik3.png" alt="menu" class="h-6 w-6" />
         </div>
 
         <h1 class="text-4xl font-bold text-gray-900">{{ post.title }}</h1>

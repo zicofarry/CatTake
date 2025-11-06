@@ -4,13 +4,15 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../pages/HomePage.vue'
 import ReportPage from '../pages/ReportPage.vue'
 import AdoptPage from '../pages/AdoptPage.vue'
-import AdoptionDetail from '../pages/AdoptionDetail.vue' // Contoh: Pastikan Anda membuat file ini
+import AdoptionDetail from '../pages/AdoptionDetail.vue' 
 import FAQPage from '../pages/FAQPage.vue'
 import DonationPage from '../pages/DonationPage.vue'
-import LoginPage from '../pages/LoginPage.vue' // <-- Komponen Baru
-import SignupPage from '../pages/SignupPage.vue' // <-- Komponen Baru
+import LoginPage from '../pages/LoginPage.vue' 
+import SignupPage from '../pages/SignupPage.vue' 
 import CommunityPage from '../pages/CommunityPage.vue'
 import DetailPage from '../pages/DetailPage.vue'
+import PostDetailPage from '../pages/PostDetailPage.vue'
+import FaktaKucingPage from '../pages/FaktaKucingPage.vue'
 
 
 const router = createRouter({
@@ -21,14 +23,15 @@ const router = createRouter({
     { path: '/', name: 'Home', component: HomePage },
     { path: '/lapor', name: 'Lapor', component: ReportPage },
     { path: '/adopsi', name: 'Adopsi', component: AdoptPage },
-    // Contoh rute dinamis untuk detail adopsi
     { path: '/adopsi/:id', name: 'AdopsiDetail', component: AdoptionDetail }, 
     { path: '/faq', name: 'FAQ', component: FAQPage },
-    { path: '/komunitas', name: 'Komunitas', component: CommunityPage }, // <-- Rute Baru
+    { path: '/komunitas', name: 'Komunitas', component: CommunityPage }, 
     { path: '/donasi', name: 'Donasi', component: DonationPage },
-    { path: '/login', name: 'Login', component: LoginPage }, // <-- Rute Login
-    { path: '/signup', name: 'Signup', component: SignupPage }, // <-- Rute Sign Up
-    { path: '/profile', name: 'Profile', component: DetailPage }, // <-- Rute Sign Up
+    { path: '/login', name: 'Login', component: LoginPage }, 
+    { path: '/signup', name: 'Signup', component: SignupPage }, 
+    { path: '/profile', name: 'Profile', component: DetailPage }, 
+    { path: '/post/:id', name: 'Post', component: PostDetailPage }, 
+    { path: '/fakta', name: 'Fakta', component: FaktaKucingPage }, 
   ],
 
   // Pastikan halaman di-scroll ke atas saat berpindah rute

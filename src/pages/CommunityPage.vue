@@ -10,7 +10,7 @@
 
                     <div class="search-bar-mobile md:hidden mb-5">
                         <div class="bg-white rounded-full p-3 shadow-md flex items-center gap-2">
-                            <img src="/img/Search.png" alt="Search" class="w-5 h-5 opacity-60 ml-2" />
+                            <img src="../assets/img/Search.png" alt="Search" class="w-5 h-5 opacity-60 ml-2" />
                             <input type="text" placeholder="Cari di komunitas" v-model="searchQuery"
                                 class="border-none outline-none w-full bg-transparent font-sans text-sm text-gray-800 placeholder-gray-400">
                         </div>
@@ -25,8 +25,8 @@
                     
                     <div class="search-bar-desktop hidden md:flex">
                          <div class="bg-white rounded-full p-3 shadow-md flex items-center gap-2 w-full">
-                            <img src="/img/Search.png" alt="Search" class="w-5 h-5 opacity-60 ml-2" />
-                            <input type="text" placeholder="Cari di komuni" v-model="searchQuery"
+                            <img src="../assets/img/Search.png" alt="Search" class="w-5 h-5 opacity-60 ml-2" />
+                            <input type="text" placeholder="Cari di komunitas" v-model="searchQuery"
                                 class="border-none outline-none w-full bg-transparent font-sans text-sm text-gray-800 placeholder-gray-400">
                         </div>
                     </div>
@@ -34,20 +34,20 @@
                     <section class="bg-[#2D4A45] rounded-xl p-5 shadow-lg">
                         <h3 class="text-lg font-semibold mb-4">Event Mendatang</h3>
                         <div class="flex items-center gap-3 mb-4">
-                            <img src="/img/calendar.png" alt="Kalender" class="w-8 h-8 object-contain" />
+                            <img src="../assets/img/calendar.png" alt="Kalender" class="w-8 h-8 object-contain" />
                             <div>
                                 <strong class="block text-base">Sterilisasi Gratis</strong>
                                 <span class="text-sm text-gray-400">15 Oktober 2025</span>
                             </div>
                         </div>
                         <div class="flex items-center gap-3 mb-4">
-                            <img src="/img/time.png" alt="Waktu" class="w-8 h-8 object-contain" />
+                            <img src="../assets/img/time.png" alt="Waktu" class="w-8 h-8 object-contain" />
                             <div>
                                 <strong class="block text-base">Pukul 09:00 WIB</strong>
                             </div>
                         </div>
                         <div class="flex items-center gap-3 mb-4">
-                            <img src="/img/location.png" alt="Lokasi" class="w-8 h-8 object-contain" />
+                            <img src="../assets/img/location.png" alt="Lokasi" class="w-8 h-8 object-contain" />
                             <div>
                                 <strong class="block text-base">Klinik CatCare</strong>
                             </div>
