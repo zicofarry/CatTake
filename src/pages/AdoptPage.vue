@@ -3,13 +3,22 @@
     
     <div class="max-w-7xl mx-auto px-6 lg:px-8 pt-10 pb-40 md:pb-48">
       <div class="flex flex-col-reverse md:flex-row items-center gap-8 md:gap-16">
-        <div class="relative w-full md:w-1/2 flex justify-center md:justify-start mt-10 md:mt-0">
-          <div class="absolute bg-[#3A5F50] w-[115%] h-[115%] md:w-[125%] md:h-[125%] -left-[5%] -top-[5%] md:-left-[10%] md:-top-[10%] rounded-[48%_52%_68%_32%/60%_45%_55%_40%] rotate-[-8deg] -z-10 opacity-95"></div>
-          <img src="../assets/img/cathelo.png" alt="Kucing" class="relative z-10 max-w-[280px] md:max-w-sm lg:max-w-md object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-500">
-        </div>
+        
+        <div class="relative flex justify-center items-center">
+            <div class="absolute bg-[#3A5F50] w-[320px] h-[300px] md:w-[500px] md:h-[450px] rounded-[48%_52%_68%_32%/60%_45%_55%_40%] rotate-[-8deg] -z-10 opacity-95"></div>
+            <img src="../assets/img/Ellipse.png" alt="Latar belakang elips hijau" 
+                                class="absolute w-[120%] h-[120%] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 object-contain z-10"
+                                style="filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));"
+                            > 
+            <img
+              src="../assets/img/cathelo.png"
+              alt="Kucing"
+              class="relative z-10 max-w-[340px] md:max-w-[480px] lg:max-w-[550px] object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-500"
+            />
+          </div>
         <div class="w-full md:w-1/2 text-left space-y-6 pl-0 md:pl-8">
-          <h1 class="text-5xl md:text-6xl lg:text-[5rem] font-serif font-bold text-[#1F1F1F] leading-[1.1] tracking-tight">
-            Berikan Rumah,<br>
+          <h1 class="text-5xl md:text-6xl lg:text-[4rem] font-serif font-bold text-[#1F1F1F] leading-[1.1] tracking-tight">
+            Berikan Rumah,<br>    
             Dapatkan Cinta.
           </h1>
           <p class="text-lg md:text-xl text-gray-600 max-w-lg leading-relaxed font-medium">
