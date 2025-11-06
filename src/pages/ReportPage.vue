@@ -53,7 +53,7 @@
               id="ownerName" 
               v-model="reportForm.ownerName" 
               required
-              placeholder="Masukkan nama Anda"
+              placeholder="Masukkan nama pemilik"
               class="w-full p-5 bg-gray-200 rounded-2xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg"
             >
           </div>

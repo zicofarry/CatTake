@@ -91,12 +91,4 @@ function handleLogin() {
     z-index: 0;
 }
 
-/* Logo di atas form (hanya terlihat di wave background) */
-.auth-wrapper::before {
-    /* ... style di atas ... */
-    
-    /* Tambahkan logo di sini jika memungkinkan dengan pseudo element, 
-       tapi ini lebih mudah dilakukan dengan elemen Vue biasa di luar form box */
-}
-/* Mengganti logo dengan elemen vue di template */
 </style>
