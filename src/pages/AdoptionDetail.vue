@@ -7,15 +7,17 @@
 
     <div class="max-w-5xl mx-auto px-6 relative z-10">
       
-      <section class="flex flex-col md:flex-row items-center md:items-stretch gap-8 mb-12">
-        <div class="bg-white p-4 rounded-[40px] shadow-xl flex-none w-full md:w-[45%] aspect-square flex justify-center items-center">
+      <section class="flex flex-col md:flex-row items-center md:items-stretch gap-6 mb-12">
+        
+        <div class="bg-white p-3 rounded-[35px] shadow-xl flex-none w-full md:w-[280px] h-[280px] flex justify-center items-center">
            <img 
             :src="cat.image ? `/assets/img/${cat.image}` : ''" 
             :alt="cat.name || 'Kucing'" 
-            class="w-full h-full object-cover rounded-[30px]"
+            class="w-full h-full object-cover rounded-[28px]"
            >
         </div>
-        <div class="bg-white rounded-[40px] p-8 md:p-10 flex flex-col justify-center flex-grow w-full md:w-[55%] shadow-xl">
+
+        <div class="bg-white rounded-[35px] p-8 flex flex-col justify-center flex-grow w-full shadow-xl min-h-[280px]">
           <div class="space-y-3 text-[#1F1F1F]">
              <div class="grid grid-cols-[140px_1fr] gap-2 text-lg md:text-xl">
                <span class="font-bold">Nama:</span><span>{{ cat.name }}</span>
@@ -92,9 +94,9 @@
                     >
                         <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3 group-hover:text-[#EBCD5E] transition"></i>
                         <p class="text-lg text-gray-600 font-medium">
-                            {{ selectedFileName || 'Klik untuk memilih foto dari File Explorer' }}
+                            {{ selectedFileName || 'Klik untuk memilih foto ' }}
                         </p>
-                        <p class="text-sm text-gray-400 mt-1">(Format: JPG, PNG. Maks 5MB)</p>
+                        <p class="text-sm text-gray-400 mt-1">(Format: JPG, PNG. Maks 10MB)</p>
                     </div>
                 </div>
             </div>
@@ -119,7 +121,7 @@ import { useRoute } from 'vue-router';
 
 // DATA DUMMY KUCING
 const cats = [
-    { id: 1, name: 'Oyen', age: '1 Tahun', gender: 'male', breed: 'American Shorthair', characteristics: ['Agresif', 'Playful'], image: 'oyencat.png' },
+    { id: 1, name: 'Oyen', age: '6 Bulan', gender: 'male', breed: 'American Shorthair', characteristics: ['Agresif', 'Playful'], image: 'oyencat.png' },
     { id: 2, name: 'Abul', age: '5 Bulan', gender: 'male', breed: 'Domestik', characteristics: ['Manja', 'Pemalu'], image: 'minicat.png' },
     { id: 3, name: 'Simba', age: '2 Tahun', gender: 'male', breed: 'Maine Coon', characteristics: ['Gagah', 'Setia'], image: 'bradercat.png' },
     { id: 4, name: 'Mueza', age: '8 Bulan', gender: 'female', breed: 'Persia', characteristics: ['Manis', 'Lembut'], image: 'mochacat.png' },
