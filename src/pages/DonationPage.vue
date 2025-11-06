@@ -4,6 +4,9 @@
       title="Satu Donasi, Seribu Harapan."
       subtitle="Bersama mendukung langkah kecil mereka, dari jalanan penuh bahaya menuju tempat yang aman, sehat, dan dicintai."
       buttonText="Donasi Sekarang"
+      mainImg="/img/donasi.png"
+      mainAlt="donasi love"
+      mainMaxWidth="480px"
       buttonLink="#formDonasi"
     />
   </div>

@@ -1,36 +1,16 @@
 <template>
   <div class="min-h-screen bg-white font-sans overflow-x-hidden">
-    
-    <div class="max-w-7xl mx-auto px-6 lg:px-8 pt-10 pb-40 md:pb-48">
-      <div class="flex flex-col-reverse md:flex-row items-center gap-8 md:gap-16">
-        
-        <div class="relative flex justify-center items-center">
-            <div class="absolute bg-[#3A5F50] w-[320px] h-[300px] md:w-[500px] md:h-[450px] rounded-[48%_52%_68%_32%/60%_45%_55%_40%] rotate-[-8deg] -z-10 opacity-95"></div>
-            <img src="../assets/img/Ellipse.png" alt="Latar belakang elips hijau" 
-                                class="absolute w-[120%] h-[120%] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 object-contain z-10"
-                                style="filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));"
-                            > 
-            <img
-              src="../assets/img/cathelo.png"
-              alt="Kucing"
-              class="relative z-10 max-w-[340px] md:max-w-[480px] lg:max-w-[550px] object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-500"
-            />
-          </div>
-        <div class="w-full md:w-1/2 text-left space-y-6 pl-0 md:pl-8">
-          <h1 class="text-5xl md:text-6xl lg:text-[4rem] font-serif font-bold text-[#1F1F1F] leading-[1.1] tracking-tight">
-            Berikan Rumah,<br>    
-            Dapatkan Cinta.
-          </h1>
-          <p class="text-lg md:text-xl text-gray-600 max-w-lg leading-relaxed font-medium">
-            Mari bersama menciptakan cerita baru bagi mereka, dari kesepian menuju rumah yang hangat dan penuh cinta.
-          </p>
-          <div class="pt-6">
-            <button class="bg-[#EBCD5E] hover:bg-[#e0c355] text-white font-bold text-lg px-10 py-4 rounded-full shadow-[0_10px_20px_-10px_rgba(235,205,94,1)] transition-all hover:-translate-y-1 active:scale-95">
-              Adopsi Sekarang
-            </button>
-          </div>
-        </div>
-      </div>
+    <div class="">
+      <HeroSection 
+        title="Berikan Rumah, Dapatkan Cinta."
+        subtitle="Mari bersama menciptakan cerita baru bagi mereka, dari kesepian menuju rumah yang hangat dan penuh cinta."
+        buttonText="Adopsi Sekarang"
+        buttonLink="#listkucing"
+        ellipseImg="/img/Ellipse.png"
+        ellipseAlt="ellipse"
+        mainImg="/img/cathelo.png"
+        mainAlt="kucinghalo"
+      />
     </div>
 
     <div class="relative mt-10 z-10">
@@ -74,7 +54,7 @@
             </div>
         </div>
 
-        <div class="bg-[#3A5F50] pt-36 pb-28 px-6 rounded-t-[50px] md:rounded-t-[80px] min-h-[700px]">
+        <div id="listkucing" class="bg-[#3A5F50] pt-36 pb-28 px-6 rounded-t-[50px] md:rounded-t-[80px] min-h-[700px]">
             <div class="max-w-6xl mx-auto">
                 
                 <transition name="fade" mode="out-in">
@@ -103,6 +83,8 @@
 <script setup>
 import { ref, computed } from 'vue';
 import CatCard from '../components/CatCard.vue';
+import HeroSection from '../components/HeroSection.vue';
+
 
 // --- DATA ---
 const catData = ref([
