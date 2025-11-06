@@ -1,106 +1,166 @@
 <template>
-    <main class="bg-gray-100 py-5">
-        <div class="max-w-5xl mx-auto px-4 md:px-6 my-10">
+  <main class="min-h-screen bg-[#3A5F50] py-12 relative overflow-hidden font-sans">
+    <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+      <div class="absolute top-[10%] -left-[10%] w-[40%] h-[40%] bg-white rounded-full blur-3xl"></div>
+      <div class="absolute bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-white rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="max-w-5xl mx-auto px-6 relative z-10">
+      
+      <section class="flex flex-col md:flex-row items-center md:items-stretch gap-8 mb-12">
+        <div class="bg-white p-4 rounded-[40px] shadow-xl flex-none w-full md:w-[45%] aspect-square flex justify-center items-center">
+           <img 
+            :src="cat.image ? `/assets/img/${cat.image}` : ''" 
+            :alt="cat.name || 'Kucing'" 
+            class="w-full h-full object-cover rounded-[30px]"
+           >
+        </div>
+        <div class="bg-white rounded-[40px] p-8 md:p-10 flex flex-col justify-center flex-grow w-full md:w-[55%] shadow-xl">
+          <div class="space-y-3 text-[#1F1F1F]">
+             <div class="grid grid-cols-[140px_1fr] gap-2 text-lg md:text-xl">
+               <span class="font-bold">Nama:</span><span>{{ cat.name }}</span>
+             </div>
+             <div class="grid grid-cols-[140px_1fr] gap-2 text-lg md:text-xl">
+               <span class="font-bold">Umur:</span><span>{{ cat.age }}</span>
+             </div>
+             <div class="grid grid-cols-[140px_1fr] gap-2 text-lg md:text-xl">
+               <span class="font-bold">Jenis Kelamin:</span><span>{{ cat.gender === 'male' ? 'Laki-laki' : 'Betina' }}</span>
+             </div>
+             <div class="grid grid-cols-[140px_1fr] gap-2 text-lg md:text-xl">
+               <span class="font-bold">Ras:</span><span>{{ cat.breed || 'Domestik' }}</span>
+             </div>
+             <div class="grid grid-cols-[140px_1fr] gap-2 text-lg md:text-xl">
+               <span class="font-bold">Karakteristik:</span><span>{{ cat.characteristics ? cat.characteristics.join(', ') : '-' }}</span>
+             </div>
+          </div>
+        </div>
+      </section>
+      
+      <div class="text-center mb-16">
+        <a href="#form-adopsi" class="inline-block bg-[#EBCD5E] hover:bg-[#e0c355] text-white text-xl font-bold py-4 px-12 rounded-full shadow-[0_6px_20px_rgba(235,205,94,0.5)] transition-transform hover:-translate-y-1 active:scale-95 no-underline">
+          Adopsi Sekarang!
+        </a>
+      </div>
+
+      <section id="form-adopsi" class="pb-20">
+        <div class="bg-white p-6 md:p-10 rounded-[50px] shadow-2xl">
+          <form @submit.prevent="submitAdoption">
             
-            <section class="flex flex-col md:flex-row items-stretch gap-8 mb-10">
-                <div class="bg-white p-4 rounded-3xl shadow-lg flex-none md:w-2/5">
-                    <img :src="cat.photoUrl" :alt="'Foto ' + cat.name" class="w-full h-full object-cover rounded-2xl">
-                </div>
-                <div class="bg-gray-200 rounded-2xl p-6 md:p-8 flex flex-col justify-center flex-grow md:w-3/5">
-                    <p class="my-2 text-lg text-gray-800"><strong>Nama:</strong> {{ cat.name }}</p>
-                    <p class="my-2 text-lg text-gray-800"><strong>Umur:</strong> {{ cat.age }}</p>
-                    <p class="my-2 text-lg text-gray-800"><strong>Jenis Kelamin:</strong> {{ cat.gender }}</p>
-                    <p class="my-2 text-lg text-gray-800"><strong>Ras:</strong> {{ cat.breed }}</p>
-                    <p class="my-2 text-lg text-gray-800"><strong>Karakteristik:</strong> {{ cat.character }}</p>
-                    <p class="my-2 text-lg text-gray-800"><strong>Lokasi:</strong> {{ cat.location }}</p>
-                </div>
-            </section>
-            
-            <div class="text-center mb-10">
-                <a href="#form-adopsi" 
-                   class="inline-block bg-amber-500 hover:bg-amber-600 text-gray-800 py-4 px-12 text-lg font-bold no-underline rounded-full shadow-lg transition duration-200 hover:translate-y-[-3px]"
-                   style="box-shadow: 0 5px 15px rgba(251, 192, 45, 0.4);"
+            <div class="mb-6">
+                <div 
+                  @click="toggleAccordion('data')"
+                  class="w-full flex justify-between items-center bg-gray-200 p-5 font-bold text-lg text-[#1F1F1F] cursor-pointer transition-all hover:bg-gray-300"
+                  :class="accordionState.data ? 'rounded-t-2xl' : 'rounded-2xl'"
                 >
-                    Adopsi Sekarang!
-                </a>
+                    Verifikasi Data Pengadopsi
+                    <i class="fas transition-transform duration-300" :class="accordionState.data ? 'fa-caret-up' : 'fa-caret-down'"></i>
+                </div>
+
+                <div v-show="accordionState.data" class="bg-gray-200 px-6 pb-8 rounded-b-2xl">
+                    <div class="space-y-4 pt-2">
+                        <input type="text" placeholder="Nama Pengadopsi" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
+                        <input type="text" placeholder="NIK" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
+                        <input type="tel" placeholder="Nomor Handphone" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
+                        <input type="email" placeholder="Email" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
+                        <input type="text" placeholder="Pekerjaan" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
+                        <textarea placeholder="Alamat" required rows="3" class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm resize-none"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-10">
+                 <div 
+                    @click="toggleAccordion('photo')"
+                    class="w-full flex justify-between items-center bg-gray-200 p-5 font-bold text-lg text-[#1F1F1F] cursor-pointer transition-all hover:bg-gray-300"
+                    :class="accordionState.photo ? 'rounded-t-2xl' : 'rounded-2xl'"
+                >
+                    Foto KTP/SIM/Passport
+                    <i class="fas transition-transform duration-300" :class="accordionState.photo ? 'fa-caret-up' : 'fa-caret-down'"></i>
+                </div>
+
+                <div v-show="accordionState.photo" class="bg-gray-200 px-6 pb-8 rounded-b-2xl">
+                    <input 
+                        type="file" 
+                        ref="fileInput" 
+                        class="hidden" 
+                        accept="image/png, image/jpeg, image/jpg"
+                        @change="handleFileChange"
+                    >
+                    <div 
+                        @click="triggerFileInput"
+                        class="mt-4 bg-white border-2 border-dashed border-gray-400 rounded-xl p-8 text-center cursor-pointer transition hover:border-[#EBCD5E] hover:bg-gray-50 group"
+                    >
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3 group-hover:text-[#EBCD5E] transition"></i>
+                        <p class="text-lg text-gray-600 font-medium">
+                            {{ selectedFileName || 'Klik untuk memilih foto dari File Explorer' }}
+                        </p>
+                        <p class="text-sm text-gray-400 mt-1">(Format: JPG, PNG. Maks 5MB)</p>
+                    </div>
+                </div>
             </div>
 
-            <section class="pb-12" id="form-adopsi">
-                <form class="bg-white p-6 md:p-8 rounded-2xl shadow-xl text-center" @submit.prevent="submitAdoption">
-                    
-                    <AccordionItem 
-                        header="Verifikasi Data Pengadopsi" 
-                        :form-style="true" 
-                        :model-value="true" 
-                    >
-                        <div class="p-0 pb-5 md:px-1">
-                            <input type="text" placeholder="Nama Pengadopsi" required class="w-full p-4 mb-4 border border-gray-300 rounded-xl bg-white font-sans text-base shadow-sm">
-                            <input type="text" placeholder="NIK" required class="w-full p-4 mb-4 border border-gray-300 rounded-xl bg-white font-sans text-base shadow-sm">
-                            <input type="tel" placeholder="Nomor Handphone" required class="w-full p-4 mb-4 border border-gray-300 rounded-xl bg-white font-sans text-base shadow-sm">
-                            <input type="email" placeholder="Email" required class="w-full p-4 mb-4 border border-gray-300 rounded-xl bg-white font-sans text-base shadow-sm">
-                            <input type="text" placeholder="Pekerjaan" required class="w-full p-4 mb-4 border border-gray-300 rounded-xl bg-white font-sans text-base shadow-sm">
-                            <textarea placeholder="Alamat" rows="3" required class="w-full p-4 mb-4 border border-gray-300 rounded-xl bg-white font-sans text-base shadow-sm"></textarea>
-                        </div>
-                    </AccordionItem>
-                    
-                    <AccordionItem 
-                        header="Foto KTP/SIM/Passport" 
-                        :form-style="true" 
-                        :model-value="false"
-                    >
-                        <div class="p-0 pb-5 md:px-1">
-                            <input type="file" id="file-upload" hidden @change="handleFileUpload">
-                            <label for="file-upload" class="flex justify-between items-center w-full p-4 border border-gray-300 rounded-xl bg-gray-100 font-sans text-base shadow-sm cursor-pointer hover:bg-gray-200">
-                                Pilih File <span class="text-gray-500">{{ fileName || '(Belum ada file)' }}</span>
-                            </label>
-                        </div>
-                    </AccordionItem>
+            <div class="text-center">
+                <button type="submit" class="inline-block bg-[#EBCD5E] hover:bg-[#e0c355] text-white text-xl font-bold py-4 px-20 rounded-full shadow-[0_6px_20px_rgba(235,205,94,0.4)] transition-transform hover:-translate-y-1 active:scale-95 border-none cursor-pointer">
+                    Selesai
+                </button>
+            </div>
 
-                    <button type="submit" 
-                      class="inline-block w-auto py-4 px-16 bg-amber-500 hover:bg-amber-600 border-none rounded-full text-lg font-bold cursor-pointer mt-5 transition duration-200"
-                    >
-                        Selesai
-                    </button>
-                </form>
-            </section>
+          </form>
         </div>
-    </main>
+      </section>
+
+    </div>
+  </main>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import AccordionItem from '../components/AccordionItem.vue';
 
-// ... (Logika JS Anda tetap sama) ...
-const mockCatData = [
-    { id: 1, name: 'Oyen', age: '6 Bulan', gender: 'Jantan', breed: 'American Shorthair', character: 'Agresif, playful', photoUrl: '/assets/img/oyencat.png', location: 'Jakarta Selatan' },
+// DATA DUMMY KUCING
+const cats = [
+    { id: 1, name: 'Oyen', age: '1 Tahun', gender: 'male', breed: 'American Shorthair', characteristics: ['Agresif', 'Playful'], image: 'oyencat.png' },
+    { id: 2, name: 'Abul', age: '5 Bulan', gender: 'male', breed: 'Domestik', characteristics: ['Manja', 'Pemalu'], image: 'minicat.png' },
+    { id: 3, name: 'Simba', age: '2 Tahun', gender: 'male', breed: 'Maine Coon', characteristics: ['Gagah', 'Setia'], image: 'bradercat.png' },
+    { id: 4, name: 'Mueza', age: '8 Bulan', gender: 'female', breed: 'Persia', characteristics: ['Manis', 'Lembut'], image: 'mochacat.png' },
+    { id: 5, name: 'Kitty', age: '3 Tahun', gender: 'female', breed: 'Anggora', characteristics: ['Tenang', 'Penyayang'], image: 'kucing-5.png' },
 ];
 
 const route = useRoute();
-const fileName = ref('');
-const cat = ref({}); 
+const cat = ref({});
 
-onMounted(() => {
-    const catId = parseInt(route.params.id); 
-    const foundCat = mockCatData.find(c => c.id === catId);
-
-    if (foundCat) {
-        cat.value = foundCat;
-    } else {
-        cat.value = mockCatData[0];
-    }
+// STATE ACCORDION
+const accordionState = reactive({
+    data: true,  // Default terbuka
+    photo: false // Default tertutup
 });
 
-function handleFileUpload(event) {
-    fileName.value = event.target.files[0] ? event.target.files[0].name : '';
+// STATE UPLOAD
+const fileInput = ref(null);
+const selectedFileName = ref('');
+
+onMounted(() => {
+    const catId = Number(route.params.id);
+    cat.value = cats.find(c => c.id === catId) || cats[0];
+});
+
+function toggleAccordion(section) {
+    accordionState[section] = !accordionState[section];
+}
+
+function triggerFileInput() {
+    fileInput.value.click();
+}
+
+function handleFileChange(event) {
+    const file = event.target.files[0];
+    selectedFileName.value = file ? file.name : '';
 }
 
 function submitAdoption() {
-    alert(`Formulir adopsi untuk ${cat.value.name} dikirim!`);
+    alert(`Formulir adopsi untuk ${cat.value.name} berhasil dikirim!`);
 }
 </script>
 
 <style scoped>
-/* CSS Lama Dihapus */
 </style>
