@@ -11,10 +11,12 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
    ```
    atau dengan clone menggunakan GitHub Desktop.
 
-2. Install vue-router
+2. Install requirements
    dengan command:
    ```
    npm install vue-router@4
+   npm install tailwindcss @tailwindcss/vite
+   npm install vite-plugin-vue-devtools --save-dev
    ```
 
 3. Jalankan server
