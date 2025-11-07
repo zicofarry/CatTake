@@ -5,7 +5,10 @@
       @update-login-status="handleUpdateLoginStatus" 
     /> 
     
-    <router-view @user-logged-in="handleUserLogin"></router-view>
+    <router-view 
+      :isLoggedInProp="isUserLoggedIn" 
+      @user-logged-in="handleUserLogin"
+    />
 
   </div>
 </template>
@@ -16,11 +19,13 @@ import AppHeader from './components/AppHeader.vue';
 
 // State Utama: guest, user, atau shelter. Default diambil dari localStorage.
 const userRole = ref(localStorage.getItem('userRole') || 'guest'); 
+const isUserLoggedIn = ref(false);
 
 // Fungsi yang dipanggil dari LoginPage/SignupPage saat login berhasil
 function handleUserLogin(role) {
     if (role === 'user' || role === 'shelter') {
         userRole.value = role;
+        isUserLoggedIn.value = true;
         localStorage.setItem('userRole', role); // Simpan status di localStorage
     }
 }

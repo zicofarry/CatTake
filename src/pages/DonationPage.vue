@@ -12,9 +12,9 @@
   </div>
 
   <div>
-
     <section id="formDonasi" class="bg-gradient-to-b from-[#558a74] to-[#1d2f28] text-white pt-30 pb-30 !mt-20 lg:-mt-60">
-      <div class="max-w-4xl mx-auto bg-white text-gray-800 rounded-3xl p-8 md:p-16 shadow-2xl shadow-[0_10px_30px_rgba(0,0,0,1)]">
+      <div class="relative max-w-sm md:max-w-4xl mx-auto bg-white/80 backdrop-blur-md text-gray-800 rounded-3xl p-5 md:p-16 shadow-2xl shadow-[0_10px_30px_rgba(0,0,0,1)] overflow-hidden">
+        <LoginOverlay :isLoggedIn="isLoggedInProp" />
         <h2 class="text-3xl font-semibold text-center mb-8 text-gray-900">Form Donasi</h2>
 
         <form @submit.prevent="submitDonation" class="flex flex-col gap-5">
@@ -65,6 +65,11 @@
 <script setup>
 import { ref } from 'vue';
 import HeroSection from '../components/HeroSection.vue';
+import LoginOverlay from '../components/LoginOverlay.vue';
+
+const props = defineProps({
+  isLoggedInProp: Boolean
+});
 
 const form = ref({
     shelter: '',

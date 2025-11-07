@@ -55,6 +55,12 @@
         </div>
 
         <div id="listkucing" class="bg-[#3A5F50] pt-36 pb-28 px-6 rounded-t-[50px] md:rounded-t-[80px] min-h-[700px]">
+          <LoginOverlay 
+            :isLoggedIn="isLoggedInProp" 
+            message="Kamu perlu login dulu sebelum mengadopsi kucing." 
+            buttonText="Login Sekarang" 
+            loginRoute="/login"
+          />
             <div class="max-w-6xl mx-auto">
                 
                 <transition name="fade" mode="out-in">
@@ -84,6 +90,12 @@
 import { ref, computed } from 'vue';
 import CatCard from '../components/CatCard.vue';
 import HeroSection from '../components/HeroSection.vue';
+import LoginOverlay from '../components/LoginOverlay.vue';
+
+const props = defineProps({
+  isLoggedInProp: Boolean
+});
+
 
 
 // --- DATA ---

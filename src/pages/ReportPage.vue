@@ -44,6 +44,12 @@
       </div>
 
       <div class="bg-white p-8 md:p-12 rounded-[50px] shadow-2xl relative z-20">
+        <LoginOverlay 
+            :isLoggedIn="isLoggedInProp" 
+            message="Kamu perlu login dulu sebelum melaporkan kucing." 
+            buttonText="Login Sekarang" 
+            loginRoute="/login"
+          />
         <form @submit.prevent="submitReport" class="space-y-8">
           
           <div v-if="activeReportType === 'missing'">
@@ -134,10 +140,15 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
+import LoginOverlay from '../components/LoginOverlay.vue';
 
 const activeReportType = ref('stray'); 
 const isDragging = ref(false);
 const fileInput = ref(null);
+
+const props = defineProps({
+  isLoggedInProp: Boolean
+});
 
 const reportForm = reactive({
   ownerName: '',
