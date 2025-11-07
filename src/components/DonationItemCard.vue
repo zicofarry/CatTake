@@ -1,5 +1,5 @@
 <template>
-    <div class="flex items-center p-4 bg-gray-100 rounded-xl shadow-md transition duration-200 hover:shadow-lg">
+    <div class="flex items-center p-4 bg-gray-200 rounded-xl shadow-md transition duration-200 hover:shadow-lg">
         
         <img :src="donation.profilePic" :alt="'Foto ' + donation.donorName" class="w-12 h-12 rounded-full object-cover mr-4 shrink-0">
         

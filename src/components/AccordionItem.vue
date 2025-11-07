@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="bg-[#E0E4E1] border border-gray-300 rounded-xl mb-3 overflow-hidden transition-all duration-300"
+    class="bg-gray-200 border border-gray-300 rounded-xl mb-3 overflow-hidden transition-all duration-300"
     :class="{'shadow-lg': isOpen}"
   >
     <button 
