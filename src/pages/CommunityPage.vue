@@ -9,7 +9,7 @@
         </p>
       </div>
 
-      <!-- Search Bar (Mobile) -->
+      <!-- Search bar (mobile) -->
       <div class="search-bar-mobile md:hidden mb-5">
         <div class="bg-white rounded-full p-3 shadow-md flex items-center gap-2">
           <img
@@ -26,15 +26,15 @@
         </div>
       </div>
 
-      <!-- Tab Navigasi (Mobile) -->
-      <div class="flex md:hidden gap-6 border-b border-gray-700 mb-5">
+      <!-- Tabs (mobile) -->
+      <div class="flex md:hidden justify-center gap-6 border-b border-gray-700 mb-5">
         <button
           @click="activeTab = 'untukAnda'"
           :class="[
             'py-2',
             activeTab === 'untukAnda'
               ? 'border-b-2 border-white font-semibold'
-              : 'text-gray-400',
+              : 'text-gray-400'
           ]"
         >
           Untuk Anda
@@ -45,16 +45,16 @@
             'py-2',
             activeTab === 'sorotan'
               ? 'border-b-2 border-white font-semibold'
-              : 'text-gray-400',
+              : 'text-gray-400'
           ]"
         >
           Sorotan Komunitas
         </button>
       </div>
 
-      <!-- Konten Utama -->
+      <!-- Main content -->
       <div class="flex flex-col gap-8 md:flex-row md:gap-8">
-        <!-- Postingan (Untuk Anda) -->
+        <!-- Untuk Anda -->
         <div
           class="main-content flex-auto md:w-2/3 md:block"
           :class="activeTab === 'untukAnda' ? 'block' : 'hidden'"
@@ -73,7 +73,7 @@
           class="flex-col gap-6 md:w-1/3 md:flex"
           :class="activeTab === 'sorotan' ? 'flex' : 'hidden'"
         >
-          <!-- Search Bar (Desktop) -->
+          <!-- Search bar (desktop) -->
           <div class="search-bar-desktop hidden md:flex">
             <div
               class="bg-white rounded-full p-3 shadow-md flex items-center gap-2 w-full"
@@ -94,15 +94,18 @@
 
           <!-- Event Mendatang -->
           <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
-                <h3 class="text-lg font-semibold mb-4 text-gray-900">Event Mendatang</h3>
-                <div class="flex items-center gap-3 mb-4">
-                    <img src="../assets/img/calendar.png" alt="Kalender" class="w-8 h-8 object-contain" />
-                    <div>
+            <h3 class="text-lg font-semibold mb-4 text-gray-900">Event Mendatang</h3>
+            <div class="flex items-center gap-3 mb-4">
+              <img
+                src="../assets/img/calendar.png"
+                alt="Kalender"
+                class="w-8 h-8 object-contain"
+              />
+              <div>
                 <strong class="block text-base">Sterilisasi Gratis</strong>
-                <span class="text-sm text-gray-900">15 Oktober 2025</span>
+                <span class="text-sm text-gray-600">15 Oktober 2025</span>
               </div>
             </div>
-
             <div class="flex items-center gap-3 mb-4">
               <img
                 src="../assets/img/time.png"
@@ -113,7 +116,6 @@
                 <strong class="block text-base">Pukul 09:00 WIB</strong>
               </div>
             </div>
-
             <div class="flex items-center gap-3 mb-4">
               <img
                 src="../assets/img/location.png"
@@ -128,9 +130,7 @@
 
           <!-- Sobat Paws Teraktif -->
           <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
-            <h3 class="text-lg font-semibold mb-4 text-gray-900">
-              Sobat Paws Teraktif
-            </h3>
+            <h3 class="text-lg font-semibold mb-4 text-gray-900">Sobat Paws Teraktif</h3>
             <div
               v-for="member in activeMembers"
               :key="member.name"
@@ -147,9 +147,7 @@
 
           <!-- Postingan Populer -->
           <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
-            <h3 class="text-lg font-semibold mb-4 text-gray-900">
-              Postingan Populer
-            </h3>
+            <h3 class="text-lg font-semibold mb-4 text-gray-900">Postingan Populer</h3>
             <div
               v-for="popular in popularPosts"
               :key="popular.title"
@@ -167,7 +165,6 @@
           <!-- Fakta Kucing -->
           <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
             <h3 class="text-lg font-semibold mb-4 text-gray-900">Fakta Kucing</h3>
-
             <div class="flex items-center gap-3">
               <img
                 :src="catFact.image"
@@ -176,7 +173,6 @@
               />
               <p class="text-sm">{{ catFact.fact }}</p>
             </div>
-
             <div class="text-right mt-4">
               <router-link
                 to="/fakta"
@@ -234,5 +230,5 @@ const filteredPosts = computed(() => {
 </script>
 
 <style scoped>
-/* Kosongkan, styling menggunakan Tailwind */
+/* Styling menggunakan Tailwind */
 </style>
