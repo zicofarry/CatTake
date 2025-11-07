@@ -1,23 +1,44 @@
 <template>
   <div class="min-h-screen bg-gray-50 font-sans overflow-x-hidden pt-20 pb-32 relative">
-    
-    <div class="relative w-full h-[400px] overflow-visible bg-[#A0C8B1] z-0">
-        <div class="absolute inset-0 bg-gradient-to-r from-[#A0C8B1] to-[#60997E] opacity-90 overflow-hidden"></div>
-        <div class="relative z-10 h-full max-w-6xl mx-auto px-6 flex items-center justify-center gap-12">
-            <div class="flex-shrink-0">
-               <h1 class="text-6xl md:text-7xl font-bold text-[#1F1F1F] drop-shadow-sm leading-tight">
-                  Lapor<br>Kucing!
-               </h1>
-            </div>
-            <div class="h-full flex items-end">
-                <img 
-                  src="../assets/img/tigakucing.png" 
-                  alt="Tiga Kucing" 
-                  class="h-[85%] md:h-[135%] w-auto object-contain object-bottom md:translate-y-16"
-                >
+    <div v-if="userRole === 'shelter'">
+        <!-- Judul Laporan Kucing (Seperti di Figma) -->
+        <div class="text-center mb-8 -mt-2">
+            <h1 class="inline-block text-3xl md:text-4xl font-extrabold text-gray-800 py-3 px-8 bg-white rounded-full shadow-xl">
+                Laporan Kucing
+            </h1>
+        </div>
+        
+        <!-- Daftar Laporan -->
+        <div class="relative bg-gray-200 p-4 md:p-6 rounded-3xl shadow-2xl overflow-hidden custom-scrollbar max-h-[85vh]">
+            <div class="flex flex-col gap-4">
+                <ReportCard 
+                    v-for="report in mockShelterReports" 
+                    :key="report.id" 
+                    :report="report"
+                />
             </div>
         </div>
-    </div>
+      </div>
+      
+      <!-- TAMPILAN USER/GUEST: FORM LAPORAN -->
+      <div v-else>
+      <div class="relative w-full h-[400px] overflow-visible bg-[#A0C8B1] z-0">
+          <div class="absolute inset-0 bg-gradient-to-r from-[#A0C8B1] to-[#60997E] opacity-90 overflow-hidden"></div>
+          <div class="relative z-10 h-full max-w-6xl mx-auto px-6 flex items-center justify-center gap-12">
+              <div class="flex-shrink-0">
+                <h1 class="text-6xl md:text-7xl font-bold text-[#1F1F1F] drop-shadow-sm leading-tight">
+                    Lapor<br>Kucing!
+                </h1>
+              </div>
+              <div class="h-full flex items-end">
+                  <img 
+                    src="../assets/img/tigakucing.png" 
+                    alt="Tiga Kucing" 
+                    class="h-[85%] md:h-[135%] w-auto object-contain object-bottom md:translate-y-16"
+                  >
+              </div>
+          </div>
+      </div>
 
     <div class="max-w-4xl mx-auto px-6 relative z-10 mt-12 md:mt-32">
       
@@ -159,6 +180,7 @@
     </teleport>
 
   </div>
+  </div>
 </template>
 
 <script setup>
@@ -166,6 +188,19 @@ import { ref, reactive, computed, nextTick, onUnmounted } from 'vue';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import LoginOverlay from '../components/LoginOverlay.vue';
+import ReportCard from '../components/ReportCardItem.vue'; // Komponen baru
+
+// Mengambil userRole dari localStorage
+const userRole = computed(() => localStorage.getItem('userRole') || 'guest');
+
+// --- MOCK DATA UNTUK SHELTER VIEW ---
+const mockShelterReports = ref([
+    { id: 1, type: 'missing', date: '2025/10/02 19.08', ownerName: 'Diana Pungky', location: '6°51\'45.8"S 107°35\'17.0"E', description: 'Kucing hilang dari rumah di area Cihanjuang. Berwarna orange, mata kuning, memakai kalung biru.', photoUrl: '/assets/img/kucinghilang1.png', reporter: { name: 'Diana', profilePic: '/img/profileDiana.png' }},
+    { id: 2, type: 'stray', date: '2025/10/01 13.25', ownerName: 'N/A', location: '6°53\'12.3"S 107°36\'45.1"E', description: 'Kucing kecil warnanya oranye, badannya kecil, sepertinya dia kelaparan.', photoUrl: '/assets/img/kucingliar2.png', reporter: { name: 'Azmi', profilePic: '/img/profileAzmi.png' }},
+    { id: 3, type: 'stray', date: '2025/09/29 09.40', ownerName: 'N/A', location: '6°50\'01.0"S 107°34\'00.0"E', description: 'Ada kucing hitam besar di pasar, kakinya pincang, butuh pertolongan medis.', photoUrl: '/assets/img/kucingliar3.png', reporter: { name: 'Anas', profilePic: '/img/profileAnas.png' }},
+    { id: 4, type: 'missing', date: '2025/09/28 07.00', ownerName: 'Rafaela', location: '6°52\'50.0"S 107°35\'30.0"E', description: 'Kucing anggora warna putih, hilang sejak kemarin sore. Sangat penurut.', photoUrl: '/assets/img/kucinghilang2.png', reporter: { name: 'Nanda', profilePic: '/img/profileNanda.png' }},
+    { id: 5, type: 'stray', date: '2025/09/27 11.23', ownerName: 'N/A', location: '6°51\'10.0"S 107°36\'10.0"E', description: 'Kucing persia dekil di gang sempit, tidak berani mendekat.', photoUrl: '/assets/img/kucingliar4.png', reporter: { name: 'Aji', profilePic: '/img/profileAji.png' }},
+]);
 const props = defineProps({
   isLoggedInProp: Boolean
 });
@@ -288,10 +323,16 @@ function submitReport() {
         reportForm.ownerName = searchQuery.value;
     }
     alert(`Laporan berhasil dikirim!\nPemilik: ${reportForm.ownerName}\nLokasi: ${reportForm.location}`);
+    setTimeout(() => {
+      router.push('/track');
+    }, 300);
 }
 </script>
 
 <style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 8px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #638870; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-10px); }
 
