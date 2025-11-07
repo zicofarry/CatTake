@@ -27,7 +27,7 @@
       
       <div class="flex items-center text-center text-gray-400 my-6">
         <div class="flex-grow border-b border-gray-300 mx-2"></div>
-        <span>or</span>
+        <span class="text-sm">or</span>
         <div class="flex-grow border-b border-gray-300 mx-2"></div>
       </div>
       
@@ -42,6 +42,10 @@
         </p>
       </div>
     </div>
+
+    <div class="absolute top-10 left-1/2 transform -translate-x-1/2 z-20 md:top-12">
+        <img src="../assets/img/catTakePutih.png" alt="Logo CatTake" class="w-32 h-auto md:w-40">
+    </div>
   </div>
 </template>
 
@@ -50,18 +54,25 @@ import { ref, defineEmits } from 'vue';
 import { useRouter } from 'vue-router'; 
 
 const router = useRouter(); 
-// Emit event ke App.vue
-const emit = defineEmits(['user-logged-in']);
+const emit = defineEmits(['user-logged-in']); // Event ke App.vue
 
 const username = ref('');
-const password = ref('');
+const password = ref(''); 
 
 function handleLogin() {
   if (username.value && password.value) {
-     // Simulasi login berhasil
-     emit('user-logged-in'); 
-     router.push('/'); // Navigasi ke beranda setelah login
-     alert(`Login sebagai: ${username.value}`);
+     let roleToEmit = 'user'; 
+     
+     // Simulasi: Jika username mengandung "shelter", asumsikan role shelter
+     if (username.value.toLowerCase().includes('shelter')) {
+         roleToEmit = 'shelter';
+     } else {
+         roleToEmit = 'user';
+     }
+
+     // Emit event dengan role yang terdeteksi
+     emit('user-logged-in', roleToEmit); 
+     router.push('/'); 
   }
 }
 </script>
@@ -90,5 +101,4 @@ function handleLogin() {
     clip-path: ellipse(85% 60% at 50% 70%);
     z-index: 0;
 }
-
 </style>

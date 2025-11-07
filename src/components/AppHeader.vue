@@ -23,7 +23,22 @@
       </nav>
       
       <div class="hidden md:block">
-        <div v-if="isLoggedIn" class="relative">
+        <div v-if="userRole === 'shelter'" class="relative">
+             <button 
+                @click="toggleProfileDropdown"
+                class="flex items-center gap-2 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
+            >
+                <span>Shelter Gegerkalong</span>
+            </button>
+            <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl p-4 z-40 text-left">
+                <p class="font-bold text-gray-800">Shelter Gegerkalong</p>
+                <p class="text-sm text-gray-500 mb-4">shelter@cattake.com</p>
+
+                <button @click="handleSignOut" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition duration-200">Sign Out</button>
+            </div>
+        </div>
+
+        <div v-else-if="userRole === 'user'" class="relative">
             <button 
                 @click="toggleProfileDropdown"
                 class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-8 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
@@ -48,6 +63,16 @@
 
 
       <div class="flex items-center gap-4 md:hidden">
+        <div v-if="userRole === 'user'" class="flex items-center gap-2 bg-[#578d76] text-white py-1 pr-2 pl-1 rounded-full font-semibold">
+              <img src="../assets/img/diana.png" alt="Avatar Diana" class="h-8 w-8 rounded-full object-cover">
+              <span>Diana</span>
+          </div>
+          <div v-else-if="userRole === 'shelter'" class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 px-3 rounded-full font-semibold text-sm">
+              <span>Shelter Gegerkalong</span>
+          </div>
+          <router-link v-else to="/login" class="bg-[#578d76] hover:bg-green-800 text-white font-semibold py-1.5 px-4 rounded-full transition duration-200 shadow-md">
+            Login
+          </router-link>
           <!-- <div v-if="isLoggedIn" class="flex items-center gap-2 bg-green-700 text-white py-1 pr-2 pl-1 rounded-full font-semibold">
               <img src="/assets/img/diana.png" alt="Avatar Diana" class="h-8 w-8 rounded-full object-cover">
               <span>Diana</span>
@@ -75,12 +100,15 @@
   >
       <div class="p-4 mb-4 text-white text-2xl font-bold border-b border-green-900">MENU</div>
       
-      <router-link to="/profile">
-      <div v-if="isLoggedIn" class="flex items-center gap-3 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold mx-4 mb-4 shadow-lg">
-          <img src="../assets/img/diana.png" alt="Avatar Diana" class="h-9 w-9 rounded-full object-cover">
-          <span>Diana</span>
-        </div>
+      <router-link to="/profile" v-if="userRole === 'user'">
+          <div class="flex items-center gap-3 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold mx-4 mb-4 shadow-lg">
+              <img src="../assets/img/diana.png" alt="Avatar Diana" class="h-9 w-9 rounded-full object-cover">
+              <span>Diana</span>
+          </div>
       </router-link>
+       <div v-else-if="userRole === 'shelter'" class="flex items-center gap-3 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold mx-4 mb-4 shadow-lg">
+          <span>Shelter Gegerkalong</span>
+      </div>
 
       <ul class="flex flex-col list-none p-0 m-0">
           <li v-for="link in navLinks" :key="link.name">
@@ -95,7 +123,7 @@
           </li>
       </ul>
       
-      <button v-if="isLoggedIn" @click="handleSignOut" class="mt-auto mx-4 mb-4 p-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-200">
+      <button v-if="userRole !== 'guest'" @click="handleSignOut" class="mt-auto mx-4 mb-4 p-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-200">
         Sign Out
       </button>
 
@@ -110,11 +138,11 @@
 import { ref, computed, watchEffect } from 'vue';
 import { useRoute } from 'vue-router'; 
 
-// Props dari App.vue (untuk menerima status login)
+// Props dari App.vue (menerima status dan peran)
 const props = defineProps({
-    isLoggedInProp: {
-        type: Boolean,
-        default: false
+    userRole: {
+        type: String,
+        default: 'guest'
     }
 });
 
@@ -139,11 +167,11 @@ const route = useRoute();
 const isMobileMenuOpen = ref(false);
 const isProfileDropdownOpen = ref(false);
 
-// State login diambil dari prop (App.vue akan mengontrolnya)
-const isLoggedIn = ref(props.isLoggedInProp);
+// State login diambil dari prop
+const userRole = ref(props.userRole);
 
 watchEffect(() => {
-    isLoggedIn.value = props.isLoggedInProp;
+    userRole.value = props.userRole;
 });
 
 // 2. COMPUTED PROPERTY (Menentukan halaman aktif)

@@ -1,6 +1,9 @@
 <template>
   <div id="app">
-    <AppHeader :isLoggedInProp="isUserLoggedIn" @update-login-status="isUserLoggedIn = $event" /> 
+    <AppHeader 
+      :userRole="userRole" 
+      @update-login-status="handleUpdateLoginStatus" 
+    /> 
     
     <router-view @user-logged-in="handleUserLogin"></router-view>
 
@@ -8,16 +11,35 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import AppHeader from './components/AppHeader.vue';
-// ... import komponen lain jika ada
 
-const isUserLoggedIn = ref(false); // DEFAULT: BEFORE LOGIN
+// State Utama: guest, user, atau shelter. Default diambil dari localStorage.
+const userRole = ref(localStorage.getItem('userRole') || 'guest'); 
 
-function handleUserLogin() {
-    isUserLoggedIn.value = true;
-    // Logika navigasi ke /beranda setelah login bisa ditambahkan di sini jika perlu
+// Fungsi yang dipanggil dari LoginPage/SignupPage saat login berhasil
+function handleUserLogin(role) {
+    if (role === 'user' || role === 'shelter') {
+        userRole.value = role;
+        localStorage.setItem('userRole', role); // Simpan status di localStorage
+    }
 }
+
+// Fungsi yang dipanggil dari AppHeader saat Sign Out
+function handleUpdateLoginStatus(status) {
+    if (status === false) {
+        userRole.value = 'guest';
+        localStorage.removeItem('userRole');
+    }
+}
+
+// Cek status saat aplikasi dimuat pertama kali
+onMounted(() => {
+    const storedRole = localStorage.getItem('userRole');
+    if (storedRole) {
+        userRole.value = storedRole;
+    }
+});
 </script>
 
 <style>

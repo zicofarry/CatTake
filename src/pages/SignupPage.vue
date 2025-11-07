@@ -6,6 +6,34 @@
       <p class="text-gray-500 mb-8">Please enter your details</p>
       
       <form @submit.prevent="handleSignup">
+        
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-3">Daftar Sebagai:</h3>
+            <div class="flex justify-between gap-3">
+                <button 
+                    type="button"
+                    @click="selectedRole = 'user'"
+                    :class="{ 
+                        'bg-green-700 text-white shadow-md': selectedRole === 'user',
+                        'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200': selectedRole !== 'user'
+                    }"
+                    class="flex-1 py-2 rounded-xl font-semibold transition duration-200"
+                >
+                    User Biasa
+                </button>
+                <button 
+                    type="button"
+                    @click="selectedRole = 'shelter'"
+                    :class="{ 
+                        'bg-green-700 text-white shadow-md': selectedRole === 'shelter',
+                        'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200': selectedRole !== 'shelter'
+                    }"
+                    class="flex-1 py-2 rounded-xl font-semibold transition duration-200"
+                >
+                    Shelter
+                </button>
+            </div>
+        </div>
         <div class="relative mb-5">
           <input type="text" v-model="fullName" placeholder="Full Name" required
                  class="w-full py-3 px-4 border border-gray-200 rounded-xl font-sans text-base shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
@@ -24,7 +52,12 @@
         </div>
         
         <button type="submit" 
-          class="inline-block w-40 py-3 bg-yellow-500 hover:bg-yellow-600 border-none rounded-full text-gray-800 mt-5 font-bold cursor-pointer shadow-lg transition duration-300"
+          :disabled="!selectedRole"
+          class="inline-block w-40 py-3 bg-yellow-500 border-none rounded-full text-gray-800 mt-5 font-bold cursor-pointer shadow-lg transition duration-300"
+          :class="{ 
+              'hover:bg-yellow-600 opacity-100': selectedRole,
+              'opacity-50 cursor-not-allowed': !selectedRole 
+          }"
           style="background: linear-gradient(180deg, #FBC02D 0%, #E0C048 100%); box-shadow: 0 4px 10px rgba(251, 192, 45, 0.4);"
         >
           Sign Up
@@ -33,7 +66,7 @@
       
       <div class="flex items-center text-center text-gray-400 my-6">
         <div class="flex-grow border-b border-gray-300 mx-2"></div>
-        <span>or</span>
+        <span class="text-sm">or</span>
         <div class="flex-grow border-b border-gray-300 mx-2"></div>
       </div>
       
@@ -48,6 +81,10 @@
         </p>
       </div>
     </div>
+    
+    <div class="absolute top-10 left-1/2 transform -translate-x-1/2 z-20 md:top-12">
+        <img src="../assets/img/catTakePutih.png" alt="Logo CatTake" class="w-32 h-auto md:w-40">
+    </div>
   </div>
 </template>
 
@@ -60,14 +97,20 @@ const fullName = ref('');
 const signupUsername = ref('');
 const signupPassword = ref('');
 const confirmPassword = ref('');
+const selectedRole = ref(null); // State untuk memilih role
 
 function handleSignup() {
   if (signupPassword.value !== confirmPassword.value) {
     alert('Password dan Konfirmasi Password harus sama!');
     return;
   }
+  if (!selectedRole.value) {
+    alert('Mohon pilih jenis akun (User Biasa atau Shelter)!');
+    return;
+  }
   
-  alert(`Attempting to sign up user: ${signupUsername.value}`);
+  // Simulasi pendaftaran berhasil dan langsung diarahkan ke halaman login
+  router.push('/login');
 }
 </script>
 
