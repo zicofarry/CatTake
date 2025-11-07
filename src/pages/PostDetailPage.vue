@@ -10,15 +10,19 @@ const post = computed(() => {
   return allPosts.value.find(p => p.id === postId)
 })
 
-// --- Logika Komentar (tetap sama) ---
-const comments = ref([
-  { id: 1, user: 'Anas', text: 'Setuju banget, sterilisasi penting!' },
-  { id: 2, user: 'Azmi', text: 'Kucingku juga baru disteril minggu lalu.' },
-])
+// --- LOGIKA KOMENTAR (INI YANG BERUBAH) ---
+
+// 1. Hapus 'ref' komentar yang di-hardcode.
+// 2. Buat 'ref' komentar baru yang mengambil data dari 'post.value'.
+//    Kita pakai '...' (spread operator) untuk membuat salinan, 
+//    jadi komentar baru tidak mengubah data asli.
+const comments = ref(post.value ? [...post.value.commentData] : [])
+
 const newComment = ref('')
 
 function addComment() {
   if (newComment.value.trim() === '') return
+  // 3. 'push' ke 'ref' lokal. Ini sudah benar.
   comments.value.push({
     id: Date.now(),
     user: 'Diana', // Nanti bisa diganti user login
@@ -29,11 +33,17 @@ function addComment() {
 </script>
 
 <template>
-  <div class="bg-[#1A3A34] min-h-screen p-10 font-sans">
+  <div class="bg-[#1A3A34] min-h-screen p-5 md:p-10 font-sans">
     
+    <router-link 
+      to="/komunitas" 
+      class="inline-block bg-[#2D4A45] text-white font-semibold py-2 px-4 rounded-lg mb-6 hover:bg-[#4a6d68] transition-colors">
+      &lt; Kembali
+    </router-link>
+
     <div v-if="post" class="max-w-3xl mx-auto">
       
-      <div class="bg-white text-gray-800 rounded-xl p-8 shadow-lg">
+      <div class="bg-white text-gray-800 rounded-xl p-6 md:p-8 shadow-lg">
         
         <div class="flex items-center gap-3 mb-4">
             <img :src="post.profileImg" :alt="post.author" class="w-11 h-11 rounded-full" />
@@ -44,7 +54,7 @@ function addComment() {
             <img src="../assets/img/titik3.png" alt="menu" class="h-6 w-6" />
         </div>
 
-        <h1 class="text-4xl font-bold text-gray-900">{{ post.title }}</h1>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">{{ post.title }}</h1>
         <img :src="post.postImg" :alt="post.title" class="w-full rounded-lg mt-4" />
         
         <p class="text-gray-700 mt-4 whitespace-pre-line">
@@ -80,6 +90,11 @@ function addComment() {
     <div v-else class="text-center">
       <h1 class="text-4xl font-bold text-white">404</h1>
       <p class="text-gray-400">Postingan tidak ditemukan.</p>
+      <router-link 
+        to="/komunitas" 
+        class="inline-block bg-[#2D4A45] text-white font-semibold py-2 px-4 rounded-lg mt-4 hover:bg-[#4a6d68] transition-colors">
+        &lt; Kembali
+      </router-link>
     </div>
 
   </div>

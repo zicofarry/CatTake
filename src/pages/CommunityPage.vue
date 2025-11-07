@@ -17,7 +17,7 @@
                     </div>
                     
                     <div class="flex flex-col gap-5">
-                        <PostCard v-for="post in posts" :key="post.id" :postData="post" />
+                        <PostCard v-for="post in filteredPosts" :key="post.id" :postData="post" />
                     </div>
                 </div>
 
@@ -90,33 +90,47 @@
 </template>
 
 <script setup>
-// INI ADALAH BLOK SCRIPT YANG BENAR (HANYA SATU)
-import { ref } from 'vue';
+// 1. TAMBAHKAN 'computed'
+import { ref, computed } from 'vue';
 import PostCard from '../components/PostCard.vue';
-// Impor data dari file terpisah
 import { allPosts } from '../data/posts.js'; 
 
-// Gunakan data yang diimpor
-const posts = allPosts;
+// 2. Ganti nama variabel ini biar jelas
+const allPostsData = allPosts;
 
-// Data sidebar (ini bisa kamu hardcode di sini)
+// Data sidebar (PERBAIKI PATH-NYA KE /public/img/)
 const activeMembers = ref([
-    { name: 'Anas', profilePic: '/img/profileAnas.png' },
-    { name: 'Azmi', profilePic: '/img/profileAzmi.png' },
+    { name: 'Anas', profilePic: '/img/profileAnas.png' },
+    { name: 'Azmi', profilePic: '/img/profileAzmi.png' },
 ]);
 
 const popularPosts = ref([
-    { title: 'Tips membuat raw food untuk kucing', image: '/img/postinganPopuler1.png' },
-    { title: 'Oyen sembuh setelah di sterilisasi', image: '/img/postinganPopuler2.png' },
+    { title: 'Tips membuat raw food untuk kucing', image: '/img/postinganPopuler1.png' },
+    { title: 'Oyen sembuh setelah di sterilisasi', image: '/img/postinganPopuler2.png' },
 ]);
 
 const catFact = ref({
-    fact: 'Kucing tidur 12-16 jam sehari',
-    image: '/img/logoFaktaKucing.png'
+    fact: 'Kucing tidur 12-16 jam sehari',
+    image: '/img/logoFaktaKucing.png'
 });
 
-// Data untuk kedua search bar
 const searchQuery = ref('');
+
+// 3. Logika Filter (Sudah Benar)
+const filteredPosts = computed(() => {
+  if (!searchQuery.value) {
+    return allPostsData.value;
+  }
+  const query = searchQuery.value.toLowerCase().trim();
+  return allPostsData.value.filter(post => {
+    return (
+      post.title.toLowerCase().includes(query) ||
+      post.excerpt.toLowerCase().includes(query) ||
+      post.community.toLowerCase().includes(query) ||
+      post.author.toLowerCase().includes(query)
+    );
+  });
+});
 </script>
 
 <style scoped>
