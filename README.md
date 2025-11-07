@@ -17,6 +17,7 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
    npm install vue-router@4
    npm install tailwindcss @tailwindcss/vite
    npm install vite-plugin-vue-devtools --save-dev
+   npm install leaflet
    ```
 
 3. Jalankan server

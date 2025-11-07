@@ -35,6 +35,12 @@
       </div>
 
       <div class="bg-white p-8 md:p-12 rounded-[50px] shadow-2xl relative z-20">
+        <LoginOverlay 
+            :isLoggedIn="isLoggedInProp" 
+            message="Kamu perlu login dulu sebelum melaporkan kucing." 
+            buttonText="Login Sekarang" 
+            loginRoute="/login"
+          />
         <form @submit.prevent="submitReport" class="space-y-8">
           
           <div v-if="activeReportType === 'missing'">
@@ -133,6 +139,11 @@
 import { ref, reactive, nextTick, onUnmounted } from 'vue';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+
+import LoginOverlay from '../components/LoginOverlay.vue';
+const props = defineProps({
+  isLoggedInProp: Boolean
+});
 
 const dummyOwners = ref([
     { id: 'OWN001', name: 'Ahmad Supriatna' },

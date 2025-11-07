@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.16",
+    "leaflet": "^1.9.4",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3"
   },
