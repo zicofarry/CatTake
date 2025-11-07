@@ -2,7 +2,10 @@
   <div id="app">
     <AppHeader :isLoggedInProp="isUserLoggedIn" @update-login-status="isUserLoggedIn = $event" /> 
     
-    <router-view @user-logged-in="handleUserLogin"></router-view>
+    <router-view 
+      :isLoggedInProp="isUserLoggedIn" 
+      @user-logged-in="handleUserLogin"
+    />
 
   </div>
 </template>
