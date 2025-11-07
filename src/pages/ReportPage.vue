@@ -23,12 +23,20 @@
       
       <div class="flex flex-wrap justify-center gap-6 mb-12">
         <div class="bg-gray-200/80 backdrop-blur-sm p-3 rounded-[30px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]">
-            <button @click="setActiveReportType('stray')" class="min-w-[200px] py-4 px-8 rounded-[25px] font-bold text-xl transition-all duration-300" :class="activeReportType === 'stray' ? 'bg-[#EBCD5E] text-white shadow-md' : 'bg-transparent text-gray-700 hover:bg-white/50'">
+            <button 
+              @click="setActiveReportType('stray')"
+              class="min-w-[200px] py-4 px-8 rounded-[25px] font-bold text-xl transition-all duration-300"
+              :class="activeReportType === 'stray' ? 'bg-[#EBCD5E] text-white shadow-md' : 'bg-transparent text-gray-700 hover:bg-white/50'"
+            >
               Kucing Liar
             </button>
         </div>
         <div class="bg-gray-200/80 backdrop-blur-sm p-3 rounded-[30px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]">
-            <button @click="setActiveReportType('missing')" class="min-w-[200px] py-4 px-8 rounded-[25px] font-bold text-xl transition-all duration-300" :class="activeReportType === 'missing' ? 'bg-[#E9B92F] text-white shadow-md' : 'bg-transparent text-gray-700 hover:bg-white/50'">
+            <button 
+              @click="setActiveReportType('missing')"
+              class="min-w-[200px] py-4 px-8 rounded-[25px] font-bold text-xl transition-all duration-300"
+              :class="activeReportType === 'missing' ? 'bg-[#E9B92F] text-white shadow-md' : 'bg-transparent text-gray-700 hover:bg-white/50'"
+            >
               Kucing Hilang
             </button>
         </div>
@@ -43,24 +51,42 @@
           />
         <form @submit.prevent="submitReport" class="space-y-8">
           
-          <div v-if="activeReportType === 'missing'">
-            <label for="ownerName" class="block text-xl font-bold text-[#1F1F1F] mb-4">Nama Pemilik (Pelapor)</label>
+          <div v-if="activeReportType === 'missing'" class="relative">
+            <label for="ownerName" class="block text-xl font-bold text-[#1F1F1F] mb-4">Nama Pemilik</label>
+            
             <div class="relative">
-                <select 
-                  id="ownerName" 
-                  v-model="reportForm.ownerName" 
-                  required
-                  class="w-full p-5 bg-gray-200 rounded-2xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] text-lg appearance-none cursor-pointer"
+                <input 
+                  type="text" 
+                  id="ownerName"
+                  v-model="searchQuery"
+                  @focus="isDropdownOpen = true"
+                  @blur="handleBlur"
+                  placeholder="Ketik nama pemilik..."
+                  autocomplete="off"
+                  class="w-full p-5 bg-gray-200 rounded-2xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg"
                 >
-                  <option value="" disabled selected>Pilih Nama Pemilik</option>
-                  <option v-for="owner in dummyOwners" :key="owner.id" :value="owner.name">
-                    {{ owner.name }} (ID: {{ owner.id }})
-                  </option>
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-6 flex items-center text-gray-600">
-                  <i class="fas fa-chevron-down"></i>
+                <div class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                    <i class="fas fa-search" v-if="!isDropdownOpen"></i>
+                    <i class="fas fa-chevron-up" v-else></i>
                 </div>
             </div>
+
+            <transition name="fade">
+                <ul v-if="isDropdownOpen" class="absolute z-50 w-full bg-white mt-2 rounded-2xl shadow-xl max-h-60 overflow-y-auto border border-gray-100">
+                    <li v-if="filteredOwners.length === 0" class="p-4 text-gray-500 text-center">
+                        Tidak ada nama yang cocok.
+                    </li>
+                    <li 
+                        v-for="owner in filteredOwners" 
+                        :key="owner.id"
+                        @mousedown.prevent="selectOwner(owner)"
+                        class="p-4 hover:bg-[#EBCD5E]/10 cursor-pointer transition-colors border-b border-gray-50 last:border-none flex justify-between items-center"
+                    >
+                        <span class="text-[#1F1F1F] font-medium">{{ owner.name }}</span>
+                        <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">{{ owner.id }}</span>
+                    </li>
+                </ul>
+            </transition>
           </div>
 
           <div>
@@ -136,32 +162,67 @@
 </template>
 
 <script setup>
-import { ref, reactive, nextTick, onUnmounted } from 'vue';
+import { ref, reactive, computed, nextTick, onUnmounted } from 'vue';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-
 import LoginOverlay from '../components/LoginOverlay.vue';
 const props = defineProps({
   isLoggedInProp: Boolean
 });
 
+// --- DATA PEMILIK (DUMMY) ---
+// Tambahkan lebih banyak nama biar kelihatan efek filternya
 const dummyOwners = ref([
     { id: 'OWN001', name: 'Ahmad Supriatna' },
-    { id: 'OWN002', name: 'Siti Aminah' },
-    { id: 'OWN003', name: 'Budi Santoso' },
-    { id: 'OWN004', name: 'Citra Kirana' },
+    { id: 'OWN002', name: 'Anas Miftakhul Falah' },
+    { id: 'OWN003', name: 'Anas Siapa Gitu' },
+    { id: 'OWN004', name: 'Budi Santoso' },
+    { id: 'OWN005', name: 'Citra Kirana' },
+    { id: 'OWN006', name: 'Diana Pungky' },
+    { id: 'OWN007', name: 'Eko Patrio' },
 ]);
 
+// --- STATE UTAMA ---
 const activeReportType = ref('stray');
 const isDragging = ref(false);
 const fileInput = ref(null);
 const reportForm = reactive({
-    ownerName: '',
+    ownerName: '', // Nilai akhir yang akan disubmit
     location: '',
     description: '',
     file: null,
 });
 
+// --- STATE AUTOCOMPLETE ---
+const searchQuery = ref('');      // Apa yang diketik user
+const isDropdownOpen = ref(false); // Apakah dropdown sugesti muncul
+
+// Filter daftar pemilik berdasarkan ketikan user
+const filteredOwners = computed(() => {
+    if (!searchQuery.value) {
+        return dummyOwners.value; // Tampilkan semua jika belum mengetik
+    }
+    return dummyOwners.value.filter(owner => 
+        owner.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+});
+
+// --- FUNGSI AUTOCOMPLETE ---
+function selectOwner(owner) {
+    searchQuery.value = owner.name;      // Isi input dengan nama yang dipilih
+    reportForm.ownerName = owner.name;   // Simpan ke data form
+    isDropdownOpen.value = false;        // Tutup dropdown
+}
+
+// Saat input kehilangan fokus (klik di luar), tutup dropdown.
+// Kita pakai sedikit delay agar event 'click' pada list sempat tereksekusi.
+function handleBlur() {
+    setTimeout(() => {
+        isDropdownOpen.value = false;
+    }, 200);
+}
+
+// --- STATE PETA ---
 const showMapModal = ref(false);
 const isLoadingMap = ref(false);
 let map = null;
@@ -170,7 +231,10 @@ const tempLocation = ref('');
 
 function setActiveReportType(type) {
     activeReportType.value = type;
-    if (type === 'stray') reportForm.ownerName = '';
+    if (type === 'stray') {
+        reportForm.ownerName = '';
+        searchQuery.value = ''; // Reset juga search query-nya
+    }
 }
 
 function triggerFileInput() { fileInput.value.click(); }
@@ -185,7 +249,7 @@ async function openMapModal() {
     await nextTick();
     if (!map) {
         map = L.map('mapContainer').setView([-6.2088, 106.8456], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
         map.on('click', (e) => { const { lat, lng } = e.latlng; setMarker(lat, lng); });
     }
     if (navigator.geolocation) {
@@ -218,10 +282,19 @@ function closeMapModal() {
 
 onUnmounted(() => { if (map) map.remove(); });
 
-function submitReport() { alert(`Laporan berhasil dikirim!\nPemilik: ${reportForm.ownerName}\nLokasi: ${reportForm.location}`); }
+function submitReport() {
+    // Pastikan ownerName terisi dari searchQuery jika user mengetik manual tanpa memilih dari list
+    if (activeReportType.value === 'missing' && !reportForm.ownerName) {
+        reportForm.ownerName = searchQuery.value;
+    }
+    alert(`Laporan berhasil dikirim!\nPemilik: ${reportForm.ownerName}\nLokasi: ${reportForm.location}`);
+}
 </script>
 
 <style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-10px); }
+
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
