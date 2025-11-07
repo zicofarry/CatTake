@@ -1,5 +1,11 @@
 <template>
-  <main class="bg-[#1A3A34] text-white min-h-screen py-8 font-sans">
+  <main 
+    class="bg-[#2c473c] text-white min-h-screen py-8 font-sans bg-fixed bg-center bg-repeat"
+    style="
+        background-image: url('/img/background.png');
+        background-size: 360px; /* ubah ukuran pola */
+    "
+    >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Header -->
       <div class="main-content flex-auto md:w-2/3">

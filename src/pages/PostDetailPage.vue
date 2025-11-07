@@ -33,7 +33,12 @@ function addComment() {
 </script>
 
 <template>
-  <div class="bg-[#1A3A34] min-h-screen p-5 md:p-10 font-sans">
+  <div class="bg-[#2c473c] min-h-screen p-5 md:p-10 font-sans"
+
+    style="
+        background-image: url('/img/background.png');
+        background-size: 360px; /* ubah ukuran pola */
+    ">
     
     <router-link 
       to="/komunitas" 
