@@ -27,6 +27,7 @@ function handleUserLogin(role) {
         userRole.value = role;
         isUserLoggedIn.value = true;
         localStorage.setItem('userRole', role); // Simpan status di localStorage
+        localStorage.setItem('isLoggedIn', 'true')
     }
 }
 
@@ -35,14 +36,19 @@ function handleUpdateLoginStatus(status) {
     if (status === false) {
         userRole.value = 'guest';
         localStorage.removeItem('userRole');
+        localStorage.removeItem('isLoggedIn');
     }
 }
 
 // Cek status saat aplikasi dimuat pertama kali
 onMounted(() => {
     const storedRole = localStorage.getItem('userRole');
+    const storedLogin = localStorage.getItem('isLoggedIn');
     if (storedRole) {
         userRole.value = storedRole;
+    }
+    if (storedLogin === 'true') {
+      isUserLoggedIn.value = true;
     }
 });
 </script>
