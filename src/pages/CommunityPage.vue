@@ -22,68 +22,117 @@
                 </div>
 
                 <aside class="flex flex-col gap-6 md:w-1/3">
-                    
+                    <!-- Search Bar (Desktop Only) -->
                     <div class="search-bar-desktop hidden md:flex">
-                         <div class="bg-white rounded-full p-3 shadow-md flex items-center gap-2 w-full">
-                            <img src="../assets/img/Search.png" alt="Search" class="w-5 h-5 opacity-60 ml-2" />
-                            <input type="text" placeholder="Cari di komunitas" v-model="searchQuery"
-                                class="border-none outline-none w-full bg-transparent font-sans text-sm text-gray-800 placeholder-gray-400">
+                        <div class="bg-white rounded-full p-3 shadow-md flex items-center gap-2 w-full">
+                        <img
+                            src="../assets/img/Search.png"
+                            alt="Search"
+                            class="w-5 h-5 opacity-60 ml-2"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Cari di komunitas"
+                            v-model="searchQuery"
+                            class="border-none outline-none w-full bg-transparent font-sans text-sm text-gray-800 placeholder-gray-400"
+                        />
                         </div>
                     </div>
 
-                    <section class="bg-[#2D4A45] rounded-xl p-5 shadow-lg">
-                        <h3 class="text-lg font-semibold mb-4">Event Mendatang</h3>
+                    <!-- Event Mendatang -->
+                    <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-900">Event Mendatang</h3>
                         <div class="flex items-center gap-3 mb-4">
-                            <img src="../assets/img/calendar.png" alt="Kalender" class="w-8 h-8 object-contain" />
-                            <div>
-                                <strong class="block text-base">Sterilisasi Gratis</strong>
-                                <span class="text-sm text-gray-400">15 Oktober 2025</span>
-                            </div>
+                        <img
+                            src="../assets/img/calendar.png"
+                            alt="Kalender"
+                            class="w-8 h-8 object-contain"
+                        />
+                        <div>
+                            <strong class="block text-base">Sterilisasi Gratis</strong>
+                            <span class="text-sm text-gray-900">15 Oktober 2025</span>
                         </div>
-                        <div class="flex items-center gap-3 mb-4">
-                            <img src="../assets/img/time.png" alt="Waktu" class="w-8 h-8 object-contain" />
-                            <div>
-                                <strong class="block text-base">Pukul 09:00 WIB</strong>
-                            </div>
                         </div>
+
                         <div class="flex items-center gap-3 mb-4">
-                            <img src="../assets/img/location.png" alt="Lokasi" class="w-8 h-8 object-contain" />
-                            <div>
-                                <strong class="block text-base">Klinik CatCare</strong>
-                            </div>
+                        <img
+                            src="../assets/img/time.png"
+                            alt="Waktu"
+                            class="w-8 h-8 object-contain"
+                        />
+                        <div>
+                            <strong class="block text-base">Pukul 09:00 WIB</strong>
+                        </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 mb-4">
+                        <img
+                            src="../assets/img/location.png"
+                            alt="Lokasi"
+                            class="w-8 h-8 object-contain"
+                        />
+                        <div>
+                            <strong class="block text-base">Klinik CatCare</strong>
+                        </div>
                         </div>
                     </section>
 
-                    <section class="bg-[#2D4A45] rounded-xl p-5 shadow-lg">
-                        <h3 class="text-lg font-semibold mb-4">Sobat Paws Teraktif</h3>
-                        <div v-for="member in activeMembers" :key="member.name" class="flex items-center gap-3 mb-2">
-                            <img :src="member.profilePic" :alt="member.name" class="w-10 h-10 rounded-full object-cover">
-                            <span>{{ member.name }}</span>
-                        </div>
-                    </section>
-                    
-                    <section class="bg-[#2D4A45] rounded-xl p-5 shadow-lg">
-                        <h3 class="text-lg font-semibold mb-4">Postingan Populer</h3>
-                        <div v-for="popular in popularPosts" :key="popular.title" class="flex items-center gap-3 mb-4">
-                            <img :src="popular.image" :alt="popular.title" class="w-12 h-12 rounded-lg object-cover">
-                            <span>{{ popular.title }}</span>
+                    <!-- Sobat Paws Teraktif -->
+                    <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-900">Sobat Paws Teraktif</h3>
+                        <div
+                        v-for="member in activeMembers"
+                        :key="member.name"
+                        class="flex items-center gap-3 mb-2"
+                        >
+                        <img
+                            :src="member.profilePic"
+                            :alt="member.name"
+                            class="w-10 h-10 rounded-full object-cover"
+                        />
+                        <span>{{ member.name }}</span>
                         </div>
                     </section>
 
-                    <section class="bg-[#2D4A45] rounded-xl p-5 shadow-lg">
-                        <h3 class="text-lg font-semibold mb-4">Fakta Kucing</h3>
+                    <!-- Postingan Populer -->
+                    <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-900">Postingan Populer</h3>
+                        <div
+                        v-for="popular in popularPosts"
+                        :key="popular.title"
+                        class="flex items-center gap-3 mb-4"
+                        >
+                        <img
+                            :src="popular.image"
+                            :alt="popular.title"
+                            class="w-12 h-12 rounded-lg object-cover"
+                        />
+                        <span>{{ popular.title }}</span>
+                        </div>
+                    </section>
+
+                    <!-- Fakta Kucing -->
+                    <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-900">Fakta Kucing</h3>
                         <div class="flex items-center gap-3">
-                            <img :src="catFact.image" alt="Fakta Kucing" class="w-12 h-12 rounded-lg object-cover">
-                            <p class="text-sm">{{ catFact.fact }}</p>
+                        <img
+                            :src="catFact.image"
+                            alt="Fakta Kucing"
+                            class="w-12 h-12 rounded-lg object-cover"
+                        />
+                        <p class="text-sm">{{ catFact.fact }}</p>
                         </div>
-                        <router-link 
-                          to="/fakta" 
-                          class="block text-right mt-4 text-[#78C89F] font-semibold text-sm hover:underline">
-                          Fakta Lainnya
-                        </router-link>
-                    </section>
 
-                </aside>
+                        <div class="text-right mt-4">
+                        <router-link
+                            to="/fakta"
+                            class="inline-block bg-[#78C89F] text-gray-800 font-bold text-sm py-2 px-4 rounded-lg hover:bg-[#6abf95] transition-colors"
+                        >
+                            Fakta Lainnya
+                        </router-link>
+                        </div>
+                    </section>
+                    </aside>
             </div>
         </div>
     </main>
@@ -100,18 +149,18 @@ const allPostsData = allPosts;
 
 // Data sidebar (PERBAIKI PATH-NYA KE /public/img/)
 const activeMembers = ref([
-    { name: 'Anas', profilePic: '/img/profileAnas.png' },
-    { name: 'Azmi', profilePic: '/img/profileAzmi.png' },
+    { name: 'Anas', profilePic: '/img/profileAnas.png' },
+    { name: 'Azmi', profilePic: '/img/profileAzmi.png' },
 ]);
 
 const popularPosts = ref([
-    { title: 'Tips membuat raw food untuk kucing', image: '/img/postinganPopuler1.png' },
-    { title: 'Oyen sembuh setelah di sterilisasi', image: '/img/postinganPopuler2.png' },
+    { title: 'Tips membuat raw food untuk kucing', image: '/img/postinganPopuler1.png' },
+    { title: 'Oyen sembuh setelah di sterilisasi', image: '/img/postinganPopuler2.png' },
 ]);
 
 const catFact = ref({
-    fact: 'Kucing tidur 12-16 jam sehari',
-    image: '/img/logoFaktaKucing.png'
+    fact: 'Kucing tidur 12-16 jam sehari',
+    image: '/img/logoFaktaKucing.png'
 });
 
 const searchQuery = ref('');
