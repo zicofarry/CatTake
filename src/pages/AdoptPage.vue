@@ -114,7 +114,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import CatCard from '../components/CatCard.vue';
 import HeroSection from '../components/HeroSection.vue';
 import LoginOverlay from '../components/LoginOverlay.vue';
@@ -133,13 +133,35 @@ const mockAdoptionReports = ref([
 
 
 // --- LOGIKA UNTUK USER VIEW ---
-const catData = ref([
-  { id: 1, name: 'Oyen', shelter: 'CatHouse', gender: 'male', age: '6 Bulan', image: 'oyencat.png', isFavorite: false },
-  { id: 2, name: 'Abul', shelter: 'PawCare', gender: 'male', age: '5 Bulan', image: 'minicat.png', isFavorite: false },
-  { id: 3, name: 'Simba', shelter: 'Meow Haven', gender: 'male', age: '2 Tahun', image: 'bradercat.png', isFavorite: false },
-  { id: 4, name: 'Mueza', shelter: 'CatHouse', gender: 'female', age: '8 Bulan', image: 'mochacat.png', isFavorite: false },
-  { id: 5, name: 'Kitty', shelter: 'PawCare', gender: 'female', age: '3 Tahun', image: 'kitty.png', isFavorite: false },
-]);
+// const catData = ref([
+//   { id: 1, name: 'Oyen', shelter: 'CatHouse', gender: 'male', age: '6 Bulan', image: 'oyencat.png', isFavorite: false },
+//   { id: 2, name: 'Abul', shelter: 'PawCare', gender: 'male', age: '5 Bulan', image: 'minicat.png', isFavorite: false },
+//   { id: 3, name: 'Simba', shelter: 'Meow Haven', gender: 'male', age: '2 Tahun', image: 'bradercat.png', isFavorite: false },
+//   { id: 4, name: 'Mueza', shelter: 'CatHouse', gender: 'female', age: '8 Bulan', image: 'mochacat.png', isFavorite: false },
+//   { id: 5, name: 'Kitty', shelter: 'PawCare', gender: 'female', age: '3 Tahun', image: 'kitty.png', isFavorite: false },
+// ]);
+const catData = ref([]); // Asalnya ada data, sekarang kosong
+
+// 3. TAMBAHKAN 'onMounted' UNTUK MENGAMBIL DATA
+onMounted(async () => {
+  try {
+    // Panggil backend Anda
+    const response = await fetch('http://localhost:3000/api/kucing'); 
+    
+    if (!response.ok) {
+      throw new Error('Gagal mengambil data dari server');
+    }
+    
+    const dataFromBackend = await response.json();
+    
+    // 4. MASUKKAN DATA DARI BACKEND KE 'catData'
+    catData.value = dataFromBackend; 
+    
+  } catch (error) {
+    console.error('Error saat fetching data kucing:', error);
+    // Handle error, mungkin tampilkan pesan di UI
+  }
+});
 
 const activeFilter = ref('all'); 
 const genderFilter = ref('all');
