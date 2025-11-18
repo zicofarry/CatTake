@@ -35,7 +35,16 @@
             </div>
         </div>
         <div class="relative mb-5">
-          <input type="text" v-model="fullName" placeholder="Full Name" required
+          <input type="email" v-model="signupEmail" placeholder="Email" required
+                class="w-full py-3 px-4 border border-gray-200 rounded-xl font-sans text-base shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+        </div>
+
+        <div class="relative mb-5" v-if="selectedRole === 'shelter'">
+          <input type="text" v-model="shelterName" placeholder="Nama Resmi Shelter (Wajib)" required
+                class="w-full py-3 px-4 border border-gray-200 rounded-xl font-sans text-base shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+        </div>
+        <div class="relative mb-5">
+          <input type="text" v-model="fullName" :placeholder="selectedRole === 'shelter' ? 'Nama Lengkap Penanggung Jawab' : 'Nama Lengkap'" required
                  class="w-full py-3 px-4 border border-gray-200 rounded-xl font-sans text-base shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
         </div>
         <div class="relative mb-5">
@@ -47,7 +56,7 @@
                  class="w-full py-3 px-4 border border-gray-200 rounded-xl font-sans text-base shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
         </div>
         <div class="relative mb-5">
-          <input type="password" v-model="confirmPassword" placeholder="Confirm Password" required
+          <input type="password" v-model="confirmPassword" placeholder="Konfirmasi Password" required
                  class="w-full py-3 px-4 border border-gray-200 rounded-xl font-sans text-base shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
         </div>
         
@@ -91,6 +100,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router'; 
+import apiClient from '@/api/http';
 
 const router = useRouter(); 
 const fullName = ref('');
@@ -98,8 +108,11 @@ const signupUsername = ref('');
 const signupPassword = ref('');
 const confirmPassword = ref('');
 const selectedRole = ref(null); // State untuk memilih role
+const signupEmail = ref(''); // Diperlukan untuk login
+const shelterName = ref(''); // Diperlukan jika role='shelter'
+const isLoading = ref(false); // Untuk UX
 
-function handleSignup() {
+async function handleSignup() {
   if (signupPassword.value !== confirmPassword.value) {
     alert('Password dan Konfirmasi Password harus sama!');
     return;
@@ -109,8 +122,57 @@ function handleSignup() {
     return;
   }
   
-  // Simulasi pendaftaran berhasil dan langsung diarahkan ke halaman login
-  router.push('/login');
+  if (selectedRole.value === 'shelter' && !shelterName.value) {
+    alert('Nama Resmi Shelter wajib diisi.');
+    return;
+  }
+
+  isLoading.value = true;
+
+  const data = {
+    username: signupUsername.value,
+    password: signupPassword.value,
+    email: signupEmail.value,
+    role: selectedRole.value === 'user' ? 'individu' : 'shelter',
+    full_name: fullName.value,
+    contact_phone: '', //tes
+  };
+
+  if (data.role === 'individu') {
+    // data.full_name = fullName.value;
+    // Nilai dummy yang diperlukan backend untuk lolos INSERT:
+    data.address = 'alamat belum diverifikasi';
+    const uniqueSuffix = Date.now().toString(); 
+    data.nik = `3273${uniqueSuffix}${Math.floor(Math.random() * 1000)}`; 
+    data.job = 'Unknown';
+    data.gender = 'male'; 
+    data.birth_date = '1990-01-01'; 
+    
+  } else if (data.role === 'shelter') {
+    data.shelter_name = shelterName.value;
+    // Nilai dummy yang diperlukan backend:
+    data.pj_name = fullName.value; 
+    data.pj_nik = `3273PJ${Math.floor(Math.random() * 90000 + 10000)}`; 
+    data.organization_type = 'Komunitas'; 
+  }
+
+  try {
+    await apiClient.post('/auth/register', data);
+    
+    alert(`Pendaftaran ${selectedRole.value} berhasil! Silakan Login.`);
+    router.push('/login');
+    
+  } catch (error) {
+    if (error.response?.status === 409) {
+        alert('Gagal: Email/Username/NIK sudah terdaftar.');
+    } else {
+        const errorMessage = error.response?.data?.error || 'Pendaftaran gagal. Server error.';
+        alert(errorMessage);
+    }
+    console.error('Registration error:', error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 </script>
 

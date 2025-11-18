@@ -13,7 +13,7 @@ fastify.register(require('@fastify/cors'), {
 // =============================
 fastify.register(require('@fastify/postgres'), {
   // Ganti 'USER', 'PASSWORD', dan 'cattake_db' sesuai pengaturan Postgres Anda!
-  connectionString: 'postgres://postgres:3636@localhost:5432/db_cattake' 
+  connectionString: 'postgres://postgres:3636@localhost:5432/cattake' 
 })
 // =============================
 
@@ -36,20 +36,22 @@ fastify.get('/api/kucing', async (request, reply) => {
     // 2. BUAT QUERY
     // Kita pakai JOIN untuk mengambil nama shelter (dari tabel users)
     const query = `
-        SELECT 
-            cats.id, 
-            cats.name, 
-            users.username AS shelter_name, 
-            cats.gender, 
-            cats.age_in_months, 
-            cats.photo
-        FROM 
-            cats
-        JOIN 
-            users ON cats.shelter_id = users.id
-        WHERE 
-            cats.adoption_status = 'available' 
-            AND users.role = 'shelter';
+      SELECT 
+          c.id, 
+          c.name, 
+          d.shelter_name, 
+          c.gender, 
+          c.age,
+          c.photo
+      FROM 
+          cats c
+      JOIN 
+          users u ON c.shelter_id = u.id 
+      JOIN 
+          detail_user_shelter d ON u.id = d.id
+      WHERE 
+          c.adoption_status = 'available' 
+          AND u.role = 'shelter';
     `
     const { rows } = await client.query(query)
 

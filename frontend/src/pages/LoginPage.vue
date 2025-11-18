@@ -8,7 +8,7 @@
       <form @submit.prevent="handleLogin">
         <div class="relative mb-5">
           <i class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 z-10"></i>
-          <input type="text" v-model="username" placeholder="Username" required
+          <input type="text" v-model="identifier" placeholder="Username / Email" required
                  class="w-full py-3 pl-10 pr-4 border border-gray-200 rounded-xl font-sans text-base shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
         </div>
         <div class="relative mb-5">
@@ -52,27 +52,48 @@
 <script setup>
 import { ref, defineEmits } from 'vue';
 import { useRouter } from 'vue-router'; 
+import apiClient from '@/api/http';
 
 const router = useRouter(); 
 const emit = defineEmits(['user-logged-in']); // Event ke App.vue
 
-const username = ref('');
-const password = ref(''); 
+const identifier = ref('');
+const password = ref('');
+const isLoading = ref(false);
 
-function handleLogin() {
-  if (username.value && password.value) {
-     let roleToEmit = 'user'; 
-     
-     // Simulasi: Jika username mengandung "shelter", asumsikan role shelter
-     if (username.value.toLowerCase().includes('shelter')) {
-         roleToEmit = 'shelter';
-     } else {
-         roleToEmit = 'user';
-     }
+async function handleLogin() {
+  if (!identifier.value || !password.value) {
+      alert('Mohon isi Email/Username dan Password.');
+      return;
+  }
 
-     // Emit event dengan role yang terdeteksi
-     emit('user-logged-in', roleToEmit); 
-     router.push('/'); 
+  isLoading.value = true;
+
+  try {
+      // 1. Panggil API Login dengan identifier (email atau username)
+      const response = await apiClient.post('/auth/login', {
+          identifier: identifier.value,
+          password: password.value,
+      });
+
+      // 2. Ambil data dari respons Fastify
+      const { token, role } = response.data.data;
+
+      // 3. Simpan Token & Role (Sangat Penting)
+      localStorage.setItem('userToken', token);
+      localStorage.setItem('userRole', role);
+      
+      // 4. Emit event dan Redirect ke halaman utama
+      emit('user-logged-in', role); 
+      router.push('/'); 
+      
+  } catch (error) {
+      // Tangani error dari backend (misalnya 401 Unauthorized)
+      const errorMessage = error.response?.data?.error || 'Login gagal. Cek kredensial atau server.';
+      alert(errorMessage);
+      console.error("Login Error:", error);
+  } finally {
+      isLoading.value = false;
   }
 }
 </script>

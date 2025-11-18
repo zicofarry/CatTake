@@ -13,11 +13,23 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
 
 2. Install requirements
    dengan command:
+   untuk frontend
    ```
+   npm install -g nodemon
+   cd frontend/
    npm install vue-router@4
    npm install tailwindcss @tailwindcss/vite
    npm install vite-plugin-vue-devtools --save-dev
    npm install leaflet
+   npm install axios
+   ```
+
+   untuk backend
+   ```
+   cd backend/
+   npm install fastify pg
+   npm install bcrypt jsonwebtoken
+   npm install @fastify/cors
    ```
 
 3. Jalankan server

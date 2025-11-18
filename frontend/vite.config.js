@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import path from 'path';
 
 
 // https://vite.dev/config/
@@ -16,6 +17,11 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
-  }
-
+  },
+  resolve: {
+    alias: {
+      // Menetapkan '@' sebagai alias untuk direktori '/src'
+      '@': path.resolve(__dirname, './src'), 
+    },
+  },
 })
