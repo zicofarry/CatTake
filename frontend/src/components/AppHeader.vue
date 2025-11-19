@@ -2,7 +2,7 @@
   <header class="py-4 bg-white shadow-sm sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
       
-      <div class="flex items-center font-bold text-xl">
+      <div class="hidden md:flex items-center font-bold text-xl">
         <router-link to="/">
             <img src="../assets/img/cattake.png" alt="CatTake Logo" class="h-10 md:h-[70px]">
         </router-link>
@@ -62,25 +62,29 @@
       </div>
 
 
-      <div class="flex items-center gap-4 md:hidden">
-        <div v-if="props.userRole === 'individu'" class="flex items-center gap-2 bg-[#578d76] text-white py-1 pr-2 pl-1 rounded-full font-semibold">
-          <img :src="props.profileData && props.profileData.photo ? props.profileData.photo : '../assets/img/diana.png'" alt="Avatar" class="h-8 w-8 rounded-full object-cover">
-          <span>{{ props.profileData ? props.profileData.name : 'User' }}</span>
-          </div>
-          <div v-else-if="props.userRole === 'shelter'" class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 px-3 rounded-full font-semibold text-sm">
-              <span>{{ props.profileData ? props.profileData.name : 'Shelter' }}</span>
-          </div>
-          <router-link v-else to="/login" class="bg-[#578d76] hover:bg-green-800 text-white font-semibold py-1.5 px-4 rounded-full transition duration-200 shadow-md">
-            Login
-          </router-link>
-
-          <span class="font-semibold text-xl flex-grow">{{ activePage }}</span>
+      <div class="flex items-center gap-4 md:hidden w-full">
           
           <button class="flex flex-col gap-1.5 cursor-pointer p-2" @click="toggleMobileMenu">
               <span class="block w-6 h-0.5 bg-gray-800 rounded-sm"></span>
               <span class="block w-6 h-0.5 bg-gray-800 rounded-sm"></span>
               <span class="block w-6 h-0.5 bg-gray-800 rounded-sm"></span>
           </button>
+
+          <span class="font-semibold text-xl">{{ activePage }}</span>
+          
+          <div v-if="props.userRole === 'individu'" class="ml-auto flex items-center gap-2 bg-[#578d76] text-white py-1 pr-2 pl-1 rounded-full font-semibold">
+            <img :src="props.profileData && props.profileData.photo ? props.profileData.photo : '../assets/img/diana.png'" alt="Avatar" class="h-8 w-8 rounded-full object-cover">
+            <span class="text-sm">{{ props.profileData ? props.profileData.name.split(' ')[0] : 'User' }}</span>
+          </div>
+
+          <div v-else-if="props.userRole === 'shelter'" class="ml-auto flex items-center gap-2 bg-[#578d76] text-white py-1.5 px-3 rounded-full font-semibold text-sm">
+              <span>{{ props.profileData ? props.profileData.name : 'Shelter' }}</span>
+          </div>
+
+          <router-link v-else to="/login" class="ml-auto bg-[#578d76] hover:bg-green-800 text-white font-semibold py-1.5 px-4 rounded-full transition duration-200 shadow-md text-sm">
+            Login
+          </router-link>
+
       </div>
     </div>
   </header>
@@ -130,8 +134,6 @@
 <script setup>
 import { ref, computed,watch, watchEffect } from 'vue';
 import { useRoute } from 'vue-router'; 
-
-
 
 // Props dari App.vue (menerima status dan peran)
 const props = defineProps({
