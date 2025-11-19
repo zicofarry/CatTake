@@ -43,7 +43,7 @@
                 @click="toggleProfileDropdown"
                 class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-8 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
             >
-                <img :src="props.profileData && props.profileData.photo ? props.profileData.photo : '../assets/img/diana.png'" alt="Avatar" class="h-9 w-9 rounded-full object-cover">
+                <img :src="props.profileData && props.profileData.photo ? props.profileData.photo : '/img/NULL.JPG'" alt="Avatar" class="h-9 w-9 rounded-full object-cover">
                 <span>{{ props.profileData ? props.profileData.name : 'Memuat...' }}</span>
             </button>
 

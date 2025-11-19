@@ -34,6 +34,26 @@ class UserController {
         }
     }
     
+    static async updateProfile(request, reply) {
+        try {
+            // Asumsi middleware JWT sudah memverifikasi user dan menaruhnya di request.user
+            // Kita akan menggunakan userId dan role dari URL params untuk saat ini
+            const { userId } = request.params; 
+            const { role } = request.body; // Ambil role dari body atau dari JWT
+
+            // Panggil service untuk melakukan update
+            const updatedData = await UserService.updateProfile(parseInt(userId, 10), role, request.body);
+
+            return reply.send({ 
+                message: 'Profile updated successfully!', 
+                data: updatedData
+            });
+
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            return reply.code(400).send({ error: error.message });
+        }
+    }
     // Anda bisa menambahkan controller lain di sini, seperti updateProfile
 }
 

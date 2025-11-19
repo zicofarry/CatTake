@@ -36,6 +36,7 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
    npm install fastify pg
    npm install bcrypt jsonwebtoken
    npm install @fastify/cors
+   npm install @fastify/static
    ```
 
 3. Import database
@@ -46,7 +47,7 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
 
 4. Jalankan server
    dengan command:
-   
+
    untuk frontend
    ```
    cd frontend/
