@@ -23,7 +23,7 @@
       </nav>
       
       <div class="hidden md:block">
-        <div v-if="userRole === 'shelter'" class="relative">
+        <div v-if="props.userRole === 'shelter'" class="relative">
              <button 
                 @click="toggleProfileDropdown"
                 class="flex items-center gap-2 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
@@ -38,7 +38,7 @@
             </div>
         </div>
 
-        <div v-else-if="userRole === 'user'" class="relative">
+        <div v-else-if="props.userRole === 'user'" class="relative">
             <button 
                 @click="toggleProfileDropdown"
                 class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-8 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
@@ -63,11 +63,11 @@
 
 
       <div class="flex items-center gap-4 md:hidden">
-        <div v-if="userRole === 'user'" class="flex items-center gap-2 bg-[#578d76] text-white py-1 pr-2 pl-1 rounded-full font-semibold">
+        <div v-if="props.userRole === 'user'" class="flex items-center gap-2 bg-[#578d76] text-white py-1 pr-2 pl-1 rounded-full font-semibold">
               <img src="../assets/img/diana.png" alt="Avatar Diana" class="h-8 w-8 rounded-full object-cover">
               <span>Diana</span>
           </div>
-          <div v-else-if="userRole === 'shelter'" class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 px-3 rounded-full font-semibold text-sm">
+          <div v-else-if="props.userRole === 'shelter'" class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 px-3 rounded-full font-semibold text-sm">
               <span>Shelter Gegerkalong</span>
           </div>
           <router-link v-else to="/login" class="bg-[#578d76] hover:bg-green-800 text-white font-semibold py-1.5 px-4 rounded-full transition duration-200 shadow-md">
@@ -100,13 +100,13 @@
   >
       <div class="p-4 mb-4 text-white text-2xl font-bold border-b border-green-900">MENU</div>
       
-      <router-link to="/profile" v-if="userRole === 'user'">
+      <router-link to="/profile" v-if="props.userRole === 'user'">
           <div class="flex items-center gap-3 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold mx-4 mb-4 shadow-lg">
               <img src="../assets/img/diana.png" alt="Avatar Diana" class="h-9 w-9 rounded-full object-cover">
               <span>Diana</span>
           </div>
       </router-link>
-       <div v-else-if="userRole === 'shelter'" class="flex items-center gap-3 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold mx-4 mb-4 shadow-lg">
+       <div v-else-if="props.userRole === 'shelter'" class="flex items-center gap-3 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold mx-4 mb-4 shadow-lg">
           <span>Shelter Gegerkalong</span>
       </div>
 
@@ -123,7 +123,7 @@
           </li>
       </ul>
       
-      <button v-if="userRole !== 'guest'" @click="handleSignOut" class="mt-auto mx-4 mb-4 p-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-200">
+      <button v-if="props.userRole !== 'guest'" @click="handleSignOut" class="mt-auto mx-4 mb-4 p-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-200">
         Sign Out
       </button>
 
@@ -168,11 +168,11 @@ const isMobileMenuOpen = ref(false);
 const isProfileDropdownOpen = ref(false);
 
 // State login diambil dari prop
-const userRole = ref(props.userRole);
+// const userRole = ref(props.userRole);
 
-watchEffect(() => {
-    userRole.value = props.userRole;
-});
+// watchEffect(() => {
+//     userRole.value = props.userRole;
+// });
 
 // 2. COMPUTED PROPERTY (Menentukan halaman aktif)
 const activePage = computed(() => {
@@ -192,7 +192,9 @@ function toggleProfileDropdown() {
 
 function handleSignOut() {
     // Kirim event ke App.vue untuk mengubah status login
-    emit('update-login-status', false);
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userRole');
+    emit('update-login-status', 'guest');
     isProfileDropdownOpen.value = false;
     alert('Anda telah keluar.');
 }

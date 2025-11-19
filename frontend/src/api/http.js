@@ -18,8 +18,8 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('userToken');
-        if (token) {
-            // Mengatur header Authorization: Bearer <token>
+        const isAuthRoute = config.url.includes('/auth/login') || config.url.includes('/auth/register');
+        if (token && !isAuthRoute) { 
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
@@ -34,10 +34,20 @@ apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            // Jika backend mengembalikan 401 (Unauthorized/Token Expired),
-            // Hapus token dan arahkan ke halaman login.
-            localStorage.removeItem('userToken');
-            // window.location.href = '/login'; // Sesuaikan dengan route login Anda
+            
+            const attemptedUrl = error.config.url;
+            const isNotLoginAttempt = !attemptedUrl.includes('/auth/login') && !attemptedUrl.includes('/auth/register');
+
+            if (isNotLoginAttempt) {
+                console.warn('Token expired or unauthorized. Clearing session.');
+                
+                // Hapus token dan arahkan ke halaman login
+                localStorage.removeItem('userToken');
+                localStorage.removeItem('userRole');
+
+                // Jika menggunakan vue-router, gunakan router.push('/login') di store/main.js
+                // window.location.href = '/login'; // Halaman login default
+            }
         }
         return Promise.reject(error);
     }

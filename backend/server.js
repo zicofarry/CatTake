@@ -4,9 +4,10 @@ const authRoutes = require('./routes/authRoutes');
 const cors = require('@fastify/cors');
 
 fastify.register(cors, {
-    origin: '*', // Mengizinkan semua origin (ganti dengan URL frontend Anda saat production)
+    origin: 'http://localhost:5173', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Izinkan semua method yang diperlukan
     allowedHeaders: ['Content-Type', 'Authorization'], // Izinkan header kustom
+    credentials: true
 });
 
 // Daftarkan route Anda

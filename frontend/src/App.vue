@@ -14,20 +14,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import AppHeader from './components/AppHeader.vue';
 
 // State Utama: guest, user, atau shelter. Default diambil dari localStorage.
 const userRole = ref(localStorage.getItem('userRole') || 'guest'); 
-const isUserLoggedIn = ref(false);
+const isUserLoggedIn = computed(() => userRole.value !== 'guest');
 
 // Fungsi yang dipanggil dari LoginPage/SignupPage saat login berhasil
 function handleUserLogin(role) {
-    if (role === 'user' || role === 'shelter') {
-        userRole.value = role;
-        isUserLoggedIn.value = true;
-        localStorage.setItem('userRole', role); // Simpan status di localStorage
-        localStorage.setItem('isLoggedIn', 'true')
+    if (['individu', 'shelter', 'admin', 'driver'].includes(role)) {
+      userRole.value = role;
+      localStorage.setItem('userRole', role); // Hanya simpan role
+      // isUserLoggedIn otomatis jadi true karena role != 'guest'
     }
 }
 
@@ -36,19 +35,14 @@ function handleUpdateLoginStatus(status) {
     if (status === false) {
         userRole.value = 'guest';
         localStorage.removeItem('userRole');
-        localStorage.removeItem('isLoggedIn');
     }
 }
 
 // Cek status saat aplikasi dimuat pertama kali
 onMounted(() => {
     const storedRole = localStorage.getItem('userRole');
-    const storedLogin = localStorage.getItem('isLoggedIn');
     if (storedRole) {
         userRole.value = storedRole;
-    }
-    if (storedLogin === 'true') {
-      isUserLoggedIn.value = true;
     }
 });
 </script>
