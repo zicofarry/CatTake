@@ -37,7 +37,13 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
    npm install @fastify/cors
    ```
 
-3. Jalankan server
+3. Import database
+   - cd backend/db/cattake.sql
+   - copy yang index terbaru, misal cattake3.sql (makin besar angkanya makin update)
+   - import sql nya ke postgre, nama database wajib catta
+   - sesuaikan config, cd backend/config/db.js (ubah password sesuai password postgre kamu)
+
+4. Jalankan server
    dengan command:
    untuk frontend
    ```
