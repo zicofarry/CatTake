@@ -13,9 +13,13 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
 
 2. Install requirements
    dengan command:
-   untuk frontend
+   untuk auto-update server, di direktori CatTake
    ```
    npm install -g nodemon
+   ```
+
+   untuk frontend
+   ```
    cd frontend/
    npm install vue-router@4
    npm install tailwindcss @tailwindcss/vite
@@ -35,8 +39,14 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
 
 3. Jalankan server
    dengan command:
+   untuk frontend
    ```
+   cd frontend/
    npm run dev
    ```
 
-Website dengan framework vue harusnya sudah bisa dijalankan.
+   untuk backend
+   ```
+   cd backend/
+   nodemon server.js
+   ```
