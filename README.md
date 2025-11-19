@@ -22,6 +22,7 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
    npm install vite-plugin-vue-devtools --save-dev
    npm install leaflet
    npm install axios
+   npm install jwt-decode
    ```
 
    untuk backend

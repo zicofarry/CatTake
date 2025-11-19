@@ -62,10 +62,11 @@ const password = ref('');
 const isLoading = ref(false);
 
 async function handleLogin() {
-  // console.log("Payload being sent:", {
-  //       identifier: identifier.value,
-  //       password: password.value
-  //   });
+  console.log("Payload yang dikirim:", {
+        identifier: identifier.value,
+        password: password.value
+    });
+    
   if (!identifier.value || !password.value) {
       alert('Mohon isi Email/Username dan Password.');
       return;

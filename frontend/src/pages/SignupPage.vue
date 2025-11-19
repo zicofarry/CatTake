@@ -139,20 +139,16 @@ async function handleSignup() {
   };
 
   if (data.role === 'individu') {
-    // data.full_name = fullName.value;
-    // Nilai dummy yang diperlukan backend untuk lolos INSERT:
-    data.address = 'alamat belum diverifikasi';
-    const uniqueSuffix = Date.now().toString(); 
-    data.nik = `3273${uniqueSuffix}${Math.floor(Math.random() * 1000)}`; 
-    data.job = 'Unknown';
-    data.gender = 'male'; 
-    data.birth_date = '1990-01-01'; 
+    data.address = null;
+    data.nik = null; 
+    data.job = null;
+    data.gender = null; 
+    data.birth_date = null; 
     
   } else if (data.role === 'shelter') {
     data.shelter_name = shelterName.value;
-    // Nilai dummy yang diperlukan backend:
     data.pj_name = fullName.value; 
-    data.pj_nik = `3273PJ${Math.floor(Math.random() * 90000 + 10000)}`; 
+    data.pj_nik = null; 
     data.organization_type = 'Komunitas'; 
   }
 

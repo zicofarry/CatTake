@@ -1,6 +1,7 @@
 const fastify = require('fastify')({ logger: true });
 const { connectDB } = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
 const cors = require('@fastify/cors');
 
 fastify.register(cors, {
@@ -12,6 +13,7 @@ fastify.register(cors, {
 
 // Daftarkan route Anda
 fastify.register(authRoutes, { prefix: '/api/v1/auth' });
+fastify.register(userRoutes, { prefix: '/api/v1/users' });
 
 // Jalankan server
 const start = async () => {
