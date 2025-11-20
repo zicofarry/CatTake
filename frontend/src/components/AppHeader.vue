@@ -83,7 +83,7 @@
           </div>
 
           <router-link v-else to="/login" class="ml-auto bg-[#578d76] hover:bg-green-800 text-white font-semibold py-1.5 px-4 rounded-full transition duration-200 shadow-md text-sm">
-            Login
+            Signup/Login
           </router-link>
 
       </div>
@@ -148,14 +148,29 @@ const props = defineProps({
 const emit = defineEmits(['update-login-status']);
 
 // --- Config / Mock Data ---
-const navLinks = [
-    { name: 'Beranda', path: '/' },
-    { name: 'Lapor', path: '/lapor' },
-    { name: 'Adopsi', path: '/adopsi' },
-    { name: 'FAQ', path: '/faq' },
-    { name: 'Komunitas', path: '/komunitas' },
-    { name: 'Donasi', path: '/donasi' },
-];
+const navLinks = computed(() => {
+    const links = [
+        { name: 'Beranda', path: '/' },
+        { name: 'Lapor', path: '/lapor' },
+        { name: 'Adopsi', path: '/adopsi' },
+    ];
+
+    // LOGIKA KONDISIONAL:
+    // Jika Shelter -> Tampilkan 'Driver'
+    // Jika Bukan -> Tampilkan 'FAQ'
+    if (props.userRole === 'shelter') {
+        links.push({ name: 'Driver', path: '/driver' });
+    } else {
+        links.push({ name: 'FAQ', path: '/faq' });
+    }
+
+    links.push(
+        { name: 'Komunitas', path: '/komunitas' },
+        { name: 'Donasi', path: '/donasi' },
+    );
+
+    return links;
+});
 
 
 // 1. STATE (Data Reaktif)
@@ -170,7 +185,7 @@ watch(() => props.userRole, (newValue, oldValue) => {
 
 // 2. COMPUTED PROPERTY (Menentukan halaman aktif)
 const activePage = computed(() => {
-  const currentLink = navLinks.find(link => link.path === route.path);
+  const currentLink = navLinks.value.find(link => link.path === route.path);
   return currentLink ? currentLink.name : 'Beranda';
 });
 

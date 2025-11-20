@@ -14,7 +14,7 @@ import DetailPage from '../pages/DetailPage.vue'
 import PostDetailPage from '../pages/PostDetailPage.vue'
 import FaktaKucingPage from '../pages/FaktaKucingPage.vue'
 import TrackingPage from '../pages/TrackingPage.vue'
-
+import DriverPage from '../pages/DriverPage.vue'
 
 const router = createRouter({
   // Menggunakan history mode untuk URL yang bersih (tanpa #)
@@ -34,6 +34,7 @@ const router = createRouter({
     { path: '/post/:id', name: 'Post', component: PostDetailPage }, 
     { path: '/fakta', name: 'Fakta', component: FaktaKucingPage }, 
     { path: '/track', name: 'Track', component: TrackingPage }, 
+    { path: '/driver', name: 'Driver', component: DriverPage }
   ],
 
   // Pastikan halaman di-scroll ke atas saat berpindah rute
