@@ -21,7 +21,7 @@ const authentication = async (request, reply) => {
         // PENTING: Ganti 'RAHASIA_NEGARA' dengan secret key yang sama 
         // seperti yang kamu pakai di AuthController saat bikin token (jwt.sign)
         // Biasanya ada di process.env.JWT_SECRET
-        const secretKey = process.env.JWT_SECRET || 'RAHASIA_NEGARA'; 
+        const secretKey = process.env.JWT_SECRET || 'YOUR_SUPER_SECRET_KEY'; 
         
         const decoded = jwt.verify(token, secretKey);
 

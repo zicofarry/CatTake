@@ -179,16 +179,16 @@ function setGenderFilter(gender) {
 function handleToggleFavorite(catId) {
   const cat = catData.value.find(c => c.id === catId);
   if (cat) {
-    cat.isFavorite = !cat.isFavorite;
+    cat.isFavorited = !cat.isFavorited;
   }
 }
 
-const favoriteCatsCount = computed(() => catData.value.filter(cat => cat.isFavorite).length);
+const favoriteCatsCount = computed(() => catData.value.filter(cat => cat.isFavorited).length);
 
 const filteredCats = computed(() => {
   let list = catData.value;
   if (activeFilter.value === 'favorite') {
-    list = list.filter(cat => cat.isFavorite);
+    list = list.filter(cat => cat.isFavorited);
   } else if (activeFilter.value === 'gender' && genderFilter.value !== 'all') {
     list = list.filter(cat => cat.gender === genderFilter.value);
   }
