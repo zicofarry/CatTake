@@ -38,49 +38,47 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import AccordionItem from "../components/AccordionItem.vue";
+import apiClient from "@/api/http";
 
-const faqItems = ref([
-  {
-    question: "Cara merawat kucing yang benar?",
-    answer:
-      "Pastikan untuk memberikan nutrisi yang seimbang, vaksinasi rutin, dan lingkungan yang aman serta penuh kasih sayang. Ajak bermain minimal 15 menit sehari.",
-    open: false,
-    isList: false,
-  },
-  {
-    question: "Bagaimana cara membuat laporan kucing?",
-    answerLines: [
-      "Pergi ke laman “Rescue”.",
-      "Isi semua data yang dibutuhkan untuk formulir.",
-      "Klik “Submit” untuk mengirimkan data kucing.",
-    ],
-    open: false,
-    isList: true,
-  },
-  {
-    question: "Apakah saya perlu membayar biaya adopsi?",
-    answer:
-      "Kami membebankan biaya adopsi yang bersifat donasi untuk menutupi biaya vaksinasi, steril, dan perawatan pra-adopsi.",
-    open: false,
-    isList: false,
-  },
-  {
-    question: "Bagaimana cara memberikan donasi untuk mendukung shelter?",
-    answer:
-      "Kunjungi halaman Donasi, pilih shelter tujuan, metode transfer, dan unggah bukti transfer Anda.",
-    open: false,
-    isList: false,
-  },
-  {
-    question: "Bagaimana cara mengadopsi kucing?",
-    answer:
-      'Telusuri katalog kucing, klik "Rincian" pada kucing pilihan Anda, dan isi formulir Adopsi yang tersedia di halaman detail tersebut.',
-    open: false,
-    isList: false,
-  },
-]);
+const faqItems = ref([]);
+const isLoading = ref(true);
+
+// Fungsi mengambil data dari Backend
+const fetchFaqs = async () => {
+  try {
+    const response = await apiClient.get('/faq'); // Request ke http://localhost:3000/api/v1/faq
+    
+    faqItems.value = response.data.data.map(item => {
+      // Cek apakah string 'answer' mengandung karakter baris baru (\n)
+      const hasNewLine = item.answer.includes('\n');
+
+      // Jika ada enter, kita pecah jadi array. 
+      // Kita juga pakai .trim() untuk hapus spasi kosong di awal/akhir baris
+      const listItems = hasNewLine 
+        ? item.answer.split('\n').filter(line => line.trim() !== '') 
+        : [];
+
+      return {
+        question: item.question,
+        answer: item.answer,      // Teks asli (untuk yang bukan list)
+        answerLines: listItems,   // Array baris (untuk yang list)
+        open: false,
+        isList: hasNewLine        // Otomatis TRUE jika ada enter, FALSE jika tidak
+      };
+    });
+    
+  } catch (error) {
+    console.error("Gagal mengambil data FAQ:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchFaqs();
+});
 </script>
 
 <style scoped>

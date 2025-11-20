@@ -1,10 +1,12 @@
 const fastify = require('fastify')({ logger: true });
+const cors = require('@fastify/cors');
+const path = require('path'); 
+const fastifyStatic = require('@fastify/static'); 
 const { connectDB } = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
-const cors = require('@fastify/cors');
-const fastifyStatic = require('@fastify/static'); 
-const path = require('path'); 
+const faqRoutes = require('./routes/faqRoutes');
+
 
 fastify.register(cors, {
     origin: 'http://localhost:5173', 
@@ -22,6 +24,7 @@ fastify.register(fastifyStatic, {
 // Daftarkan route Anda
 fastify.register(authRoutes, { prefix: '/api/v1/auth' });
 fastify.register(userRoutes, { prefix: '/api/v1/users' });
+fastify.register(faqRoutes, { prefix: '/api/v1/faq' });
 
 // Jalankan server
 const start = async () => {
