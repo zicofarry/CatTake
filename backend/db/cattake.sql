@@ -1,426 +1,1592 @@
--- === 1. DATABASE SETUP (PostgreSQL/MySQL Compatible) ===
+--
+-- PostgreSQL database dump
+--
 
--- Membuat Database
--- Perintah ini mungkin harus dijalankan di luar klien database saat ini (misalnya di command line)
--- atau jika Anda memiliki hak superuser.
-CREATE DATABASE cattake;
-\c cattake -- (Hanya untuk PostgreSQL)
+\restrict kUotTQj9lHfMLRsmOIwUvKWiZlgCSi5AFW4HcvzQA4hwmuUK8EEYkbBtrSalg0p
 
--- DROP all tables in reverse order for clean run (optional, for testing)
-/*
-DROP TABLE IF EXISTS "chat_messages";
-DROP TABLE IF EXISTS "driver_locations";
-DROP TABLE IF EXISTS "drivers";
-DROP TABLE IF EXISTS "events";
-DROP TABLE IF EXISTS "cat_facts";
-DROP TABLE IF EXISTS "verification_log";
-DROP TABLE IF EXISTS "favorite_cats";
-DROP TABLE IF EXISTS "faq";
-DROP TABLE IF EXISTS "reply_comment";
-DROP TABLE IF EXISTS "comment";
-DROP TABLE IF EXISTS "community_post";
-DROP TABLE IF EXISTS "adoptions";
-DROP TABLE IF EXISTS "rescue_assignments";
-DROP TABLE IF EXISTS "reports";
-DROP TABLE IF EXISTS "donations";
-DROP TABLE IF EXISTS "cats";
-DROP TABLE IF EXISTS "detail_user_shelter";
-DROP TABLE IF EXISTS "detail_user_individu";
-DROP TABLE IF EXISTS "users";
-*/
+-- Dumped from database version 18.0
+-- Dumped by pg_dump version 18.0
+
+-- Started on 2025-11-21 02:51:40
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 247 (class 1259 OID 17880)
+-- Name: adoptions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.adoptions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
--- === 2. CORE TABLES (Sesuai Koreksi) ===
+ALTER SEQUENCE public.adoptions_id_seq OWNER TO postgres;
 
-CREATE TABLE IF NOT EXISTS "users" (
-	"id" INTEGER PRIMARY KEY,
-	"username" VARCHAR(255) NOT NULL UNIQUE,
-	"email" VARCHAR(255) NOT NULL UNIQUE,
-	"password_hash" VARCHAR(255) NOT NULL,
-	"role" VARCHAR(50) NOT NULL -- ENUM: shelter, individu, admin, driver
-);
+SET default_tablespace = '';
 
-CREATE TABLE IF NOT EXISTS "detail_user_individu" (
-	"id" INTEGER PRIMARY KEY, -- FK ke users.id
-	"full_name" VARCHAR(255) NOT NULL,
-	"birth_date" DATE,
-	"gender" VARCHAR(50), -- ENUM: male, female
-	"profile_picture" VARCHAR(255),
-	"bio" TEXT,
-	"contact_phone" VARCHAR(255),
-	"address" TEXT,
-	"job" VARCHAR(255),
-	"nik" VARCHAR(255) UNIQUE,
-	"ktp_file_path" VARCHAR(255),
-	"is_verified" BOOLEAN DEFAULT FALSE,
-	"is_adopter_ready" BOOLEAN DEFAULT FALSE,
-	"donasi_history_count" INTEGER DEFAULT 0,
-	
-	-- ONE-TO-ONE RELATIONSHIP (detail -> users)
-	FOREIGN KEY("id") REFERENCES "users"("id") 
-);
+SET default_table_access_method = heap;
 
-CREATE TABLE IF NOT EXISTS "detail_user_shelter" (
-	"id" INTEGER PRIMARY KEY, -- FK ke users.id
-	"shelter_name" VARCHAR(255) NOT NULL,
-	"established_date" DATE,
-	"organization_type" VARCHAR(50) NOT NULL, -- ENUM: Yayasan, Komunitas, Pribadi
-	"shelter_picture" VARCHAR(255),
-	"bio" TEXT,
-	"contact_phone" VARCHAR(255),
-	"legal_certificate" VARCHAR(255),
-	"donation_account_number" VARCHAR(255) UNIQUE,
-	"pj_name" VARCHAR(255) NOT NULL, 
-	"pj_nik" VARCHAR(255) UNIQUE, 
-	"is_verified_shelter" BOOLEAN DEFAULT FALSE,
-	"cat_capacity" INTEGER DEFAULT 0,
+--
+-- TOC entry 224 (class 1259 OID 17505)
+-- Name: adoptions; Type: TABLE; Schema: public; Owner: postgres
+--
 
-	-- ONE-TO-ONE RELATIONSHIP (detail -> users)
-	FOREIGN KEY("id") REFERENCES "users"("id") 
-);
-
--- === 3. DRIVER & LOCATION TRACKING ===
-
-CREATE TABLE IF NOT EXISTS "drivers" (
-	"id" VARCHAR(50) PRIMARY KEY, -- ID Unik Driver (VARCHAR)
-	"user_id" INTEGER NOT NULL UNIQUE, -- FK ke users.id (One-to-One)
-	"shelter_id" INTEGER NOT NULL, -- FK ke users.id (One-to-Many: Shelter -> Drivers)
-	"is_available" BOOLEAN DEFAULT TRUE,
-	"license_info" VARCHAR(255),
-	"full_name" VARCHAR(255) NOT NULL,
-	
-	FOREIGN KEY("user_id") REFERENCES "users"("id"),
-	FOREIGN KEY("shelter_id") REFERENCES "users"("id") 
-);
-
-CREATE TABLE IF NOT EXISTS "driver_locations" (
-	"id" INTEGER PRIMARY KEY,
-	"driver_id" VARCHAR(50) NOT NULL,
-	"assignment_id" INTEGER NOT NULL,
-	"latitude" DECIMAL(10,8),
-	"longitude" DECIMAL(11,8),
-	"timestamp" TIMESTAMP NOT NULL,
-	
-	FOREIGN KEY("driver_id") REFERENCES "drivers"("id"),
-	FOREIGN KEY("assignment_id") REFERENCES "rescue_assignments"("id")
-);
-
--- === 4. CATS & ADOPTIONS ===
-
-CREATE TABLE IF NOT EXISTS "cats" (
-	"id" INTEGER PRIMARY KEY,
-	"shelter_id" INTEGER NOT NULL, 
-	"name" VARCHAR(255) NOT NULL,
-	"age" INTEGER,
-	"gender" VARCHAR(50) NOT NULL, -- ENUM: male, female
-	"breed" VARCHAR(255),
-	"description" TEXT,
-	"health_status" TEXT,
-	"adoption_status" VARCHAR(50) NOT NULL, -- ENUM: available, pending, adopted
-	"photo" VARCHAR(255),
-	
-	FOREIGN KEY("shelter_id") REFERENCES "users"("id")
-);
-
-CREATE TABLE IF NOT EXISTS "adoptions" (
-	"id" INTEGER PRIMARY KEY,
-	"cat_id" INTEGER NOT NULL,
-	"applicant_id" INTEGER NOT NULL, 
-	"statement_letter_path" VARCHAR(255),
-	"status" VARCHAR(50) NOT NULL, -- ENUM: pending, approved, rejected, completed
-	"applied_at" TIMESTAMP NOT NULL,
-	"verified_at" TIMESTAMP,
-	"updated_at" TIMESTAMP NOT NULL,
-	
-	FOREIGN KEY("cat_id") REFERENCES "cats"("id"),
-	FOREIGN KEY("applicant_id") REFERENCES "users"("id")
-);
-
-CREATE TABLE IF NOT EXISTS "favorite_cats" (
-	"user_id" INTEGER NOT NULL,
-	"cat_id" INTEGER NOT NULL,
-	"created_at" TIMESTAMP NOT NULL,
-	
-	PRIMARY KEY("user_id", "cat_id"),
-	FOREIGN KEY("user_id") REFERENCES "users"("id"),
-	FOREIGN KEY("cat_id") REFERENCES "cats"("id")
-);
-
--- === 5. REPORTING & RESCUE ===
-
-CREATE TABLE IF NOT EXISTS "reports" (
-	"id" INTEGER PRIMARY KEY,
-	"reporter_id" INTEGER NOT NULL,
-	"report_type" VARCHAR(50) NOT NULL, -- ENUM: Missing, Injured, Abandoned, Abuse
-	"shelter_assigned_id" INTEGER, 
-	"location" VARCHAR(255) NOT NULL,
-	"latitude" DECIMAL(10,8) NOT NULL,
-	"longitude" DECIMAL(11,8) NOT NULL,
-	"description" TEXT NOT NULL,
-	"photo" VARCHAR(255) NOT NULL,
-	"report_date" DATE NOT NULL,
-	
-	FOREIGN KEY("reporter_id") REFERENCES "users"("id"),
-	FOREIGN KEY("shelter_assigned_id") REFERENCES "users"("id")
-);
-
-CREATE TABLE IF NOT EXISTS "rescue_assignments" (
-	"id" INTEGER PRIMARY KEY,
-	"report_id" INTEGER NOT NULL UNIQUE,
-	"driver_id" VARCHAR(50) NOT NULL, -- FK ke drivers.id
-	"shelter_id" INTEGER NOT NULL,
-	"assignment_status" VARCHAR(50) NOT NULL, -- ENUM: assigned, in_transit, completed, cancelled
-	"assigned_at" TIMESTAMP NOT NULL,
-	"started_transit_at" TIMESTAMP,
-	"completed_at" TIMESTAMP,
-	"estimated_pickup_time" TIMESTAMP,
-	"notes" TEXT,
-	
-	FOREIGN KEY("report_id") REFERENCES "reports"("id"),
-	FOREIGN KEY("driver_id") REFERENCES "drivers"("id"),
-	FOREIGN KEY("shelter_id") REFERENCES "users"("id")
-);
-
-CREATE TABLE IF NOT EXISTS "chat_messages" (
-	"id" INTEGER PRIMARY KEY,
-	"assignment_id" INTEGER NOT NULL,
-	"sender_id" INTEGER NOT NULL,
-	"message" TEXT NOT NULL,
-	"sent_at" TIMESTAMP NOT NULL,
-	
-	FOREIGN KEY("assignment_id") REFERENCES "rescue_assignments"("id"),
-	FOREIGN KEY("sender_id") REFERENCES "users"("id")
-);
-
--- === 6. COMMUNITY & DONATIONS & LOGS ===
-
-CREATE TABLE IF NOT EXISTS "community_post" (
-	"id" INTEGER PRIMARY KEY,
-	"author_id" INTEGER NOT NULL,
-	"content" TEXT NOT NULL,
-	"media_path" VARCHAR(255),
-	"likes_count" INTEGER DEFAULT 0,
-	"created_at" TIMESTAMP NOT NULL,
-	"updated_at" TIMESTAMP NOT NULL,
-	
-	FOREIGN KEY("author_id") REFERENCES "users"("id")
-);
-
-CREATE TABLE IF NOT EXISTS "comment" (
-	"id" INTEGER PRIMARY KEY,
-	"user_id" INTEGER NOT NULL,
-	"post_id" INTEGER NOT NULL,
-	"content" TEXT NOT NULL,
-	"likes_count" INTEGER DEFAULT 0,
-	"created_at" TIMESTAMP NOT NULL,
-	"updated_at" TIMESTAMP NOT NULL,
-	
-	FOREIGN KEY("user_id") REFERENCES "users"("id"),
-	FOREIGN KEY("post_id") REFERENCES "community_post"("id")
-);
-
-CREATE TABLE IF NOT EXISTS "reply_comment" (
-	"id" INTEGER PRIMARY KEY,
-	"user_id" INTEGER NOT NULL,
-	"comment_id" INTEGER NOT NULL,
-	"parent_reply_id" INTEGER, 
-	"content" TEXT NOT NULL,
-	"likes_count" INTEGER DEFAULT 0,
-	"created_at" TIMESTAMP NOT NULL,
-	"updated_at" TIMESTAMP NOT NULL,
-	
-	FOREIGN KEY("user_id") REFERENCES "users"("id"),
-	FOREIGN KEY("comment_id") REFERENCES "comment"("id"),
-	FOREIGN KEY("parent_reply_id") REFERENCES "reply_comment"("id") 
-);
-
-CREATE TABLE IF NOT EXISTS "donations" (
-	"id" INTEGER PRIMARY KEY,
-	"donatur_id" INTEGER NOT NULL,
-	"shelter_id" INTEGER NOT NULL,
-	"amount" DECIMAL(10,2) NOT NULL,
-	"donation_date" DATE NOT NULL,
-	"is_anonymus" BOOLEAN DEFAULT FALSE,
-	
-	FOREIGN KEY("donatur_id") REFERENCES "users"("id"),
-	FOREIGN KEY("shelter_id") REFERENCES "users"("id")
-);
-
-CREATE TABLE IF NOT EXISTS "verification_log" (
-	"id" INTEGER PRIMARY KEY,
-	"user_id" INTEGER NOT NULL,
-	"verifier_id" INTEGER,
-	"verification_type" VARCHAR(50) NOT NULL, 
-	"status" VARCHAR(50) NOT NULL, 
-	"notes" TEXT,
-	"created_at" TIMESTAMP NOT NULL,
-	
-	FOREIGN KEY("user_id") REFERENCES "users"("id"),
-	FOREIGN KEY("verifier_id") REFERENCES "users"("id")
-);
-
-CREATE TABLE IF NOT EXISTS "cat_facts" (
-	"id" INTEGER PRIMARY KEY,
-	"fact_text" TEXT NOT NULL,
-	"source" VARCHAR(255),
-	"image_path" VARCHAR(255),
-	"is_verified" BOOLEAN DEFAULT FALSE,
-	"created_at" TIMESTAMP NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS "events" (
-	"id" INTEGER PRIMARY KEY,
-	"organizer_id" INTEGER NOT NULL,
-	"title" VARCHAR(255) NOT NULL,
-	"description" TEXT NOT NULL,
-	"event_date" DATE NOT NULL,
-	"start_time" TIME NOT NULL,
-	"location_name" VARCHAR(255) NOT NULL,
-	"location_address" TEXT NOT NULL,
-	"registration_link" VARCHAR(255),
-	"is_active" BOOLEAN DEFAULT TRUE,
-	"created_at" TIMESTAMP NOT NULL,
-	
-	FOREIGN KEY("organizer_id") REFERENCES "users"("id")
-);
-
-CREATE TABLE IF NOT EXISTS "faq" (
-	"id" INTEGER PRIMARY KEY,
-	"question" TEXT NOT NULL,
-	"answer" TEXT NOT NULL
+CREATE TABLE public.adoptions (
+    id integer DEFAULT nextval('public.adoptions_id_seq'::regclass) NOT NULL,
+    cat_id integer NOT NULL,
+    applicant_id integer NOT NULL,
+    statement_letter_path character varying(255),
+    status character varying(50) NOT NULL,
+    applied_at timestamp without time zone NOT NULL,
+    verified_at timestamp without time zone,
+    updated_at timestamp without time zone NOT NULL,
+    CONSTRAINT check_adoption_status CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'approved'::character varying, 'rejected'::character varying, 'completed'::character varying])::text[])))
 );
 
 
--- === 7. CHECK CONSTRAINTS (ENUM Simulation) ===
+ALTER TABLE public.adoptions OWNER TO postgres;
 
-ALTER TABLE "users"
-ADD CONSTRAINT check_user_role CHECK ("role" IN ('shelter', 'individu', 'admin', 'driver'));
+--
+-- TOC entry 234 (class 1259 OID 17736)
+-- Name: cat_facts; Type: TABLE; Schema: public; Owner: postgres
+--
 
-ALTER TABLE "cats"
-ADD CONSTRAINT check_cat_gender CHECK ("gender" IN ('male', 'female'));
-ALTER TABLE "cats"
-ADD CONSTRAINT check_cat_adoption_status CHECK ("adoption_status" IN ('available', 'pending', 'adopted'));
-
-ALTER TABLE "detail_user_individu"
-ADD CONSTRAINT check_individu_gender CHECK ("gender" IN ('male', 'female'));
-
-ALTER TABLE "detail_user_shelter"
-ADD CONSTRAINT check_org_type CHECK ("organization_type" IN ('Yayasan', 'Komunitas', 'Pribadi'));
-
-ALTER TABLE "adoptions"
-ADD CONSTRAINT check_adoption_status CHECK ("status" IN ('pending', 'approved', 'rejected', 'completed'));
-
-ALTER TABLE "reports"
-ADD CONSTRAINT check_report_type CHECK ("report_type" IN ('Missing', 'Injured', 'Abandoned', 'Abuse'));
-
-ALTER TABLE "rescue_assignments"
-ADD CONSTRAINT check_assignment_status CHECK ("assignment_status" IN ('assigned', 'in_transit', 'completed', 'cancelled'));
-
-ALTER TABLE "verification_log"
-ADD CONSTRAINT check_verification_type CHECK ("verification_type" IN ('Adoption_Application', 'Initial_Data_Check', 'Follow_Up'));
-ALTER TABLE "verification_log"
-ADD CONSTRAINT check_verification_status CHECK ("status" IN ('approved', 'rejected'));
+CREATE TABLE public.cat_facts (
+    id integer NOT NULL,
+    fact_text text NOT NULL,
+    source character varying(255),
+    image_path character varying(255),
+    is_verified boolean DEFAULT false,
+    created_at timestamp without time zone NOT NULL
+);
 
 
--- === 8. DUMMY DATA ===
+ALTER TABLE public.cat_facts OWNER TO postgres;
 
--- 1. users
-INSERT INTO "users" ("id", "username", "email", "password_hash", "role") VALUES
-(1, 'admin_super', 'admin@cattake.id', 'hashed_admin_pw', 'admin'),
-(10, 'shelter_bandung', 'shelter_bdg@mail.com', 'hashed_shelter_pw', 'shelter'),
-(11, 'shelter_jakarta', 'shelter_jkt@mail.com', 'hashed_shelter_pw', 'shelter'),
-(20, 'andi_adopter', 'andi@mail.com', 'hashed_andi_pw', 'individu'),
-(21, 'budi_donatur', 'budi@mail.com', 'hashed_budi_pw', 'individu'),
-(30, 'driver_budi', 'budi_drv@mail.com', 'hashed_driver_pw', 'driver'),
-(31, 'driver_cecep', 'cecep_drv@mail.com', 'hashed_driver_pw', 'driver');
+--
+-- TOC entry 246 (class 1259 OID 17878)
+-- Name: cats_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
 
--- 2. detail_user_individu
-INSERT INTO "detail_user_individu" ("id", "full_name", "birth_date", "gender", "contact_phone", "address", "job", "nik", "is_verified", "donasi_history_count") VALUES
-(20, 'Andi Gunawan', '1995-05-10', 'male', '081234567890', 'Jl. Adopsi No. 5, Bandung', 'Software Engineer', '3273xxxxxxxxxxxx', TRUE, 3),
-(21, 'Budi Santoso', '1990-01-20', 'male', '081234567891', 'Jl. Donasi No. 10, Jakarta', 'Pengusaha', '3174xxxxxxxxxxxx', TRUE, 10);
+CREATE SEQUENCE public.cats_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
--- 3. detail_user_shelter
-INSERT INTO "detail_user_shelter" ("id", "shelter_name", "established_date", "organization_type", "contact_phone", "donation_account_number", "pj_name", "pj_nik", "is_verified_shelter", "cat_capacity") VALUES
-(10, 'Rumah Kucing Bandung', '2015-08-17', 'Komunitas', '0227654321', '1234567890', 'Rina Anggraini', '3273zzzzzzzzzzzz', TRUE, 50),
-(11, 'Panti Cat Sejahtera', '2010-02-28', 'Yayasan', '0219876543', '0987654321', 'Joko Susilo', '3174yyyyyyyyyyyy', TRUE, 100);
 
--- 4. drivers
-INSERT INTO "drivers" ("id", "user_id", "shelter_id", "full_name", "is_available", "license_info") VALUES
-('DRV-BDG-001', 30, 10, 'Budi Kurniawan', TRUE, 'SIM C-2027'),
-('DRV-BDG-002', 31, 10, 'Cecep Supriadi', TRUE, 'SIM C-2026');
+ALTER SEQUENCE public.cats_id_seq OWNER TO postgres;
 
--- 5. cats
-INSERT INTO "cats" ("id", "shelter_id", "name", "age", "gender", "breed", "description", "health_status", "adoption_status", "photo") VALUES
-(1, 10, 'Oyen', 6, 'male', 'American Shorthair', 'Suka mencari keributan di komplek. Sering terlihat mencuri ikan asin tetangga.', 'vaccinated', 'available', 'oyencat.png'),
-(2, 10, 'Abul', 5, 'male', 'Domestik', 'Kucing pemalu tapi sangat manja jika sudah kenal.', 'healthy', 'available', 'minicat.png'),
-(3, 11, 'Simba', 23, 'male', 'Maine Coon', 'Gagah dan berani, cocok untuk menjaga rumah dari tikus.', 'vaccinated', 'available', 'bradercat.png'),
-(4, 10, 'Mueza', 8, 'female', 'Persia', 'Manis, lembut, dan suka tidur di pangkuan.', 'healthy', 'available', 'mochacat.png'),
-(5, 11, 'Kitty', 36, 'female', 'Anggora', 'Tenang dan penyayang, sudah diadopsi.', 'vaccinated', 'adopted', 'kitty.png');
+--
+-- TOC entry 223 (class 1259 OID 17488)
+-- Name: cats; Type: TABLE; Schema: public; Owner: postgres
+--
 
--- 6. favorite_cats
-INSERT INTO "favorite_cats" ("user_id", "cat_id", "created_at") VALUES
-(20, 2, '2025-11-10 10:00:00'), -- Andi suka Si Putih
-(21, 1, '2025-11-11 11:00:00'), -- Budi suka Si Oyen
-(20, 3, '2025-11-12 12:00:00'); -- Andi suka Blackie
+CREATE TABLE public.cats (
+    id integer DEFAULT nextval('public.cats_id_seq'::regclass) NOT NULL,
+    shelter_id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    age integer,
+    gender character varying(50) NOT NULL,
+    breed character varying(255),
+    description text,
+    health_status text,
+    adoption_status character varying(50) NOT NULL,
+    photo character varying(255),
+    CONSTRAINT check_cat_adoption_status CHECK (((adoption_status)::text = ANY ((ARRAY['available'::character varying, 'pending'::character varying, 'adopted'::character varying])::text[]))),
+    CONSTRAINT check_cat_gender CHECK (((gender)::text = ANY ((ARRAY['male'::character varying, 'female'::character varying])::text[])))
+);
 
--- 7. reports
-INSERT INTO "reports" ("id", "reporter_id", "report_type", "shelter_assigned_id", "location", "latitude", "longitude", "description", "photo", "report_date") VALUES
-(1, 20, 'Injured', 10, 'Jl. Kebon Jati, Bandung', -6.9147, 107.6098, 'Kucing tertabrak, kaki belakang luka parah.', 'photo_report_1.jpg', '2025-11-18'),
-(2, 21, 'Abandoned', 11, 'Jl. Thamrin, Jakarta', -6.1754, 106.8272, 'Ditinggalkan di depan ruko, sangat kurus.', 'photo_report_2.jpg', '2025-11-17');
 
--- 8. rescue_assignments
-INSERT INTO "rescue_assignments" ("id", "report_id", "driver_id", "shelter_id", "assignment_status", "assigned_at", "estimated_pickup_time") VALUES
-(1, 1, 'DRV-BDG-001', 10, 'in_transit', '2025-11-18 10:30:00', '2025-11-18 11:30:00');
+ALTER TABLE public.cats OWNER TO postgres;
 
--- 9. chat_messages
-INSERT INTO "chat_messages" ("id", "assignment_id", "sender_id", "message", "sent_at") VALUES
-(1, 1, 30, 'Halo, saya driver Budi, sudah di jalan menuju lokasi Anda.', '2025-11-18 10:35:00'),
-(2, 1, 20, 'Baik, Pak Budi. Hati-hati ya!', '2025-11-18 10:36:00');
+--
+-- TOC entry 228 (class 1259 OID 17600)
+-- Name: chat_messages; Type: TABLE; Schema: public; Owner: postgres
+--
 
--- 10. driver_locations
-INSERT INTO "driver_locations" ("id", "driver_id", "assignment_id", "latitude", "longitude", "timestamp") VALUES
-(1, 'DRV-BDG-001', 1, -6.9140, 107.6080, '2025-11-18 10:45:00'),
-(2, 'DRV-BDG-001', 1, -6.9145, 107.6090, '2025-11-18 10:46:00');
+CREATE TABLE public.chat_messages (
+    id integer NOT NULL,
+    assignment_id integer NOT NULL,
+    sender_id integer NOT NULL,
+    message text NOT NULL,
+    sent_at timestamp without time zone NOT NULL
+);
 
--- 11. adoptions
-INSERT INTO "adoptions" ("id", "cat_id", "applicant_id", "statement_letter_path", "status", "applied_at", "updated_at") VALUES
-(1, 3, 20, '/docs/stmt_andi_1.pdf', 'pending', '2025-11-15 15:00:00', '2025-11-15 15:00:00');
 
--- 12. verification_log
-INSERT INTO "verification_log" ("id", "user_id", "verifier_id", "verification_type", "status", "notes", "created_at") VALUES
-(1, 20, 1, 'Initial_Data_Check', 'approved', 'Data NIK dan Alamat valid.', '2025-01-01 09:00:00'),
-(2, 20, 10, 'Adoption_Application', 'pending', 'Menunggu wawancara pemohon adopsi Si Oyen.', '2025-11-15 16:00:00');
+ALTER TABLE public.chat_messages OWNER TO postgres;
 
--- 13. donations
-INSERT INTO "donations" ("id", "donatur_id", "shelter_id", "amount", "donation_date", "is_anonymus") VALUES
-(1, 21, 10, 50000.00, '2025-11-16', FALSE),
-(2, 20, 10, 100000.00, '2025-11-16', FALSE),
-(3, 21, 11, 20000.00, '2025-11-17', TRUE);
+--
+-- TOC entry 230 (class 1259 OID 17640)
+-- Name: comment; Type: TABLE; Schema: public; Owner: postgres
+--
 
--- 14. community_post
-INSERT INTO "community_post" ("id", "author_id", "content", "created_at", "updated_at") VALUES
-(1, 20, 'Kucing saya Si Putih suka makan daun, apakah normal?', '2025-11-17 09:00:00', '2025-11-17 09:00:00'),
-(2, 10, 'Kami membuka kuota sterilisasi gratis bulan ini!', '2025-11-18 10:00:00', '2025-11-18 10:00:00');
+CREATE TABLE public.comment (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    post_id integer NOT NULL,
+    content text NOT NULL,
+    likes_count integer DEFAULT 0,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
 
--- 15. comment
-INSERT INTO "comment" ("id", "user_id", "post_id", "content", "created_at", "updated_at") VALUES
-(1, 21, 1, 'Mungkin dia kekurangan serat, coba berikan rumput gandum khusus.', '2025-11-17 10:00:00', '2025-11-17 10:00:00'),
-(2, 10, 1, 'Pastikan daunnya bukan tanaman beracun ya!', '2025-11-17 10:15:00', '2025-11-17 10:15:00');
 
--- 16. reply_comment
-INSERT INTO "reply_comment" ("id", "user_id", "comment_id", "parent_reply_id", "content", "created_at", "updated_at") VALUES
-(1, 20, 1, NULL, 'Terima kasih sarannya Budi!', '2025-11-17 10:30:00', '2025-11-17 10:30:00');
+ALTER TABLE public.comment OWNER TO postgres;
 
--- 17. events
-INSERT INTO "events" ("id", "organizer_id", "title", "description", "event_date", "start_time", "location_name", "location_address", "is_active", "created_at") VALUES
-(1, 10, 'Bazar Adopsi Massal', 'Datang dan adopsi kucing lucu!', '2025-12-05', '10:00:00', 'Parkir Timur', 'Jl. Sukarno Hatta No. 100', TRUE, '2025-11-10 10:00:00');
+--
+-- TOC entry 229 (class 1259 OID 17622)
+-- Name: community_post; Type: TABLE; Schema: public; Owner: postgres
+--
 
--- 18. cat_facts
-INSERT INTO "cat_facts" ("id", "fact_text", "is_verified", "created_at") VALUES
-(1, 'Kucing menghabiskan 70% hidupnya untuk tidur.', TRUE, '2025-01-01 00:00:00'),
-(2, 'Grup kucing disebut clowder.', TRUE, '2025-01-01 00:00:00');
+CREATE TABLE public.community_post (
+    id integer NOT NULL,
+    author_id integer NOT NULL,
+    content text NOT NULL,
+    media_path character varying(255),
+    likes_count integer DEFAULT 0,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
 
--- 19. faq
-INSERT INTO "faq" ("id", "question", "answer") VALUES
-(1, 'Bagaimana cara adopsi?', 'Anda harus mengisi formulir adopsi, wawancara, dan survei rumah.'),
-(2, 'Apa itu kucing steril?', 'Kucing steril adalah kucing yang sudah diangkat indung telur/testisnya.');
+
+ALTER TABLE public.community_post OWNER TO postgres;
+
+--
+-- TOC entry 220 (class 1259 OID 17409)
+-- Name: detail_user_individu; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.detail_user_individu (
+    id integer NOT NULL,
+    full_name character varying(255) NOT NULL,
+    birth_date date,
+    gender character varying(50),
+    profile_picture character varying(255),
+    bio text,
+    contact_phone character varying(255),
+    address text,
+    job character varying(255),
+    nik character varying(255),
+    ktp_file_path character varying(255),
+    is_verified boolean DEFAULT false,
+    is_adopter_ready boolean DEFAULT false,
+    donasi_history_count integer DEFAULT 0,
+    CONSTRAINT check_individu_gender CHECK (((gender)::text = ANY ((ARRAY['male'::character varying, 'female'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.detail_user_individu OWNER TO postgres;
+
+--
+-- TOC entry 221 (class 1259 OID 17428)
+-- Name: detail_user_shelter; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.detail_user_shelter (
+    id integer NOT NULL,
+    shelter_name character varying(255) NOT NULL,
+    established_date date,
+    organization_type character varying(50) NOT NULL,
+    shelter_picture character varying(255),
+    bio text,
+    contact_phone character varying(255),
+    legal_certificate character varying(255),
+    donation_account_number character varying(255),
+    pj_name character varying(255) NOT NULL,
+    pj_nik character varying(255),
+    is_verified_shelter boolean DEFAULT false,
+    cat_capacity integer DEFAULT 0,
+    CONSTRAINT check_org_type CHECK (((organization_type)::text = ANY ((ARRAY['Yayasan'::character varying, 'Komunitas'::character varying, 'Pribadi'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.detail_user_shelter OWNER TO postgres;
+
+--
+-- TOC entry 232 (class 1259 OID 17693)
+-- Name: donations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.donations (
+    id integer NOT NULL,
+    donatur_id integer NOT NULL,
+    shelter_id integer NOT NULL,
+    amount numeric(10,2) NOT NULL,
+    donation_date timestamp without time zone NOT NULL,
+    is_anonymus boolean DEFAULT false,
+    payment_method character varying(50),
+    proof_file character varying(255)
+);
+
+
+ALTER TABLE public.donations OWNER TO postgres;
+
+--
+-- TOC entry 248 (class 1259 OID 18341)
+-- Name: donations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.donations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.donations_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5251 (class 0 OID 0)
+-- Dependencies: 248
+-- Name: donations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.donations_id_seq OWNED BY public.donations.id;
+
+
+--
+-- TOC entry 245 (class 1259 OID 17858)
+-- Name: driver_locations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.driver_locations (
+    id integer NOT NULL,
+    driver_id character varying(50) NOT NULL,
+    assignment_id integer NOT NULL,
+    latitude numeric(10,8),
+    longitude numeric(11,8),
+    "timestamp" timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.driver_locations OWNER TO postgres;
+
+--
+-- TOC entry 244 (class 1259 OID 17857)
+-- Name: driver_locations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.driver_locations_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.driver_locations_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5252 (class 0 OID 0)
+-- Dependencies: 244
+-- Name: driver_locations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.driver_locations_id_seq OWNED BY public.driver_locations.id;
+
+
+--
+-- TOC entry 222 (class 1259 OID 17450)
+-- Name: drivers; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.drivers (
+    id character varying(50) NOT NULL,
+    user_id integer NOT NULL,
+    shelter_id integer NOT NULL,
+    is_available boolean DEFAULT true,
+    license_info character varying(255),
+    full_name character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.drivers OWNER TO postgres;
+
+--
+-- TOC entry 235 (class 1259 OID 17747)
+-- Name: events; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.events (
+    id integer NOT NULL,
+    organizer_id integer NOT NULL,
+    title character varying(255) NOT NULL,
+    description text NOT NULL,
+    event_date date NOT NULL,
+    start_time time without time zone NOT NULL,
+    location_name character varying(255) NOT NULL,
+    location_address text NOT NULL,
+    registration_link character varying(255),
+    is_active boolean DEFAULT true,
+    created_at timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.events OWNER TO postgres;
+
+--
+-- TOC entry 236 (class 1259 OID 17769)
+-- Name: faq; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.faq (
+    id integer NOT NULL,
+    question text NOT NULL,
+    answer text NOT NULL
+);
+
+
+ALTER TABLE public.faq OWNER TO postgres;
+
+--
+-- TOC entry 225 (class 1259 OID 17526)
+-- Name: favorite_cats; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.favorite_cats (
+    user_id integer NOT NULL,
+    cat_id integer NOT NULL,
+    created_at timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.favorite_cats OWNER TO postgres;
+
+--
+-- TOC entry 239 (class 1259 OID 17812)
+-- Name: global_achievements; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.global_achievements (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    description text,
+    target_condition character varying(50) NOT NULL,
+    points integer NOT NULL
+);
+
+
+ALTER TABLE public.global_achievements OWNER TO postgres;
+
+--
+-- TOC entry 238 (class 1259 OID 17811)
+-- Name: global_achievements_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.global_achievements_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.global_achievements_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5253 (class 0 OID 0)
+-- Dependencies: 238
+-- Name: global_achievements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.global_achievements_id_seq OWNED BY public.global_achievements.id;
+
+
+--
+-- TOC entry 241 (class 1259 OID 17827)
+-- Name: global_quests; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.global_quests (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    target_value numeric(10,2) NOT NULL,
+    points integer NOT NULL,
+    type character varying(50) NOT NULL
+);
+
+
+ALTER TABLE public.global_quests OWNER TO postgres;
+
+--
+-- TOC entry 240 (class 1259 OID 17826)
+-- Name: global_quests_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.global_quests_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.global_quests_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5254 (class 0 OID 0)
+-- Dependencies: 240
+-- Name: global_quests_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.global_quests_id_seq OWNED BY public.global_quests.id;
+
+
+--
+-- TOC entry 231 (class 1259 OID 17664)
+-- Name: reply_comment; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.reply_comment (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    comment_id integer NOT NULL,
+    parent_reply_id integer,
+    content text NOT NULL,
+    likes_count integer DEFAULT 0,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.reply_comment OWNER TO postgres;
+
+--
+-- TOC entry 226 (class 1259 OID 17544)
+-- Name: reports; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.reports (
+    id integer NOT NULL,
+    reporter_id integer NOT NULL,
+    report_type character varying(50) NOT NULL,
+    shelter_assigned_id integer,
+    location character varying(255) NOT NULL,
+    latitude numeric(10,8) NOT NULL,
+    longitude numeric(11,8) NOT NULL,
+    description text NOT NULL,
+    photo character varying(255) NOT NULL,
+    report_date date NOT NULL,
+    CONSTRAINT check_report_type CHECK (((report_type)::text = ANY ((ARRAY['Missing'::character varying, 'Injured'::character varying, 'Abandoned'::character varying, 'Abuse'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.reports OWNER TO postgres;
+
+--
+-- TOC entry 227 (class 1259 OID 17570)
+-- Name: rescue_assignments; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.rescue_assignments (
+    id integer NOT NULL,
+    report_id integer NOT NULL,
+    driver_id character varying(50) NOT NULL,
+    shelter_id integer NOT NULL,
+    assignment_status character varying(50) NOT NULL,
+    assigned_at timestamp without time zone NOT NULL,
+    started_transit_at timestamp without time zone,
+    completed_at timestamp without time zone,
+    estimated_pickup_time timestamp without time zone,
+    notes text,
+    CONSTRAINT check_assignment_status CHECK (((assignment_status)::text = ANY ((ARRAY['assigned'::character varying, 'in_transit'::character varying, 'completed'::character varying, 'cancelled'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.rescue_assignments OWNER TO postgres;
+
+--
+-- TOC entry 243 (class 1259 OID 17839)
+-- Name: user_progress; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.user_progress (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    global_item_id integer NOT NULL,
+    item_type character varying(50) NOT NULL,
+    current_progress numeric(10,2) DEFAULT 0.0,
+    is_completed boolean DEFAULT false,
+    completed_at timestamp with time zone,
+    CONSTRAINT check_item_type CHECK (((item_type)::text = ANY ((ARRAY['QUEST'::character varying, 'ACHIEVEMENT'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.user_progress OWNER TO postgres;
+
+--
+-- TOC entry 242 (class 1259 OID 17838)
+-- Name: user_progress_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.user_progress_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.user_progress_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5255 (class 0 OID 0)
+-- Dependencies: 242
+-- Name: user_progress_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.user_progress_id_seq OWNED BY public.user_progress.id;
+
+
+--
+-- TOC entry 219 (class 1259 OID 17393)
+-- Name: users; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.users (
+    id integer NOT NULL,
+    username character varying(255) NOT NULL,
+    email character varying(255) NOT NULL,
+    password_hash character varying(255) NOT NULL,
+    role character varying(50) NOT NULL,
+    CONSTRAINT check_user_role CHECK (((role)::text = ANY ((ARRAY['shelter'::character varying, 'individu'::character varying, 'admin'::character varying, 'driver'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.users OWNER TO postgres;
+
+--
+-- TOC entry 237 (class 1259 OID 17802)
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.users ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- TOC entry 233 (class 1259 OID 17714)
+-- Name: verification_log; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.verification_log (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    verifier_id integer,
+    verification_type character varying(50) NOT NULL,
+    status character varying(50) NOT NULL,
+    notes text,
+    created_at timestamp without time zone NOT NULL,
+    CONSTRAINT check_verification_status CHECK (((status)::text = ANY ((ARRAY['approved'::character varying, 'rejected'::character varying])::text[]))),
+    CONSTRAINT check_verification_type CHECK (((verification_type)::text = ANY ((ARRAY['Adoption_Application'::character varying, 'Initial_Data_Check'::character varying, 'Follow_Up'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.verification_log OWNER TO postgres;
+
+--
+-- TOC entry 4958 (class 2604 OID 18342)
+-- Name: donations id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.donations ALTER COLUMN id SET DEFAULT nextval('public.donations_id_seq'::regclass);
+
+
+--
+-- TOC entry 4967 (class 2604 OID 17861)
+-- Name: driver_locations id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.driver_locations ALTER COLUMN id SET DEFAULT nextval('public.driver_locations_id_seq'::regclass);
+
+
+--
+-- TOC entry 4962 (class 2604 OID 17815)
+-- Name: global_achievements id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.global_achievements ALTER COLUMN id SET DEFAULT nextval('public.global_achievements_id_seq'::regclass);
+
+
+--
+-- TOC entry 4963 (class 2604 OID 17830)
+-- Name: global_quests id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.global_quests ALTER COLUMN id SET DEFAULT nextval('public.global_quests_id_seq'::regclass);
+
+
+--
+-- TOC entry 4964 (class 2604 OID 17842)
+-- Name: user_progress id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_progress ALTER COLUMN id SET DEFAULT nextval('public.user_progress_id_seq'::regclass);
+
+
+--
+-- TOC entry 5221 (class 0 OID 17505)
+-- Dependencies: 224
+-- Data for Name: adoptions; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.adoptions (id, cat_id, applicant_id, statement_letter_path, status, applied_at, verified_at, updated_at) FROM stdin;
+1	3	20	/docs/stmt_andi_1.pdf	pending	2025-11-15 15:00:00	\N	2025-11-15 15:00:00
+2	6	20	/docs/surat_pernyataan_andi_luna.pdf	pending	2025-11-20 10:00:00	\N	2025-11-20 10:00:00
+3	7	3	/docs/stmt_mimi.pdf	completed	2025-10-01 10:00:00	2025-10-03 14:00:00	2025-10-05 09:00:00
+4	8	3	/docs/stmt_popo.pdf	completed	2025-10-05 11:00:00	2025-10-06 16:00:00	2025-10-08 10:30:00
+5	9	3	/docs/stmt_lili.pdf	completed	2025-10-10 09:00:00	2025-10-12 13:00:00	2025-10-14 11:00:00
+6	10	3	/docs/stmt_gembul.pdf	completed	2025-10-15 14:00:00	2025-10-17 10:00:00	2025-10-20 15:00:00
+7	11	3	/docs/stmt_chiko.pdf	completed	2025-10-20 08:00:00	2025-10-21 11:00:00	2025-10-23 16:00:00
+\.
+
+
+--
+-- TOC entry 5231 (class 0 OID 17736)
+-- Dependencies: 234
+-- Data for Name: cat_facts; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.cat_facts (id, fact_text, source, image_path, is_verified, created_at) FROM stdin;
+1	Kucing menghabiskan 70% hidupnya untuk tidur.	\N	\N	t	2025-01-01 00:00:00
+2	Grup kucing disebut clowder.	\N	\N	t	2025-01-01 00:00:00
+\.
+
+
+--
+-- TOC entry 5220 (class 0 OID 17488)
+-- Dependencies: 223
+-- Data for Name: cats; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.cats (id, shelter_id, name, age, gender, breed, description, health_status, adoption_status, photo) FROM stdin;
+3	11	Simba	23	male	Maine Coon	Gagah dan berani, cocok untuk menjaga rumah dari tikus.	vaccinated	available	bradercat.png
+4	10	Mueza	8	female	Persia	Manis, lembut, dan suka tidur di pangkuan.	healthy	available	mochacat.png
+5	11	Kitty	36	female	Anggora	Tenang dan penyayang, sudah diadopsi.	vaccinated	adopted	kitty.png
+1	10	Oyen	6	male	American Shorthair	Suka mencari keributan di komplek. Sering terlihat mencuri ikan asin tetangga.	vaccinated	available	oyencat.png
+2	10	Abul	5	male	Domestik	Kucing pemalu tapi sangat manja jika sudah kenal.	healthy	available	minicat.png
+6	4	Luna	12	female	Domestik	Sangat aktif dan suka bermain.	healthy	available	luna.jpg
+7	4	Mimi	12	female	Domestik	Kucing calico yang tenang.	vaccinated	adopted	mimi.jpg
+8	4	Popo	24	male	Persia	Sangat manja dan suka disisir.	healthy	adopted	popo.jpg
+9	4	Lili	5	female	Anggora	Aktif bermain bola.	vaccinated	adopted	lili.jpg
+10	4	Gembul	36	male	British Shorthair	Suka tidur seharian.	healthy	adopted	gembul.jpg
+11	4	Chiko	18	male	Domestik	Pandai berburu mainan tikus.	vaccinated	adopted	chiko.jpg
+\.
+
+
+--
+-- TOC entry 5225 (class 0 OID 17600)
+-- Dependencies: 228
+-- Data for Name: chat_messages; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.chat_messages (id, assignment_id, sender_id, message, sent_at) FROM stdin;
+1	1	30	Halo, saya driver Budi, sudah di jalan menuju lokasi Anda.	2025-11-18 10:35:00
+2	1	20	Baik, Pak Budi. Hati-hati ya!	2025-11-18 10:36:00
+\.
+
+
+--
+-- TOC entry 5227 (class 0 OID 17640)
+-- Dependencies: 230
+-- Data for Name: comment; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.comment (id, user_id, post_id, content, likes_count, created_at, updated_at) FROM stdin;
+1	21	1	Mungkin dia kekurangan serat, coba berikan rumput gandum khusus.	0	2025-11-17 10:00:00	2025-11-17 10:00:00
+2	10	1	Pastikan daunnya bukan tanaman beracun ya!	0	2025-11-17 10:15:00	2025-11-17 10:15:00
+\.
+
+
+--
+-- TOC entry 5226 (class 0 OID 17622)
+-- Dependencies: 229
+-- Data for Name: community_post; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.community_post (id, author_id, content, media_path, likes_count, created_at, updated_at) FROM stdin;
+1	20	Kucing saya Si Putih suka makan daun, apakah normal?	\N	0	2025-11-17 09:00:00	2025-11-17 09:00:00
+2	10	Kami membuka kuota sterilisasi gratis bulan ini!	\N	0	2025-11-18 10:00:00	2025-11-18 10:00:00
+\.
+
+
+--
+-- TOC entry 5217 (class 0 OID 17409)
+-- Dependencies: 220
+-- Data for Name: detail_user_individu; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.detail_user_individu (id, full_name, birth_date, gender, profile_picture, bio, contact_phone, address, job, nik, ktp_file_path, is_verified, is_adopter_ready, donasi_history_count) FROM stdin;
+20	Andi Gunawan	1995-05-10	male	\N	\N	081234567890	Jl. Adopsi No. 5, Bandung	Software Engineer	3273xxxxxxxxxxxx	\N	t	f	1
+21	Budi Santoso	1990-01-20	male	\N	\N	081234567891	Jl. Donasi No. 10, Jakarta	Pengusaha	3174xxxxxxxxxxxx	\N	t	f	2
+2	Azmi Tester	1990-01-01	male	\N	\N		alamat belum diverifikasi	Pelajar	3273100101900005	\N	f	f	0
+6	Salman	\N	\N	\N	\N		\N	\N	\N	\N	f	f	0
+7	Ajipati Alaga	\N	\N	\N	\N		\N	\N	\N	\N	f	f	0
+8	Anas Bekasi	2006-01-29	male	\N	saya adalah manusia bekasi		\N	\N	\N	\N	f	f	0
+3	Muhammad 'Azmi Salam	2006-06-30	male	zicofarry.JPG	saya adalah pencinta kucing dari umur 3 tahun, nama kucing tercinta saya sejak kecil adalah son goku.	085850603196	Jl. Sarimanis Blk. 16 No.98, Sarijadi, Kec. Sukasari, Kota Bandung, Jawa Barat 40151	Mahasiswa	3204323006060008	ktp_zicofarry.jpg	t	t	5
+5	Repa Pitriani	2005-11-05	female	repa.JPG	\N		alamat belum diverifikasi	Unknown	32731763530891182975	\N	f	f	1
+\.
+
+
+--
+-- TOC entry 5218 (class 0 OID 17428)
+-- Dependencies: 221
+-- Data for Name: detail_user_shelter; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.detail_user_shelter (id, shelter_name, established_date, organization_type, shelter_picture, bio, contact_phone, legal_certificate, donation_account_number, pj_name, pj_nik, is_verified_shelter, cat_capacity) FROM stdin;
+10	Rumah Kucing Bandung	2015-08-17	Komunitas	\N	\N	0227654321	\N	1234567890	Rina Anggraini	3273zzzzzzzzzzzz	t	50
+11	Panti Cat Sejahtera	2010-02-28	Yayasan	\N	\N	0219876543	\N	0987654321	Joko Susilo	3174yyyyyyyyyyyy	t	100
+4	Shelter Gerlong	2024-12-21	Komunitas	\N	\N		\N	\N	Ahkam Ibadurrahman	3273PJ87252	f	0
+\.
+
+
+--
+-- TOC entry 5229 (class 0 OID 17693)
+-- Dependencies: 232
+-- Data for Name: donations; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.donations (id, donatur_id, shelter_id, amount, donation_date, is_anonymus, payment_method, proof_file) FROM stdin;
+1	21	10	50000.00	2025-11-16 22:54:52.863077	f	\N	\N
+2	20	10	100000.00	2025-11-16 05:44:54.237741	f	\N	\N
+3	21	11	20000.00	2025-11-17 14:43:32.562628	t	\N	\N
+4	3	4	500000.00	2025-11-21 03:34:41.42546	f	qris	proof-1763660026008.jpg
+5	3	4	500000.00	2025-11-21 09:33:26.242767	f	qris	proof-1763660145108.jpg
+6	3	4	50000.00	2025-11-21 15:23:44.300268	f	qris	proof-1763660753440.jpg
+7	3	4	50000.00	2025-11-21 17:52:14.760903	f	qris	proof-1763660857736.jpg
+8	3	11	150000.00	2025-11-21 06:51:43.382181	f	qris	proof-1763661284666.jpg
+9	5	4	150000.00	2025-11-21 01:41:00.813271	f	qris	proof-1763664060782.jpg
+\.
+
+
+--
+-- TOC entry 5242 (class 0 OID 17858)
+-- Dependencies: 245
+-- Data for Name: driver_locations; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.driver_locations (id, driver_id, assignment_id, latitude, longitude, "timestamp") FROM stdin;
+1	DRV-BDG-001	1	-6.91400000	107.60800000	2025-11-19 16:17:54.863664+07
+2	DRV-BDG-001	1	-6.91450000	107.60900000	2025-11-19 16:22:54.863664+07
+\.
+
+
+--
+-- TOC entry 5219 (class 0 OID 17450)
+-- Dependencies: 222
+-- Data for Name: drivers; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.drivers (id, user_id, shelter_id, is_available, license_info, full_name) FROM stdin;
+DRV-BDG-001	30	10	t	SIM C-2027	Budi Kurniawan
+DRV-BDG-002	31	10	t	SIM C-2026	Cecep Supriadi
+\.
+
+
+--
+-- TOC entry 5232 (class 0 OID 17747)
+-- Dependencies: 235
+-- Data for Name: events; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.events (id, organizer_id, title, description, event_date, start_time, location_name, location_address, registration_link, is_active, created_at) FROM stdin;
+1	10	Bazar Adopsi Massal	Datang dan adopsi kucing lucu!	2025-12-05	10:00:00	Parkir Timur	Jl. Sukarno Hatta No. 100	\N	t	2025-11-10 10:00:00
+\.
+
+
+--
+-- TOC entry 5233 (class 0 OID 17769)
+-- Dependencies: 236
+-- Data for Name: faq; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.faq (id, question, answer) FROM stdin;
+2	Bagaimana cara membuat laporan kucing?	Pergi ke laman "Rescue".\nIsi semua data yang dibutuhkan untuk formulir.\nKlik "Submit" untuk mengirimkan data kucing.
+3	Apakah saya perlu membayar biaya adopsi?	Kami membebankan biaya adopsi yang bersifat donasi untuk menutupi biaya vaksinasi, steril, dan perawatan pra-adopsi.
+4	Bagaimana cara memberikan donasi untuk mendukung shelter?	Kunjungi halaman Donasi, pilih shelter tujuan, metode transfer, dan unggah bukti transfer Anda.
+5	Bagaimana cara mengadopsi kucing?	Telusuri katalog kucing, klik "Rincian" pada kucing pilihan Anda, dan isi formulir Adopsi yang tersedia di halaman detail tersebut.
+1	Cara merawat kucing yang benar?	Pastikan untuk memberikan nutrisi yang seimbang, vaksinasi rutin, dan lingkungan yang aman serta penuh kasih sayang. Ajak bermain minimal 10 menit sehari.
+\.
+
+
+--
+-- TOC entry 5222 (class 0 OID 17526)
+-- Dependencies: 225
+-- Data for Name: favorite_cats; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.favorite_cats (user_id, cat_id, created_at) FROM stdin;
+20	2	2025-11-10 10:00:00
+21	1	2025-11-11 11:00:00
+20	3	2025-11-12 12:00:00
+3	4	2025-11-20 21:28:51.089669
+3	1	2025-11-20 21:38:18.3317
+3	3	2025-11-21 02:23:07.580738
+\.
+
+
+--
+-- TOC entry 5236 (class 0 OID 17812)
+-- Dependencies: 239
+-- Data for Name: global_achievements; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.global_achievements (id, name, description, target_condition, points) FROM stdin;
+1	Donasi Pertama	Berhasil melakukan donasi pertama.	FIRST_DONATION	5
+2	Donasi 100 Ribu	Total akumulasi donasi mencapai Rp 100.000.	TOTAL_DONATION_100K	15
+3	Warga Teladan	Berhasil menyelesaikan 5 Quest.	COMPLETE_5_QUESTS	25
+\.
+
+
+--
+-- TOC entry 5238 (class 0 OID 17827)
+-- Dependencies: 241
+-- Data for Name: global_quests; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.global_quests (id, name, target_value, points, type) FROM stdin;
+1	Warga Forum	5.00	2	FORUM_POST_COUNT
+2	1 Tahun Bersama	365.00	15	DAYS_SINCE_JOIN
+3	Donasi 1 Juta	1000000.00	15	TOTAL_DONATION_AMOUNT
+4	Donatur Sejati	1.00	25	HAS_DONATED
+\.
+
+
+--
+-- TOC entry 5228 (class 0 OID 17664)
+-- Dependencies: 231
+-- Data for Name: reply_comment; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.reply_comment (id, user_id, comment_id, parent_reply_id, content, likes_count, created_at, updated_at) FROM stdin;
+1	20	1	\N	Terima kasih sarannya Budi!	0	2025-11-17 10:30:00	2025-11-17 10:30:00
+\.
+
+
+--
+-- TOC entry 5223 (class 0 OID 17544)
+-- Dependencies: 226
+-- Data for Name: reports; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.reports (id, reporter_id, report_type, shelter_assigned_id, location, latitude, longitude, description, photo, report_date) FROM stdin;
+1	20	Injured	10	Jl. Kebon Jati, Bandung	-6.91470000	107.60980000	Kucing tertabrak, kaki belakang luka parah.	photo_report_1.jpg	2025-11-18
+2	21	Abandoned	11	Jl. Thamrin, Jakarta	-6.17540000	106.82720000	Ditinggalkan di depan ruko, sangat kurus.	photo_report_2.jpg	2025-11-17
+\.
+
+
+--
+-- TOC entry 5224 (class 0 OID 17570)
+-- Dependencies: 227
+-- Data for Name: rescue_assignments; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.rescue_assignments (id, report_id, driver_id, shelter_id, assignment_status, assigned_at, started_transit_at, completed_at, estimated_pickup_time, notes) FROM stdin;
+1	1	DRV-BDG-001	10	in_transit	2025-11-18 10:30:00	\N	\N	2025-11-18 11:30:00	\N
+\.
+
+
+--
+-- TOC entry 5240 (class 0 OID 17839)
+-- Dependencies: 243
+-- Data for Name: user_progress; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.user_progress (id, user_id, global_item_id, item_type, current_progress, is_completed, completed_at) FROM stdin;
+1	20	1	QUEST	2.00	f	\N
+2	20	2	QUEST	365.00	t	2025-11-19 16:16:54.176482+07
+3	20	3	QUEST	500000.00	f	\N
+4	20	4	QUEST	1.00	t	2025-11-19 16:16:54.176482+07
+5	20	1	ACHIEVEMENT	1.00	t	2025-11-19 16:16:54.176482+07
+6	20	2	ACHIEVEMENT	1.00	t	2025-11-19 16:16:54.176482+07
+7	3	1	QUEST	4.00	f	\N
+8	3	2	QUEST	10.00	f	\N
+9	3	3	QUEST	0.00	f	\N
+10	3	4	QUEST	1.00	t	2025-11-19 16:18:15.201832+07
+11	3	1	ACHIEVEMENT	1.00	t	2025-11-19 16:18:15.201832+07
+12	3	2	ACHIEVEMENT	0.00	f	\N
+\.
+
+
+--
+-- TOC entry 5216 (class 0 OID 17393)
+-- Dependencies: 219
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.users (id, username, email, password_hash, role) FROM stdin;
+10	shelter_bandung	shelter_bdg@mail.com	hashed_shelter_pw	shelter
+20	andi_adopter	andi@mail.com	hashed_andi_pw	individu
+21	budi_donatur	budi@mail.com	hashed_budi_pw	individu
+30	driver_budi	budi_drv@mail.com	hashed_driver_pw	driver
+31	driver_cecep	cecep_drv@mail.com	hashed_driver_pw	driver
+1	admin_super	admin@cattake.id	$2a$12$d/ZK/aMZymZ2cZZmeHG4lO96xdfnzf1aNUe4hPalXvA.ZJy5ZW6ae	admin
+2	tester_azmi_001	azmi.test.001@mail.com	$2b$10$rW1H7VCzKWWmB34tZ/epmeh0HTDfFY4VucoY3P7hbg3t9sjjrsdiy	individu
+3	zicofarry	mhmmdzmslm36@gmail.com	$2b$10$S/.SrKBrNC0Lt7QTIauaDe4KiQZJ4w3QxTa5Y4OnT.c07yIEMzd6S	individu
+5	repa	repapit@gmail.com	$2b$10$Nh4VBkWfDYoC9k9AAjwOUuPJ6Lq6ytPzSi2Eek2FCFri214Knkb6.	individu
+6	salman	salman@gmail.com	$2b$10$AeaVKPcAQVhjtauAtlPGY.qAeU.HdcnnxvMOfFh.7ks2VHXH5KRjy	individu
+7	ajipati	ajipatialaga@gmail.com	$2b$10$lb.HCCUv0FzxgDf6qZ5cmOqYbqbU0kYoVnl9oYU7uwFHj9o88VxWu	individu
+8	anas	anasmifta@gmail.com	$2b$10$JDKS8/kOsH3voDP3fwHFdeJfC5tgyJr7GwbsBtSNLfJ7w3gxyWpFW	individu
+11	shelter-jakarta	shelter_jkt@mail.com	$2a$12$EyaNgDWLl4uXeK5luSp6NeNg3rnl3v3wJ8MZhnQIMCmYCK2/MYxBy	shelter
+4	shelter-gerlong	sheltergerlong@gmail.com	$2a$12$0c7TwUaK9VKllvejqx9kbOzwggL9YfrA43s3VYY/.h.RDY6.PiRve	shelter
+\.
+
+
+--
+-- TOC entry 5230 (class 0 OID 17714)
+-- Dependencies: 233
+-- Data for Name: verification_log; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.verification_log (id, user_id, verifier_id, verification_type, status, notes, created_at) FROM stdin;
+\.
+
+
+--
+-- TOC entry 5256 (class 0 OID 0)
+-- Dependencies: 247
+-- Name: adoptions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.adoptions_id_seq', 7, true);
+
+
+--
+-- TOC entry 5257 (class 0 OID 0)
+-- Dependencies: 246
+-- Name: cats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.cats_id_seq', 11, true);
+
+
+--
+-- TOC entry 5258 (class 0 OID 0)
+-- Dependencies: 248
+-- Name: donations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.donations_id_seq', 9, true);
+
+
+--
+-- TOC entry 5259 (class 0 OID 0)
+-- Dependencies: 244
+-- Name: driver_locations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.driver_locations_id_seq', 2, true);
+
+
+--
+-- TOC entry 5260 (class 0 OID 0)
+-- Dependencies: 238
+-- Name: global_achievements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.global_achievements_id_seq', 1, false);
+
+
+--
+-- TOC entry 5261 (class 0 OID 0)
+-- Dependencies: 240
+-- Name: global_quests_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.global_quests_id_seq', 1, false);
+
+
+--
+-- TOC entry 5262 (class 0 OID 0)
+-- Dependencies: 242
+-- Name: user_progress_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.user_progress_id_seq', 12, true);
+
+
+--
+-- TOC entry 5263 (class 0 OID 0)
+-- Dependencies: 237
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.users_id_seq', 8, true);
+
+
+--
+-- TOC entry 5002 (class 2606 OID 17515)
+-- Name: adoptions adoptions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.adoptions
+    ADD CONSTRAINT adoptions_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5024 (class 2606 OID 17746)
+-- Name: cat_facts cat_facts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cat_facts
+    ADD CONSTRAINT cat_facts_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5000 (class 2606 OID 17499)
+-- Name: cats cats_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cats
+    ADD CONSTRAINT cats_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5012 (class 2606 OID 17611)
+-- Name: chat_messages chat_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.chat_messages
+    ADD CONSTRAINT chat_messages_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5016 (class 2606 OID 17653)
+-- Name: comment comment_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.comment
+    ADD CONSTRAINT comment_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5014 (class 2606 OID 17634)
+-- Name: community_post community_post_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.community_post
+    ADD CONSTRAINT community_post_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4986 (class 2606 OID 17422)
+-- Name: detail_user_individu detail_user_individu_nik_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detail_user_individu
+    ADD CONSTRAINT detail_user_individu_nik_key UNIQUE (nik);
+
+
+--
+-- TOC entry 4988 (class 2606 OID 17420)
+-- Name: detail_user_individu detail_user_individu_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detail_user_individu
+    ADD CONSTRAINT detail_user_individu_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4990 (class 2606 OID 17442)
+-- Name: detail_user_shelter detail_user_shelter_donation_account_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detail_user_shelter
+    ADD CONSTRAINT detail_user_shelter_donation_account_number_key UNIQUE (donation_account_number);
+
+
+--
+-- TOC entry 4992 (class 2606 OID 17444)
+-- Name: detail_user_shelter detail_user_shelter_pj_nik_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detail_user_shelter
+    ADD CONSTRAINT detail_user_shelter_pj_nik_key UNIQUE (pj_nik);
+
+
+--
+-- TOC entry 4994 (class 2606 OID 17440)
+-- Name: detail_user_shelter detail_user_shelter_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detail_user_shelter
+    ADD CONSTRAINT detail_user_shelter_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5020 (class 2606 OID 17703)
+-- Name: donations donations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.donations
+    ADD CONSTRAINT donations_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5038 (class 2606 OID 17867)
+-- Name: driver_locations driver_locations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.driver_locations
+    ADD CONSTRAINT driver_locations_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4996 (class 2606 OID 17461)
+-- Name: drivers drivers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.drivers
+    ADD CONSTRAINT drivers_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4998 (class 2606 OID 17463)
+-- Name: drivers drivers_user_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.drivers
+    ADD CONSTRAINT drivers_user_id_key UNIQUE (user_id);
+
+
+--
+-- TOC entry 5026 (class 2606 OID 17763)
+-- Name: events events_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events
+    ADD CONSTRAINT events_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5028 (class 2606 OID 17778)
+-- Name: faq faq_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.faq
+    ADD CONSTRAINT faq_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5004 (class 2606 OID 17533)
+-- Name: favorite_cats favorite_cats_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.favorite_cats
+    ADD CONSTRAINT favorite_cats_pkey PRIMARY KEY (user_id, cat_id);
+
+
+--
+-- TOC entry 5030 (class 2606 OID 17823)
+-- Name: global_achievements global_achievements_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.global_achievements
+    ADD CONSTRAINT global_achievements_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5032 (class 2606 OID 17825)
+-- Name: global_achievements global_achievements_target_condition_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.global_achievements
+    ADD CONSTRAINT global_achievements_target_condition_key UNIQUE (target_condition);
+
+
+--
+-- TOC entry 5034 (class 2606 OID 17837)
+-- Name: global_quests global_quests_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.global_quests
+    ADD CONSTRAINT global_quests_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5018 (class 2606 OID 17677)
+-- Name: reply_comment reply_comment_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reply_comment
+    ADD CONSTRAINT reply_comment_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5006 (class 2606 OID 17559)
+-- Name: reports reports_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reports
+    ADD CONSTRAINT reports_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5008 (class 2606 OID 17582)
+-- Name: rescue_assignments rescue_assignments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rescue_assignments
+    ADD CONSTRAINT rescue_assignments_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5010 (class 2606 OID 17584)
+-- Name: rescue_assignments rescue_assignments_report_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rescue_assignments
+    ADD CONSTRAINT rescue_assignments_report_id_key UNIQUE (report_id);
+
+
+--
+-- TOC entry 5036 (class 2606 OID 17851)
+-- Name: user_progress user_progress_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_progress
+    ADD CONSTRAINT user_progress_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4980 (class 2606 OID 17408)
+-- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key UNIQUE (email);
+
+
+--
+-- TOC entry 4982 (class 2606 OID 17404)
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4984 (class 2606 OID 17406)
+-- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_username_key UNIQUE (username);
+
+
+--
+-- TOC entry 5022 (class 2606 OID 17725)
+-- Name: verification_log verification_log_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.verification_log
+    ADD CONSTRAINT verification_log_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5044 (class 2606 OID 17521)
+-- Name: adoptions adoptions_applicant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.adoptions
+    ADD CONSTRAINT adoptions_applicant_id_fkey FOREIGN KEY (applicant_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5045 (class 2606 OID 17516)
+-- Name: adoptions adoptions_cat_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.adoptions
+    ADD CONSTRAINT adoptions_cat_id_fkey FOREIGN KEY (cat_id) REFERENCES public.cats(id);
+
+
+--
+-- TOC entry 5043 (class 2606 OID 17500)
+-- Name: cats cats_shelter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cats
+    ADD CONSTRAINT cats_shelter_id_fkey FOREIGN KEY (shelter_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5053 (class 2606 OID 17612)
+-- Name: chat_messages chat_messages_assignment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.chat_messages
+    ADD CONSTRAINT chat_messages_assignment_id_fkey FOREIGN KEY (assignment_id) REFERENCES public.rescue_assignments(id);
+
+
+--
+-- TOC entry 5054 (class 2606 OID 17617)
+-- Name: chat_messages chat_messages_sender_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.chat_messages
+    ADD CONSTRAINT chat_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5056 (class 2606 OID 17659)
+-- Name: comment comment_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.comment
+    ADD CONSTRAINT comment_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.community_post(id);
+
+
+--
+-- TOC entry 5057 (class 2606 OID 17654)
+-- Name: comment comment_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.comment
+    ADD CONSTRAINT comment_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5055 (class 2606 OID 17635)
+-- Name: community_post community_post_author_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.community_post
+    ADD CONSTRAINT community_post_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5039 (class 2606 OID 17806)
+-- Name: detail_user_individu detail_user_individu_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detail_user_individu
+    ADD CONSTRAINT detail_user_individu_id_fkey FOREIGN KEY (id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5040 (class 2606 OID 17445)
+-- Name: detail_user_shelter detail_user_shelter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detail_user_shelter
+    ADD CONSTRAINT detail_user_shelter_id_fkey FOREIGN KEY (id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5061 (class 2606 OID 17704)
+-- Name: donations donations_donatur_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.donations
+    ADD CONSTRAINT donations_donatur_id_fkey FOREIGN KEY (donatur_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5062 (class 2606 OID 17709)
+-- Name: donations donations_shelter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.donations
+    ADD CONSTRAINT donations_shelter_id_fkey FOREIGN KEY (shelter_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5067 (class 2606 OID 17873)
+-- Name: driver_locations driver_locations_assignment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.driver_locations
+    ADD CONSTRAINT driver_locations_assignment_id_fkey FOREIGN KEY (assignment_id) REFERENCES public.rescue_assignments(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 5068 (class 2606 OID 17868)
+-- Name: driver_locations driver_locations_driver_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.driver_locations
+    ADD CONSTRAINT driver_locations_driver_id_fkey FOREIGN KEY (driver_id) REFERENCES public.drivers(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 5041 (class 2606 OID 17469)
+-- Name: drivers drivers_shelter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.drivers
+    ADD CONSTRAINT drivers_shelter_id_fkey FOREIGN KEY (shelter_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5042 (class 2606 OID 17464)
+-- Name: drivers drivers_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.drivers
+    ADD CONSTRAINT drivers_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5065 (class 2606 OID 17764)
+-- Name: events events_organizer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events
+    ADD CONSTRAINT events_organizer_id_fkey FOREIGN KEY (organizer_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5046 (class 2606 OID 17539)
+-- Name: favorite_cats favorite_cats_cat_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.favorite_cats
+    ADD CONSTRAINT favorite_cats_cat_id_fkey FOREIGN KEY (cat_id) REFERENCES public.cats(id);
+
+
+--
+-- TOC entry 5047 (class 2606 OID 17534)
+-- Name: favorite_cats favorite_cats_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.favorite_cats
+    ADD CONSTRAINT favorite_cats_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5058 (class 2606 OID 17683)
+-- Name: reply_comment reply_comment_comment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reply_comment
+    ADD CONSTRAINT reply_comment_comment_id_fkey FOREIGN KEY (comment_id) REFERENCES public.comment(id);
+
+
+--
+-- TOC entry 5059 (class 2606 OID 17688)
+-- Name: reply_comment reply_comment_parent_reply_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reply_comment
+    ADD CONSTRAINT reply_comment_parent_reply_id_fkey FOREIGN KEY (parent_reply_id) REFERENCES public.reply_comment(id);
+
+
+--
+-- TOC entry 5060 (class 2606 OID 17678)
+-- Name: reply_comment reply_comment_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reply_comment
+    ADD CONSTRAINT reply_comment_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5048 (class 2606 OID 17560)
+-- Name: reports reports_reporter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reports
+    ADD CONSTRAINT reports_reporter_id_fkey FOREIGN KEY (reporter_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5049 (class 2606 OID 17565)
+-- Name: reports reports_shelter_assigned_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reports
+    ADD CONSTRAINT reports_shelter_assigned_id_fkey FOREIGN KEY (shelter_assigned_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5050 (class 2606 OID 17590)
+-- Name: rescue_assignments rescue_assignments_driver_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rescue_assignments
+    ADD CONSTRAINT rescue_assignments_driver_id_fkey FOREIGN KEY (driver_id) REFERENCES public.drivers(id);
+
+
+--
+-- TOC entry 5051 (class 2606 OID 17585)
+-- Name: rescue_assignments rescue_assignments_report_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rescue_assignments
+    ADD CONSTRAINT rescue_assignments_report_id_fkey FOREIGN KEY (report_id) REFERENCES public.reports(id);
+
+
+--
+-- TOC entry 5052 (class 2606 OID 17595)
+-- Name: rescue_assignments rescue_assignments_shelter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rescue_assignments
+    ADD CONSTRAINT rescue_assignments_shelter_id_fkey FOREIGN KEY (shelter_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5066 (class 2606 OID 17852)
+-- Name: user_progress user_progress_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_progress
+    ADD CONSTRAINT user_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 5063 (class 2606 OID 17726)
+-- Name: verification_log verification_log_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.verification_log
+    ADD CONSTRAINT verification_log_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5064 (class 2606 OID 17731)
+-- Name: verification_log verification_log_verifier_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.verification_log
+    ADD CONSTRAINT verification_log_verifier_id_fkey FOREIGN KEY (verifier_id) REFERENCES public.users(id);
+
+
+-- Completed on 2025-11-21 02:51:41
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict kUotTQj9lHfMLRsmOIwUvKWiZlgCSi5AFW4HcvzQA4hwmuUK8EEYkbBtrSalg0p
+
