@@ -24,7 +24,17 @@ class DonationService {
             data.proof_file // Hanya nama filenya saja, misal: 'bukti-123.jpg'
         ];
 
+        // 1. Eksekusi Insert Donasi
         const result = await db.query(query, values);
+
+        // 2. [TAMBAHAN] Update Counter di tabel detail user
+        // Tambahkan 1 ke donasi_history_count milik user tersebut
+        const updateCounterQuery = `
+            UPDATE detail_user_individu
+            SET donasi_history_count = donasi_history_count + 1
+            WHERE id = $1
+        `;
+        await db.query(updateCounterQuery, [data.donatur_id]);
         return result.rows[0];
     }
 
