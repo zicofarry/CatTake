@@ -37,6 +37,7 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
    npm install bcrypt jsonwebtoken
    npm install @fastify/cors
    npm install @fastify/static
+   npm install @fastify/multipart
    ```
 
 3. Import database

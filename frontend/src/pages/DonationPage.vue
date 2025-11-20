@@ -50,12 +50,21 @@
           <form @submit.prevent="submitDonation" class="flex flex-col gap-5">
             <div>
               <label for="shelter" class="font-semibold mb-1 block text-gray-700">Shelter Tujuan</label>
-              <select id="shelter" v-model="form.shelter" required
-                      class="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-700 text-base">
+              <select 
+                id="shelter" 
+                v-model="form.shelter" 
+                required
+                class="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-700 text-base"
+              >
                 <option value="" disabled>-- Pilih Shelter --</option>
-                <option value="cathouse">CatHouse</option>
-                <option value="pawcare">PawCare</option>
-                <option value="meowhaven">Meow Haven</option>
+                
+                <option 
+                  v-for="shelter in shelterList" 
+                  :key="shelter.id" 
+                  :value="shelter.id"
+                >
+                  {{ shelter.shelter_name }}
+                </option>
               </select>
             </div>
 
@@ -94,12 +103,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import HeroSection from '../components/HeroSection.vue';
 import LoginOverlay from '../components/LoginOverlay.vue';
 import DonationItemCard from '../components/DonationItemCard.vue';
+import apiClient from '@/api/http';
 
 const userRole = computed(() => localStorage.getItem('userRole') || 'guest');
+const shelterList = ref([]);
 
 // --- Mock Data Donasi (Untuk Tampilan Shelter) ---
 const mockDonations = ref([
@@ -134,13 +145,61 @@ function handleFileUpload(event) {
     }
 }
 
-function submitDonation() {
-    if (form.value.shelter && form.value.method && form.value.proof) {
-        alert(`Donasi ke ${form.value.shelter} melalui ${form.value.method} berhasil diajukan! Bukti transfer: ${form.value.proof.name}`);
-    } else {
-        alert('Mohon lengkapi semua field donasi.');
+onMounted(async () => {
+    try {
+        // Panggil endpoint yang baru dibuat
+        const response = await apiClient.get('/users/shelters');
+        shelterList.value = response.data;
+    } catch (error) {
+        console.error("Gagal memuat data shelter:", error);
+    }
+});
+
+async function submitDonation() {
+    if (!form.value.shelter || !form.value.method || !form.value.proof) {
+        alert('Mohon lengkapi semua field.');
+        return;
+    }
+
+    // Mapping Nama Shelter ke ID (Karena select option kamu value-nya string nama)
+    // Idealnya select option valuenya langsung ID shelter dari database.
+    // Contoh dummy mapping sementara:
+
+    const formData = new FormData();
+    formData.append('shelter_id', form.value.shelter); 
+    formData.append('payment_method', form.value.method);
+    formData.append('amount', 150000); // Kamu belum punya input amount di form, perlu ditambah!
+    formData.append('is_anonymus', false); // Tambah checkbox anonim di form jika perlu
+    formData.append('proof', form.value.proof); // File objek
+
+    try {
+        await apiClient.post('/donations', formData, {
+            headers: {
+                'Content-Type': undefined 
+            }
+        });
+        alert('Donasi berhasil!');
+        // --- RESET FORM SEPERTI SEMULA ---
+        form.value.shelter = ''; // Reset pilihan shelter ke default
+        form.value.method = '';  // Reset metode pembayaran
+        form.value.proof = null; // Hapus file dari state
+        fileName.value = '';     // Hapus nama file yang tampil
+
+        // Reset elemen input file HTML agar user bisa upload file baru
+        const fileInput = document.getElementById('buktiTf');
+        if (fileInput) fileInput.value = '';
+    } catch (error) {
+        console.error(error);
+        alert('Gagal mengirim donasi');
     }
 }
+// function submitDonation() {
+//     if (form.value.shelter && form.value.method && form.value.proof) {
+//         alert(`Donasi ke ${form.value.shelter} melalui ${form.value.method} berhasil diajukan! Bukti transfer: ${form.value.proof.name}`);
+//     } else {
+//         alert('Mohon lengkapi semua field donasi.');
+//     }
+// }
 </script>
 
 <style scoped>

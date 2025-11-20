@@ -110,6 +110,17 @@ class UserService {
 
         return result.rows[0];
     }
+
+    static async getAllShelters() {
+        // Ambil ID dan Nama Shelter dari tabel detail_user_shelter
+        const query = `
+            SELECT id, shelter_name 
+            FROM detail_user_shelter
+            ORDER BY shelter_name ASC
+        `;
+        const result = await db.query(query);
+        return result.rows;
+    }
 }
 
 module.exports = UserService;

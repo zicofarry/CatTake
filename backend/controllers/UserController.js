@@ -54,6 +54,16 @@ class UserController {
             return reply.code(400).send({ error: error.message });
         }
     }
+
+    static async getShelters(request, reply) {
+        try {
+            const shelters = await UserService.getAllShelters();
+            return reply.send(shelters);
+        } catch (error) {
+            console.error('Error fetching shelters:', error);
+            return reply.code(500).send({ error: 'Internal Server Error' });
+        }
+    }
     // Anda bisa menambahkan controller lain di sini, seperti updateProfile
 }
 

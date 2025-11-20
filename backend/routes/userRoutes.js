@@ -8,5 +8,6 @@ async function userRoutes(fastify, options) {
     // Tanpa middleware (untuk testing):
     fastify.get('/profile/:userId/:role', UserController.getProfile); 
     fastify.patch('/profile/:userId', UserController.updateProfile);
+    fastify.get('/shelters', UserController.getShelters);
 }
 module.exports = userRoutes;
