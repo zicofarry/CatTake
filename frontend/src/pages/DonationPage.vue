@@ -17,13 +17,20 @@
 
         <!-- Wrapper Daftar Donasi -->
         <div class="relative bg-white p-6 md:p-8 rounded-3xl shadow-2xl overflow-hidden custom-scrollbar max-h-[80vh]">
-          <div class="flex flex-col gap-4">
+          
+          <div v-if="donations.length === 0" class="text-center py-10 text-gray-500">
+            <i class="fas fa-box-open text-4xl mb-3 opacity-50"></i>
+            <p>Belum ada donasi masuk.</p>
+          </div>
+
+          <div v-else class="flex flex-col gap-4">
             <DonationItemCard 
-              v-for="donation in mockDonations" 
+              v-for="donation in donations" 
               :key="donation.id" 
               :donation="donation"
             />
           </div>
+
         </div>
       </div>
     </div>
@@ -107,20 +114,22 @@ import { ref, onMounted, computed } from 'vue';
 import HeroSection from '../components/HeroSection.vue';
 import LoginOverlay from '../components/LoginOverlay.vue';
 import DonationItemCard from '../components/DonationItemCard.vue';
+import { jwtDecode } from 'jwt-decode';
 import apiClient from '@/api/http';
 
 const userRole = computed(() => localStorage.getItem('userRole') || 'guest');
 const shelterList = ref([]);
+const donations = ref([]);
 
 // --- Mock Data Donasi (Untuk Tampilan Shelter) ---
-const mockDonations = ref([
-    { id: 1, amount: 1000000, donorName: 'Diana', profilePic: '/img/profileDiana.png', dateTime: '2025/10/02 19.08' },
-    { id: 2, amount: 10000000, donorName: 'Azmi', profilePic: '/img/profileAzmi.png', dateTime: '2025/09/30 13.25' },
-    { id: 3, amount: 999000, donorName: 'Anas', profilePic: '/img/profileAnas.png', dateTime: '2025/09/29 09.40' },
-    { id: 4, amount: 3000000, donorName: 'Nanda', profilePic: '/img/profileNanda.png', dateTime: '2025/09/29 07.00' },
-    { id: 5, amount: 800000, donorName: 'Aji', profilePic: '/img/profileAji.png', dateTime: '2025/09/15 11.23' },
-    { id: 6, amount: 5000000, donorName: 'Rafa', profilePic: '/img/profileRafa.png', dateTime: '2025/09/12 12.30' },
-]);
+// const mockDonations = ref([
+//     { id: 1, amount: 1000000, donorName: 'Diana', profilePic: '/img/profileDiana.png', dateTime: '2025/10/02 19.08' },
+//     { id: 2, amount: 10000000, donorName: 'Azmi', profilePic: '/img/profileAzmi.png', dateTime: '2025/09/30 13.25' },
+//     { id: 3, amount: 999000, donorName: 'Anas', profilePic: '/img/profileAnas.png', dateTime: '2025/09/29 09.40' },
+//     { id: 4, amount: 3000000, donorName: 'Nanda', profilePic: '/img/profileNanda.png', dateTime: '2025/09/29 07.00' },
+//     { id: 5, amount: 800000, donorName: 'Aji', profilePic: '/img/profileAji.png', dateTime: '2025/09/15 11.23' },
+//     { id: 6, amount: 5000000, donorName: 'Rafa', profilePic: '/img/profileRafa.png', dateTime: '2025/09/12 12.30' },
+// ]);
 
 const props = defineProps({
   isLoggedInProp: Boolean
@@ -133,6 +142,40 @@ const form = ref({
 });
 
 const fileName = ref('');
+
+// Helper untuk ambil ID User (Shelter ID) dari Token
+function getUserId() {
+    const token = localStorage.getItem('userToken');
+    if (!token) return null;
+    try {
+        const decoded = jwtDecode(token);
+        return decoded.id;
+    } catch (error) {
+        console.error("Error decoding token:", error);
+        return null;
+    }
+}
+
+// --- LOGIKA SAAT LOAD HALAMAN ---
+onMounted(async () => {
+    try {
+        if (userRole.value === 'shelter') {
+            // === JIKA SHELTER: AMBIL DATA DONASI MASUK ===
+            const shelterId = getUserId();
+            if (shelterId) {
+                const response = await apiClient.get(`/donations/shelter/${shelterId}`);
+                donations.value = response.data; // Simpan data asli ke state
+                console.log("Data Donasi Diterima:", donations.value);
+            }
+        } else {
+            // === JIKA USER/GUEST: AMBIL DAFTAR SHELTER UTK FORM ===
+            const response = await apiClient.get('/users/shelters');
+            shelterList.value = response.data;
+        }
+    } catch (error) {
+        console.error("Gagal memuat data:", error);
+    }
+});
 
 function handleFileUpload(event) {
     const file = event.target.files[0];

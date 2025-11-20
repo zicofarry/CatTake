@@ -9,9 +9,9 @@ class DonationService {
             INSERT INTO donations (
                 donatur_id, shelter_id, amount, 
                 donation_date, is_anonymus, 
-                payment_method, proof_file, status
+                payment_method, proof_file
             ) 
-            VALUES ($1, $2, $3, NOW(), $4, $5, $6, 'pending')
+            VALUES ($1, $2, $3, NOW(), $4, $5, $6)
             RETURNING id
         `;
         
@@ -41,12 +41,12 @@ class DonationService {
                 -- Ambil nama donatur (jika tidak anonim)
                 CASE 
                     WHEN d.is_anonymus = true THEN 'Hamba Allah'
-                    ELSE u.username 
+                    ELSE dui.full_name 
                 END as "donorName",
                 -- Ambil foto profil donatur (jika tidak anonim)
                 CASE 
-                    WHEN d.is_anonymus = true THEN '/img/profile_default.png'
-                    ELSE COALESCE(dui.profile_picture, 'profile_default.png')
+                    WHEN d.is_anonymus = true THEN '/img/NULL.JPG'
+                    ELSE COALESCE(dui.profile_picture, 'NULL.JPG')
                 END as "donorPhoto"
             FROM donations d
             JOIN users u ON d.donatur_id = u.id
@@ -62,7 +62,7 @@ class DonationService {
             id: row.id,
             amount: parseFloat(row.amount),
             donorName: row.donorName,
-            profilePic: row.donorPhoto.startsWith('http') ? row.donorPhoto : `/public/${row.donorPhoto}`, // Sesuaikan path statis
+            profilePic: row.donorPhoto.startsWith('http') ? row.donorPhoto : `/img/${row.donorPhoto}`, // Sesuaikan path statis
             dateTime: new Date(row.donation_date).toLocaleString('id-ID'),
             paymentMethod: row.payment_method,
             proofFile: row.proof_file

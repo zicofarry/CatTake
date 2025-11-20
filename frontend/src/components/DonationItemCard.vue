@@ -1,8 +1,12 @@
 <template>
     <div class="flex items-center p-4 bg-gray-200 rounded-xl shadow-md transition duration-200 hover:shadow-lg">
         
-        <img :src="donation.profilePic" :alt="'Foto ' + donation.donorName" class="w-12 h-12 rounded-full object-cover mr-4 shrink-0">
-        
+        <img 
+            :src="resolveImageUrl(donation.profilePic)" 
+            :alt="'Foto ' + donation.donorName" 
+            class="w-12 h-12 rounded-full object-cover mr-4 shrink-0 bg-gray-300"
+            @error="handleImageError"
+        >
         <div class="flex-grow min-w-0">
             <p class="text-sm text-gray-700 leading-tight truncate">
                 Donasi <strong class="text-gray-900 font-bold mr-1">{{ formattedAmount }}</strong> dari <strong class="text-gray-900">{{ donation.donorName }}</strong>
@@ -29,7 +33,7 @@ const props = defineProps({
             id: 0,
             amount: 0,
             donorName: 'Anonim',
-            profilePic: '/assets/img/profile_default.png',
+            profilePic: '/img/NULL.JPG',
             dateTime: '0000/00/00 00.00'
         })
     }
@@ -38,6 +42,29 @@ const props = defineProps({
 const formattedAmount = computed(() => {
     return `Rp${props.donation.amount.toLocaleString('id-ID')}`;
 });
+
+// --- FUNGSI BARU: Menangani URL Gambar ---
+function resolveImageUrl(path) {
+    if (!path) return '/img/NULL.JPG';
+
+    // Jika path adalah URL lengkap (misal dari Google Login nanti), pakai langsung
+    if (path.startsWith('http')) return path;
+
+    // Jika path dari Backend (diawali /public/), tambahkan host backend
+    if (path.startsWith('/public/')) {
+        return `http://localhost:3000${path}`;
+    }
+
+    if (path.startsWith('/img/')) return path;
+
+    // 5. [PERBAIKAN UTAMA] Jika hanya nama file (misal 'zicofarry.JPG'), anggap itu aset statis di folder /img/
+    return `/img/${path}`;
+}
+
+// Opsional: Fallback jika gambar gagal dimuat
+function handleImageError(event) {
+    event.target.src = '/img/NULL.JPG';
+}
 </script>
 
 <style scoped>
