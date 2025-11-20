@@ -1,5 +1,6 @@
 const CatController = require('../controllers/catController'); // Sesuaikan path
 const authentication = require('../middlewares/authentication'); // Sesuaikan path middleware
+const optionalAuthentication = require('../middlewares/optionalAuthentication');
 
 // Di Fastify, routes itu dibungkus function async
 async function catRoutes(fastify, options) {
@@ -10,7 +11,7 @@ async function catRoutes(fastify, options) {
     }, CatController.toggleLike);
 
     // Route: GET /api/v1/cats (Contoh kalau ada)
-    // fastify.get('/', { preHandler: [authentication] }, CatController.getCats);
+    fastify.get('/', { preHandler: [optionalAuthentication] }, CatController.getCats);
 }
 
 module.exports = catRoutes;

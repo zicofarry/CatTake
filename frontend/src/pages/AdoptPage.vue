@@ -142,17 +142,34 @@ function getUserId() {
 // --- FETCH DATA ---
 onMounted(async () => {
     try {
+        const token = localStorage.getItem('userToken');
+
         if (userRole.value === 'shelter') {
             // 1. JIKA SHELTER: Ambil Laporan Adopsi
             const shelterId = getUserId();
             if (shelterId) {
-                const response = await apiClient.get(`/adopt/reports/${shelterId}`);
-                adoptionReports.value = response.data; // Simpan ke state
+                const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+                const response = await apiClient.get(`/adopt/reports/${shelterId}`, config);
+                adoptionReports.value = response.data;
+                // const response = await apiClient.get(`/adopt/reports/${shelterId}`);
+                // adoptionReports.value = response.data; // Simpan ke state
             }
         } else {
             // 2. JIKA USER/GUEST: Ambil Daftar Kucing Available
-            const response = await apiClient.get('/adopt/cats');
-            catData.value = response.data; // Simpan ke state
+            const config = {};
+            
+            // Kalau user punya token (Login), tempelkan di Header
+            if (token) {
+                config.headers = { 
+                    Authorization: `Bearer ${token}` 
+                };
+            }
+
+            // Request ke backend dengan membawa Token (kalau ada)
+            // Backend akan cek: "Oh ini User ID 3", lalu set isFavorited = true
+            const response = await apiClient.get('/adopt/cats', config);
+            
+            catData.value = response.data; 
         }
     } catch (error) {
         console.error("Gagal mengambil data:", error);
