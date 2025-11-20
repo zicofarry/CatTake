@@ -5,7 +5,11 @@ class AdoptionController {
     // GET /api/v1/adopt/cats
     static async getCats(request, reply) {
         try {
-            const cats = await CatService.getAvailableCats();
+            const userId = request.user ? request.user.id : null;
+
+            // Oper userId ke Service
+            const cats = await CatService.getAvailableCats(userId);
+            
             return reply.send(cats);
         } catch (error) {
             return reply.code(500).send({ error: error.message });

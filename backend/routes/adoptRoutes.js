@@ -1,8 +1,9 @@
 const AdoptionController = require('../controllers/AdoptionController');
+const optionalAuthentication = require('../middlewares/optionalAuthentication');
 
 async function adoptRoutes(fastify, options) {
     // Public: Ambil daftar kucing
-    fastify.get('/cats', AdoptionController.getCats);
+    fastify.get('/cats', { preHandler: [optionalAuthentication] }, AdoptionController.getCats);
 
     // User: Apply adopsi
     fastify.post('/apply', AdoptionController.applyAdoption);

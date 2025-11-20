@@ -25,7 +25,6 @@ class CatService {
         return result.rows.map(cat => ({
             ...cat,
             age: `${cat.age_months} Bulan`, // Format umur
-            isFavorite: false // Default
         }));
     }
 
