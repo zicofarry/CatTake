@@ -21,7 +21,7 @@
             <div class="relative bg-white p-4 md:p-6 rounded-3xl shadow-2xl overflow-visible">
                 <div class="flex flex-col gap-4">
                     <AdoptionReportCard 
-                        v-for="report in mockAdoptionReports" 
+                        v-for="report in adoptionReports" 
                         :key="report.id" 
                         :report="report"
                     />
@@ -115,6 +115,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { jwtDecode } from 'jwt-decode'; // Pastikan sudah install: npm install jwt-decode
+import apiClient from '@/api/http'; // Import axios instance
 import CatCard from '../components/CatCard.vue';
 import HeroSection from '../components/HeroSection.vue';
 import LoginOverlay from '../components/LoginOverlay.vue';
@@ -122,45 +124,39 @@ import AdoptionReportCard from '../components/AdoptionReportCard.vue'; // Kompon
 
 // Mengambil userRole dari localStorage
 const userRole = computed(() => localStorage.getItem('userRole') || 'guest');
+const adoptionReports = ref([]); // Data laporan untuk shelter
+const catData = ref([]); // Data kucing untuk user/guest
 
-// --- MOCK DATA UNTUK SHELTER VIEW ---
-const mockAdoptionReports = ref([
-    { id: 1, catName: 'Oyen', date: '2025/10/02 19.08', adopter: { name: 'Diana', profilePic: '/img/profileDiana.png', nik: '327XXXXXXXXX1', phone: '08XXXXXXX1', email: 'dianacantik@gmail.com', job: 'Guru', address: 'Jl. Gegerkalong Girang No.116 Kota Bandung.' }},
-    { id: 2, catName: 'Kurkur', date: '2025/09/30 13.25', adopter: { name: 'Azmi', profilePic: '/img/profileAzmi.png', nik: '327XXXXXXXXX2', phone: '08X-XXX-XXX', email: 'azmi@mail.com', job: 'Pegawai Swasta', address: 'Jl. Asia Afrika No. 12, Bandung.' }},
-    { id: 3, catName: 'Cemong', date: '2025/09/29 09.40', adopter: { name: 'Anas', profilePic: '/img/profileAnas.png', nik: '327XXXXXXXXX3', phone: '08X-XXX-XXX', email: 'anas@mail.com', job: 'Mahasiswa', address: 'Jl. Merdeka No. 5, Cimahi.' }},
-    { id: 4, catName: 'Bolang', date: '2025/09/29 07.00', adopter: { name: 'Nanda', profilePic: '/img/profileNanda.png', nik: '327XXXXXXXXX4', phone: '08X-XXX-XXX', email: 'nanda@mail.com', job: 'Wirausaha', address: 'Komplek Permata Hijau Blok C, Jakarta.' }},
-]);
-
-
-// --- LOGIKA UNTUK USER VIEW ---
-// const catData = ref([
-//   { id: 1, name: 'Oyen', shelter: 'CatHouse', gender: 'male', age: '6 Bulan', image: 'oyencat.png', isFavorite: false },
-//   { id: 2, name: 'Abul', shelter: 'PawCare', gender: 'male', age: '5 Bulan', image: 'minicat.png', isFavorite: false },
-//   { id: 3, name: 'Simba', shelter: 'Meow Haven', gender: 'male', age: '2 Tahun', image: 'bradercat.png', isFavorite: false },
-//   { id: 4, name: 'Mueza', shelter: 'CatHouse', gender: 'female', age: '8 Bulan', image: 'mochacat.png', isFavorite: false },
-//   { id: 5, name: 'Kitty', shelter: 'PawCare', gender: 'female', age: '3 Tahun', image: 'kitty.png', isFavorite: false },
-// ]);
-const catData = ref([]); // Asalnya ada data, sekarang kosong
-
-// 3. TAMBAHKAN 'onMounted' UNTUK MENGAMBIL DATA
-onMounted(async () => {
-  try {
-    // Panggil backend Anda
-    const response = await fetch('http://localhost:3000/api/kucing'); 
-    
-    if (!response.ok) {
-      throw new Error('Gagal mengambil data dari server');
+function getUserId() {
+    const token = localStorage.getItem('userToken');
+    if (!token) return null;
+    try {
+        const decoded = jwtDecode(token);
+        return decoded.id;
+    } catch (error) {
+        console.error("Error decoding token:", error);
+        return null;
     }
-    
-    const dataFromBackend = await response.json();
-    
-    // 4. MASUKKAN DATA DARI BACKEND KE 'catData'
-    catData.value = dataFromBackend; 
-    
-  } catch (error) {
-    console.error('Error saat fetching data kucing:', error);
-    // Handle error, mungkin tampilkan pesan di UI
-  }
+}
+
+// --- FETCH DATA ---
+onMounted(async () => {
+    try {
+        if (userRole.value === 'shelter') {
+            // 1. JIKA SHELTER: Ambil Laporan Adopsi
+            const shelterId = getUserId();
+            if (shelterId) {
+                const response = await apiClient.get(`/adopt/reports/${shelterId}`);
+                adoptionReports.value = response.data; // Simpan ke state
+            }
+        } else {
+            // 2. JIKA USER/GUEST: Ambil Daftar Kucing Available
+            const response = await apiClient.get('/adopt/cats');
+            catData.value = response.data; // Simpan ke state
+        }
+    } catch (error) {
+        console.error("Gagal mengambil data:", error);
+    }
 });
 
 const activeFilter = ref('all'); 

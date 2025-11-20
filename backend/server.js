@@ -6,7 +6,8 @@ const { connectDB } = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const faqRoutes = require('./routes/faqRoutes');
-
+const adoptRoutes = require('./routes/adoptRoutes');
+const catRoutes = require('./routes/catRoutes')
 
 fastify.register(cors, {
     origin: 'http://localhost:5173', 
@@ -25,6 +26,8 @@ fastify.register(fastifyStatic, {
 fastify.register(authRoutes, { prefix: '/api/v1/auth' });
 fastify.register(userRoutes, { prefix: '/api/v1/users' });
 fastify.register(faqRoutes, { prefix: '/api/v1/faq' });
+fastify.register(adoptRoutes, { prefix: '/api/v1/adopt' });
+fastify.register(catRoutes, { prefix: '/api/v1/cats' });
 
 // Jalankan server
 const start = async () => {

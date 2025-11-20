@@ -55,14 +55,49 @@
 
 <script setup>
 import { defineProps, defineEmits } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
   cat: { type: Object, required: true }
 });
 
-const emit = defineEmits(['toggle-favorite']);
+async function toggleFavorite() {
+  // 1. Ambil token (Asumsi kamu simpan token di localStorage saat login)
+  const token = localStorage.getItem('userToken'); 
+  
+  if (!token) {
+    alert("Silakan login dulu untuk menyukai kucing ini!");
+    return;
+  }
 
-function toggleFavorite() {
-  emit('toggle-favorite', props.cat.id);
+  // 2. Simpan status lama buat jaga-jaga kalau error (Backup)
+  const previousStatus = props.cat.isFavorited;
+
+  // 3. Optimistic Update: Ubah tampilan DULUAN biar terasa cepat (UX bagus)
+  // Vue 3 Reactivity: Mengubah property di dalam object prop akan merender ulang UI
+  props.cat.isFavorited = !props.cat.isFavorited;
+
+  try {
+    // 4. Panggil API Backend
+    // Sesuaikan URL dengan backendmu
+    const response = await axios.post(`http://localhost:3000/api/v1/cats/${props.cat.id}/favorite`, {}, {
+      headers: {
+        Authorization: `Bearer ${token}` // Kirim token biar backend tau siapa user-nya
+      }
+    });
+
+    // 5. Sinkronisasi akhir (Opsional, untuk memastikan data sama persis dengan DB)
+    // Backend harus return { isFavorited: true/false }
+    if (response.data.isFavorited !== undefined) {
+      props.cat.isFavorited = response.data.isFavorited;
+    }
+
+  } catch (error) {
+    console.error("Gagal like:", error);
+    // 6. Kalau Error, kembalikan status ke semula (Rollback)
+    props.cat.isFavorited = previousStatus;
+    alert("Gagal memproses favorite.");
+  }
 }
+
 </script>
