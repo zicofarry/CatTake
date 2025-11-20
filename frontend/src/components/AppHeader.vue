@@ -163,15 +163,9 @@ const route = useRoute();
 const isMobileMenuOpen = ref(false);
 const isProfileDropdownOpen = ref(false);
 
-// State login diambil dari prop
-// const userRole = ref(props.userRole);
-
-// watchEffect(() => {
-//     userRole.value = props.userRole;
-// });
 watch(() => props.userRole, (newValue, oldValue) => {
     // DEBUGGING POINT 3: Cek kapan Header menerima nilai baru
-    console.log(`DEBUG C: Header menerima userRole baru: ${oldValue} -> ${newValue}`);
+    // console.log(`DEBUG C: Header menerima userRole baru: ${oldValue} -> ${newValue}`);
 }, { immediate: true }); // immediate: true agar running saat load
 
 // 2. COMPUTED PROPERTY (Menentukan halaman aktif)

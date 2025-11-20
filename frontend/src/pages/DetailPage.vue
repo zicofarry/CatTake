@@ -1,5 +1,4 @@
 <template>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <main class="min-h-screen bg-gray-100 py-10 md:pt-16" style="background: linear-gradient(180deg, #E8EAE3 0%, #A9C2B7 100%);">
         
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,60 +20,79 @@
             <div class="flex flex-col md:flex-row gap-8">
                 
                 <div class="flex justify-center md:flex-none">
-                    <div class="w-48 h-48 rounded-full shadow-xl p-2 bg-white flex items-center justify-center relative">
-                        <img :src="userData.photo" alt="Profile" class="w-full h-full object-cover rounded-full">
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="w-48 h-48 rounded-full shadow-xl p-2 bg-white flex items-center justify-center relative">
+                            
+                            <img 
+                                :src="userData.photo" 
+                                alt="Profile" 
+                                class="w-full h-full object-cover rounded-full cursor-pointer"
+                                @click="togglePhotoDropdown"  >
 
-                        <input 
-                            v-if="isEditMode" 
-                            type="file" 
-                            id="photo-upload" 
-                            accept="image/png, image/jpeg" 
-                            @change="handleFileUpload" 
-                            class="hidden"
-                        >
-                        <label 
-                            v-if="isEditMode" 
-                            for="photo-upload" 
-                            class="absolute inset-0 bg-black bg-opacity-30 rounded-full flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition duration-300"
-                        >
-                            <i class="fas fa-camera text-white text-3xl"></i>
-                        </label>
+                            <input 
+                                type="file" 
+                                id="photo-upload" 
+                                accept="image/png, image/jpeg" 
+                                @change="handleFileUpload" 
+                                class="hidden"
+                            >
+                            
+                            <button @click="handleChoosePhoto" class="absolute bottom-4 right-4 bg-gray-700 text-white p-2 rounded-full shadow-lg hover:bg-gray-800 transition flex items-center justify-center">
+                                <i class="fas fa-camera text-sm"></i>
+                            </button>
+
+                            <div v-if="isPhotoDropdownOpen" @click.stop class="absolute top-full mt-2 w-64 bg-white rounded-lg shadow-xl overflow-hidden z-50 text-left">
+                                <button @click="handleViewPhoto" class="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-gray-100 transition">
+                                    <i class="fas fa-user-circle w-5 text-lg"></i>
+                                    Lihat Foto Profil
+                                </button>
+                                <button @click="handleChoosePhoto" class="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-gray-100 transition">
+                                    <i class="fas fa-image w-5 text-lg"></i>
+                                    Pilih Foto Profil
+                                </button>
+                            </div>
+                            
+                            <div v-if="isPhotoDropdownOpen" @click="togglePhotoDropdown" class="fixed inset-0 z-40"></div>
+
+                        </div>
+                        
                     </div>
                 </div>
                 <div class="flex flex-col gap-4 w-full md:flex-grow">
                     <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800">
-                        <input v-if="isEditMode" type="text" v-model="formState.name" class="w-full focus:outline-none focus:ring-0">
-                        <span v-else>{{ userData.name }}</span>
-                        <button v-if="!isEditMode" @click="toggleEditMode" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
-                        <button v-else @click="handleSaveProfile" :disabled="isLoading" class="text-green-600 font-bold text-sm ml-4 disabled:opacity-50">
+                        <input v-if="activeEditField === 'name'" type="text" v-model="formState.name" class="w-full focus:outline-none focus:ring-0">
+                        <span v-else :class="{ 'text-gray-800': formState.name, 'text-gray-500': !formState.name }">{{ displayPlaceholder(formState.name, 'Isi nama lengkap anda...') }}</span>
+                        <button v-if="activeEditField !== 'name'" @click="toggleEditMode('name')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
+                        <button v-else @click="handleSaveProfile('name')" :disabled="isLoading" class="text-green-600 font-bold text-sm ml-4 disabled:opacity-50">
                             {{ isLoading ? 'Menyimpan...' : 'SIMPAN' }}
                         </button>
                     </div>
 
-                    <div class="hidden md:flex gap-4">
+                    <div class="flex flex-row gap-4">
                         <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800 flex-1">
-                            <input v-if="isEditMode" type="date" v-model="formState.birthDate" class="w-full focus:outline-none focus:ring-0">
-                            <span v-else>{{ userData.birthDate }}</span>
-                            <i v-if="!isEditMode" @click="toggleEditMode" class="fas fa-pencil-alt text-gray-500 cursor-pointer text-sm ml-4"></i>
-                            <button v-else @click="handleSaveProfile" class="text-green-600 font-bold text-sm ml-4">SIMPAN</button>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800 flex-1">
-                            <select v-if="isEditMode" v-model="formState.gender" class="w-full focus:outline-none focus:ring-0 text-base">
+                            <select v-if="activeEditField === 'gender'" v-model="formState.gender" class="w-full focus:outline-none focus:ring-0 text-base">
                                 <option value="male">Laki-laki</option>
                                 <option value="female">Perempuan</option>
-                                <option value="" disabled>Pilih Gender</option>
+                                <option value="" disabled>Pilih Jenis Kelamin</option>
                             </select>
-                            <span v-else>{{ userData.gender }}</span>
-                            <i v-if="!isEditMode" @click="toggleEditMode" class="fas fa-pencil-alt text-gray-500 cursor-pointer text-sm ml-4"></i>
-                            <button v-else @click="handleSaveProfile" class="text-green-600 font-bold text-sm ml-4">SIMPAN</button>
+                            <span v-else :class="{ 'text-gray-800': formState.gender, 'text-gray-500': !formState.gender }                              ">{{ displayPlaceholder(formState.gender, 'Pilih jenis kelamin...') }}</span>
+                            <button v-if="activeEditField !== 'gender'" @click="toggleEditMode('gender')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
+                            <button v-else @click="handleSaveProfile('gender')" class="text-green-600 font-bold text-sm ml-4">SIMPAN</button>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800 flex-1">
+                            <input v-if="activeEditField === 'birthDate'" type="date" v-model="formState.birthDate" class="w-full focus:outline-none focus:ring-0">
+                            <span v-else :class="{ 'text-gray-800': formState.birthDate, 'text-gray-500': !formState.birthDate }">{{ displayPlaceholder(formState.birthDate, 'Isi tanggal lahir..') }}</span>
+                            <button v-if="activeEditField !== 'birthDate'" @click="toggleEditMode('birthDate')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
+                            <button v-else @click="handleSaveProfile('birthDate')" class="text-green-600 font-bold text-sm ml-4">SIMPAN</button>
                         </div>
                     </div>
                     
+                    
                     <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800">
-                        <textarea v-if="isEditMode" v-model="formState.profileDescription" class="w-full focus:outline-none focus:ring-0 h-16"></textarea>
-                        <span v-else>{{ userData.profileDescription }}</span>
-                        <i v-if="!isEditMode" @click="toggleEditMode" class="fas fa-pencil-alt text-gray-500 cursor-pointer text-sm ml-4"></i>
-                        <button v-else @click="handleSaveProfile" class="text-green-600 font-bold text-sm ml-4">SIMPAN</button>
+                        <textarea v-if="activeEditField === 'profileDescription'" v-model="formState.profileDescription" class="w-full focus:outline-none focus:ring-0 h-16"></textarea>
+                        <span v-else :class="{ 'text-gray-800': formState.profileDescription, 'text-gray-500': !formState.profileDescription }">{{ displayPlaceholder(formState.profileDescription, 'Tulis bio singkat tentang dirimu...') }}</span>
+                        <button v-if="activeEditField !== 'profileDescription'" @click="toggleEditMode('profileDescription')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
+                        <button v-else @click="handleSaveProfile('profileDescription')" class="text-green-600 font-bold text-sm ml-4">SIMPAN</button>
                     </div>
                 </div>
             </div>
@@ -115,7 +133,7 @@
 <script setup>
 import { ref, computed, watchEffect, defineProps, defineEmits } from 'vue';
 import { useRouter } from 'vue-router'; 
-import apiClient from '@/api/http'; // Asumsi untuk menyimpan data
+import apiClient from '@/api/http'; 
 
 const router = useRouter(); 
 const emit = defineEmits([
@@ -125,145 +143,161 @@ const emit = defineEmits([
 
 // 1. Terima Props dari App.vue
 const props = defineProps({
-    profileData: { type: Object, default: () => null },
-    isLoggedInProp: { type: Boolean, default: false }
+    profileData: { type: Object, default: () => ({}) }, // Default object kosong
+    isLoggedInProp: { type: Boolean, default: false } 
 });
-
-// 2. State Edit
-const isEditMode = ref(false);
+console.log("DEBUG 1: Props diterima di DetailPage:", props.profileData);
+// 2. State Edit & Dropdown
+const activeEditField = ref(null); // String nama field yg diedit
+const isPhotoDropdownOpen = ref(false); 
 const isLoading = ref(false);
 
-// 3. Data Reaktif (digunakan untuk Form/Tampilan)
+// Helper Tampilan Placeholder
+const displayPlaceholder = (value, defaultText) => {
+    if (value && value !== 'null' && value !== '') {
+        return value;
+    }
+    return defaultText; 
+};
+
+// 3. Data Reaktif (Computed Property untuk Tampilan Statis)
 const userData = computed(() => {
     const data = props.profileData || {};
-    // Menampilkan format Indonesia untuk Gender
-    const genderDisplay = data.gender === 'male' ? 'Laki-laki' : (data.gender === 'female' ? 'Perempuan' : 'N/A');
+    const genderDisplay = data.gender === 'male' ? 'Laki-laki' : (data.gender === 'female' ? 'Perempuan' : null);
     
     // Formatter Tanggal (Tampilan)
-    const birthDateDisplay = data.birth_date ? new Date(data.birth_date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Tanggal Lahir';
+    const birthDateDisplay = data.birth_date 
+        ? new Date(data.birth_date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) 
+        : null;
+    
     
     return {
-        name: data.name || 'NAMA LENGKAP',
+        name: data.name || '', // Gunakan string kosong agar placeholder bekerja
         birthDate: birthDateDisplay, 
         gender: genderDisplay,
-        email: data.email || 'email@contoh.com',
-        // Menggunakan foto dari backend, fallback ke path lokal default
+        email: data.email || '',
         photo: data.photo || '/img/NULL.JPG',
-        profileDescription: data.bio || 'Tulis bio singkat tentang dirimu...',
+        profileDescription: data.bio || '',
     };
 });
 
 // 4. Data Form (untuk input yang bisa diubah)
 const formState = ref({
     name: '',
-    birthDate: '', // Format ISO date YYYY-MM-DD
-    gender: '', // Format mentah male/female
+    birthDate: '', 
+    gender: '', 
     profileDescription: '',
-    uploadedFile: null, // Untuk menampung file baru
+    uploadedFile: null, 
 });
 
-// 5. Watcher untuk mengisi formState saat data profil diterima
+// 5. Watcher untuk sinkronisasi data API ke Form
 watchEffect(() => {
-    if (props.profileData) {
-        // Mengisi formState dengan nilai mentah/formatted untuk input
+    if (props.profileData && props.profileData.id) { 
+        
+        console.log("DEBUG 2: Nilai ID sebelum disalin:", props.profileData.id); // HARUS ADA NILAI
+        
+        // --- Semua penyalinan dijamin aman di bawah sini ---
         formState.value.name = props.profileData.name || '';
-        // Format ISO date (wajib untuk <input type="date">)
         formState.value.birthDate = props.profileData.birth_date ? new Date(props.profileData.birth_date).toISOString().substring(0, 10) : '';
         formState.value.gender = props.profileData.gender || '';
         formState.value.profileDescription = props.profileData.bio || '';
+        
+        console.log("DEBUG 3: Nilai FormState Name setelah disalin:", formState.value.name);
+    } else {
+        // Ini adalah case untuk null atau objek kosong awal ({})
+        console.log("DEBUG: Data profil masih kosong atau ID tidak ditemukan.");
     }
 });
 
-// 6. Computed Quests & Achievements (Mengambil data dari prop)
+// 6. Quests & Achievements
 const quests = computed(() => props.profileData?.quests || []);
 const achievements = computed(() => props.profileData?.achievements || []);
 
+// --- FUNGSI INTERAKSI ---
 
-function toggleEditMode() {
-    isEditMode.value = !isEditMode.value;
-    
-    // Logika Reset: Jika user keluar dari Edit Mode TANPA Save
-    if (!isEditMode.value && props.profileData) {
-        // Reset formState kembali ke nilai props saat ini
-        formState.value.name = props.profileData.name || '';
-        formState.value.birthDate = props.profileData.birth_date ? new Date(props.profileData.birth_date).toISOString().substring(0, 10) : '';
-        formState.value.gender = props.profileData.gender || '';
-        formState.value.profileDescription = props.profileData.bio || '';
-        formState.value.uploadedFile = null; // Hapus file yang dipilih
+function toggleEditMode(field) {
+    if (activeEditField.value === field) {
+        activeEditField.value = null; // Tutup jika diklik lagi
+    } else {
+        activeEditField.value = field; // Buka field tertentu
     }
+}
+
+function togglePhotoDropdown() {
+    isPhotoDropdownOpen.value = !isPhotoDropdownOpen.value;
+}
+
+function handleChoosePhoto() {
+    isPhotoDropdownOpen.value = false;
+    document.getElementById('photo-upload').click(); 
+}
+
+function handleViewPhoto() {
+    isPhotoDropdownOpen.value = false;
+    alert('Fitur Lihat Foto belum diimplementasikan (bisa pakai Modal).');
 }
 
 function handleFileUpload(event) {
     const file = event.target.files[0];
     if (file) {
         formState.value.uploadedFile = file;
-        // Opsional: Tampilkan preview gambar
+        // Preview gambar
         const reader = new FileReader();
         reader.onload = (e) => {
-            // Update photo di userData secara sementara untuk preview
-            userData.value.photo = e.target.result;
+            // Update tampilan foto sementara
+            // Note: Kita update userData.value.photo ini hanya virtual di computed, 
+            // idealnya punya local state untuk preview. Tapi utk simpel:
+            const imgPreview = document.querySelector('.w-48 img');
+            if(imgPreview) imgPreview.src = e.target.result;
         };
         reader.readAsDataURL(file);
+        
+        // Auto-save foto (opsional) atau tunggu tombol simpan khusus?
+        // Di sini kita asumsikan user harus klik tombol SIMPAN khusus foto atau 
+        // kita bisa langsung panggil handleSaveProfile('photo') jika mau auto-upload.
     }
 }
 
-async function handleSaveProfile() {
+async function handleSaveProfile(fieldToSave) {
     if (!props.profileData || !props.profileData.id) {
-        alert("Gagal menyimpan: Data profil atau ID pengguna tidak ditemukan. Mohon coba lagi.");
+        alert("Gagal: Data profil belum siap.");
         isLoading.value = false;
-        // PENTING: Matikan edit mode agar pengguna bisa coba refresh atau sign out
-        isEditMode.value = false; 
-        return; 
+        activeEditField.value = null;
+        return;
     }
     
-    // Logika ini sekarang aman karena Anda sudah cek di atas
-    const userId = props.profileData.id;
     isLoading.value = true;
-
-    // 1. Persiapan Payload (Sudah Anda siapkan)
-    const formData = new FormData();
-    const textPayload = {
+    const userId = props.profileData.id;
+    
+    // Siapkan Payload
+    const payload = {
         full_name: formState.value.name,
         birth_date: formState.value.birthDate,
         gender: formState.value.gender,
         bio: formState.value.profileDescription,
-        role: props.userRole, // Kirim role untuk backend tahu tabel mana yang diupdate
+        role: 'individu', // Hardcode atau props.userRole
     };
+
+    // Logic pengiriman (JSON vs FormData) - Sederhana: Kirim JSON karena edit per atribut teks
+    // Kecuali jika fieldToSave == 'photo' (implementasi terpisah)
     
-    // 2. Tentukan Payload Akhir (JSON vs FormData)
-    let finalPayload;
-    let axiosConfig = {};
-
-    if (formState.value.uploadedFile) {
-        // Jika ada file: Gunakan FormData
-        Object.keys(textPayload).forEach(key => formData.append(key, textPayload[key]));
-        formData.append('profile_picture', formState.value.uploadedFile);
-        finalPayload = formData;
-        axiosConfig = { headers: { 'Content-Type': 'multipart/form-data' } };
-    } else {
-        // Jika tidak ada file: Gunakan JSON
-        finalPayload = textPayload;
-        // Content-Type: application/json sudah menjadi default Axios, tidak perlu di set ulang
-    }
-
-
     try {
-        // 🛑 AKTIFKAN API CALL DI SINI
-        await apiClient.patch(`/users/profile/${userId}`, finalPayload, axiosConfig); 
-
-        // [Jika ada refresh data, panggil di sini, misalnya: emit('refresh-profile-data')]
-
-        alert('Profil berhasil diperbarui!');
-        isEditMode.value = false;
+        console.log("Mengirim update:", payload);
+        // await apiClient.patch(`/users/profile/${userId}`, payload); 
+        
+        alert('Berhasil disimpan!');
+        activeEditField.value = null; // Tutup edit mode
+        
+        // Emit event refresh jika perlu
+        // emit('refresh-data'); 
 
     } catch (error) {
-        alert('Gagal menyimpan profil. Cek koneksi server atau format data.');
-        console.error("Save profile error:", error);
+        alert('Gagal menyimpan.');
+        console.error(error);
     } finally {
         isLoading.value = false;
     }
 }
-
 
 function handleSignOut() {
     localStorage.removeItem('userToken');

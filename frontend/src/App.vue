@@ -48,13 +48,14 @@ async function fetchProfileData() {
     if (role !== 'guest' && userId) {
         try {
             // Panggil endpoint backend
-            const response = await apiClient.get(`/users/profile/${userId}/${role}`); 
+            const response = await apiClient.get(`/users/profile/${userId}/${role}`);
+            console.log("Data Profil Diterima:", response.data);
             profileData.value = response.data; // Simpan data profil
             // DEBUGGING POINT 1: Apakah data profil diterima?
-    console.log("DEBUG A: Profil diterima:", response.data.name, response.data.email); 
+            // console.log("DEBUG A: Profil diterima:", response.data.name, response.data.email); 
 
-    // DEBUGGING POINT 2: Pastikan userRole reaktif tetap benar
-    console.log("DEBUG B: userRole (App.vue) setelah fetch:", userRole.value);
+            // DEBUGGING POINT 2: Pastikan userRole reaktif tetap benar
+            // console.log("DEBUG B: userRole (App.vue) setelah fetch:", userRole.value);
         } catch (e) {
             console.error("Failed to fetch profile:", e);
             // Jika gagal, log out pengguna

@@ -7,18 +7,23 @@ class UserService {
         if (role === 'individu') {
             query = `
                 SELECT 
+                    u.id AS id,
                     u.email,
                     d.full_name AS name,
                     d.profile_picture AS photo,
                     d.contact_phone,
-                    d.address
+                    d.address,
+                    d.bio,
+                    d.birth_date,
+                    d.gender
                 FROM users u
                 JOIN detail_user_individu d ON u.id = d.id
                 WHERE u.id = $1
             `;
         } else if (role === 'shelter') {
             query = `
-                SELECT 
+                SELECT
+                    u.id AS id,
                     u.email,
                     d.shelter_name AS name,
                     d.shelter_picture AS photo,
@@ -74,9 +79,10 @@ class UserService {
             if (data.gender) { fields.push(`gender = $${i++}`); values.push(data.gender); }
             if (data.bio) { fields.push(`bio = $${i++}`); values.push(data.bio); }
             // Note: Field profile_picture (photo upload) perlu penanganan multipart/form-data terpisah
-        } 
-        // ELSE IF (role === 'shelter') { ... update detail_user_shelter }
-        // ...
+        } else if (role === 'shelter') {
+            tableName = 'detail_user_shelter';
+            // ... (Tambahkan logika update untuk field shelter jika diperlukan)
+        }
 
         if (fields.length === 0) {
             return { message: 'No data to update.' };
