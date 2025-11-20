@@ -153,8 +153,9 @@
           </div>
 
           <div class="pt-8 text-center">
-            <button type="submit" class="inline-block bg-[#EBCD5E] hover:bg-[#e0c355] text-white text-xl font-bold py-4 px-24 rounded-full shadow-[0_6px_20px_rgba(235,205,94,0.4)] transition-transform hover:-translate-y-1 active:scale-95 border-none cursor-pointer">Selesai</button>
-          </div>
+            <button type="button" class="inline-block bg-[#EBCD5E] hover:bg-[#e0c355] text-white text-xl font-bold py-4 px-24 rounded-full shadow-[0_6px_20px_rgba(235,205,94,0.4)] transition-transform hover:-translate-y-1 active:scale-95 border-none cursor-pointer" 
+            onclick="window.location.href='/track'">Selesai</button>
+        </div>
 
         </form>
       </div>
