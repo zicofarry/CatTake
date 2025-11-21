@@ -32,7 +32,7 @@
             <form @submit.prevent="handleSignup" class="space-y-4 text-left">
                 
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Daftar Sebagai:</label>
+                    <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide text-center">Daftar Sebagai:</label>
                     <div class="flex justify-between gap-3 bg-gray-100 p-1 rounded-xl">
                         <button 
                             type="button"
