@@ -31,13 +31,32 @@ class CatService {
     // 2. (Opsional) Ambil detail satu kucing
     static async getCatById(id) {
         const query = `
-            SELECT c.*, d.shelter_name 
+            SELECT 
+                c.id, 
+                c.name, 
+                c.age,
+                c.gender, 
+                c.breed,
+                c.photo AS image,
+                c.description,
+                c.health_status,
+                d.shelter_name
             FROM cats c
-            JOIN detail_user_shelter d ON c.shelter_id = d.id
+            JOIN users u ON c.shelter_id = u.id
+            JOIN detail_user_shelter d ON u.id = d.id
             WHERE c.id = $1
         `;
         const result = await db.query(query, [id]);
         return result.rows[0];
+        if (!cat) return null;
+
+        // Formatting Data agar sesuai Frontend
+        return {
+            ...cat,
+            age: `${cat.age} Bulan`, // Format umur (sesuaikan jika di DB satuannya bukan bulan)
+            // Mocking characteristics karena belum ada kolom khusus di DB
+            characteristics: [cat.health_status, 'Penyayang'] 
+        };
     }
 }
 

@@ -23,7 +23,7 @@
                <span class="font-bold">Nama:</span><span>{{ cat.name }}</span>
              </div>
              <div class="grid grid-cols-[140px_1fr] gap-2 text-lg md:text-xl">
-               <span class="font-bold">Umur:</span><span>{{ cat.age }}</span>
+               <span class="font-bold">Umur:</span><span>{{ cat.age }} Bulan</span>
              </div>
              <div class="grid grid-cols-[140px_1fr] gap-2 text-lg md:text-xl">
                <span class="font-bold">Jenis Kelamin:</span><span>{{ cat.gender === 'male' ? 'Laki-laki' : 'Betina' }}</span>
@@ -32,7 +32,7 @@
                <span class="font-bold">Ras:</span><span>{{ cat.breed || 'Domestik' }}</span>
              </div>
              <div class="grid grid-cols-[140px_1fr] gap-2 text-lg md:text-xl">
-               <span class="font-bold">Karakteristik:</span><span>{{ cat.characteristics ? cat.characteristics.join(', ') : '-' }}</span>
+               <span class="font-bold">Deskripsi:</span><span>{{ cat.description ? cat.description : '-' }}</span>
              </div>
           </div>
         </div>
@@ -60,12 +60,12 @@
 
                 <div v-show="accordionState.data" class="bg-gray-200 px-6 pb-8 rounded-b-2xl">
                     <div class="space-y-4 pt-2">
-                        <input type="text" placeholder="Nama Pengadopsi" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
-                        <input type="text" placeholder="NIK" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
-                        <input type="tel" placeholder="Nomor Handphone" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
-                        <input type="email" placeholder="Email" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
-                        <input type="text" placeholder="Pekerjaan" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
-                        <textarea placeholder="Alamat" required rows="3" class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm resize-none"></textarea>
+                        <input type="text" v-model="adoptionForm.name" placeholder="Nama Pengadopsi" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
+                        <input type="text" v-model="adoptionForm.nik" placeholder="NIK" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
+                        <input type="tel" v-model="adoptionForm.phone" placeholder="Nomor Handphone" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
+                        <input type="email" v-model="adoptionForm.email" placeholder="Email" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
+                        <input type="text" v-model="adoptionForm.job" placeholder="Pekerjaan" required class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm">
+                        <textarea v-model="adoptionForm.address" placeholder="Alamat" required rows="3" class="w-full p-4 rounded-xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] placeholder-gray-500 text-lg bg-white shadow-sm resize-none"></textarea>
                     </div>
                 </div>
             </div>
@@ -76,27 +76,59 @@
                     class="w-full flex justify-between items-center bg-gray-200 p-5 font-bold text-lg text-[#1F1F1F] cursor-pointer transition-all hover:bg-gray-300"
                     :class="accordionState.photo ? 'rounded-t-2xl' : 'rounded-2xl'"
                 >
-                    Foto KTP/SIM/Passport
+                    Foto Identitas (KTP/SIM)
                     <i class="fas transition-transform duration-300" :class="accordionState.photo ? 'fa-caret-up' : 'fa-caret-down'"></i>
                 </div>
 
                 <div v-show="accordionState.photo" class="bg-gray-200 px-6 pb-8 rounded-b-2xl">
                     <input 
                         type="file" 
-                        ref="fileInput" 
+                        ref="identityInput" 
                         class="hidden" 
-                        accept="image/png, image/jpeg, image/jpg"
-                        @change="handleFileChange"
+                        accept="image/*"
+                        @change="handleIdentityChange"
                     >
                     <div 
-                        @click="triggerFileInput"
+                        @click="identityInput.click()"
                         class="mt-4 bg-white border-2 border-dashed border-gray-400 rounded-xl p-8 text-center cursor-pointer transition hover:border-[#EBCD5E] hover:bg-gray-50 group"
                     >
-                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3 group-hover:text-[#EBCD5E] transition"></i>
+                        <i class="fas fa-id-card text-4xl text-gray-400 mb-3 group-hover:text-[#EBCD5E]"></i>
                         <p class="text-lg text-gray-600 font-medium">
-                            {{ selectedFileName || 'Klik untuk memilih foto ' }}
+                            {{ identityFileName || 'Klik untuk memilih foto ' }}
                         </p>
                         <p class="text-sm text-gray-400 mt-1">(Format: JPG, PNG. Maks 10MB)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-10">
+                 <div 
+                    @click="toggleAccordion('statement')"
+                    class="w-full flex justify-between items-center bg-gray-200 p-5 font-bold text-lg text-[#1F1F1F] cursor-pointer transition-all hover:bg-gray-300"
+                    :class="accordionState.statement ? 'rounded-t-2xl' : 'rounded-2xl'"
+                >
+                    Surat Pernyataan Adopsi
+                    <i class="fas transition-transform duration-300" :class="accordionState.statement ? 'fa-caret-up' : 'fa-caret-down'"></i>
+                </div>
+
+                <div v-show="accordionState.statement" class="bg-gray-200 px-6 pb-8 rounded-b-2xl">
+                    <input 
+                        type="file" 
+                        ref="statementInput" 
+                        class="hidden" 
+                        accept="image/*,.pdf"
+                        @change="handleStatementChange"
+                    >
+                    <div 
+                        @click="$refs.statementInput.click()"
+                        class="mt-4 bg-white border-2 border-dashed border-gray-400 rounded-xl p-8 text-center cursor-pointer transition hover:border-[#EBCD5E] group"
+                    >
+                        <i class="fas fa-file-contract text-4xl text-gray-400 mb-3 group-hover:text-[#EBCD5E]"></i>
+                        <p class="text-lg text-gray-600 font-medium">
+                            {{ statementFileName || 'Klik untuk upload Surat Pernyataan' }}
+                        </p>
+                        <p class="text-sm text-gray-400 mt-1">(Format: PDF. Maks 10MB)</p>
+
                     </div>
                 </div>
             </div>
@@ -117,52 +149,122 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-
-// DATA DUMMY KUCING
-const cats = [
-    { id: 1, name: 'Oyen', age: '6 Bulan', gender: 'male', breed: 'American Shorthair', characteristics: ['Agresif', 'Playful'], image: 'oyencat.png' },
-    { id: 2, name: 'Abul', age: '5 Bulan', gender: 'male', breed: 'Domestik', characteristics: ['Manja', 'Pemalu'], image: 'minicat.png' },
-    { id: 3, name: 'Simba', age: '2 Tahun', gender: 'male', breed: 'Maine Coon', characteristics: ['Gagah', 'Setia'], image: 'bradercat.png' },
-    { id: 4, name: 'Mueza', age: '8 Bulan', gender: 'female', breed: 'Persia', characteristics: ['Manis', 'Lembut'], image: 'mochacat.png' },
-    { id: 5, name: 'Kitty', age: '3 Tahun', gender: 'female', breed: 'Anggora', characteristics: ['Tenang', 'Penyayang'], image: 'kitty.png' },
-];
+import { useRoute, useRouter } from 'vue-router'; // Tambahkan useRouter
+import apiClient from '@/api/http'; // Import API Client
 
 const route = useRoute();
-const cat = ref({});
+const router = useRouter();
+const isSubmitting = ref(false);
+
+// ... (Bagian Data Dummy Kucing biarkan saja untuk tampilan) ...
+const cat = ref({
+    id: null,
+    name: 'Loading...',
+    age: '',
+    gender: '',
+    breed: '',
+    characteristics: [],
+    image: '', // Nanti diisi path gambar dari DB
+    description: ''
+});
+
+// STATE FORM
+const adoptionForm = reactive({
+    name: '',
+    nik: '',
+    phone: '',
+    email: '',
+    job: '',
+    address: ''
+});
 
 // STATE ACCORDION
 const accordionState = reactive({
-    data: true,  // Default terbuka
-    photo: false // Default tertutup
+    data: true,
+    identity: false,
+    statement: false
 });
 
-// STATE UPLOAD
-const fileInput = ref(null);
-const selectedFileName = ref('');
+// STATE FILE
+const identityInput = ref(null);
+const statementInput = ref(null);
+const identityFileName = ref('');
+const statementFileName = ref('');
+const identityFile = ref(null);
+const statementFile = ref(null);
 
-onMounted(() => {
-    const catId = Number(route.params.id);
-    cat.value = cats.find(c => c.id === catId) || cats[0];
+onMounted(async () => {
+    const catId = route.params.id;
+    try {
+        const response = await apiClient.get(`/cats/${catId}`);
+        cat.value = response.data;
+        
+        // Fallback jika gambar kosong/null
+        if (!cat.value.image) {
+            cat.value.image = 'NULL.JPG'; 
+        }
+    } catch (error) {
+        console.error("Gagal mengambil detail kucing:", error);
+        alert("Kucing tidak ditemukan!");
+        router.push('/'); // Redirect jika error
+    }
 });
 
 function toggleAccordion(section) {
     accordionState[section] = !accordionState[section];
 }
 
-function triggerFileInput() {
-    fileInput.value.click();
-}
-
-function handleFileChange(event) {
+// Handle File Changes
+function handleIdentityChange(event) {
     const file = event.target.files[0];
-    selectedFileName.value = file ? file.name : '';
+    if (file) {
+        identityFile.value = file;
+        identityFileName.value = file.name;
+    }
 }
 
-function submitAdoption() {
-    alert(`Formulir adopsi untuk ${cat.value.name} berhasil dikirim!`);
+function handleStatementChange(event) {
+    const file = event.target.files[0];
+    if (file) {
+        statementFile.value = file;
+        statementFileName.value = file.name;
+    }
+}
+
+// SUBMIT FUNCTION
+async function submitAdoption() {
+    if (!identityFile.value || !statementFile.value) {
+        alert("Mohon lengkapi kedua dokumen (Foto Identitas & Surat Pernyataan)!");
+        return;
+    }
+
+    isSubmitting.value = true;
+
+    const formData = new FormData();
+    // Data Teks
+    formData.append('cat_id', route.params.id);
+    formData.append('nik', adoptionForm.nik);
+    formData.append('phone', adoptionForm.phone);
+    formData.append('email', adoptionForm.email);
+    formData.append('job', adoptionForm.job);
+    formData.append('address', adoptionForm.address);
+    
+    // Data File (Perhatikan nama key-nya harus beda)
+    formData.append('identity_photo', identityFile.value);   // Key: identity_photo
+    formData.append('statement_letter', statementFile.value); // Key: statement_letter
+
+    try {
+        await apiClient.post('/adopt/apply', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        alert(`Pengajuan adopsi berhasil dikirim!`);
+        router.push('/'); // Redirect ke home atau halaman status
+    } catch (error) {
+        console.error(error);
+        alert("Gagal mengirim: " + (error.response?.data?.error || error.message));
+    } finally {
+        isSubmitting.value = false;
+    }
 }
 </script>
-
-<style scoped>
-</style>
