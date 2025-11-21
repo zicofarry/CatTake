@@ -2,7 +2,7 @@
   <div class="min-h-screen w-full relative flex flex-col items-center justify-center bg-gray-100 font-sans overflow-x-hidden py-20">
     
     <div class="absolute top-0 left-0 w-full h-[85vh] z-0">
-        <div class="bg-gradient-to-tr from-[#3A5F50] to-[#4A6C55] w-full h-full relative">
+        <div class="bg-gradient-to-tr from-[#3A5F50] to-[#578d76] w-full h-full relative">
             <svg 
                 class="absolute -bottom-[1px] left-0 w-full h-auto block" 
                 xmlns="http://www.w3.org/2000/svg" 
