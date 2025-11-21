@@ -84,7 +84,7 @@
 
           <form v-if="activeReportType !== 'my_lost'" @submit.prevent="submitDiscoveryReport" class="space-y-8">
             
-<div v-if="activeReportType === 'missing'" class="relative">
+          <div v-if="activeReportType === 'missing'" class="relative">
               <label for="ownerName" class="block text-xl font-bold text-[#1F1F1F] mb-4">
                 Cari Data Kucing Hilang
                 <span class="text-sm font-normal text-gray-500 ml-2">*Ketik nama kucing atau pemilik</span>
@@ -468,7 +468,47 @@ function closeMapModal() {
 async function submitDiscoveryReport() {
     if (!reportForm.file) { alert('Mohon sertakan foto bukti.'); return; }
     // Di sini nanti kirim reportForm.lostCatId juga ke backend
-    alert('Laporan Penemuan Berhasil Dikirim (Simulasi)\nCat ID: ' + (reportForm.lostCatId || 'N/A'));
+    try {
+      const formData = new FormData();
+      
+      // 2. Tentukan Tipe Laporan untuk Backend
+      // Jika tab "Nemu Kucing Hilang" aktif -> report_type = 'Found_Missing'
+      // Jika tab "Nemu Kucing Liar" aktif -> report_type = 'stray' (nanti dihandle backend)
+      let typeToSend = 'stray';
+      if (activeReportType.value === 'missing') {
+          typeToSend = 'Found_Missing';
+      }
+      
+      formData.append('report_type', typeToSend);
+      formData.append('location', reportForm.location);
+      formData.append('description', reportForm.description);
+      
+      // 3. Kirim Koordinat (Jika user set lokasi via peta)
+      if (reportForm.lat) formData.append('lat', reportForm.lat);
+      if (reportForm.long) formData.append('long', reportForm.long);
+      
+      // 4. Kirim ID Kucing Hilang (PENTING: Agar terhubung ke tabel lost_cats)
+      if (activeReportType.value === 'missing' && reportForm.lostCatId) {
+          formData.append('lost_cat_id', reportForm.lostCatId);
+      }
+      
+      // 5. Kirim File Foto
+      formData.append('photo', reportForm.file);
+
+      // 6. Panggil API Backend
+      await apiClient.post('/reports', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      alert('Terima kasih! Laporan penemuan berhasil dikirim. Tim kami akan segera memproses.');
+      
+      // Redirect ke halaman tracking atau beranda
+      router.push('/track'); 
+
+  } catch (error) {
+      console.error("Gagal lapor penemuan:", error);
+      alert('Gagal mengirim laporan: ' + (error.response?.data?.error || error.message));
+  }
 }
 
 async function submitLostCatAd() {
