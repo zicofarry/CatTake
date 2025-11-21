@@ -75,18 +75,29 @@
                                 <option value="female">Perempuan</option>
                                 <option value="" disabled>Pilih Jenis Kelamin</option>
                             </select>
-                            <span v-else :class="{ 'text-gray-800': formState.gender, 'text-gray-500': !formState.gender }                              ">{{ displayPlaceholder(formState.gender, 'Pilih jenis kelamin...') }}</span>
+                            
+                            <span v-else :class="{ 'text-gray-800': formState.gender, 'text-gray-500': !formState.gender }">
+                                {{ 
+                                    formState.gender === 'male' ? 'Laki-laki' : 
+                                    (formState.gender === 'female' ? 'Perempuan' : 'Pilih jenis kelamin...') 
+                                }}
+                            </span>
+
                             <button v-if="activeEditField !== 'gender'" @click="toggleEditMode('gender')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
                             <button v-else @click="handleSaveProfile('gender')" class="text-green-600 font-bold text-sm ml-4">SIMPAN</button>
                         </div>
+
                         <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800 flex-1">
                             <input v-if="activeEditField === 'birthDate'" type="date" v-model="formState.birthDate" class="w-full focus:outline-none focus:ring-0">
-                            <span v-else :class="{ 'text-gray-800': formState.birthDate, 'text-gray-500': !formState.birthDate }">{{ displayPlaceholder(formState.birthDate, 'Isi tanggal lahir..') }}</span>
+                            
+                            <span v-else :class="{ 'text-gray-800': userData.birthDateDisplay, 'text-gray-500': !userData.birthDateDisplay }">
+                                {{ userData.birthDateDisplay || 'Isi tanggal lahir..' }}
+                            </span>
+                            
                             <button v-if="activeEditField !== 'birthDate'" @click="toggleEditMode('birthDate')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
                             <button v-else @click="handleSaveProfile('birthDate')" class="text-green-600 font-bold text-sm ml-4">SIMPAN</button>
                         </div>
                     </div>
-                    
                     
                     <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800">
                         <textarea v-if="activeEditField === 'profileDescription'" v-model="formState.profileDescription" class="w-full focus:outline-none focus:ring-0 h-16"></textarea>
@@ -152,16 +163,23 @@ const displayPlaceholder = (value, defaultText) => {
     return (value && value !== 'null' && value !== '') ? value : defaultText;
 };
 
-const formatDate = (dateString) => {
-    if (!dateString) return null;
-    return new Date(dateString).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-};
-
-// --- Data untuk Tampilan ---
+// --- Data untuk Tampilan (Computed) ---
 const userData = computed(() => {
     const data = props.profileData || {};
+    
+    // FIX 1: Format Tanggal Tampilan (30 Januari 2000)
+    // Gunakan { month: 'long' } untuk nama bulan lengkap
+    const birthDateDisplay = data.birth_date 
+        ? new Date(data.birth_date).toLocaleDateString('id-ID', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          }) 
+        : null;
+
     return {
         photo: data.photo || '/img/NULL.JPG',
+        birthDateDisplay: birthDateDisplay
     };
 });
 
@@ -173,17 +191,23 @@ const formState = ref({
     profileDescription: '',
 });
 
-// --- PERBAIKAN UTAMA: Ganti watchEffect dengan watch ---
-// Ini mencegah form ter-reset otomatis saat Anda sedang mengetik
+// --- Watch untuk Sinkronisasi Data ---
 watch(
     () => props.profileData, 
     (newData) => {
         if (newData && newData.id) {
             formState.value.name = newData.name || '';
             
+            // FIX 2: Parsing Tanggal untuk Input Form (Menghindari Bug Off-by-1)
+            // Jangan pakai toISOString() karena akan mengonversi ke UTC (bisa jadi H-1)
+            // Gunakan komponen tanggal lokal
             if (newData.birth_date) {
                 const d = new Date(newData.birth_date);
-                formState.value.birthDate = d.toISOString().split('T')[0];
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
+                const day = String(d.getDate()).padStart(2, '0');
+                
+                formState.value.birthDate = `${year}-${month}-${day}`;
             } else {
                 formState.value.birthDate = '';
             }
@@ -262,6 +286,4 @@ function handleSignOut() {
 </script>
 
 <style scoped>
-/* Hapus semua CSS lama */
-/* Latar belakang menggunakan style inline dan utility class Tailwind */
 </style>
