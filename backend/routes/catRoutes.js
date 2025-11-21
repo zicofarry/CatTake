@@ -10,6 +10,9 @@ async function catRoutes(fastify, options) {
         preHandler: [authentication] // <--- Cara pasang middleware di Fastify beda dengan Express
     }, CatController.toggleLike);
 
+    // Route: GET /api/v1/cats/:id (Detail Kucing)
+    fastify.get('/:id', CatController.getDetail);
+
     // Route: GET /api/v1/cats (Contoh kalau ada)
     fastify.get('/', { preHandler: [optionalAuthentication] }, CatController.getCats);
 }

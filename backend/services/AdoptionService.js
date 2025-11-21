@@ -1,89 +1,116 @@
 const db = require('../config/db');
 
 class AdoptionService {
-    // 1. Buat pengajuan adopsi baru (User submit form)
+    // 1. PROSES PENGAJUAN ADOPSI (Transaction)
     static async createAdoption(data) {
-        // Pastikan kucing masih available sebelum insert
-        const checkCat = await db.query('SELECT adoption_status FROM cats WHERE id = $1', [data.cat_id]);
-        if (!checkCat.rows.length || checkCat.rows[0].adoption_status !== 'available') {
-            throw new Error('Kucing tidak tersedia untuk diadopsi.');
+        const client = await db.connect();
+        
+        try {
+            await client.query('BEGIN');
+
+            // 1. Cek Ketersediaan Kucing
+            const checkCat = await client.query('SELECT adoption_status FROM cats WHERE id = $1', [data.cat_id]);
+            if (checkCat.rows.length === 0) throw new Error('Kucing tidak ditemukan.');
+            if (checkCat.rows[0].adoption_status !== 'available') throw new Error('Kucing tidak tersedia.');
+
+            // 2. Update Data User & Simpan Foto KTP (di detail_user_individu)
+            // Pastikan tabel 'detail_user_individu' memiliki kolom 'ktp_file_path' (sudah ada di SQL kamu)
+            const updateProfileQuery = `
+                UPDATE detail_user_individu
+                SET 
+                    nik = $1,
+                    contact_phone = $2,
+                    job = $3,
+                    address = $4,
+                    ktp_file_path = $5 
+                WHERE id = $6
+            `;
+            await client.query(updateProfileQuery, [
+                data.nik, 
+                data.phone, 
+                data.job, 
+                data.address, 
+                data.identityPhoto, // Nama file KTP
+                data.applicant_id
+            ]);
+
+            // 3. Buat Record Adopsi & Simpan Surat Pernyataan (di adoptions)
+            // Pastikan tabel 'adoptions' memiliki kolom 'statement_letter_path' (sudah ada di SQL kamu)
+            const insertAdoptionQuery = `
+                INSERT INTO adoptions (
+                    cat_id, 
+                    applicant_id, 
+                    status, 
+                    statement_letter_path, 
+                    applied_at, 
+                    updated_at
+                ) 
+                VALUES ($1, $2, 'pending', $3, NOW(), NOW())
+                RETURNING id
+            `;
+            const resAdoption = await client.query(insertAdoptionQuery, [
+                data.cat_id,
+                data.applicant_id,
+                data.statementLetter // Nama file Surat Pernyataan
+            ]);
+
+            await client.query('COMMIT');
+            return resAdoption.rows[0];
+
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
-
-        const query = `
-            INSERT INTO adoptions (
-                cat_id, applicant_id, status, 
-                adopter_nik, adopter_phone, adopter_email, 
-                adopter_job, adopter_address, identity_photo_url, 
-                applied_at, updated_at
-            ) 
-            VALUES ($1, $2, 'pending', $3, $4, $5, $6, $7, $8, NOW(), NOW())
-            RETURNING id
-        `;
-        
-        const values = [
-            data.cat_id, data.applicant_id, 
-            data.nik, data.phone, data.email, 
-            data.job, data.address, data.photoUrl
-        ];
-
-        const result = await db.query(query, values);
-        
-        // Update status kucing jadi 'pending' agar tidak bisa di-apply orang lain (opsional, tergantung flow bisnis)
-        // await db.query("UPDATE cats SET adoption_status = 'pending' WHERE id = $1", [data.cat_id]);
-
-        return result.rows[0];
     }
 
-    // 2. Ambil laporan adopsi untuk Shelter tertentu (Fitur Shelter View)
+    // 2. GET LAPORAN ADOPSI (Dengan JOIN)
     static async getAdoptionReportsByShelter(shelterId) {
         const query = `
             SELECT 
                 a.id, 
                 c.name AS "catName", 
                 to_char(a.applied_at, 'YYYY/MM/DD HH24:MI') AS date,
-                COALESCE(d.full_name, u_app.username) AS "adopterName",
-                d.profile_picture AS "adopterPhoto",
-                d.nik AS nik,               
-                d.contact_phone AS phone,
-                u_app.email AS email,
-                d.job AS job,               
-                d.address AS address        
+                a.statement_letter_path AS document,
+                
+                -- Data dari tabel users & detail_user_individu (JOIN)
+                u.email,
+                dui.full_name AS "adopterName",
+                dui.profile_picture AS "adopterPhoto",
+                dui.nik,
+                dui.contact_phone AS phone,
+                dui.job,
+                dui.address
 
             FROM adoptions a
             JOIN cats c ON a.cat_id = c.id
-            JOIN users u_app ON a.applicant_id = u_app.id
-            LEFT JOIN detail_user_individu d ON u_app.id = d.id
+            JOIN users u ON a.applicant_id = u.id
+            JOIN detail_user_individu dui ON u.id = dui.id
+            
             WHERE c.shelter_id = $1
             ORDER BY a.applied_at DESC
         `;
         
         const result = await db.query(query, [shelterId]);
         
-        // Mapping format agar sesuai komponen AdoptionReportCard.vue
-        return result.rows.map(row => {
-            // Logic masking NIK
-            // Ambil 4 digit terakhir, sisanya ganti bintang
-            let maskedNik = '-';
-            if (row.nik && row.nik.length >= 4) {
-                maskedNik = '*'.repeat(12) + row.nik.slice(-4); 
-                // Hasil: ************1234
+        // Mapping data untuk Frontend
+        return result.rows.map(row => ({
+            id: row.id,
+            catName: row.catName,
+            date: row.date,
+            adopter: {
+                name: row.adopterName || 'No Name',
+                profilePic: row.adopterPhoto ? `/img/${row.adopterPhoto}` : '/img/profile_default.png',
+                // Data sensitif dari detail_user_individu
+                nik: row.nik || '-', 
+                phone: row.phone || '-',
+                email: row.email || '-',
+                job: row.job || '-',
+                address: row.address || '-',
+                document: row.document ? `/img/${row.document}` : null
             }
-
-            return {
-                id: row.id,
-                catName: row.catName,
-                date: row.date,
-                adopter: {
-                    name: row.adopterName,
-                    profilePic: row.adopterPhoto ? `/img/${row.adopterPhoto}` : '/img/profile_default.png',
-                    nik: maskedNik, 
-                    phone: row.phone,
-                    email: row.email,
-                    job: row.job,
-                    address: row.address
-                }
-            }
-        });
+        }));
     }
 }
 
