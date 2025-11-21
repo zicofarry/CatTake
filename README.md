@@ -13,17 +13,59 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
 
 2. Install requirements
    dengan command:
+   
+   untuk auto-update server, di direktori CatTake
    ```
+   npm install -g nodemon
+   ```
+
+   untuk frontend
+   ```
+   cd frontend/
    npm install vue-router@4
    npm install tailwindcss @tailwindcss/vite
    npm install vite-plugin-vue-devtools --save-dev
    npm install leaflet
+   npm install axios
+   npm install jwt-decode
    ```
 
-3. Jalankan server
-   dengan command:
+   untuk backend
    ```
+   cd backend/
+   npm install fastify pg
+   npm install bcrypt jsonwebtoken
+   npm install @fastify/cors
+   npm install @fastify/static
+   npm install @fastify/multipart
+   ```
+
+3. Import database
+   
+   Kembali ke direktori CatTake, lalu lakukan ini:
+   - Jika belum membuat database cattake
+     ```
+     createdb -U postgres cattake && psql -U postgres -d cattake -f "backend/db/cattake.sql"
+     ```
+
+   - Jika sudah membuat database cattake (database wajib kosong)
+     ```
+     psql -U postgres -d cattake -f "backend/db/cattake.sql"
+     ```
+
+   - sesuaikan config, cd backend/config/db.js (ubah password sesuai password postgre kamu)
+
+4. Jalankan server
+   dengan command:
+
+   untuk frontend
+   ```
+   cd frontend/
    npm run dev
    ```
 
-Website dengan framework vue harusnya sudah bisa dijalankan.
+   untuk backend
+   ```
+   cd backend/
+   nodemon server.js
+   ```

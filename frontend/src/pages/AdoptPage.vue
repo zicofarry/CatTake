@@ -1,0 +1,231 @@
+<template>
+  <div class="min-h-screen bg-gray-100 font-sans overflow-x-hidden">
+    
+    <!-- Ambil Role dari localStorage (Simulasi) -->
+    <div v-if="userRole === 'shelter'">
+        <!-- ============================================== -->
+        <!-- TAMPILAN SHELTER: LAPORAN ADOPSI -->
+        <!-- Sesuai design Figma 'adopt-shelterpage-Desktop/Mobile.jpg' -->
+        <!-- ============================================== -->
+         
+        <div class="max-w-6xl mx-auto px-4 pt-12 pb-20">
+            
+            <!-- Judul Laporan Adopsi -->
+            <div class="text-center mb-8 -mt-2">
+                <h1 class="inline-block text-3xl md:text-4xl font-extrabold text-gray-800 py-3 px-8 bg-white rounded-full shadow-xl">
+                    Laporan Adopsi
+                </h1>
+            </div>
+
+            <!-- Wrapper Daftar Laporan -->
+            <div class="relative bg-white p-4 md:p-6 rounded-3xl shadow-2xl overflow-visible">
+                <div class="flex flex-col gap-4">
+                    <AdoptionReportCard 
+                        v-for="report in adoptionReports" 
+                        :key="report.id" 
+                        :report="report"
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div v-else>
+        <!-- ============================================== -->
+        <!-- TAMPILAN USER/GUEST: DAFTAR KUCING & FILTER -->
+        <!-- ============================================== -->
+        <HeroSection 
+          title="Berikan Rumah, Dapatkan Cinta."
+          subtitle="Mari bersama menciptakan cerita baru bagi mereka, dari kesepian menuju rumah yang hangat dan penuh cinta."
+          buttonText="Adopsi Sekarang"
+          buttonLink="#listkucing"
+          ellipseImg="/img/Ellipse.png"
+          ellipseAlt="ellipse"
+          mainImg="/img/cathelo.png"
+          mainAlt="kucinghalo"
+        />
+
+        <div class="relative mt-10 z-10">
+            
+            <!-- Filter Bar (Sesuai Desain) -->
+            <div class="absolute left-0 right-0 -top-8 z-30 px-4 pointer-events-none">
+                <div class="max-w-3xl mx-auto flex flex-wrap justify-center items-center gap-4 p-4 pointer-events-auto">
+                
+                <button 
+                    class="flex-1 min-w-[120px] py-3 px-6 bg-white text-gray-800 font-bold text-base rounded-full transition-all duration-300 hover:-translate-y-1"
+                    :class="activeFilter === 'all' && genderFilter === 'all' ? '!bg-[#EBCD5E] !text-white shadow-[0_15px_30px_-5px_rgba(235,205,94,0.6)]' : 'shadow-[0_15px_35px_-10px_rgba(58,95,80,0.5)]'"
+                    @click="setActiveFilter('all')"
+                >
+                    Semua
+                </button>
+
+                <div class="flex-1 min-w-[140px] relative group">
+                    <select 
+                        class="w-full appearance-none py-3 pl-6 pr-10 bg-white text-gray-800 font-bold text-base rounded-full cursor-pointer focus:outline-none transition-all duration-300 hover:-translate-y-1 text-left"
+                        :class="activeFilter === 'gender' ? '!bg-[#EBCD5E] !text-white shadow-[0_15px_30px_-5px_rgba(235,205,94,0.6)]' : 'shadow-[0_15px_35px_-10px_rgba(58,95,80,0.5)]'"
+                        :value="genderFilter"
+                        @change="setGenderFilter($event.target.value)"
+                    >
+                        <option value="all" class="text-gray-800 bg-white py-2">Filter</option>
+                        <option value="male" class="text-gray-800 bg-white py-2">Jantan</option>
+                        <option value="female" class="text-gray-800 bg-white py-2">Betina</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center" :class="activeFilter === 'gender' ? 'text-white' : 'text-gray-800'">
+                    <i class="fas fa-caret-down"></i>
+                    </div>
+                </div>
+
+                <button 
+                    class="flex-1 min-w-[120px] py-3 px-6 bg-white text-gray-800 font-bold text-base rounded-full transition-all duration-300 hover:-translate-y-1"
+                    :class="activeFilter === 'favorite' ? '!bg-[#EBCD5E] !text-white shadow-[0_15px_30px_-5px_rgba(235,205,94,0.6)]' : 'shadow-[0_15px_35px_-10px_rgba(58,95,80,0.5)]'"
+                    @click="setActiveFilter('favorite')"
+                >
+                    Favorit 
+                    <span v-if="favoriteCatsCount > 0" class="ml-1">({{ favoriteCatsCount }})</span>
+                </button>
+
+                </div>
+            </div>
+
+            <!-- List Kucing -->
+            <div id="listkucing" class="bg-[#3A5F50] pt-36 pb-28 px-6 rounded-t-[50px] md:rounded-t-[80px] min-h-[700px]">
+                <!-- Login Overlay untuk Guest -->
+                <LoginOverlay v-if="userRole === 'guest'" message="Silakan login dulu untuk mengadopsi kucing." buttonText="Login Sekarang" loginRoute="/login"/>
+                
+                <div class="max-w-6xl mx-auto">
+                    <transition name="fade" mode="out-in">
+                        <div v-if="filteredCats.length === 0" class="flex flex-col items-center justify-center py-32 text-white/80 text-center">
+                            <i class="fas fa-cat text-7xl mb-4 opacity-60"></i>
+                            <h3 class="text-2xl font-bold">Tidak ditemukan</h3>
+                            <button @click="setActiveFilter('all')" class="mt-4 px-6 py-2 bg-white/10 rounded-full hover:bg-white/20 transition">Reset Filter</button>
+                        </div>
+                    
+                        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+                            <div v-for="cat in filteredCats" :key="cat.id" class="h-full">
+                                <CatCard :cat="cat" @toggle-favorite="handleToggleFavorite" />
+                            </div>
+                        </div>
+                    </transition>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { jwtDecode } from 'jwt-decode'; // Pastikan sudah install: npm install jwt-decode
+import apiClient from '@/api/http'; // Import axios instance
+import CatCard from '../components/CatCard.vue';
+import HeroSection from '../components/HeroSection.vue';
+import LoginOverlay from '../components/LoginOverlay.vue';
+import AdoptionReportCard from '../components/AdoptionReportCard.vue'; // Komponen baru
+
+// Mengambil userRole dari localStorage
+const userRole = computed(() => localStorage.getItem('userRole') || 'guest');
+const adoptionReports = ref([]); // Data laporan untuk shelter
+const catData = ref([]); // Data kucing untuk user/guest
+
+function getUserId() {
+    const token = localStorage.getItem('userToken');
+    if (!token) return null;
+    try {
+        const decoded = jwtDecode(token);
+        return decoded.id;
+    } catch (error) {
+        console.error("Error decoding token:", error);
+        return null;
+    }
+}
+
+// --- FETCH DATA ---
+onMounted(async () => {
+    try {
+        const token = localStorage.getItem('userToken');
+
+        if (userRole.value === 'shelter') {
+            // 1. JIKA SHELTER: Ambil Laporan Adopsi
+            const shelterId = getUserId();
+            if (shelterId) {
+                const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+                const response = await apiClient.get(`/adopt/reports/${shelterId}`, config);
+                adoptionReports.value = response.data;
+                // const response = await apiClient.get(`/adopt/reports/${shelterId}`);
+                // adoptionReports.value = response.data; // Simpan ke state
+            }
+        } else {
+            // 2. JIKA USER/GUEST: Ambil Daftar Kucing Available
+            const config = {};
+            
+            // Kalau user punya token (Login), tempelkan di Header
+            if (token) {
+                config.headers = { 
+                    Authorization: `Bearer ${token}` 
+                };
+            }
+
+            // Request ke backend dengan membawa Token (kalau ada)
+            // Backend akan cek: "Oh ini User ID 3", lalu set isFavorited = true
+            const response = await apiClient.get('/adopt/cats', config);
+            
+            catData.value = response.data; 
+        }
+    } catch (error) {
+        console.error("Gagal mengambil data:", error);
+    }
+});
+
+const activeFilter = ref('all'); 
+const genderFilter = ref('all');
+
+function setActiveFilter(filter) {
+  activeFilter.value = filter;
+  genderFilter.value = 'all'; 
+}
+
+function setGenderFilter(gender) {
+    if (gender === 'all') {
+        setActiveFilter('all');
+    } else {
+        activeFilter.value = 'gender';
+        genderFilter.value = gender;
+    }
+}
+
+function handleToggleFavorite(catId) {
+  const cat = catData.value.find(c => c.id === catId);
+  if (cat) {
+    cat.isFavorited = !cat.isFavorited;
+  }
+}
+
+const favoriteCatsCount = computed(() => catData.value.filter(cat => cat.isFavorited).length);
+
+const filteredCats = computed(() => {
+  let list = catData.value;
+  if (activeFilter.value === 'favorite') {
+    list = list.filter(cat => cat.isFavorited);
+  } else if (activeFilter.value === 'gender' && genderFilter.value !== 'all') {
+    list = list.filter(cat => cat.gender === genderFilter.value);
+  }
+  return list;
+});
+</script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #638870;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+    border-radius: 10px;
+}
+
+.fade-enter-active, .fade-leave-active { transition: all 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(10px); }
+</style>
