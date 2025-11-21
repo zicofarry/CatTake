@@ -1,6 +1,6 @@
 // Contoh koneksi sederhana menggunakan 'pg' (PostgreSQL)
-const { Client } = require('pg');
-const client = new Client({
+const { Pool } = require('pg');
+const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
     database: 'cattake',
@@ -8,9 +8,9 @@ const client = new Client({
     port: 5432,
 });
 
-async function connectDB() {
+const connectDB = async () => {
     try {
-        await client.connect();
+        await pool.query('SELECT 1');
         console.log('Database connected successfully!');
     } catch (err) {
         console.error('Database connection error', err);
@@ -19,6 +19,7 @@ async function connectDB() {
 }
 
 module.exports = {
-    query: (text, params) => client.query(text, params),
+    query: (text, params) => pool.query(text, params),
+    connect: () => pool.connect(),
     connectDB
 };

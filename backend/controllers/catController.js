@@ -1,3 +1,4 @@
+const CatService = require('../services/CatService');
 const CatModel = require('../models/CatModel');
 
 class CatController {
@@ -18,6 +19,22 @@ class CatController {
         }
     }
 
+    static async getDetail(req, reply) {
+        try {
+            const { id } = req.params;
+            const cat = await CatService.getCatById(id);
+
+            if (!cat) {
+                return reply.code(404).send({ error: 'Kucing tidak ditemukan' });
+            }
+
+            reply.send(cat);
+        } catch (error) {
+            console.error(error);
+            reply.code(500).send({ error: 'Internal Server Error' });
+        }
+    }
+    
     // Handler untuk Like/Unlike
     static async toggleLike(req, reply) {
         try {
