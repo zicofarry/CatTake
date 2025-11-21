@@ -43,7 +43,7 @@
                 @click="toggleProfileDropdown"
                 class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-8 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
             >
-                <img :src="props.profileData && props.profileData.photo ? props.profileData.photo : '../assets/img/diana.png'" alt="Avatar" class="h-9 w-9 rounded-full object-cover">
+                <img :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '../assets/img/diana.png')" alt="Avatar" class="h-9 w-9 rounded-full object-cover">
                 <span>{{ props.profileData ? props.profileData.name : 'Memuat...' }}</span>
             </button>
 
@@ -74,7 +74,7 @@
           
           
           <router-link v-if="props.userRole === 'individu'" to="/profile" class="ml-auto flex items-center gap-2 bg-[#578d76] text-white py-1 pr-2 pl-1 rounded-full font-semibold">
-            <img :src="props.profileData && props.profileData.photo ? props.profileData.photo : '/img/NULL.JPG'" alt="Avatar" class="h-8 w-8 rounded-full object-cover">
+            <img :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '/img/NULL.JPG')" alt="Avatar" class="h-8 w-8 rounded-full object-cover">
             <span class="text-sm">{{ props.profileData ? props.profileData.name.split(' ')[0] : 'User' }}</span>
           </router-link>
 
@@ -100,7 +100,7 @@
       
       <router-link to="/profile" v-if="props.userRole === 'individu'">
           <div class="flex items-center gap-3 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold mx-4 mb-4 shadow-lg">
-              <img :src="props.profileData && props.profileData.photo ? props.profileData.photo : '/img/NULL.JPG'" alt="Avatar Diana" class="h-9 w-9 rounded-full object-cover">
+              <img :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '/img/NULL.JPG')" alt="Avatar Diana" class="h-9 w-9 rounded-full object-cover">
               <span>{{ props.profileData ? props.profileData.name : 'Memuat...' }}</span>
           </div>
       </router-link>
@@ -135,7 +135,7 @@
 <script setup>
 import { ref, computed,watch, watchEffect } from 'vue';
 import { useRoute } from 'vue-router'; 
-
+// import apiClient from '@/api/http'; 
 
 
 // Props dari App.vue (menerima status dan peran)
@@ -143,6 +143,19 @@ const props = defineProps({
     userRole: { type: String, default: 'guest' },
     profileData: { type: Object, default: () => null }
 });
+
+function resolveImageUrl(path) {
+    if (!path) return '/img/NULL.JPG'; // Fallback default
+
+    // Periksa apakah path berasal dari server backend kita
+    if (path.startsWith('/public/')) {
+        // Asumsi backend berjalan di port 3000
+        return `http://localhost:3000${path}`;
+    }
+
+    // Jika path sudah URL lengkap (http/https) atau aset statis frontend
+    return path;
+}
 
 // Emits ke App.vue (untuk mengirim status logout)
 const emit = defineEmits(['update-login-status']);

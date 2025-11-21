@@ -21,7 +21,13 @@ fastify.register(cors, {
     credentials: true
 });
 
-fastify.register(multipart);
+fastify.register(multipart, {
+    limits: {
+        fileSize: 5 * 1024 * 1024, // Batas 5 MB (dalam bytes)
+        files: 1 // Opsional: Memastikan hanya satu file yang diizinkan per request
+    }
+});
+
 fastify.register(fastifyStatic, {
     // Tentukan root directory tempat file statis (foto) disimpan
     root: path.join(__dirname, 'public', 'img'), 

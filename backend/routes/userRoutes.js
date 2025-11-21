@@ -9,5 +9,6 @@ async function userRoutes(fastify, options) {
     fastify.get('/profile/:userId/:role', UserController.getProfile); 
     fastify.patch('/profile/:userId', UserController.updateProfile);
     fastify.get('/shelters', UserController.getShelters);
+    fastify.post('/profile/:userId/photo', UserController.uploadPhoto);
 }
 module.exports = userRoutes;

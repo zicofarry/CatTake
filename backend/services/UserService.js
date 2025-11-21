@@ -44,7 +44,7 @@ class UserService {
         let profileData = result.rows[0]; // Ambil data mentah dari DB
 
         // 🛑 KOREKSI LOGIKA PATH GAMBAR DI SINI
-        const BASE_IMAGE_URL = '/img/';
+        const BASE_IMAGE_URL = '/public/profile/';
         
         if (profileData.photo) {
             // Menggabungkan path file dari DB dengan BASE_IMAGE_URL
@@ -105,6 +105,42 @@ class UserService {
         }
 
         return result.rows[0];
+    }
+
+    static async updateProfilePhoto(userId, role, fileName) {
+        let query;
+        let table;
+        let column;
+
+        if (role === 'individu') {
+            table = 'detail_user_individu';
+            column = 'profile_picture';
+        } else if (role === 'shelter') {
+            table = 'detail_user_shelter';
+            column = 'shelter_picture';
+        } else {
+            throw new Error('Invalid role');
+        }
+
+        // 1. Ambil nama file lama (oldFileName) dari DB sebelum di-update
+        const getOldQuery = `SELECT ${column} AS old_photo FROM ${table} WHERE id = $1`;
+        const oldResult = await db.query(getOldQuery, [userId]);
+        const oldFileName = oldResult.rows.length > 0 ? oldResult.rows[0].old_photo : null;
+        
+        // 2. Update kolom foto di tabel yang sesuai
+        const updateQuery = `UPDATE ${table} SET ${column} = $1 WHERE id = $2 RETURNING ${column}`;
+        
+        const result = await db.query(updateQuery, [fileName, userId]);
+        
+        if (result.rowCount === 0) {
+            throw new Error('User not found');
+        }
+        
+        // Kembalikan nama file agar bisa diupdate di frontend (optional)
+        return { 
+            newPhoto: result.rows[0][column],
+            oldPhoto: oldFileName
+        };
     }
 
     static async getAllShelters() {

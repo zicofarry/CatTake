@@ -51,7 +51,7 @@ class LostCatService {
         // Format URL gambar
         return result.rows.map(cat => ({
             ...cat,
-            photo: cat.photo ? `/img/${cat.photo}` : '/img/NULL.JPG'
+            photo: cat.photo ? `/public/report_cat/${cat.photo}` : '/img/NULL.JPG'
         }));
     }
 

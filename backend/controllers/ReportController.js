@@ -16,7 +16,7 @@ class ReportController {
                 if (part.file) {
                     const fileExtension = path.extname(part.filename);
                     fileName = `report-${Date.now()}${fileExtension}`;
-                    const savePath = path.join(__dirname, '../public/img', fileName);
+                    const savePath = path.join(__dirname, '../public/img/report_cat', fileName);
                     await pump(part.file, fs.createWriteStream(savePath));
                 } else {
                     fields[part.fieldname] = part.value;

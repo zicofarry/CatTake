@@ -24,7 +24,7 @@
                         <div class="w-48 h-48 rounded-full shadow-xl p-2 bg-white flex items-center justify-center relative">
                             
                             <img 
-                                :src="userData.photo" 
+                                :src="resolveImageUrl(userData.photo)" 
                                 alt="Profile" 
                                 class="w-full h-full object-cover rounded-full cursor-pointer"
                                 @click="togglePhotoDropdown"  >
@@ -154,6 +154,18 @@ const props = defineProps({
     isLoggedInProp: { type: Boolean, default: false } 
 });
 
+function resolveImageUrl(path) {
+    if (!path) return '/img/NULL.JPG'; // Fallback default
+
+    // Periksa apakah path berasal dari server backend kita
+    if (path.startsWith('/public/')) {
+        // Asumsi backend berjalan di port 3000
+        return `http://localhost:3000${path}`;
+    }
+
+    // Jika path sudah URL lengkap (http/https) atau aset statis frontend
+    return path;
+}
 const activeEditField = ref(null);
 const isPhotoDropdownOpen = ref(false); 
 const isLoading = ref(false);
@@ -236,13 +248,6 @@ function handleChoosePhoto() {
     document.getElementById('photo-upload').click(); 
 }
 
-function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (file) {
-        alert("Fitur upload foto butuh endpoint khusus.");
-    }
-}
-
 async function handleSaveProfile(fieldToSave) {
     if (!props.profileData || !props.profileData.id) {
         alert("Gagal: Data profil belum siap.");
@@ -274,6 +279,52 @@ async function handleSaveProfile(fieldToSave) {
         alert('Gagal menyimpan perubahan. Cek koneksi atau login ulang.');
     } finally {
         isLoading.value = false;
+    }
+}
+
+async function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // 1. Validasi sederhana (optional)
+    if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+        alert('Hanya file gambar (JPG/PNG) yang diperbolehkan.');
+        return;
+    }
+
+    try {
+        isLoading.value = true;
+        const userId = props.profileData.id;
+        const userRole = localStorage.getItem('userRole') || 'individu';
+
+        // 2. Siapkan FormData
+        const formData = new FormData();
+        formData.append('photo', file);
+        formData.append('role', userRole); // Kirim role agar backend tau tabel mana yg diupdate
+
+        // 3. Kirim ke Backend
+        // Endpoint: /api/v1/users/profile/:userId/photo
+        const response = await apiClient.post(`/users/profile/${userId}/photo`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        // 4. Sukses
+        alert('Foto profil berhasil diperbarui!');
+        
+        // Update tampilan secara lokal tanpa reload (agar responsif)
+        // Kita asumsikan backend mengembalikan nama file baru
+        if (response.data.photo) {
+             // Update path gambar di local state/computed jika memungkinkan, 
+             // atau reload halaman untuk gampangnya:
+             window.location.reload();
+        }
+
+    } catch (error) {
+        console.error("Gagal upload foto:", error);
+        alert('Gagal mengupload foto. Silakan coba lagi.');
+    } finally {
+        isLoading.value = false;
+        isPhotoDropdownOpen.value = false; // Tutup dropdown
     }
 }
 
