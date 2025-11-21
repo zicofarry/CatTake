@@ -69,3 +69,26 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
    cd backend/
    nodemon server.js
    ```
+
+5. Script setup, pastikan database cattake sudah di drop
+   
+   ```
+   createdb -U postgres cattake && psql -U postgres -d cattake -f "backend/db/cattake.sql"
+   npm install -g nodemon
+   cd frontend/
+   npm install vue-router@4
+   npm install tailwindcss @tailwindcss/vite
+   npm install vite-plugin-vue-devtools --save-dev
+   npm install leaflet
+   npm install axios
+   npm install jwt-decode
+   cd ../backend/
+   npm install fastify pg
+   npm install bcrypt jsonwebtoken
+   npm install @fastify/cors
+   npm install @fastify/static
+   npm install @fastify/multipart
+
+   ```
+
+   lalu jalankan server seperti di no 4
