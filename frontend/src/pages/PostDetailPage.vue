@@ -42,7 +42,11 @@ async function addComment() {
     newComment.value = ''; // Reset input
   } catch (error) {
     console.error("Gagal mengirim komentar:", error);
-    
+    if (error.response && error.response.status === 401) {
+        alert('Anda perlu login untuk berkomentar.');
+        route.push('/login'); // Arahkan pengguna ke halaman login
+        return; // Hentikan eksekusi
+    }
     // PERBAIKAN: Ambil pesan error asli dari Backend jika ada
     const errorMessage = error.response?.data?.error || "Gagal mengirim komentar. Cek koneksi atau login ulang.";
     
