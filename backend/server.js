@@ -11,6 +11,7 @@ const adoptRoutes = require('./routes/adoptRoutes');
 const catRoutes = require('./routes/catRoutes');
 const donationRoutes = require('./routes/donationRoutes');
 const communityRoutes = require('./routes/communityRoutes');
+const lostCatRoutes = require('./routes/lostCatRoutes');
 
 fastify.register(cors, {
     origin: 'http://localhost:5173', 
@@ -38,6 +39,7 @@ fastify.register(adoptRoutes, { prefix: '/api/v1/adopt' });
 fastify.register(catRoutes, { prefix: '/api/v1/cats' });
 fastify.register(donationRoutes, { prefix: '/api/v1/donations' });
 fastify.register(communityRoutes, { prefix: '/api/v1/community' });
+fastify.register(lostCatRoutes, { prefix: '/api/v1/lost-cats' });
 
 // Jalankan server
 const start = async () => {
