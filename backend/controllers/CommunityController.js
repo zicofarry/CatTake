@@ -35,6 +35,7 @@ class CommunityController {
             const parts = req.parts();
             let content = '';
             let fileName = null;
+            let title = ''; // <<< BARIS BARU: Inisialisasi title
 
             for await (const part of parts) {
                 if (part.file) {
@@ -44,11 +45,13 @@ class CommunityController {
                     await pump(part.file, fs.createWriteStream(savePath));
                 } else {
                     if (part.fieldname === 'content') content = part.value;
+                    else if (part.fieldname === 'title') title = part.value; // <<< BARIS BARU: Ambil nilai title
                 }
             }
 
             const userId = req.user.id;
-            const newPost = await CommunityService.createPost(userId, content, fileName);
+            // PASSING 'title' sebagai argumen kedua
+            const newPost = await CommunityService.createPost(userId, title, content, fileName);
             
             return reply.code(201).send({ message: 'Post created', data: newPost });
         } catch (error) {

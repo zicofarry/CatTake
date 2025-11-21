@@ -3,11 +3,11 @@ const db = require('../config/db');
 
 class CommunityService {
     
-    // 1. Ambil Semua Postingan (untuk CommunityPage.vue)
+// 1. Ambil Semua Postingan (untuk CommunityPage.vue)
     static async getAllPosts(currentUserId) {
         const query = `
             SELECT 
-                p.id, p.content, p.media_path, p.likes_count, p.created_at,
+                p.id, p.title, p.content, p.media_path, p.likes_count, p.created_at,
                 u.username, d.full_name, d.profile_picture,
                 (SELECT COUNT(*) FROM "comment" c WHERE c.post_id = p.id) AS total_comments,
                 -- Cek apakah user yang sedang login sudah like (Return true/false)
@@ -30,7 +30,8 @@ class CommunityService {
             community: 'CatLover Umum',
             author: row.full_name || row.username,
             time: new Date(row.created_at).toLocaleDateString('id-ID'),
-            title: row.content.substring(0, 30) + (row.content.length > 30 ? '...' : ''),
+            // Menggunakan title dari DB
+            title: row.title || (row.content.substring(0, 30) + (row.content.length > 30 ? '...' : '')),
             excerpt: row.content.substring(0, 60) + (row.content.length > 60 ? '...' : ''),
             description: row.content,
             profileImg: row.profile_picture ? `/img/${row.profile_picture}` : '/img/NULL.JPG',
@@ -46,7 +47,7 @@ class CommunityService {
         // Ambil Post
         const postQuery = `
             SELECT 
-                p.id, p.content, p.media_path, p.likes_count, p.created_at,
+                p.id, p.title, p.content, p.media_path, p.likes_count, p.created_at,
                 u.username, d.full_name, d.profile_picture
             FROM community_post p
             JOIN users u ON p.author_id = u.id
@@ -76,7 +77,8 @@ class CommunityService {
             community: 'CatLover Umum',
             author: row.full_name || row.username,
             time: new Date(row.created_at).toLocaleString('id-ID'),
-            title: row.content.substring(0, 50),
+            // Menggunakan title dari DB
+            title: row.title,
             description: row.content,
             profileImg: row.profile_picture ? `/img/${row.profile_picture}` : '/img/NULL.JPG',
             postImg: row.media_path ? `/img/${row.media_path}` : null,
@@ -91,13 +93,16 @@ class CommunityService {
     }
 
     // 3. Buat Postingan Baru
-    static async createPost(userId, content, mediaPath) {
+    static async createPost(userId, title, content, mediaPath) {
         const query = `
-            INSERT INTO community_post (author_id, content, media_path, created_at, updated_at)
-            VALUES ($1, $2, $3, NOW(), NOW())
+            -- Tambahkan 'title' ke daftar kolom
+            INSERT INTO community_post (author_id, title, content, media_path, created_at, updated_at)
+            -- Tambahkan $2 untuk nilai title
+            VALUES ($1, $2, $3, $4, NOW(), NOW())
             RETURNING id
         `;
-        const result = await db.query(query, [userId, content, mediaPath]);
+        // Masukkan 'title' ke array nilai
+        const result = await db.query(query, [userId, title, content, mediaPath]);
         return result.rows[0];
     }
 
@@ -175,7 +180,7 @@ class CommunityService {
     // 6. Ambil Postingan Populer (Top 3 by Likes)
     static async getPopularPosts() {
         const query = `
-            SELECT id, content, media_path
+            SELECT id, title, content, media_path
             FROM community_post
             ORDER BY likes_count DESC
             LIMIT 3
@@ -183,8 +188,8 @@ class CommunityService {
         const result = await db.query(query);
         return result.rows.map(p => ({
             id: p.id,
-            // Judul diambil dari potongan konten
-            title: p.content.substring(0, 40) + (p.content.length > 40 ? '...' : ''),
+            // Judul diambil dari kolom title (fallback ke potongan content)
+            title: p.title || (p.content.substring(0, 40) + (p.content.length > 40 ? '...' : '')),
             // Jika tidak ada gambar, pakai placeholder
             image: p.media_path ? `/img/${p.media_path}` : '/img/postinganPopuler1.png'
         }));
