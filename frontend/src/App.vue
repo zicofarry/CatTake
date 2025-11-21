@@ -8,6 +8,7 @@
     
     <router-view 
       :isLoggedInProp="isUserLoggedIn" 
+      :profileData="profileData"
       @user-logged-in="handleUserLogin"
     />
 

@@ -208,6 +208,23 @@ class CommunityService {
             image: row.image_path ? `/img/${row.image_path}` : '/img/logoFaktaKucing.png'
         };
     }
+
+    static async getAllFacts() {
+        const query = `
+            SELECT id, fact_text, source, image_path 
+            FROM cat_facts 
+            ORDER BY id ASC
+        `;
+        const result = await db.query(query);
+        
+        return result.rows.map(f => ({
+            id: f.id,
+            // Karena di DB tidak ada kolom judul, kita pakai 'source' atau default text
+            title: f.source ? f.source : 'Tahukah Kamu?', 
+            fact: f.fact_text,
+            image: f.image_path ? `/img/${f.image_path}` : '/img/logoFaktaKucing.png'
+        }));
+    }
 }
 
 module.exports = CommunityService;

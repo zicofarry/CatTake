@@ -63,35 +63,34 @@ class UserService {
             throw new Error('Unauthorized.');
         }
 
-        // Tentukan tabel dan kolom yang akan di-update
         let tableName;
         let fields = [];
         let values = [];
         let i = 1;
 
-        // Tambahkan UPDATE ke tabel detail (detail_user_individu/shelter)
         if (role === 'individu') {
             tableName = 'detail_user_individu';
             
-            // Cek dan masukkan field individu
-            if (data.full_name) { fields.push(`full_name = $${i++}`); values.push(data.full_name); }
-            if (data.birth_date) { fields.push(`birth_date = $${i++}`); values.push(data.birth_date); }
-            if (data.gender) { fields.push(`gender = $${i++}`); values.push(data.gender); }
-            if (data.bio) { fields.push(`bio = $${i++}`); values.push(data.bio); }
-            // Note: Field profile_picture (photo upload) perlu penanganan multipart/form-data terpisah
+            // PERBAIKAN: Gunakan (!== undefined) agar perubahan terbaca meski string kosong
+            if (data.full_name !== undefined) { fields.push(`full_name = $${i++}`); values.push(data.full_name); }
+            if (data.birth_date !== undefined) { fields.push(`birth_date = $${i++}`); values.push(data.birth_date); }
+            if (data.gender !== undefined) { fields.push(`gender = $${i++}`); values.push(data.gender); }
+            if (data.bio !== undefined) { fields.push(`bio = $${i++}`); values.push(data.bio); }
+            
         } else if (role === 'shelter') {
             tableName = 'detail_user_shelter';
-            // ... (Tambahkan logika update untuk field shelter jika diperlukan)
+            
+            if (data.full_name !== undefined) { fields.push(`shelter_name = $${i++}`); values.push(data.full_name); }
+            if (data.bio !== undefined) { fields.push(`bio = $${i++}`); values.push(data.bio); }
+            if (data.contact_phone !== undefined) { fields.push(`contact_phone = $${i++}`); values.push(data.contact_phone); }
         }
 
         if (fields.length === 0) {
             return { message: 'No data to update.' };
         }
 
-        // Tambahkan userId ke array values untuk klausa WHERE
         values.push(userId); 
 
-        // Buat query UPDATE dinamis
         const updateQuery = `
             UPDATE ${tableName} 
             SET ${fields.join(', ')} 
@@ -104,9 +103,6 @@ class UserService {
         if (result.rowCount === 0) {
             throw new Error(`User detail for ID ${userId} not found.`);
         }
-
-        // Jika full_name diubah, update juga di tabel users (untuk username/nama tampilan utama jika diperlukan)
-        // const updateUsersTable = await db.query('UPDATE users SET username = $1 WHERE id = $2', [data.full_name, userId]);
 
         return result.rows[0];
     }

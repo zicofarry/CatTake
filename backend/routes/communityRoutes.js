@@ -21,6 +21,8 @@ async function communityRoutes(fastify, options) {
 
     // Private: Like Postingan
     fastify.post('/posts/:id/like', { preHandler: [authentication] }, CommunityController.toggleLike);
+
+    fastify.get('/facts', CommunityController.getAllFacts);
 }
 
 module.exports = communityRoutes;

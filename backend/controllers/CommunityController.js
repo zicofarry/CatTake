@@ -110,6 +110,18 @@ class CommunityController {
             return reply.code(500).send({ error: error.message });
         }
     }
+
+    static async getAllFacts(req, reply) {
+        try {
+            const facts = await CommunityService.getAllFacts();
+            return reply.send({
+                status: 'success',
+                data: facts
+            });
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
 }
 
 module.exports = CommunityController;

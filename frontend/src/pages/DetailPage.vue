@@ -131,96 +131,76 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect, defineProps, defineEmits } from 'vue';
+import { ref, computed, watch, defineProps, defineEmits } from 'vue';
 import { useRouter } from 'vue-router'; 
 import apiClient from '@/api/http'; 
 
 const router = useRouter(); 
-const emit = defineEmits([
-    'update-login-status',
-    'user-logged-in'
-]);
+const emit = defineEmits(['update-login-status', 'user-logged-in']);
 
-// 1. Terima Props dari App.vue
 const props = defineProps({
-    profileData: { type: Object, default: () => ({}) }, // Default object kosong
+    profileData: { type: Object, default: () => ({}) },
     isLoggedInProp: { type: Boolean, default: false } 
 });
-console.log("DEBUG 1: Props diterima di DetailPage:", props.profileData);
-// 2. State Edit & Dropdown
-const activeEditField = ref(null); // String nama field yg diedit
+
+const activeEditField = ref(null);
 const isPhotoDropdownOpen = ref(false); 
 const isLoading = ref(false);
 
-// Helper Tampilan Placeholder
+// --- Helper Functions ---
 const displayPlaceholder = (value, defaultText) => {
-    if (value && value !== 'null' && value !== '') {
-        return value;
-    }
-    return defaultText; 
+    return (value && value !== 'null' && value !== '') ? value : defaultText;
 };
 
-// 3. Data Reaktif (Computed Property untuk Tampilan Statis)
+const formatDate = (dateString) => {
+    if (!dateString) return null;
+    return new Date(dateString).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+};
+
+// --- Data untuk Tampilan ---
 const userData = computed(() => {
     const data = props.profileData || {};
-    const genderDisplay = data.gender === 'male' ? 'Laki-laki' : (data.gender === 'female' ? 'Perempuan' : null);
-    
-    // Formatter Tanggal (Tampilan)
-    const birthDateDisplay = data.birth_date 
-        ? new Date(data.birth_date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) 
-        : null;
-    
-    
     return {
-        name: data.name || '', // Gunakan string kosong agar placeholder bekerja
-        birthDate: birthDateDisplay, 
-        gender: genderDisplay,
-        email: data.email || '',
         photo: data.photo || '/img/NULL.JPG',
-        profileDescription: data.bio || '',
     };
 });
 
-// 4. Data Form (untuk input yang bisa diubah)
+// --- Form State ---
 const formState = ref({
     name: '',
     birthDate: '', 
     gender: '', 
     profileDescription: '',
-    uploadedFile: null, 
 });
 
-// 5. Watcher untuk sinkronisasi data API ke Form
-watchEffect(() => {
-    if (props.profileData && props.profileData.id) { 
-        
-        console.log("DEBUG 2: Nilai ID sebelum disalin:", props.profileData.id); // HARUS ADA NILAI
-        
-        // --- Semua penyalinan dijamin aman di bawah sini ---
-        formState.value.name = props.profileData.name || '';
-        formState.value.birthDate = props.profileData.birth_date ? new Date(props.profileData.birth_date).toISOString().substring(0, 10) : '';
-        formState.value.gender = props.profileData.gender || '';
-        formState.value.profileDescription = props.profileData.bio || '';
-        
-        console.log("DEBUG 3: Nilai FormState Name setelah disalin:", formState.value.name);
-    } else {
-        // Ini adalah case untuk null atau objek kosong awal ({})
-        console.log("DEBUG: Data profil masih kosong atau ID tidak ditemukan.");
-    }
-});
+// --- PERBAIKAN UTAMA: Ganti watchEffect dengan watch ---
+// Ini mencegah form ter-reset otomatis saat Anda sedang mengetik
+watch(
+    () => props.profileData, 
+    (newData) => {
+        if (newData && newData.id) {
+            formState.value.name = newData.name || '';
+            
+            if (newData.birth_date) {
+                const d = new Date(newData.birth_date);
+                formState.value.birthDate = d.toISOString().split('T')[0];
+            } else {
+                formState.value.birthDate = '';
+            }
 
-// 6. Quests & Achievements
+            formState.value.gender = newData.gender || '';
+            formState.value.profileDescription = newData.bio || '';
+        }
+    },
+    { immediate: true, deep: true }
+);
+
 const quests = computed(() => props.profileData?.quests || []);
 const achievements = computed(() => props.profileData?.achievements || []);
 
-// --- FUNGSI INTERAKSI ---
-
+// --- Fungsi Interaksi ---
 function toggleEditMode(field) {
-    if (activeEditField.value === field) {
-        activeEditField.value = null; // Tutup jika diklik lagi
-    } else {
-        activeEditField.value = field; // Buka field tertentu
-    }
+    activeEditField.value = (activeEditField.value === field) ? null : field;
 }
 
 function togglePhotoDropdown() {
@@ -232,68 +212,42 @@ function handleChoosePhoto() {
     document.getElementById('photo-upload').click(); 
 }
 
-function handleViewPhoto() {
-    isPhotoDropdownOpen.value = false;
-    alert('Fitur Lihat Foto belum diimplementasikan (bisa pakai Modal).');
-}
-
 function handleFileUpload(event) {
     const file = event.target.files[0];
     if (file) {
-        formState.value.uploadedFile = file;
-        // Preview gambar
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            // Update tampilan foto sementara
-            // Note: Kita update userData.value.photo ini hanya virtual di computed, 
-            // idealnya punya local state untuk preview. Tapi utk simpel:
-            const imgPreview = document.querySelector('.w-48 img');
-            if(imgPreview) imgPreview.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-        
-        // Auto-save foto (opsional) atau tunggu tombol simpan khusus?
-        // Di sini kita asumsikan user harus klik tombol SIMPAN khusus foto atau 
-        // kita bisa langsung panggil handleSaveProfile('photo') jika mau auto-upload.
+        alert("Fitur upload foto butuh endpoint khusus.");
     }
 }
 
 async function handleSaveProfile(fieldToSave) {
     if (!props.profileData || !props.profileData.id) {
         alert("Gagal: Data profil belum siap.");
-        isLoading.value = false;
-        activeEditField.value = null;
         return;
     }
     
     isLoading.value = true;
     const userId = props.profileData.id;
     
-    // Siapkan Payload
     const payload = {
         full_name: formState.value.name,
         birth_date: formState.value.birthDate,
         gender: formState.value.gender,
         bio: formState.value.profileDescription,
-        role: 'individu', // Hardcode atau props.userRole
+        role: props.profileData.role || 'individu', 
     };
 
-    // Logic pengiriman (JSON vs FormData) - Sederhana: Kirim JSON karena edit per atribut teks
-    // Kecuali jika fieldToSave == 'photo' (implementasi terpisah)
-    
     try {
-        console.log("Mengirim update:", payload);
-        // await apiClient.patch(`/users/profile/${userId}`, payload); 
+        await apiClient.patch(`/users/profile/${userId}`, payload); 
         
-        alert('Berhasil disimpan!');
-        activeEditField.value = null; // Tutup edit mode
+        alert('Data berhasil disimpan!');
+        activeEditField.value = null;
         
-        // Emit event refresh jika perlu
-        // emit('refresh-data'); 
+        // Refresh halaman agar data baru langsung terlihat dari DB
+        window.location.reload(); 
 
     } catch (error) {
-        alert('Gagal menyimpan.');
-        console.error(error);
+        console.error("Gagal menyimpan profil:", error);
+        alert('Gagal menyimpan perubahan. Cek koneksi atau login ulang.');
     } finally {
         isLoading.value = false;
     }
