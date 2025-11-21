@@ -1,35 +1,58 @@
 <script setup>
 import { useRoute } from 'vue-router'
-import { ref, computed } from 'vue'
-import { allPosts } from '../data/posts.js' // Impor data postingan
+import { ref, onMounted } from 'vue'
+import apiClient from '@/api/http'; // Import axios
 
 const route = useRoute()
-const postId = parseInt(route.params.id) 
+const postId = route.params.id // Ambil ID dari URL
 
-const post = computed(() => {
-  return allPosts.value.find(p => p.id === postId)
-})
-
-// --- LOGIKA KOMENTAR (INI YANG BERUBAH) ---
-
-// 1. Hapus 'ref' komentar yang di-hardcode.
-// 2. Buat 'ref' komentar baru yang mengambil data dari 'post.value'.
-//    Kita pakai '...' (spread operator) untuk membuat salinan, 
-//    jadi komentar baru tidak mengubah data asli.
-const comments = ref(post.value ? [...post.value.commentData] : [])
-
+// State
+const post = ref(null)
+const comments = ref([])
 const newComment = ref('')
+const isLoading = ref(true)
 
-function addComment() {
-  if (newComment.value.trim() === '') return
-  // 3. 'push' ke 'ref' lokal. Ini sudah benar.
-  comments.value.push({
-    id: Date.now(),
-    user: 'Diana', // Nanti bisa diganti user login
-    text: newComment.value
-  })
-  newComment.value = ''
+// 1. Ambil Detail Postingan dari Backend
+async function fetchPostDetail() {
+  try {
+    isLoading.value = true;
+    const response = await apiClient.get(`/community/posts/${postId}`);
+    post.value = response.data;
+    comments.value = response.data.commentData || []; // Ambil komentar dari response
+  } catch (error) {
+    console.error("Gagal mengambil detail post:", error);
+    alert("Postingan tidak ditemukan atau terjadi kesalahan.");
+  } finally {
+    isLoading.value = false;
+  }
 }
+
+// 2. Kirim Komentar Baru ke Backend
+async function addComment() {
+  if (newComment.value.trim() === '') return;
+
+  try {
+    // Kirim ke API POST /api/v1/community/posts/:id/comments
+    const response = await apiClient.post(`/community/posts/${postId}/comments`, {
+        content: newComment.value
+    });
+
+    await fetchPostDetail(); 
+    
+    newComment.value = ''; // Reset input
+  } catch (error) {
+    console.error("Gagal mengirim komentar:", error);
+    
+    // PERBAIKAN: Ambil pesan error asli dari Backend jika ada
+    const errorMessage = error.response?.data?.error || "Gagal mengirim komentar. Cek koneksi atau login ulang.";
+    
+    alert(errorMessage);
+  }
+}
+
+onMounted(() => {
+  fetchPostDetail();
+})
 </script>
 
 <template>

@@ -1,53 +1,89 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue' // Tambah 'watch'
+import apiClient from '@/api/http'; // Import API Client
 
 const props = defineProps({
-  postData: Object
+  postData: {
+    type: Object,
+    required: true
+  }
 })
 
-// --- LOGIKA LIKE BARU (BISA DI-TOGGLE) ---
-const isLiked = ref(false)
-const currentLikes = ref(props.postData.likes) // cth: '2.158'
+// State Lokal
+const isLiked = ref(props.postData.isLiked || false);
+const likeCount = ref(props.postData.likes || 0);
 
-// 1. Kita simpan jumlah like ASLI sebagai angka
-const originalLikeCount = parseInt(props.postData.likes.replace(/\./g, '')) // cth: 2158
+// Watcher: Jika data dari props berubah (misal setelah fetch ulang), update state lokal
+watch(() => props.postData, (newVal) => {
+    isLiked.value = newVal.isLiked;
+    likeCount.value = newVal.likes;
+});
 
-// 2. Kita ubah nama fungsi menjadi 'toggleLike'
-function likePost() {
-  
-  // 3. Balik status 'isLiked' (dari false -> true, atau true -> false)
-  isLiked.value = !isLiked.value
+// Tampilan Angka (Ribuan)
+const currentLikesDisplay = computed(() => {
+  return likeCount.value.toLocaleString('id-ID');
+});
 
+// Fungsi Like ke API
+async function toggleLike() {
+  // Simpan state lama untuk rollback jika error
+  const oldIsLiked = isLiked.value;
+  const oldCount = likeCount.value;
+
+  // Optimistic Update (Ubah tampilan dulu biar responsif)
   if (isLiked.value) {
-    // 4. JIKA BARU DI-LIKE:
-    // Tambah 1 dari angka ASLI
-    const newCount = originalLikeCount + 1
-    // Format ulang ke string (cth: '2.159')
-    currentLikes.value = newCount.toLocaleString('id-ID')
+      isLiked.value = false;
+      likeCount.value--;
   } else {
-    // 5. JIKA DI-BATALKAN (UNLIKE):
-    // Kembalikan ke string ASLI
-    currentLikes.value = props.postData.likes
+      isLiked.value = true;
+      likeCount.value++;
+  }
+
+  try {
+    // Panggil API
+    const response = await apiClient.post(`/community/posts/${props.postData.id}/like`);
+    
+    // Sinkronisasi data asli dari server (agar akurat)
+    const data = response.data.data;
+    isLiked.value = data.isLiked;
+    likeCount.value = parseInt(data.likesCount);
+
+  } catch (error) {
+    console.error("Gagal like:", error);
+    // Rollback jika gagal (misal belum login)
+    isLiked.value = oldIsLiked;
+    likeCount.value = oldCount;
+    
+    if (error.response?.status === 401) {
+        alert("Silakan login untuk menyukai postingan.");
+    }
   }
 }
-// --- AKHIR LOGIKA LIKE ---
 </script>
 
 <template>
   <article class="bg-white text-gray-800 rounded-xl p-5 shadow-md font-sans">
       
       <div class="flex items-center gap-3">
-          <img :src="postData.profileImg" :alt="postData.author" class="w-11 h-11 rounded-full" />
+          <img 
+            :src="postData.profileImg || '/img/profile_default.png'" 
+            :alt="postData.author" 
+            class="w-11 h-11 rounded-full object-cover" 
+            @error="$event.target.src = '/img/NULL.JPG'"
+          />
           <div class="flex-grow">
-              <strong class="block text-base">{{ postData.community }}</strong>
+              <strong class="block text-base">{{ postData.community || 'Komunitas' }}</strong>
               <span class="text-sm text-gray-500">{{ postData.author }} · {{ postData.time }}</span>
           </div>
-          <img src="../assets/img/titik3.png" alt="menu" class="h-6 w-6" />
+          <img src="../assets/img/titik3.png" alt="menu" class="h-6 w-6 cursor-pointer" />
       </div>
       
       <div class="mt-4">
-          <strong class="text-xl font-semibold">{{ postData.title }}</strong>
-          <p class="mt-1 text-gray-700">{{ postData.excerpt }}</p>
+          <strong class="text-xl font-semibold block mb-1">{{ postData.title }}</strong>
+          
+          <p class="mt-1 text-gray-700 whitespace-pre-line">
+            {{ postData.description ? postData.description.substring(0, 100) + (postData.description.length > 100 ? '...' : '') : '' }}
+          </p>
 
           <router-link 
             :to="'/post/' + postData.id" 
@@ -55,23 +91,29 @@ function likePost() {
             Lihat selengkapnya
           </router-link>
 
-          <img :src="postData.postImg" :alt="postData.title" class="w-full rounded-lg mt-4" />
+          <img 
+            v-if="postData.postImg" 
+            :src="postData.postImg" 
+            :alt="postData.title" 
+            class="w-full rounded-lg mt-4 object-cover max-h-[400px]" 
+            @error="$event.target.style.display='none'"
+          />
       </div>
 
       <div class="flex gap-5 mt-4 border-t border-gray-100 pt-4">
           
           <div 
-            @click="likePost" 
+            @click="toggleLike" 
             :class="{ 'text-[#FF5757]': isLiked, 'text-gray-600': !isLiked }"
-            class="flex items-center gap-2 cursor-pointer transition-colors"
+            class="flex items-center gap-2 cursor-pointer transition-colors select-none"
           >
-              <img src="../assets/img/like.png" alt="Like" class="h-5 w-5" />
-              <span>{{ currentLikes }}</span>
+              <i class="fas fa-heart text-lg" :class="isLiked ? 'text-[#FF5757]' : 'text-gray-400'"></i>
+              <span>{{ currentLikesDisplay }}</span>
           </div>
 
-          <router-link :to="'/post/' + postData.id" class="flex items-center gap-2 text-gray-600 cursor-pointer">
-              <img src="../assets/img/comment.png" alt="Comment" class="h-5 w-5" />
-              <span>{{ postData.comments }}</span>
+          <router-link :to="'/post/' + postData.id" class="flex items-center gap-2 text-gray-600 cursor-pointer no-underline hover:text-gray-800">
+              <i class="fas fa-comment text-lg text-gray-400"></i>
+              <span>{{ postData.comments || 0 }}</span>
           </router-link>
 
       </div>
