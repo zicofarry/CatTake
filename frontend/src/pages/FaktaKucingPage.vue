@@ -1,53 +1,35 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import apiClient from '@/api/http'; // Import Axios Client
 
-// Data dummy untuk fakta kucing
-// Kita asumsikan gambar ini ada di folder /public/img/
-const catFacts = ref([
-  {
-    id: 1,
-    title: 'Tukang Tidur',
-    fact: 'Kucing domestik tidur rata-rata 12-16 jam per hari untuk menghemat energi, sama seperti leluhur liar mereka.',
-    image: '/img/kucingtidur.png' // Gambar dari public/img
-  },
-  {
-    id: 2,
-    title: 'Pendengaran Super',
-    fact: 'Kucing memiliki 32 otot di setiap telinga, memungkinkan mereka memutar telinga 180 derajat dan mendengar frekuensi yang jauh lebih tinggi daripada manusia.',
-    image: '/img/logoFaktaKucing.png' // Gambar dari public/img
-  },
-  {
-    id: 3,
-    title: 'Sidik Jari Hidung',
-    fact: 'Setiap kucing memiliki sidik hidung (nose print) yang unik, mirip seperti sidik jari pada manusia.',
-    image: '/img/kucingtidur.png' // (Kita gunakan gambar yang ada)
-  },
-  {
-    id: 4,
-    title: 'Tidak Suka Manis',
-    fact: 'Kucing adalah salah satu dari sedikit mamalia yang tidak bisa merasakan rasa manis. Lidah mereka tidak memiliki reseptor untuk itu.',
-    image: '/img/logoFaktaKucing.png' // (Kita gunakan gambar yang ada)
-  },
-  {
-    id: 5,
-    title: 'Getaran Penyembuh',
-    fact: 'Dengkuran (purring) kucing bergetar pada frekuensi 25-150 Hz, yang dipercaya dapat membantu menyembuhkan tulang dan otot mereka sendiri.',
-    image: '/img/kucingtidur.png' // (Kita gunakan gambar yang ada)
-  },
-])
+const catFacts = ref([]);
+const isLoading = ref(true);
+
+async function fetchFacts() {
+  try {
+    isLoading.value = true;
+    // Panggil endpoint baru
+    const response = await apiClient.get('/community/facts');
+    catFacts.value = response.data.data;
+  } catch (error) {
+    console.error("Gagal mengambil fakta kucing:", error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+onMounted(() => {
+  fetchFacts();
+});
 </script>
 
 <template>
   <div class="bg-[#2c473c] min-h-screen p-5 md:p-10 font-sans"
-
-    style="
-        background-image: url('/img/background.png');
-        background-size: 360px; /* ubah ukuran pola */
-    ">
+    style="background-image: url('/img/background.png'); background-size: 360px;">
     
     <router-link 
       to="/komunitas" 
-      class="inline-block bg-[#2D4A45] text-white font-semibold py-2 px-4 rounded-lg mb-6 hover:bg-[#4a6d68] transition-colors">
+      class="inline-block bg-[#2D4A45] text-white font-semibold py-2 px-4 rounded-lg mb-6 hover:bg-[#4a6d68] transition-colors no-underline">
       &lt; Kembali
     </router-link>
 
@@ -56,20 +38,35 @@ const catFacts = ref([
       <h1 class="text-4xl font-bold text-white">Semua Fakta Kucing</h1>
       <p class="text-gray-400 mb-8">Temukan hal-hal menakjubkan tentang sahabat berbulumu.</p>
 
-      <div class="flex flex-col gap-5">
-        
+      <div v-if="isLoading" class="text-center text-white py-10">
+        Memuat fakta...
+      </div>
+
+      <div v-else-if="catFacts.length === 0" class="text-center text-gray-400 py-10">
+        Belum ada fakta kucing yang tersedia.
+      </div>
+
+      <div v-else class="flex flex-col gap-5">
         <div v-for="fact in catFacts" :key="fact.id" 
-             class="bg-white text-gray-800 rounded-xl p-5 shadow-lg flex items-center gap-5">
+             class="bg-white text-gray-800 rounded-xl p-5 shadow-lg flex items-center gap-5 transition-transform hover:scale-[1.01]">
           
-          <img :src="fact.image" alt="Fakta Kucing" class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover flex-shrink-0">
+          <img 
+            :src="fact.image" 
+            :alt="fact.title" 
+            class="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover flex-shrink-0 bg-gray-100"
+            @error="$event.target.src='/img/logoFaktaKucing.png'"
+          >
           
           <div>
             <h2 class="text-xl font-bold text-gray-900">{{ fact.title }}</h2>
-            <p class="text-gray-700 mt-1">{{ fact.fact }}</p>
+            <p class="text-gray-700 mt-1 text-sm md:text-base leading-relaxed">
+                {{ fact.fact }}
+            </p>
           </div>
 
         </div>
       </div>
+
     </div>
   </div>
 </template>
