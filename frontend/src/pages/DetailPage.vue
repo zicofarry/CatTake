@@ -139,6 +139,32 @@
             </div>
         </div>
     </main>
+
+    <teleport to="body">
+        <div 
+            v-if="showPhotoModal" 
+            @click="showPhotoModal = false" 
+            class="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center p-4 transition-opacity duration-300 backdrop-blur-sm"
+        >
+            <div @click.stop class="relative max-w-full max-h-full">
+                <img 
+                    :src="resolveImageUrl(userData.photo)" 
+                    alt="Full Profile" 
+                    class="max-w-[90vw] max-h-[90vh] object-contain shadow-2xl rounded-lg"
+                >
+                
+                <button 
+                    @click="showPhotoModal = false" 
+                     class="absolute top-4 right-4 
+                            bg-black/50 text-white 
+                            w-10 h-10 flex items-center justify-center 
+                            rounded-full hover:bg-black/80 transition"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </teleport>
 </template>
 
 <script setup>
@@ -155,20 +181,25 @@ const props = defineProps({
 });
 
 function resolveImageUrl(path) {
-    if (!path) return '/img/NULL.JPG'; // Fallback default
+    // Fallback jika path kosong atau NULL.JPG
+    if (!path || path === '/img/NULL.JPG' || path === '/img/Ellipse.png') return path;
 
-    // Periksa apakah path berasal dari server backend kita
+    // Ambil URL server base (e.g., http://localhost:3000) dari VITE_API_BASE_URL
+    const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+    const baseServerUrl = baseApiUrl.replace('/api/v1', '');
+
+    // Cek apakah path berasal dari aset statis backend (/public/profile/...)
     if (path.startsWith('/public/')) {
-        // Asumsi backend berjalan di port 3000
-        return `http://localhost:3000${path}`;
+        return `${baseServerUrl}${path}`;
     }
 
-    // Jika path sudah URL lengkap (http/https) atau aset statis frontend
+    // Jika sudah URL lengkap atau aset statis frontend
     return path;
 }
 const activeEditField = ref(null);
 const isPhotoDropdownOpen = ref(false); 
 const isLoading = ref(false);
+const showPhotoModal = ref(false);
 
 // --- Helper Functions ---
 const displayPlaceholder = (value, defaultText) => {
@@ -246,6 +277,11 @@ function togglePhotoDropdown() {
 function handleChoosePhoto() {
     isPhotoDropdownOpen.value = false;
     document.getElementById('photo-upload').click(); 
+}
+
+function handleViewPhoto() {
+    isPhotoDropdownOpen.value = false;
+    showPhotoModal.value = true; // Buka modal
 }
 
 async function handleSaveProfile(fieldToSave) {

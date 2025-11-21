@@ -73,7 +73,12 @@ class UserService {
             
             // PERBAIKAN: Gunakan (!== undefined) agar perubahan terbaca meski string kosong
             if (data.full_name !== undefined) { fields.push(`full_name = $${i++}`); values.push(data.full_name); }
-            if (data.birth_date !== undefined) { fields.push(`birth_date = $${i++}`); values.push(data.birth_date); }
+            if (data.birth_date !== undefined) {
+                // Tentukan nilai: jika string kosong, gunakan null, jika ada isinya, gunakan nilainya
+                const birthDateValue = data.birth_date === '' ? null : data.birth_date; 
+                fields.push(`birth_date = $${i++}`); 
+                values.push(birthDateValue);
+            }
             if (data.gender !== undefined) { fields.push(`gender = $${i++}`); values.push(data.gender); }
             if (data.bio !== undefined) { fields.push(`bio = $${i++}`); values.push(data.bio); }
             
