@@ -116,7 +116,7 @@
                         type="file" 
                         ref="statementInput" 
                         class="hidden" 
-                        accept="image/*,.pdf"
+                        accept=".pdf"
                         @change="handleStatementChange"
                     >
                     <div 
@@ -226,6 +226,12 @@ function handleIdentityChange(event) {
 function handleStatementChange(event) {
     const file = event.target.files[0];
     if (file) {
+        // Validasi Frontend Tambahan
+        if (file.type !== 'application/pdf') {
+            alert("File harus berformat PDF!");
+            event.target.value = null; // Reset input
+            return;
+        }
         statementFile.value = file;
         statementFileName.value = file.name;
     }

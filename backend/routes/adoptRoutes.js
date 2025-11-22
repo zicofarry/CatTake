@@ -10,7 +10,11 @@ async function adoptRoutes(fastify, options) {
     fastify.post('/apply', { preHandler: [authentication] }, AdoptionController.applyAdoption);
 
     // Shelter: Lihat laporan (Nanti shelterId bisa diambil dari Token JWT request.user.id agar lebih aman)
-    fastify.get('/reports/:shelterId', AdoptionController.getShelterReports);
+    // fastify.get('/reports/:shelterId', AdoptionController.getShelterReports);
+    fastify.get('/my-reports', { preHandler: [authentication] }, AdoptionController.getShelterReports);
+
+    // Verifikasi adopsi oleh shelter
+    fastify.patch('/verify/:id', { preHandler: [authentication] }, AdoptionController.verifyAdoption);
 }
 
 module.exports = adoptRoutes;

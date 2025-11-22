@@ -6,6 +6,14 @@ const util = require('util');
 const { pipeline } = require('stream');
 const pump = util.promisify(pipeline);
 
+const ensureDir = async (dirPath) => {
+    try {
+        await fs.promises.mkdir(dirPath, { recursive: true });
+    } catch (err) {
+        if (err.code !== 'EEXIST') throw err;
+    }
+};
+
 class AdoptionController {
     // GET /api/v1/adopt/cats
     static async getCats(request, reply) {
@@ -24,7 +32,6 @@ class AdoptionController {
     // POST /api/v1/adopt/apply
     static async applyAdoption(req, reply) {
         try {
-            // 1. Cek Login
             if (!req.user || !req.user.id) {
                 return reply.code(401).send({ error: 'Unauthorized.' });
             }
@@ -34,58 +41,64 @@ class AdoptionController {
             let identityFileName = null;
             let statementFileName = null;
 
-            // 2. Loop semua bagian dari form-data
+            // Tentukan path folder tujuan
+            const identityDir = path.join(__dirname, '../public/img/identity');
+            const statementDir = path.join(__dirname, '../public/docs/stmt');
+
+            // Buat folder jika belum ada
+            await ensureDir(identityDir);
+            await ensureDir(statementDir);
+
             for await (const part of parts) {
                 if (part.file) {
-                    // Cek fieldname untuk membedakan file
-                    const fileExt = path.extname(part.filename);
+                    const fileExt = path.extname(part.filename).toLowerCase();
                     const timestamp = Date.now();
                     
                     if (part.fieldname === 'identity_photo') {
-                        // Simpan Foto KTP
+                        // Simpan KTP (Image)
                         identityFileName = `ktp-${req.user.id}-${timestamp}${fileExt}`;
-                        await pump(part.file, fs.createWriteStream(path.join(__dirname, '../public/img', identityFileName)));
+                        const savePath = path.join(identityDir, identityFileName);
+                        await pump(part.file, fs.createWriteStream(savePath));
                     
                     } else if (part.fieldname === 'statement_letter') {
-                        // Simpan Surat Pernyataan
+                        // VALIDASI PDF
+                        if (fileExt !== '.pdf') {
+                            // Konsumsi stream biar tidak hang, lalu throw error
+                            part.file.resume(); 
+                            return reply.code(400).send({ error: 'Surat Pernyataan harus berformat PDF (.pdf)' });
+                        }
+
+                        // Simpan Surat Pernyataan (PDF)
                         statementFileName = `stmt-${req.user.id}-${timestamp}${fileExt}`;
-                        await pump(part.file, fs.createWriteStream(path.join(__dirname, '../public/img', statementFileName)));
+                        const savePath = path.join(statementDir, statementFileName);
+                        await pump(part.file, fs.createWriteStream(savePath));
                     } else {
-                        // File tak dikenal, abaikan tapi konsumsi streamnya agar tidak hang
                         part.file.resume();
                     }
                 } else {
-                    // Simpan text fields
                     fields[part.fieldname] = part.value;
                 }
             }
 
-            // 3. Validasi File (Backend Validation)
             if (!identityFileName || !statementFileName) {
-                return reply.code(400).send({ error: 'Both Identity Photo and Statement Letter are required.' });
+                return reply.code(400).send({ error: 'Mohon lengkapi Foto Identitas dan Surat Pernyataan (PDF).' });
             }
 
-            // 4. Susun data untuk Service
             const applicationData = {
                 cat_id: fields.cat_id,
                 applicant_id: req.user.id,
-                
-                // Data Profile User
                 nik: fields.nik,
                 phone: fields.phone,
                 job: fields.job,
                 address: fields.address,
-                identityPhoto: identityFileName, // File KTP -> masuk ke detail_user_individu
-                
-                // Data Adopsi
-                statementLetter: statementFileName // File Surat -> masuk ke adoptions
+                identityPhoto: identityFileName, 
+                statementLetter: statementFileName
             };
 
-            // 5. Panggil Service
             const result = await AdoptionService.createAdoption(applicationData);
             return reply.code(201).send({ 
                 status: 'success', 
-                message: 'Pengajuan adopsi berhasil dikirim. Menunggu verifikasi shelter.',
+                message: 'Pengajuan adopsi berhasil dikirim.',
                 data: result 
             });
 
@@ -98,10 +111,35 @@ class AdoptionController {
     // GET /api/v1/adopt/reports/:shelterId
     static async getShelterReports(request, reply) {
         try {
-            const { shelterId } = request.params;
+            const shelterId = request.user.id; 
+
+            if (!shelterId) {
+                return reply.code(401).send({ error: 'Unauthorized Access' });
+            }
+
             const reports = await AdoptionService.getAdoptionReportsByShelter(shelterId);
             return reply.send(reports);
         } catch (error) {
+            console.error(error);
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    static async verifyAdoption(req, reply) {
+        try {
+            const { id } = req.params; // ID Adopsi
+            const { status } = req.body; // 'approved' atau 'rejected'
+            const shelterId = req.user.id;
+
+            if (!['approved', 'rejected', 'completed'].includes(status)) {
+                return reply.code(400).send({ error: 'Invalid status' });
+            }
+
+            await AdoptionService.verifyAdoption(id, status, shelterId);
+            
+            return reply.send({ status: 'success', message: `Adoption request ${status}` });
+        } catch (error) {
+            console.error(error);
             return reply.code(500).send({ error: error.message });
         }
     }

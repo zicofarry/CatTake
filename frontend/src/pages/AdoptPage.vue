@@ -3,29 +3,62 @@
     
     <!-- Ambil Role dari localStorage (Simulasi) -->
     <div v-if="userRole === 'shelter'">
-        <!-- ============================================== -->
-        <!-- TAMPILAN SHELTER: LAPORAN ADOPSI -->
-        <!-- Sesuai design Figma 'adopt-shelterpage-Desktop/Mobile.jpg' -->
-        <!-- ============================================== -->
-         
-        <div class="max-w-6xl mx-auto px-4 pt-12 pb-20">
+        <div class="max-w-5xl mx-auto px-4 pt-12 pb-20">
             
-            <!-- Judul Laporan Adopsi -->
-            <div class="text-center mb-8 -mt-2">
-                <h1 class="inline-block text-3xl md:text-4xl font-extrabold text-gray-800 py-3 px-8 bg-white rounded-full shadow-xl">
-                    Laporan Adopsi
+            <div class="text-center mb-8 space-y-6">
+                <h1 class="inline-block text-3xl md:text-4xl font-extrabold text-gray-800">
+                    Dashboard Adopsi
                 </h1>
+                
+                <div class="flex justify-center">
+                    <div class="bg-white p-1.5 rounded-full shadow-md inline-flex">
+                        <button 
+                            @click="activeTab = 'pending'"
+                            class="px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300"
+                            :class="activeTab === 'pending' ? 'bg-[#EBCD5E] text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'"
+                        >
+                            Menunggu ({{ pendingReports.length }})
+                        </button>
+                        <button 
+                            @click="activeTab = 'history'"
+                            class="px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300"
+                            :class="activeTab === 'history' ? 'bg-[#3A5F50] text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'"
+                        >
+                            Riwayat
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Wrapper Daftar Laporan -->
-            <div class="relative bg-white p-4 md:p-6 rounded-3xl shadow-2xl overflow-visible">
-                <div class="flex flex-col gap-4">
+            <div class="relative">
+                
+                <div v-if="activeTab === 'pending'" class="flex flex-col gap-4 animate-fade-in">
+                    <div v-if="pendingReports.length === 0" class="text-center py-16 bg-white rounded-3xl shadow-sm">
+                        <i class="fas fa-clipboard-check text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">Tidak ada permintaan adopsi baru.</p>
+                    </div>
                     <AdoptionReportCard 
-                        v-for="report in adoptionReports" 
+                        v-else
+                        v-for="report in pendingReports" 
+                        :key="report.id" 
+                        :report="report"
+                        @verify="handleVerification"
+                    />
+                </div>
+
+                <div v-if="activeTab === 'history'" class="flex flex-col gap-4 animate-fade-in">
+                    <div v-if="historyReports.length === 0" class="text-center py-16 bg-white rounded-3xl shadow-sm">
+                        <i class="fas fa-history text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">Belum ada riwayat adopsi.</p>
+                    </div>
+                    <AdoptionReportCard 
+                        v-else
+                        v-for="report in historyReports" 
                         :key="report.id" 
                         :report="report"
                     />
                 </div>
+
             </div>
         </div>
     </div>
@@ -115,7 +148,6 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { jwtDecode } from 'jwt-decode'; // Pastikan sudah install: npm install jwt-decode
 import apiClient from '@/api/http'; // Import axios instance
 import CatCard from '../components/CatCard.vue';
 import HeroSection from '../components/HeroSection.vue';
@@ -126,55 +158,57 @@ import AdoptionReportCard from '../components/AdoptionReportCard.vue'; // Kompon
 const userRole = computed(() => localStorage.getItem('userRole') || 'guest');
 const adoptionReports = ref([]); // Data laporan untuk shelter
 const catData = ref([]); // Data kucing untuk user/guest
+const activeTab = ref('pending'); // Default tab
 
-function getUserId() {
-    const token = localStorage.getItem('userToken');
-    if (!token) return null;
+// --- LOGIKA FILTERING ---
+const pendingReports = computed(() => {
+    return adoptionReports.value.filter(r => r.status === 'pending');
+});
+
+const historyReports = computed(() => {
+    return adoptionReports.value.filter(r => r.status !== 'pending');
+});
+
+// --- FETCH DATA ---
+async function fetchData() {
     try {
-        const decoded = jwtDecode(token);
-        return decoded.id;
+        if (userRole.value === 'shelter') {
+            // Ambil data (sudah otomatis filter by shelterId di backend via token)
+            const response = await apiClient.get('/adopt/my-reports');
+            adoptionReports.value = response.data;
+        } else {
+            // User view
+            const response = await apiClient.get('/adopt/cats');
+            catData.value = response.data; 
+        }
     } catch (error) {
-        console.error("Error decoding token:", error);
-        return null;
+        console.error("Error:", error);
     }
 }
 
 // --- FETCH DATA ---
 onMounted(async () => {
-    try {
-        const token = localStorage.getItem('userToken');
-
-        if (userRole.value === 'shelter') {
-            // 1. JIKA SHELTER: Ambil Laporan Adopsi
-            const shelterId = getUserId();
-            if (shelterId) {
-                const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-                const response = await apiClient.get(`/adopt/reports/${shelterId}`, config);
-                adoptionReports.value = response.data;
-                // const response = await apiClient.get(`/adopt/reports/${shelterId}`);
-                // adoptionReports.value = response.data; // Simpan ke state
-            }
-        } else {
-            // 2. JIKA USER/GUEST: Ambil Daftar Kucing Available
-            const config = {};
-            
-            // Kalau user punya token (Login), tempelkan di Header
-            if (token) {
-                config.headers = { 
-                    Authorization: `Bearer ${token}` 
-                };
-            }
-
-            // Request ke backend dengan membawa Token (kalau ada)
-            // Backend akan cek: "Oh ini User ID 3", lalu set isFavorited = true
-            const response = await apiClient.get('/adopt/cats', config);
-            
-            catData.value = response.data; 
-        }
-    } catch (error) {
-        console.error("Gagal mengambil data:", error);
-    }
+    fetchData();
 });
+
+// --- HANDLE VERIFIKASI (Disetujui/Ditolak) ---
+async function handleVerification(id, status) {
+    const actionText = status === 'approved' ? 'menyetujui' : 'menolak';
+    if (!confirm(`Apakah Anda yakin ingin ${actionText} adopsi ini?`)) return;
+
+    try {
+        // Panggil API verify
+        await apiClient.patch(`/adopt/verify/${id}`, { status });
+        
+        alert(`Adopsi berhasil di-${status === 'approved' ? 'setujui' : 'tolak'}!`);
+        
+        // Refresh data agar pindah tab/status terupdate
+        await fetchData();
+    } catch (error) {
+        console.error("Gagal verifikasi:", error);
+        alert("Terjadi kesalahan saat memproses verifikasi.");
+    }
+}
 
 const activeFilter = ref('all'); 
 const genderFilter = ref('all');

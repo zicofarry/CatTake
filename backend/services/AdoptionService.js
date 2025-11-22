@@ -70,14 +70,20 @@ class AdoptionService {
         const query = `
             SELECT 
                 a.id, 
+                a.status,
                 c.name AS "catName", 
                 to_char(a.applied_at, 'YYYY/MM/DD HH24:MI') AS date,
-                a.statement_letter_path AS document,
                 
-                -- Data dari tabel users & detail_user_individu (JOIN)
+                -- Nama file saja
+                a.statement_letter_path AS "statementFile", 
+                
                 u.email,
                 dui.full_name AS "adopterName",
                 dui.profile_picture AS "adopterPhoto",
+                
+                -- Nama file KTP
+                dui.ktp_file_path AS "identityFile",
+                
                 dui.nik,
                 dui.contact_phone AS phone,
                 dui.job,
@@ -94,23 +100,96 @@ class AdoptionService {
         
         const result = await db.query(query, [shelterId]);
         
-        // Mapping data untuk Frontend
         return result.rows.map(row => ({
             id: row.id,
+            status: row.status,
             catName: row.catName,
             date: row.date,
             adopter: {
                 name: row.adopterName || 'No Name',
-                profilePic: row.adopterPhoto ? `/img/${row.adopterPhoto}` : '/img/profile_default.png',
-                // Data sensitif dari detail_user_individu
+                // Foto Profil (asumsi masih di /img/profile/)
+                profilePic: row.adopterPhoto ? `/public/img/profile/${row.adopterPhoto}` : null, 
+                
                 nik: row.nik || '-', 
                 phone: row.phone || '-',
                 email: row.email || '-',
                 job: row.job || '-',
                 address: row.address || '-',
-                document: row.document ? `/img/${row.document}` : null
+                
+                // PATH BARU UNTUK DOKUMEN
+                // Ingat: server.js serve 'public' di prefix '/public/'
+                documentUrl: row.statementFile ? `/public/docs/stmt/${row.statementFile}` : null,
+                identityUrl: row.identityFile ? `/public/img/identity/${row.identityFile}` : null
             }
         }));
+    }
+
+    static async verifyAdoption(adoptionId, status, shelterId) {
+        const client = await db.connect(); // Gunakan client untuk transaksi
+        try {
+            await client.query('BEGIN');
+
+            // 1. Cek Data & Ambil ID Pelamar (applicant_id) untuk logging
+            const checkQuery = `
+                SELECT a.id, a.cat_id, a.applicant_id
+                FROM adoptions a
+                JOIN cats c ON a.cat_id = c.id
+                WHERE a.id = $1 AND c.shelter_id = $2
+            `;
+            const checkRes = await client.query(checkQuery, [adoptionId, shelterId]);
+            
+            if (checkRes.rows.length === 0) {
+                throw new Error('Permintaan adopsi tidak ditemukan atau Anda tidak memiliki akses.');
+            }
+            
+            const { cat_id, applicant_id } = checkRes.rows[0];
+
+            // 2. Update Status di Tabel 'adoptions'
+            const updateAdoption = `
+                UPDATE adoptions 
+                SET status = $1, verified_at = NOW() 
+                WHERE id = $2
+            `;
+            await client.query(updateAdoption, [status, adoptionId]);
+
+            // 3. Jika Approved, Update Status Kucing di Tabel 'cats' jadi 'adopted'
+            if (status === 'approved' || status === 'completed') {
+                const updateCat = `UPDATE cats SET adoption_status = 'adopted' WHERE id = $1`;
+                await client.query(updateCat, [cat_id]);
+            }
+
+            // 4. [BARU] Masukkan Log ke Tabel 'verification_log'
+            // Kita mapping status adopsi ke status log yang valid (approved/rejected)
+            let logStatus = status;
+            if (status === 'completed') logStatus = 'approved'; 
+
+            // Pastikan hanya status valid yang masuk log (sesuai constraint check di DB)
+            if (['approved', 'rejected'].includes(logStatus)) {
+                const insertLogQuery = `
+                    INSERT INTO verification_log 
+                    (user_id, verifier_id, verification_type, status, notes, created_at)
+                    VALUES ($1, $2, 'Adoption_Application', $3, $4, NOW())
+                `;
+                
+                const notes = `Permintaan adopsi telah di-${status} oleh shelter.`;
+                
+                await client.query(insertLogQuery, [
+                    applicant_id, // User yang diverifikasi (Pelamar)
+                    shelterId,    // User yang memverifikasi (Shelter)
+                    logStatus,    // Status (approved/rejected)
+                    notes         // Catatan tambahan
+                ]);
+            }
+
+            await client.query('COMMIT');
+            return { message: `Adopsi berhasil di-${status}` };
+
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 }
 

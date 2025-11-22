@@ -32,10 +32,10 @@ fastify.register(multipart, {
 
 fastify.register(fastifyStatic, {
     // Tentukan root directory tempat file statis (foto) disimpan
-    root: path.join(__dirname, 'public', 'img'), 
+    root: path.join(__dirname, 'public'), 
     prefix: '/public/', 
     limits: {
-        fileSize: 5 * 1024 * 1024, // Batas: 5 MB
+        fileSize: 10 * 1024 * 1024, // Batas: 10 MB
     }
 });
 
