@@ -10,7 +10,7 @@ class UserService {
                     u.id AS id,
                     u.email,
                     d.full_name AS name,
-                    d.profile_picture AS photo, -- Nama file di DB (misal: zico.jpg)
+                    d.profile_picture AS photo,
                     d.contact_phone,
                     d.address,
                     d.bio,
@@ -42,25 +42,18 @@ class UserService {
         }
         let profileData = result.rows[0]; 
 
-        // === PERBAIKAN LOGIKA URL FOTO ===
+        // Logic URL Foto Profil
         const BASE_IMAGE_URL = '/public/img/profile/'; 
         
         if (profileData.photo && profileData.photo !== 'NULL.JPG') {
-            
-            // CEK: Apakah ini URL eksternal (Google)?
             if (profileData.photo.startsWith('http')) {
-                // Jika ya, biarkan apa adanya (jangan ditambah path lokal)
-                // profileData.photo tetap URL Google
+                // Biarkan URL eksternal
             } else {
-                // Jika bukan http (berarti file lokal), tambahkan path folder
                 profileData.photo = `${BASE_IMAGE_URL}${profileData.photo}`;
             }
-
         } else {
-            // Default jika kosong
             profileData.photo = '/img/NULL.JPG'; 
         }
-        // ==============================
 
         return { ...profileData, role };
     }
@@ -77,11 +70,8 @@ class UserService {
 
         if (role === 'individu') {
             tableName = 'detail_user_individu';
-            
-            // PERBAIKAN: Gunakan (!== undefined) agar perubahan terbaca meski string kosong
             if (data.full_name !== undefined) { fields.push(`full_name = $${i++}`); values.push(data.full_name); }
             if (data.birth_date !== undefined) {
-                // Tentukan nilai: jika string kosong, gunakan null, jika ada isinya, gunakan nilainya
                 const birthDateValue = data.birth_date === '' ? null : data.birth_date; 
                 fields.push(`birth_date = $${i++}`); 
                 values.push(birthDateValue);
@@ -91,7 +81,6 @@ class UserService {
             
         } else if (role === 'shelter') {
             tableName = 'detail_user_shelter';
-            
             if (data.full_name !== undefined) { fields.push(`shelter_name = $${i++}`); values.push(data.full_name); }
             if (data.bio !== undefined) { fields.push(`bio = $${i++}`); values.push(data.bio); }
             if (data.contact_phone !== undefined) { fields.push(`contact_phone = $${i++}`); values.push(data.contact_phone); }
@@ -120,7 +109,6 @@ class UserService {
     }
 
     static async updateProfilePhoto(userId, role, fileName) {
-        // let query;
         let table;
         let column;
 
@@ -134,31 +122,28 @@ class UserService {
             throw new Error('Invalid role');
         }
 
-        // 1. Ambil nama file lama (oldFileName) dari DB sebelum di-update
         const getOldQuery = `SELECT ${column} AS old_photo FROM ${table} WHERE id = $1`;
         const oldResult = await db.query(getOldQuery, [userId]);
         const oldFileName = oldResult.rows.length > 0 ? oldResult.rows[0].old_photo : null;
         
-        // 2. Update kolom foto di tabel yang sesuai
         const updateQuery = `UPDATE ${table} SET ${column} = $1 WHERE id = $2 RETURNING ${column}`;
-        
         const result = await db.query(updateQuery, [fileName, userId]);
         
         if (result.rowCount === 0) {
             throw new Error('User not found');
         }
         
-        // Kembalikan nama file agar bisa diupdate di frontend (optional)
         return { 
             newPhoto: result.rows[0][column],
             oldPhoto: oldFileName
         };
     }
 
+    // [UPDATE BAGIAN INI]
     static async getAllShelters() {
-        // Ambil ID dan Nama Shelter dari tabel detail_user_shelter
+        // Menambahkan qr_img ke dalam query SELECT
         const query = `
-            SELECT id, shelter_name 
+            SELECT id, shelter_name, donation_account_number, qr_img 
             FROM detail_user_shelter
             ORDER BY shelter_name ASC
         `;

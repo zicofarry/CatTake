@@ -15,19 +15,23 @@
           </h1>
         </div>
 
-        <div class="relative bg-white p-6 md:p-8 rounded-3xl shadow-2xl overflow-hidden custom-scrollbar max-h-[80vh]">
+        <div class="relative bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-h-[80vh] flex flex-col">
           
-          <div v-if="donations.length === 0" class="text-center py-10 text-gray-500">
-            <i class="fas fa-box-open text-4xl mb-3 opacity-50"></i>
-            <p>Belum ada donasi masuk.</p>
-          </div>
+          <div class="overflow-y-auto custom-scrollbar flex-1 pr-2">
+            
+            <div v-if="donations.length === 0" class="text-center py-10 text-gray-500">
+              <i class="fas fa-box-open text-4xl mb-3 opacity-50"></i>
+              <p>Belum ada donasi masuk.</p>
+            </div>
 
-          <div v-else class="flex flex-col gap-4">
-            <DonationItemCard 
-              v-for="donation in donations" 
-              :key="donation.id" 
-              :donation="donation"
-            />
+            <div v-else class="flex flex-col gap-4 pb-2">
+              <DonationItemCard 
+                v-for="donation in donations" 
+                :key="donation.id" 
+                :donation="donation"
+              />
+            </div>
+
           </div>
 
         </div>
@@ -135,13 +139,34 @@
                   <i class="fas fa-credit-card"></i>
                 </div>
               </div>
+              
               <div v-if="form.method === 'bri'" class="mt-3 p-4 bg-blue-50 border border-blue-100 rounded-lg text-blue-800 text-sm flex gap-3 items-start animate-fade-in">
                 <i class="fas fa-info-circle mt-1"></i>
                 <div>
                   <p class="font-bold">Bank BRI</p>
-                  <p class="text-lg font-mono my-1">1234-5678-9000</p>
-                  <p>a/n CatTake Shelter Foundation</p>
+                  <p class="text-lg font-mono my-1">
+                      {{ selectedShelterAccountNumber || 'Pilih shelter untuk melihat no. rek' }}
+                  </p>
+                  <p>a/n {{ selectedShelterName || 'CatTake Shelter' }}</p>
                 </div>
+              </div>
+
+              <div v-if="form.method === 'qris'" class="mt-3 p-4 bg-gray-50 border border-gray-200 rounded-lg flex flex-col items-center animate-fade-in text-center">
+                  <p class="text-sm text-gray-600 mb-2 font-semibold">Scan QRIS di bawah ini:</p>
+                  
+                  <div v-if="selectedShelterQrImage">
+                      <img 
+                        :src="`http://localhost:3000/public/img/qr_img/${selectedShelterQrImage}`" 
+                        alt="QRIS Shelter" 
+                        class="w-48 h-48 object-contain border bg-white p-2 rounded-lg shadow-sm"
+                      >
+                      <p class="text-xs text-gray-500 mt-2">{{ selectedShelterName }}</p>
+                  </div>
+                  
+                  <div v-else class="py-4 text-gray-400 italic text-sm">
+                      <i class="fas fa-qrcode text-2xl mb-2 block"></i>
+                      {{ form.shelter ? 'QR Code belum tersedia untuk shelter ini.' : 'Pilih shelter terlebih dahulu.' }}
+                  </div>
               </div>
             </div>
 
@@ -193,16 +218,6 @@ const userRole = computed(() => localStorage.getItem('userRole') || 'guest');
 const shelterList = ref([]);
 const donations = ref([]);
 
-// --- Mock Data Donasi (Untuk Tampilan Shelter) ---
-// const mockDonations = ref([
-//     { id: 1, amount: 1000000, donorName: 'Diana', profilePic: '/img/profileDiana.png', dateTime: '2025/10/02 19.08' },
-//     { id: 2, amount: 10000000, donorName: 'Azmi', profilePic: '/img/profileAzmi.png', dateTime: '2025/09/30 13.25' },
-//     { id: 3, amount: 999000, donorName: 'Anas', profilePic: '/img/profileAnas.png', dateTime: '2025/09/29 09.40' },
-//     { id: 4, amount: 3000000, donorName: 'Nanda', profilePic: '/img/profileNanda.png', dateTime: '2025/09/29 07.00' },
-//     { id: 5, amount: 800000, donorName: 'Aji', profilePic: '/img/profileAji.png', dateTime: '2025/09/15 11.23' },
-//     { id: 6, amount: 5000000, donorName: 'Rafa', profilePic: '/img/profileRafa.png', dateTime: '2025/09/12 12.30' },
-// ]);
-
 const props = defineProps({
   isLoggedInProp: Boolean
 });
@@ -217,7 +232,24 @@ const form = ref({
 
 const fileName = ref('');
 
-// Helper untuk ambil ID User (Shelter ID) dari Token
+const selectedShelterAccountNumber = computed(() => {
+    if (!form.value.shelter) return null;
+    const selected = shelterList.value.find(s => s.id === form.value.shelter);
+    return selected ? selected.donation_account_number : null;
+});
+
+const selectedShelterName = computed(() => {
+    if (!form.value.shelter) return null;
+    const selected = shelterList.value.find(s => s.id === form.value.shelter);
+    return selected ? selected.shelter_name : null;
+});
+
+const selectedShelterQrImage = computed(() => {
+    if (!form.value.shelter) return null;
+    const selected = shelterList.value.find(s => s.id === form.value.shelter);
+    return selected && selected.qr_img ? selected.qr_img : null;
+});
+
 function getUserId() {
     const token = localStorage.getItem('userToken');
     if (!token) return null;
@@ -230,19 +262,15 @@ function getUserId() {
     }
 }
 
-// --- LOGIKA SAAT LOAD HALAMAN ---
 onMounted(async () => {
     try {
         if (userRole.value === 'shelter') {
-            // === JIKA SHELTER: AMBIL DATA DONASI MASUK ===
             const shelterId = getUserId();
             if (shelterId) {
                 const response = await apiClient.get(`/donations/shelter/${shelterId}`);
-                donations.value = response.data; // Simpan data asli ke state
-                console.log("Data Donasi Diterima:", donations.value);
+                donations.value = response.data; 
             }
         } else {
-            // === JIKA USER/GUEST: AMBIL DAFTAR SHELTER UTK FORM ===
             const response = await apiClient.get('/users/shelters');
             shelterList.value = response.data;
         }
@@ -262,33 +290,18 @@ function handleFileUpload(event) {
     }
 }
 
-onMounted(async () => {
-    try {
-        // Panggil endpoint yang baru dibuat
-        const response = await apiClient.get('/users/shelters');
-        shelterList.value = response.data;
-    } catch (error) {
-        console.error("Gagal memuat data shelter:", error);
-    }
-});
-
 async function submitDonation() {
-    // Validasi tambahan untuk amount
     if (!form.value.shelter || !form.value.method || !form.value.proof || !form.value.amount) {
         alert('Mohon lengkapi semua field.');
         return;
     }
 
-    // Mapping Nama Shelter ke ID (Karena select option kamu value-nya string nama)
-    // Idealnya select option valuenya langsung ID shelter dari database.
-    // Contoh dummy mapping sementara:
-
     const formData = new FormData();
     formData.append('shelter_id', form.value.shelter); 
     formData.append('payment_method', form.value.method);
-    formData.append('amount', form.value.amount); // Menggunakan nilai input form
-    formData.append('is_anonymus', form.value.is_anonymus ? 1 : 0); // Menggunakan nilai checkbox (convert ke 1/0)
-    formData.append('proof', form.value.proof); // File objek
+    formData.append('amount', form.value.amount); 
+    formData.append('is_anonymus', form.value.is_anonymus ? 1 : 0); 
+    formData.append('proof', form.value.proof); 
 
     try {
         await apiClient.post('/donations', formData, {
@@ -297,15 +310,13 @@ async function submitDonation() {
             }
         });
         alert('Donasi berhasil!');
-        // --- RESET FORM SEPERTI SEMULA ---
-        form.value.shelter = ''; // Reset pilihan shelter ke default
-        form.value.method = '';  // Reset metode pembayaran
-        form.value.amount = '';  // Reset jumlah donasi
-        form.value.is_anonymus = false; // Reset checkbox anonim
-        form.value.proof = null; // Hapus file dari state
-        fileName.value = '';     // Hapus nama file yang tampil
+        form.value.shelter = ''; 
+        form.value.method = '';  
+        form.value.amount = '';  
+        form.value.is_anonymus = false; 
+        form.value.proof = null; 
+        fileName.value = '';     
 
-        // Reset elemen input file HTML agar user bisa upload file baru
         const fileInput = document.getElementById('buktiTf');
         if (fileInput) fileInput.value = '';
     } catch (error) {
@@ -313,22 +324,32 @@ async function submitDonation() {
         alert('Gagal mengirim donasi');
     }
 }
-// function submitDonation() {
-//     if (form.value.shelter && form.value.method && form.value.proof) {
-//         alert(`Donasi ke ${form.value.shelter} melalui ${form.value.method} berhasil diajukan! Bukti transfer: ${form.value.proof.name}`);
-//     } else {
-//         alert('Mohon lengkapi semua field donasi.');
-//     }
-// }
 </script>
 
 <style scoped>
-/* Animasi kecil untuk hint BRI */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* CUSTOM SCROLLBAR */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* Track transparan agar lebih bersih */
+  border-radius: 10px;
+  margin: 10px 0; /* Sedikit margin atas bawah */
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #D1D5DB; /* Warna abu soft (Gray-300) */
+  border-radius: 10px;
+  border: 2px solid white; /* Efek padding dengan border putih */
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF; /* Gray-400 saat hover */
 }
 </style>

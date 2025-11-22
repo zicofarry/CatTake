@@ -19,15 +19,12 @@ class DonationController {
 
             for await (const part of parts) {
                 if (part.file) {
-                    // Ini adalah File (Bukti Transfer)
-                    // Simpan ke folder public/images/proofs (Buat foldernya dulu!)
                     const fileExtension = path.extname(part.filename);
                     fileName = `proof-${Date.now()}${fileExtension}`;
                     const savePath = path.join(__dirname, '../public/img', fileName);
                     
                     await pump(part.file, fs.createWriteStream(savePath));
                 } else {
-                    // Ini adalah Field text (amount, shelter, dll)
                     fields[part.fieldname] = part.value;
                 }
             }
@@ -38,9 +35,12 @@ class DonationController {
             // 3. Susun data untuk Service
             const donationData = {
                 donatur_id: userId,
-                shelter_id: fields.shelter_id, // ID Shelter (integer)
+                shelter_id: fields.shelter_id, 
                 amount: fields.amount,
-                is_anonymus: fields.is_anonymus === 'true', // Convert string to boolean
+                
+                // [FIX LOGIKA ANONIM]: Menangani berbagai format input (string 'true', '1', atau boolean)
+                is_anonymus: fields.is_anonymus === 'true' || fields.is_anonymus === '1' || fields.is_anonymus === true,
+                
                 payment_method: fields.payment_method,
                 proof_file: fileName
             };
