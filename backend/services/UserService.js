@@ -120,7 +120,7 @@ class UserService {
     }
 
     static async updateProfilePhoto(userId, role, fileName) {
-        let query;
+        // let query;
         let table;
         let column;
 
