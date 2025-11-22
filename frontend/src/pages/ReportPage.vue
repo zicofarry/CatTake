@@ -4,17 +4,101 @@
     <div v-if="userRole === 'shelter'">
         <div class="text-center mb-8 -mt-2">
             <h1 class="inline-block text-3xl md:text-4xl font-extrabold text-gray-800 py-3 px-8 bg-white rounded-full shadow-xl">
-                Laporan Kucing
+                Dashboard Rescue
             </h1>
         </div>
-        <div class="relative bg-gray-200 p-4 md:p-6 rounded-3xl shadow-2xl overflow-hidden custom-scrollbar max-h-[85vh]">
-            <div class="flex flex-col gap-4">
-                <ReportCard 
-                    v-for="report in mockShelterReports" 
-                    :key="report.id" 
-                    :report="report"
-                />
+
+        <div class="flex justify-center gap-4 mb-8">
+            <button 
+                @click="activeTab = 'incoming'"
+                class="px-6 py-2 rounded-full font-bold transition-all"
+                :class="activeTab === 'incoming' ? 'bg-[#EBCD5E] text-white shadow-md' : 'bg-white text-gray-500 hover:bg-gray-100'"
+            >
+                Permintaan Masuk 
+                <span v-if="incomingReports.length" class="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ incomingReports.length }}</span>
+            </button>
+            <button 
+                @click="activeTab = 'tasks'"
+                class="px-6 py-2 rounded-full font-bold transition-all"
+                :class="activeTab === 'tasks' ? 'bg-[#3A5F50] text-white shadow-md' : 'bg-white text-gray-500 hover:bg-gray-100'"
+            >
+                Tugas Saya
+            </button>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-4">
+            
+            <div v-if="activeTab === 'incoming'" class="space-y-4">
+                <div v-if="incomingReports.length === 0" class="text-center text-gray-400 py-10">
+                    <i class="fas fa-check-circle text-4xl mb-2"></i>
+                    <p>Tidak ada laporan baru di sekitar Anda.</p>
+                </div>
+                
+                <div v-for="report in incomingReports" :key="report.id" class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 hover:border-[#EBCD5E] transition-colors relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-2 h-full bg-[#EBCD5E]"></div>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <img :src="resolveImageUrl(report.photo)" class="w-full md:w-40 h-40 object-cover rounded-2xl bg-gray-200">
+                        
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-xl font-bold text-gray-800">Laporan #{{ report.id }}</h3>
+                                <span class="text-xs font-bold bg-gray-100 text-gray-500 px-3 py-1 rounded-full">{{ formatDate(report.created_at) }}</span>
+                            </div>
+                            
+                            <div class="space-y-1 text-sm text-gray-600 mb-4">
+                                <p><i class="fas fa-user w-5"></i> Pelapor: <strong>{{ report.full_name || report.reporter_name }}</strong></p>
+                                <p><i class="fas fa-map-marker-alt w-5"></i> {{ report.location }}</p>
+                                <p><i class="fas fa-align-left w-5"></i> {{ report.description }}</p>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button 
+                                    @click="openDriverModal(report)"
+                                    class="bg-[#EBCD5E] hover:bg-[#dcb945] text-white font-bold py-2 px-6 rounded-xl shadow-md transition-transform active:scale-95"
+                                >
+                                    Ambil Laporan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <div v-if="activeTab === 'tasks'" class="space-y-4">
+                <div v-if="myTasks.length === 0" class="text-center text-gray-400 py-10">
+                    Belum ada tugas yang diambil.
+                </div>
+
+                <div v-for="task in myTasks" :key="task.assignment_id" class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
+                    <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
+                        <span 
+                            class="px-3 py-1 rounded-full text-xs font-bold uppercase"
+                            :class="getStatusColor(task.assignment_status)"
+                        >
+                            {{ formatStatus(task.assignment_status) }}
+                        </span>
+                        <span class="text-sm text-gray-500">Driver: <strong>{{ task.driver_name }}</strong></span>
+                    </div>
+
+                    <div class="flex gap-4 mb-4">
+                        <img :src="resolveImageUrl(task.photo)" class="w-20 h-20 rounded-xl object-cover bg-gray-200">
+                        <div>
+                            <p class="font-bold text-gray-800 line-clamp-1">{{ task.location }}</p>
+                            <p class="text-sm text-gray-500 line-clamp-2">{{ task.description }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2">
+                        <router-link 
+                            :to="`/track?id=${task.assignment_id}`"
+                            class="bg-[#3A5F50] hover:bg-[#2c473c] text-white font-bold py-2 px-6 rounded-xl shadow-md transition text-sm flex items-center gap-2"
+                        >
+                            <i class="fas fa-map"></i> Lacak Status
+                        </router-link>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
       
@@ -307,11 +391,46 @@
       </teleport>
 
     </div>
+
+    <teleport to="body">
+        <div v-if="showDriverModal" class="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up">
+                <div class="bg-[#3A5F50] p-4 text-white flex justify-between items-center">
+                    <h3 class="font-bold text-lg">Pilih Driver</h3>
+                    <button @click="showDriverModal = false" class="hover:text-red-300"><i class="fas fa-times"></i></button>
+                </div>
+                
+                <div class="p-4 max-h-[60vh] overflow-y-auto">
+                    <p class="text-sm text-gray-500 mb-3">Tugaskan driver untuk menjemput laporan ini.</p>
+                    
+                    <div v-if="drivers.length === 0" class="text-center py-4 text-gray-400">
+                        Tidak ada driver tersedia.
+                    </div>
+
+                    <div 
+                        v-for="driver in drivers" 
+                        :key="driver.id"
+                        @click="assignDriver(driver.id)"
+                        class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 cursor-pointer transition border border-transparent hover:border-gray-200 mb-2"
+                    >
+                        <div class="w-10 h-10 bg-[#EBCD5E] rounded-full flex items-center justify-center text-white font-bold">
+                            {{ driver.full_name.charAt(0) }}
+                        </div>
+                        <div class="flex-grow">
+                            <p class="font-bold text-gray-800">{{ driver.full_name }}</p>
+                            <p class="text-xs text-gray-500">ID: {{ driver.id }}</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, nextTick, onUnmounted } from 'vue';
+import { ref, reactive, computed, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '@/api/http';
 import 'leaflet/dist/leaflet.css';
@@ -350,6 +469,92 @@ const lostCatForm = reactive({
     reward_amount: '',
     file: null
 });
+
+// STATE SHELTER
+const activeTab = ref('incoming');
+const incomingReports = ref([]);
+const myTasks = ref([]);
+const drivers = ref([]);
+const showDriverModal = ref(false);
+const selectedReportId = ref(null);
+
+
+// Helper URL Image
+function resolveImageUrl(path) {
+    if (!path) return '/img/placeholder.png';
+    if (path.startsWith('http')) return path;
+    // Sesuaikan path ke backend public
+    return `http://localhost:3000/public/img/report_cat/${path}`;
+}
+
+// Helper Date
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+
+// Helper Status
+function getStatusColor(status) {
+    if (status === 'assigned') return 'bg-blue-100 text-blue-600';
+    if (status === 'in_transit') return 'bg-yellow-100 text-yellow-600';
+    if (status === 'completed') return 'bg-green-100 text-green-600';
+    return 'bg-gray-100 text-gray-600';
+}
+
+function formatStatus(status) {
+    if (status === 'assigned') return 'Ditugaskan';
+    if (status === 'in_transit') return 'Dijemput';
+    if (status === 'completed') return 'Selesai';
+    return status;
+}
+
+// --- API CALLS SHELTER ---
+async function fetchShelterData() {
+    if (userRole.value !== 'shelter') return;
+    
+    try {
+        // 1. Get Incoming
+        const resIncoming = await apiClient.get('/rescue/incoming');
+        incomingReports.value = resIncoming.data;
+
+        // 2. Get My Tasks
+        const resTasks = await apiClient.get('/rescue/my-tasks');
+        myTasks.value = resTasks.data;
+
+        // 3. Get Drivers (Untuk Modal)
+        const resDrivers = await apiClient.get('/rescue/drivers');
+        drivers.value = resDrivers.data;
+
+    } catch (error) {
+        console.error("Gagal load data shelter:", error);
+    }
+}
+
+function openDriverModal(report) {
+    selectedReportId.value = report.id;
+    showDriverModal.value = true;
+}
+
+async function assignDriver(driverId) {
+    if (!confirm("Tugaskan driver ini?")) return;
+
+    try {
+        await apiClient.post('/rescue/accept', {
+            reportId: selectedReportId.value,
+            driverId: driverId
+        });
+        
+        alert("Berhasil mengambil laporan!");
+        showDriverModal.value = false;
+        fetchShelterData(); // Refresh data
+        activeTab.value = 'tasks'; // Pindah tab
+
+    } catch (error) {
+        console.error(error);
+        alert("Gagal mengambil laporan: " + (error.response?.data?.error || error.message));
+    }
+}
+
 
 // State Peta & Autocomplete
 const showMapModal = ref(false);
@@ -541,6 +746,10 @@ async function submitLostCatAd() {
 const mockShelterReports = ref([
     { id: 1, type: 'stray', date: '2025/11/20 10:00', location: 'Bandung', description: 'Kucing liar sakit', reporter: { name: 'Budi', profilePic: '' } }
 ]);
+
+onMounted(() => {
+    fetchShelterData();
+});
 </script>
 
 <style scoped>

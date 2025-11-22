@@ -5,13 +5,20 @@
   -->
   <div class="min-h-screen bg-[#3A5F50] font-sans overflow-x-hidden pt-20 md:pt-24 pb-10 md:pb-20 flex justify-center items-start md:items-center relative px-0 md:px-4">
     
+    <div v-if="isLoading" class="flex h-screen items-center justify-center text-white">
+        <div class="text-center">
+            <i class="fas fa-spinner fa-spin text-4xl mb-4"></i>
+            <p>Memuat data pelacakan...</p>
+        </div>
+    </div>
+    
     <!-- 
       KARTU PUTIH BESAR (CONTAINER UTAMA)
       Layout Responsive: 
       - Mobile: flex-col-reverse (Peta di Atas, Info di Bawah)
       - Desktop: lg:flex-row (Info Kiri, Peta Kanan)
     -->
-    <div class="bg-white w-full max-w-[1200px] md:rounded-[40px] shadow-2xl overflow-hidden flex flex-col-reverse lg:flex-row h-auto lg:min-h-[800px] rounded-t-[30px] lg:rounded-none mt-0 lg:mt-0">
+    <div v-else class="bg-white w-full max-w-[1200px] md:rounded-[40px] shadow-2xl overflow-hidden flex flex-col-reverse lg:flex-row h-auto lg:min-h-[800px] rounded-t-[30px] lg:rounded-none mt-0 lg:mt-0">
       
       <!-- === KOLOM KIRI (INFO & DATA) === -->
       <!-- 

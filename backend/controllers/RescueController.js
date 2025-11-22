@@ -1,0 +1,166 @@
+const RescueService = require('../services/RescueService');
+const fs = require('fs');
+const path = require('path');
+const util = require('util');
+const { pipeline } = require('stream');
+const pump = util.promisify(pipeline);
+
+class RescueController {
+    
+    // GET /api/v1/rescue/incoming
+    static async getIncoming(req, reply) {
+        try {
+            const reports = await RescueService.getIncomingReports(); 
+            return reply.send(reports);
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    // GET /api/v1/rescue/drivers
+    static async getDrivers(req, reply) {
+        try {
+            // Ambil ID Shelter dari Token JWT
+            const shelterId = req.user.id;
+            const drivers = await RescueService.getShelterDrivers(shelterId);
+            return reply.send(drivers);
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    // POST /api/v1/rescue/accept (Shelter mengambil job)
+    static async acceptJob(req, reply) {
+        try {
+            const { reportId, driverId } = req.body;
+            const shelterId = req.user.id;
+
+            if (!reportId || !driverId) {
+                return reply.code(400).send({ error: 'Report ID dan Driver ID harus diisi.' });
+            }
+
+            const result = await RescueService.assignJob(shelterId, reportId, driverId);
+            return reply.send({ 
+                message: 'Berhasil mengambil laporan!', 
+                data: result // Berisi { id, tracking_id }
+            });
+        } catch (error) {
+            return reply.code(400).send({ error: error.message });
+        }
+    }
+
+    // GET /api/v1/rescue/my-tasks (List tugas shelter)
+    static async getMyTasks(req, reply) {
+        try {
+            const shelterId = req.user.id;
+            const tasks = await RescueService.getMyAssignments(shelterId);
+            return reply.send(tasks);
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    // POST /api/v1/rescue/update-status (Driver update status + foto)
+    static async updateStatus(req, reply) {
+        try {
+            const parts = req.parts();
+            let fields = {};
+            let fileName = null;
+
+            // Proses Multipart (File + Text)
+            for await (const part of parts) {
+                if (part.file) {
+                    const ext = path.extname(part.filename);
+                    // Nama file: rescue-[id]-[timestamp].jpg
+                    fileName = `rescue-${Date.now()}${ext}`;
+                    
+                    // Pastikan folder ada dulu
+                    const saveDir = path.join(__dirname, '../public/img/rescue_proof');
+                    if (!fs.existsSync(saveDir)){
+                        fs.mkdirSync(saveDir, { recursive: true });
+                    }
+
+                    const savePath = path.join(saveDir, fileName);
+                    await pump(part.file, fs.createWriteStream(savePath));
+                } else {
+                    fields[part.fieldname] = part.value;
+                }
+            }
+
+            if (!fields.assignmentId || !fields.status) {
+                return reply.code(400).send({ error: 'Data tidak lengkap (assignmentId, status)' });
+            }
+
+            // Panggil Service
+            await RescueService.updateJobStatus(fields.assignmentId, fields.status, fileName);
+            
+            return reply.send({ message: 'Status berhasil diupdate', photo: fileName });
+
+        } catch (error) {
+            console.error(error);
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    // GET /api/v1/rescue/tracking/:id
+    static async getTrackingDetail(req, reply) {
+        try {
+            const { id } = req.params;
+            const detail = await RescueService.getTrackingDetails(id);
+            
+            if (!detail) {
+                return reply.code(404).send({ error: 'Tracking data not found' });
+            }
+            
+            return reply.send(detail);
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    // POST /api/v1/rescue/location (Driver update posisi)
+    static async updateLocation(req, reply) {
+        try {
+            // Pastikan yang akses adalah driver (opsional: cek role di token)
+            const driverId = req.user.id; // Asumsi ID di token sama dengan ID di tabel drivers (perlu penyesuaian jika beda)
+            // Note: Di tabel drivers kamu, ID-nya VARCHAR (DRV-...). 
+            // Jika req.user.id adalah INT (user_id), kita perlu query cari driver_id nya dulu.
+            // Untuk simpelnya sekarang, kita minta driver_id dikirim di body atau kita cari.
+            
+            // Solusi cepat: Kita cari driver_id berdasarkan user_id yang login
+            const driverData = await RescueService.getDriverByUserId(req.user.id); // Kita buat helper ini nanti
+            if (!driverData) return reply.code(403).send({ error: 'Anda bukan driver' });
+
+            const { assignmentId, lat, long } = req.body;
+
+            if (!assignmentId || !lat || !long) {
+                return reply.code(400).send({ error: 'Data lokasi tidak lengkap' });
+            }
+
+            const result = await RescueService.updateDriverLocation(driverData.id, assignmentId, lat, long);
+            
+            return reply.send({ status: 'success', data: result });
+
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    // GET /api/v1/rescue/location/:assignmentId (User/Shelter melihat posisi)
+    static async getLocation(req, reply) {
+        try {
+            const { assignmentId } = req.params;
+            const location = await RescueService.getLatestLocation(assignmentId);
+            
+            if (!location) {
+                return reply.send({ status: 'waiting', message: 'Belum ada data lokasi' });
+            }
+
+            return reply.send({ status: 'success', data: location });
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+}
+
+module.exports = RescueController;
