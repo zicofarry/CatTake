@@ -4,6 +4,8 @@ const multipart = require('@fastify/multipart');
 const path = require('path'); 
 const fastifyStatic = require('@fastify/static'); 
 const { connectDB } = require('./config/db');
+
+// Import route
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const faqRoutes = require('./routes/faqRoutes');
@@ -17,7 +19,7 @@ const lostCatRoutes = require('./routes/lostCatRoutes');
 fastify.register(cors, {
     origin: 'http://localhost:5173', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'], // Izinkan semua method yang diperlukan
-    allowedHeaders: ['Content-Type', 'Authorization'], // Izinkan header kustom
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
 });
 
@@ -33,12 +35,11 @@ fastify.register(fastifyStatic, {
     root: path.join(__dirname, 'public', 'img'), 
     prefix: '/public/', 
     limits: {
-        fileSize: 5 * 1024 * 1024, // Batas: 5 MB (sesuaikan kebutuhan)
+        fileSize: 5 * 1024 * 1024, // Batas: 5 MB
     }
 });
 
-
-// Daftarkan route Anda
+// Daftarkan route
 fastify.register(authRoutes, { prefix: '/api/v1/auth' });
 fastify.register(userRoutes, { prefix: '/api/v1/users' });
 fastify.register(faqRoutes, { prefix: '/api/v1/faq' });

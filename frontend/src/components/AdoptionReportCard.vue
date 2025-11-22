@@ -8,7 +8,7 @@
       
       <!-- Kiri: Foto Pengadopsi, Nama Kucing & Pengadopsi -->
       <div class="flex items-center flex-grow min-w-0">
-        <img :src="report.adopter.profilePic" :alt="'Foto ' + report.adopter.name" class="w-12 h-12 rounded-full object-cover mr-4 shrink-0">
+        <img :src="resolveImageUrl(report.adopter.profilePic)" :alt="'Foto ' + report.adopter.name" class="w-12 h-12 rounded-full object-cover mr-4 shrink-0">
         <div class="min-w-0 flex-grow pr-4">
           <p class="font-semibold text-gray-800 text-base md:text-lg truncate">
             {{ report.catName }} telah diadopsi oleh {{ report.adopter.name }}
@@ -67,7 +67,7 @@ const props = defineProps({
             date: '0000/00/00 00.00',
             adopter: {
                 name: 'Anonim',
-                profilePic: '/assets/img/profile_default.png',
+                profilePic: '/public/img/profile/NULL.JPG',
                 nik: 'XXX-XXX-XXX',
                 phone: '08X-XXX-XXX',
                 email: 'anonim@mail.com',
@@ -83,4 +83,20 @@ const isOpen = ref(false);
 const toggleDetails = () => {
     isOpen.value = !isOpen.value;
 };
+
+function resolveImageUrl(path) {
+    if (!path || path === '/img/NULL.JPG') return path;
+
+    // Ambil URL server base (e.g., http://localhost:3000) dari VITE_API_BASE_URL
+    const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+    const baseServerUrl = baseApiUrl.replace('/api/v1', '');
+
+    // Cek apakah path berasal dari aset statis backend (/public/profile/...)
+    if (path.startsWith('/public/')) {
+        return `${baseServerUrl}${path}`;
+    }
+
+    // Jika sudah URL lengkap atau aset statis frontend
+    return path;
+}
 </script>
