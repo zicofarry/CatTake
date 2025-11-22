@@ -3,12 +3,12 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
       
       <div class="hidden md:flex items-center font-bold text-xl">
-        <router-link to="/">
+        <router-link :to="props.userRole === 'driver' ? '/driver/tugas' : '/'">
             <img src="../assets/img/cattake.png" alt="CatTake Logo" class="h-10 md:h-[70px]">
         </router-link>
       </div>
 
-      <nav class="hidden md:flex bg-[#578d76] rounded-full p-2 shadow-lg">
+      <nav v-if="navLinks.length > 0" class="hidden md:flex bg-[#578d76] rounded-full p-2 shadow-lg">
         <ul class="flex list-none gap-4 items-center px-2 m-0 p-0">
           <li v-for="link in navLinks" :key="link.name">
             <router-link 
@@ -23,8 +23,23 @@
       </nav>
       
       <div class="hidden md:block">
-        <div v-if="props.userRole === 'shelter'" class="relative">
+        
+        <div v-if="props.userRole === 'driver'" class="relative">
              <button 
+                @click="toggleProfileDropdown"
+                class="flex items-center gap-2 bg-[#FF862F] text-white py-2 px-4 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-[#e07528] transition duration-200"
+            >
+                <span>Driver Panel</span>
+            </button>
+             <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl p-4 z-40 text-left border border-gray-100">
+                <p class="font-bold text-gray-800 text-lg mb-1">Halo, Driver! 🐈</p>
+                <p class="text-xs text-gray-400 mb-4">Selamat bertugas menyelamatkan anabul.</p>
+                <button @click="handleSignOut" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition duration-200">Sign Out</button>
+            </div>
+        </div>
+
+        <div v-else-if="props.userRole === 'shelter'" class="relative">
+              <button 
                 @click="toggleProfileDropdown"
                 class="flex items-center gap-2 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
             >
@@ -33,7 +48,6 @@
             <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl p-4 z-40 text-left">
                 <p class="font-bold text-gray-800">{{ props.profileData ? props.profileData.name : 'Shelter Profil' }}</p>
                 <p class="text-sm text-gray-500 mb-4">{{ props.profileData ? props.profileData.email : 'email@cattake.com' }}</p>
-
                 <button @click="handleSignOut" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition duration-200">Sign Out</button>
             </div>
         </div>
@@ -70,8 +84,7 @@
               <span class="block w-6 h-0.5 bg-gray-800 rounded-sm"></span>
           </button>
 
-          <span class="font-semibold text-xl">{{ activePage }}</span>
-          
+          <span class="font-semibold text-xl">{{ props.userRole === 'driver' ? 'Driver' : activePage }}</span>
           
           <router-link v-if="props.userRole === 'individu'" to="/profile" class="ml-auto flex items-center gap-2 bg-[#578d76] text-white py-1 pr-2 pl-1 rounded-full font-semibold">
             <img :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '/img/NULL.JPG')" alt="Avatar" class="h-8 w-8 rounded-full object-cover">
@@ -82,8 +95,12 @@
               <span>{{ props.profileData ? props.profileData.name : 'Shelter' }}</span>
           </div>
 
+          <div v-else-if="props.userRole === 'driver'" class="ml-auto flex items-center gap-2 bg-[#FF862F] text-white py-1.5 px-3 rounded-full font-semibold text-sm">
+              <span>Driver</span>
+          </div>
+
           <router-link v-else to="/login" class="ml-auto bg-[#578d76] hover:bg-green-800 text-white font-semibold py-1.5 px-4 rounded-full transition duration-200 shadow-md text-sm">
-            Signup/Login
+            Login
           </router-link>
 
       </div>
@@ -98,7 +115,10 @@
   >
       <div class="p-4 mb-4 text-white text-2xl font-bold border-b border-green-900">MENU</div>
       
-      <router-link to="/profile" v-if="props.userRole === 'individu'">
+      <div v-if="props.userRole === 'driver'" class="flex items-center gap-3 bg-[#FF862F] text-white py-2 px-4 rounded-full font-semibold mx-4 mb-4 shadow-lg">
+         <span>Driver Panel</span>
+      </div>
+      <router-link to="/profile" v-else-if="props.userRole === 'individu'">
           <div class="flex items-center gap-3 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold mx-4 mb-4 shadow-lg">
               <img :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '/img/NULL.JPG')" alt="Avatar Diana" class="h-9 w-9 rounded-full object-cover">
               <span>{{ props.profileData ? props.profileData.name : 'Memuat...' }}</span>
@@ -109,16 +129,30 @@
       </div>
 
       <ul class="flex flex-col list-none p-0 m-0">
-          <li v-for="link in navLinks" :key="link.name">
-            <router-link 
-              :to="link.path" 
-              @click="toggleMobileMenu"
-              class="block text-white text-lg font-medium py-3 px-4 border-b border-green-900 no-underline hover:bg-green-700 transition duration-200" 
-              :class="{ 'text-yellow-400 font-semibold': activePage === link.name }"
-            >
-              {{ link.name }}
-            </router-link>
-          </li>
+          <template v-if="props.userRole === 'driver'">
+             <li key="tugas-driver">
+                <router-link 
+                  to="/driver/tugas" 
+                  @click="toggleMobileMenu"
+                  class="block text-white text-lg font-medium py-3 px-4 border-b border-green-900 no-underline hover:bg-green-700 transition duration-200"
+                >
+                  Daftar Tugas
+                </router-link>
+             </li>
+             </template>
+
+          <template v-else>
+            <li v-for="link in navLinks" :key="link.name">
+              <router-link 
+                :to="link.path" 
+                @click="toggleMobileMenu"
+                class="block text-white text-lg font-medium py-3 px-4 border-b border-green-900 no-underline hover:bg-green-700 transition duration-200" 
+                :class="{ 'text-yellow-400 font-semibold': activePage === link.name }"
+              >
+                {{ link.name }}
+              </router-link>
+            </li>
+          </template>
       </ul>
       
       <button v-if="props.userRole !== 'guest'" @click="handleSignOut" class="mt-auto mx-4 mb-4 p-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-200">
@@ -133,12 +167,13 @@
 </template>
 
 <script setup>
-import { ref, computed,watch, watchEffect } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router'; 
-// import apiClient from '@/api/http'; 
 
+// Asumsi kita simpan role di localStorage saat login
+const userRole = ref(localStorage.getItem('role') || 'user'); 
+const isDriver = computed(() => userRole.value === 'driver');
 
-// Props dari App.vue (menerima status dan peran)
 const props = defineProps({
     userRole: { type: String, default: 'guest' },
     profileData: { type: Object, default: () => null }
@@ -146,38 +181,33 @@ const props = defineProps({
 
 function resolveImageUrl(path) {
     if (!path) return '/img/profile_default.svg';
-
-    // PENTING: Jika URL dimulai dengan http, langsung return (jangan diotak-atik)
-    if (path.startsWith('http')) {
-        return path;
-    }
-
-    // Logika backend lokal
+    if (path.startsWith('http')) return path;
     if (path.startsWith('/public/')) {
         const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
         const baseServerUrl = baseApiUrl.replace('/api/v1', '');
         return `${baseServerUrl}${path}`;
     }
-
     return path;
 }
 
-// Emits ke App.vue (untuk mengirim status logout)
 const emit = defineEmits(['update-login-status']);
 
-// --- Config / Mock Data ---
+// --- Config Navigasi ---
 const navLinks = computed(() => {
+    // KHUSUS DRIVER: KEMBALIKAN ARRAY KOSONG
+    // Agar navbar tengah hilang total
+    if (props.userRole === 'driver') {
+        return [];
+    }
+
     const links = [
         { name: 'Beranda', path: '/' },
         { name: 'Lapor', path: '/lapor' },
         { name: 'Adopsi', path: '/adopsi' },
     ];
 
-    // LOGIKA KONDISIONAL:
-    // Jika Shelter -> Tampilkan 'Driver'
-    // Jika Bukan -> Tampilkan 'FAQ'
     if (props.userRole === 'shelter') {
-        links.push({ name: 'Driver', path: '/driver' });
+        links.push({ name: 'DriverShelter', path: '/drivershelter' });
     } else {
         links.push({ name: 'FAQ', path: '/faq' });
     }
@@ -190,24 +220,22 @@ const navLinks = computed(() => {
     return links;
 });
 
-
-// 1. STATE (Data Reaktif)
+// 1. STATE
 const route = useRoute();
 const isMobileMenuOpen = ref(false);
 const isProfileDropdownOpen = ref(false);
 
-watch(() => props.userRole, (newValue, oldValue) => {
-    // DEBUGGING POINT 3: Cek kapan Header menerima nilai baru
-    // console.log(`DEBUG C: Header menerima userRole baru: ${oldValue} -> ${newValue}`);
-}, { immediate: true }); // immediate: true agar running saat load
+watch(() => props.userRole, (newValue, oldValue) => {}, { immediate: true });
 
-// 2. COMPUTED PROPERTY (Menentukan halaman aktif)
+// 2. COMPUTED
 const activePage = computed(() => {
+  // Jika driver, mungkin halaman aktifnya tidak ada di navLinks, defaultkan saja
+  if (props.userRole === 'driver') return 'Driver';
   const currentLink = navLinks.value.find(link => link.path === route.path);
   return currentLink ? currentLink.name : 'Beranda';
 });
 
-// 3. METHODS (Fungsi)
+// 3. METHODS
 function toggleMobileMenu() {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 }
@@ -216,9 +244,7 @@ function toggleProfileDropdown() {
     isProfileDropdownOpen.value = !isProfileDropdownOpen.value;
 }
 
-
 function handleSignOut() {
-    // Kirim event ke App.vue untuk mengubah status login
     localStorage.removeItem('userToken');
     localStorage.removeItem('userRole');
     emit('update-login-status', false);
@@ -228,6 +254,4 @@ function handleSignOut() {
 </script>
 
 <style scoped>
-/* Anda mungkin perlu menambahkan warna kustom ke tailwind.config.js jika warna di sini tidak akurat */
-/* Contoh: #638870 (Green-700), #2D5B4D (Green-800), #FBC02D (Yellow-500) */
 </style>

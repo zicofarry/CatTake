@@ -133,7 +133,13 @@ async function handleLogin() {
       localStorage.setItem('userRole', role);
       
       emit('user-logged-in', role); 
-      router.push('/'); 
+      if (role === 'driver') {
+          // Jika Driver, arahkan ke halaman khusus Driver
+          router.push('/driver/tasks'); 
+      } else {
+          // Jika User Biasa / Shelter, arahkan ke Home
+          router.push('/'); 
+      }
       
   } catch (error) {
       const errorMessage = error.response?.data?.error || 'Login gagal. Cek kredensial atau server.';

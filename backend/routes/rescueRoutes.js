@@ -32,6 +32,8 @@ async function rescueRoutes(fastify, options) {
     fastify.get('/chat/:id', RescueController.getChats);
     fastify.post('/chat', RescueController.sendChat);
     fastify.delete('/chat/:messageId', RescueController.deleteChat);
+
+    // fastify.get('/my-tasks', authentication, RescueController.getDriverTasks);
 }
 
 module.exports = rescueRoutes;

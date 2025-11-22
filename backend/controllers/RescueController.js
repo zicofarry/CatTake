@@ -203,6 +203,25 @@ class RescueController {
             return reply.code(500).send({ error: error.message });
         }
     }
+
+    // GET /api/v1/rescue/driver/tasks
+    static async getDriverTasks(req, reply) {
+        try {
+            // Asumsi: req.user.id diisi oleh middleware auth (JWT)
+            const driverId = req.user.id; 
+            
+            // Panggil service untuk mengambil tugas spesifik driver ini
+            const tasks = await RescueService.getDriverTasks(driverId);
+            
+            return reply.send({
+                status: 'success',
+                data: tasks
+            });
+        } catch (error) {
+            console.error("Error fetching driver tasks:", error);
+            return reply.code(500).send({ error: error.message });
+        }
+    }
 }
 
 module.exports = RescueController;
