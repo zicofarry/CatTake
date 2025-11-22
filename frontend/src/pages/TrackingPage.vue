@@ -1,8 +1,4 @@
 <template>
-  <!-- 
-    BACKGROUND HALAMAN: Hijau Gelap
-    pt-20 (mobile) md:pt-24 (desktop) agar turun dari navbar
-  -->
   <div class="min-h-screen bg-[#3A5F50] font-sans overflow-x-hidden pt-20 md:pt-24 pb-10 md:pb-20 flex justify-center items-start md:items-center relative px-0 md:px-4">
     
     <div v-if="isLoading" class="flex h-screen items-center justify-center text-white">
@@ -11,38 +7,17 @@
             <p>Memuat data pelacakan...</p>
         </div>
     </div>
-    
-    <!-- 
-      KARTU PUTIH BESAR (CONTAINER UTAMA)
-      Layout Responsive: 
-      - Mobile: flex-col-reverse (Peta di Atas, Info di Bawah)
-      - Desktop: lg:flex-row (Info Kiri, Peta Kanan)
-    -->
-    <div v-else class="bg-white w-full max-w-[1200px] md:rounded-[40px] shadow-2xl overflow-hidden flex flex-col-reverse lg:flex-row h-auto lg:min-h-[800px] rounded-t-[30px] lg:rounded-none mt-0 lg:mt-0">
+
+    <div v-show="!isLoading" class="bg-white w-full max-w-[1200px] md:rounded-[40px] shadow-2xl overflow-hidden flex flex-col-reverse lg:flex-row h-auto lg:min-h-[800px] rounded-t-[30px] lg:rounded-none mt-0 lg:mt-0">
       
-      <!-- === KOLOM KIRI (INFO & DATA) === -->
-      <!-- 
-        Styling Mobile Sheet Effect:
-        - -mt-8: Agar bagian ini naik sedikit menutupi peta.
-        - rounded-t-[30px]: Sudut atas melengkung.
-        - z-10: Agar berada di atas peta (saat mode normal).
-      -->
       <div class="w-full lg:w-[45%] p-5 md:p-10 flex flex-col gap-6 overflow-y-visible lg:overflow-y-auto lg:max-h-[900px] custom-scrollbar z-10 bg-white relative -mt-8 lg:mt-0 rounded-t-[30px] lg:rounded-none shadow-[0_-4px_20px_rgba(0,0,0,0.1)] lg:shadow-none">
         
-        <!-- 1. SECTION PELACAKAN LANGSUNG -->
         <div class="bg-gray-100 rounded-[30px] p-6 md:p-8 shadow-sm">
            <div class="flex items-center gap-3 mb-6">
-              <!-- Icon Header Custom -->
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 3C5.51472 3 3.5 5.01472 3.5 7.5C3.5 11 8 15 8 15C8 15 12.5 11 12.5 7.5C12.5 5.01472 10.4853 3 8 3Z" stroke="#1F1F1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="8" cy="7.5" r="1.5" fill="#1F1F1F"/>
-                <path d="M16 10C13.5147 10 11.5 12.0147 11.5 14.5C11.5 18 16 22 16 22C16 22 20.5 18 20.5 14.5C20.5 12.0147 18.4853 10 16 10Z" stroke="#1F1F1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="16" cy="14.5" r="1.5" fill="#1F1F1F"/>
-              </svg>
-              <h2 class="text-xl md:text-2xl font-bold text-[#1F1F1F]">Pelacakan Langsung</h2>
+              <i class="fas fa-route text-2xl text-[#1F1F1F]"></i>
+              <h2 class="text-xl md:text-2xl font-bold text-[#1F1F1F]">Status: {{ trackingStatusText }}</h2>
            </div>
 
-           <!-- Grid Info -->
            <div class="grid grid-cols-2 gap-y-4 gap-x-2 mb-8 text-sm md:text-base">
               <div class="flex flex-col">
                  <span class="text-gray-500 mb-1">Id:</span>
@@ -50,224 +25,143 @@
               </div>
               <div class="flex flex-col items-end">
                  <span class="text-gray-500 mb-1">Status:</span>
-                 <span class="bg-[#EBCD5E] text-[#1F1F1F] px-3 py-1 md:px-4 md:py-1.5 rounded-lg text-xs md:text-sm font-bold shadow-sm">
-                    {{ trackingStatus.text }}
+                 <span 
+                    class="px-3 py-1 md:px-4 md:py-1.5 rounded-lg text-xs md:text-sm font-bold shadow-sm"
+                    :class="getStatusClass(trackingData.status)"
+                 >
+                    {{ trackingData.status }}
                  </span>
               </div>
-              <div class="flex flex-col">
-                 <span class="text-gray-500 mb-1">Alamat:</span>
-                 <span class="font-bold text-[#1F1F1F] text-base md:text-lg truncate max-w-[120px] md:max-w-none">{{ trackingData.alamat }}</span>
-              </div>
-              <div class="flex flex-col items-end">
-                 <span class="text-gray-500 mb-1">Tujuan:</span>
-                 <span class="font-bold text-[#1F1F1F] text-base md:text-lg">{{ trackingData.tujuan }}</span>
+              <div class="flex flex-col col-span-2 border-t border-gray-200 pt-4 mt-2">
+                 <div class="flex justify-between mb-2">
+                    <span class="text-gray-500">Dari:</span>
+                    <span class="font-bold text-right truncate w-1/2">{{ trackingData.alamat }}</span>
+                 </div>
+                 <div class="flex justify-between">
+                    <span class="text-gray-500">Ke Shelter:</span>
+                    <span class="font-bold text-right">{{ trackingData.tujuan }}</span>
+                 </div>
               </div>
            </div>
 
-           <!-- Stepper Progress -->
            <div class="relative px-1 md:px-2 mt-6 mb-2">
-              <!-- Background Line -->
               <div class="absolute top-[22px] left-0 w-full h-1.5 bg-gray-300 rounded-full -z-0"></div>
-              <!-- Active Line -->
               <div 
                   class="absolute top-[22px] left-0 h-1.5 bg-[#EBCD5E] rounded-full transition-all duration-700 z-0"
-                  :style="{ width: trackingStatus.progress + '%' }"
+                  :style="{ width: progressPercent + '%' }"
               ></div>
 
               <div class="flex justify-between relative z-10">
-                  <!-- Step 1 -->
                   <div class="flex flex-col items-center gap-2 w-1/3">
-                      <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#EBCD5E] border-4 border-white shadow-md flex items-center justify-center text-white relative">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
-                          <div class="absolute -bottom-1 -right-1 bg-[#EBCD5E] rounded-full border-2 border-white p-[1px]"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                      <div class="w-10 h-10 md:w-12 md:h-12 rounded-full border-4 border-white shadow-md flex items-center justify-center text-white bg-[#EBCD5E]">
+                          <i class="fas fa-check"></i>
                       </div>
-                      <span class="text-[9px] md:text-[11px] font-bold text-[#1F1F1F] text-center mt-1 leading-tight">Laporan diterima</span>
+                      <span class="text-[10px] font-bold text-center mt-1">Ditugaskan</span>
                   </div>
-                  <!-- Step 2 -->
                   <div class="flex flex-col items-center gap-2 w-1/3">
-                      <div 
-                          class="w-10 h-10 md:w-12 md:h-12 rounded-full border-4 border-white shadow-md flex items-center justify-center transition-colors duration-500"
-                          :class="trackingStatus.id >= 2 ? 'bg-[#EBCD5E] text-white' : 'bg-gray-300 text-white'"
-                      >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                      <div class="w-10 h-10 md:w-12 md:h-12 rounded-full border-4 border-white shadow-md flex items-center justify-center transition-colors" :class="currentStep >= 2 ? 'bg-[#EBCD5E] text-white' : 'bg-gray-300 text-white'">
+                          <i class="fas fa-cat"></i>
                       </div>
-                      <span class="text-[9px] md:text-[11px] font-bold text-[#1F1F1F] text-center mt-1 leading-tight">Dalam Perjalanan</span>
+                      <span class="text-[10px] font-bold text-center mt-1">Dijemput</span>
                   </div>
-                  <!-- Step 3 -->
                   <div class="flex flex-col items-center gap-2 w-1/3">
-                      <div 
-                          class="w-10 h-10 md:w-12 md:h-12 rounded-full border-4 border-white shadow-md flex items-center justify-center transition-colors duration-500"
-                          :class="trackingStatus.id === 3 ? 'bg-[#EBCD5E]' : 'bg-white'"
-                      >
-                          <svg v-if="trackingStatus.id === 3" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <div class="w-10 h-10 md:w-12 md:h-12 rounded-full border-4 border-white shadow-md flex items-center justify-center transition-colors" :class="currentStep >= 3 ? 'bg-[#EBCD5E] text-white' : 'bg-gray-300 text-white'">
+                          <i class="fas fa-home"></i>
                       </div>
-                      <span class="text-[9px] md:text-[11px] font-bold text-[#1F1F1F] text-center mt-1 leading-tight">Selesai</span>
+                      <span class="text-[10px] font-bold text-center mt-1">Sampai Shelter</span>
                   </div>
               </div>
            </div>
+
+           <div v-if="userRole === 'driver' && currentStep < 3" class="mt-8 pt-6 border-t border-gray-200">
+               <h3 class="font-bold text-lg mb-3">Aksi Driver</h3>
+               
+               <button 
+                 v-if="trackingData.status === 'assigned'"
+                 @click="openActionModal('in_transit')"
+                 class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95"
+               >
+                 <i class="fas fa-camera"></i> Upload Bukti Penjemputan
+               </button>
+
+               <button 
+                 v-else-if="trackingData.status === 'in_transit'"
+                 @click="openActionModal('completed')"
+                 class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95"
+               >
+                 <i class="fas fa-check-circle"></i> Konfirmasi Sampai Shelter
+               </button>
+           </div>
+
+           <div v-if="trackingData.bukti?.pickup || trackingData.bukti?.dropoff" class="mt-6 flex gap-4 overflow-x-auto pb-2">
+               <div v-if="trackingData.bukti.pickup" class="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border border-gray-300 relative">
+                   <img :src="resolveImageUrl(trackingData.bukti.pickup)" class="w-full h-full object-cover">
+                   <span class="absolute bottom-0 left-0 bg-black/50 text-white text-[10px] w-full text-center py-1">Bukti Jemput</span>
+               </div>
+               <div v-if="trackingData.bukti.dropoff" class="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border border-gray-300 relative">
+                   <img :src="resolveImageUrl(trackingData.bukti.dropoff)" class="w-full h-full object-cover">
+                   <span class="absolute bottom-0 left-0 bg-black/50 text-white text-[10px] w-full text-center py-1">Bukti Selesai</span>
+               </div>
+           </div>
+
         </div>
 
-        <!-- 2. SECTION KURIR -->
         <div class="bg-gray-100 rounded-[30px] p-4 md:p-5 flex items-center gap-4 shadow-sm">
-           <img :src="trackingData.kurir.foto" alt="Kurir" class="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0">
+           <div class="w-14 h-14 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
+                <i class="fas fa-user text-2xl text-gray-500"></i>
+           </div>
            <div class="flex-grow min-w-0">
               <h3 class="font-bold text-lg md:text-xl text-[#1F1F1F] truncate">{{ trackingData.kurir.nama }}</h3>
               <p class="text-xs text-gray-500 truncate">{{ trackingData.kurir.shelter }}</p>
            </div>
-           <div class="flex gap-3 flex-shrink-0">
-              <!-- Tombol Telpon -->
-              <button @click="showCallModal = true" class="w-12 h-12 md:w-14 md:h-14 bg-[#4E7C68] hover:bg-[#3b6150] rounded-[18px] flex items-center justify-center transition shadow-sm group">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-              </button>
-              <!-- Tombol Chat -->
-              <button @click="showChatModal = true" class="w-12 h-12 md:w-14 md:h-14 bg-[#4E7C68] hover:bg-[#3b6150] rounded-[18px] flex items-center justify-center transition shadow-sm group">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-              </button>
-           </div>
         </div>
 
-        <!-- 3. SECTION LAPORAN KAMU -->
         <div class="bg-gray-100 rounded-[30px] p-6 shadow-sm flex-grow">
-           <h3 class="font-bold text-lg text-[#1F1F1F] mb-4">Laporan Kamu:</h3>
+           <h3 class="font-bold text-lg text-[#1F1F1F] mb-4">Detail Laporan</h3>
            <div class="space-y-3">
-              <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Jenis Laporan</span><p class="font-semibold text-sm text-[#1F1F1F]">{{ trackingData.laporan.jenis }}</p></div>
-              <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Nama Pemilik</span><p class="font-semibold text-sm text-[#1F1F1F]">{{ trackingData.laporan.pemilik }}</p></div>
-              <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Lokasi</span><p class="font-semibold text-sm text-[#1F1F1F]">{{ trackingData.laporan.lokasi }}</p></div>
-              <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Deskripsi</span><p class="font-semibold text-sm text-[#1F1F1F]">{{ trackingData.laporan.deskripsi }}</p></div>
+              <div class="bg-white px-4 py-3 rounded-xl shadow-sm"><span class="text-[10px] text-gray-400 block uppercase">Pemilik</span><p class="font-semibold">{{ trackingData.laporan.pemilik }}</p></div>
+              <div class="bg-white px-4 py-3 rounded-xl shadow-sm"><span class="text-[10px] text-gray-400 block uppercase">Deskripsi</span><p class="font-semibold">{{ trackingData.laporan.deskripsi }}</p></div>
               
-              <!-- Foto dengan Zoom -->
               <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                  <span class="text-xs text-gray-500 font-medium ml-2">Foto:</span>
-                 <div 
-                    class="h-16 flex-grow rounded-lg overflow-hidden relative group cursor-pointer"
-                    @click="showPhotoModal = true"
-                 >
-                    <img :src="trackingData.laporan.foto" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                    <!-- Icon Expand -->
-                    <div class="absolute bottom-1 right-1 bg-white/90 rounded-full w-7 h-7 flex items-center justify-center shadow-md hover:bg-white transition">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
-                    </div>
+                 <div class="h-16 flex-grow rounded-lg overflow-hidden relative group cursor-pointer" @click="previewImage(trackingData.laporan.foto)">
+                    <img :src="resolveImageUrl(trackingData.laporan.foto)" class="w-full h-full object-cover">
                  </div>
               </div>
            </div>
         </div>
+
       </div>
 
-      <!-- === KOLOM KANAN (PETA) === -->
-      <!-- 
-         Responsive Map:
-         - Mobile: h-[400px] agar terlihat jelas di atas.
-         - Desktop: h-auto (mengisi sisa tinggi container).
-         - Full Screen Logic: jika isMapExpanded = true, jadi fixed inset-0.
-      -->
-      <div 
-        :class="[
-          isMapExpanded ? 'fixed inset-0 z-[9999] rounded-none h-full w-full' : 'w-full lg:w-[55%] relative rounded-b-none rounded-t-[30px] lg:rounded-r-[40px] lg:rounded-l-none overflow-hidden h-[400px] lg:h-auto lg:min-h-full z-0'
-        ]"
-        class="bg-gray-50 transition-all duration-300"
-      >
-         <!-- Container untuk Leaflet Map -->
-         <div id="trackingMapContainer" class="w-full h-full absolute inset-0 z-0"></div>
-         
-         <!-- Overlay gradient (hanya jika tidak full screen) -->
-         <div v-if="!isMapExpanded" class="absolute inset-0 pointer-events-none shadow-[inset_10px_0_20px_rgba(0,0,0,0.05)]"></div>
-         
-         <!-- Tombol Expand Map -->
-         <!-- Posisi: bottom-20 di mobile agar tidak tertutup sheet info, bottom-6 di desktop/expanded -->
-         <button 
-            @click="toggleMapExpand"
-            class="absolute right-6 bg-white rounded-full p-3 shadow-xl pointer-events-auto z-50 hover:bg-gray-100 active:scale-95 transition"
-            :class="isMapExpanded ? 'bottom-8' : 'bottom-20 lg:bottom-6 lg:right-6'"
-         >
-             <!-- Icon Shrink -->
-             <svg v-if="isMapExpanded" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
-             <!-- Icon Expand -->
-             <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
-         </button>
+      <div class="w-full lg:w-[55%] relative rounded-b-none rounded-t-[30px] lg:rounded-r-[40px] lg:rounded-l-none overflow-hidden h-[400px] lg:h-auto lg:min-h-full z-0 bg-gray-200">
+         <div id="trackingMap" class="w-full h-full absolute inset-0 z-0"></div>
       </div>
 
     </div>
 
-    <!-- =================== MODALS =================== -->
-
-    <!-- 1. MODAL FOTO (Zoom) -->
     <teleport to="body">
-        <div v-if="showPhotoModal" class="fixed inset-0 bg-black/90 z-[10000] flex items-center justify-center p-4" @click="showPhotoModal = false">
-            <img :src="trackingData.laporan.foto" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl" @click.stop>
-            <button class="absolute top-6 right-6 text-white text-4xl hover:text-gray-300">&times;</button>
-        </div>
-    </teleport>
+        <div v-if="showUploadModal" class="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-3xl p-6 animate-up shadow-2xl">
+                <h3 class="text-xl font-bold mb-4 text-gray-800">{{ nextActionTitle }}</h3>
+                <p class="text-gray-500 text-sm mb-6">Silakan ambil foto sebagai bukti bahwa tugas ini telah dilakukan.</p>
+                
+                <div 
+                    @click="$refs.proofInput.click()"
+                    class="border-2 border-dashed border-gray-300 rounded-xl h-48 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 hover:border-[#EBCD5E] transition mb-6"
+                >
+                    <img v-if="proofPreview" :src="proofPreview" class="h-full w-full object-contain rounded-lg">
+                    <div v-else class="text-center text-gray-400">
+                        <i class="fas fa-camera text-3xl mb-2"></i>
+                        <p class="text-sm">Klik untuk ambil foto</p>
+                    </div>
+                </div>
+                <input type="file" ref="proofInput" class="hidden" accept="image/*" @change="handleProofFile">
 
-    <!-- 2. MODAL CHAT -->
-    <teleport to="body">
-        <div v-if="showChatModal" class="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-md h-[600px] rounded-[30px] flex flex-col overflow-hidden shadow-2xl animate-up relative">
-                <!-- Header Chat -->
-                <div class="bg-[#3A5F50] p-4 px-6 flex items-center gap-4 text-white shadow-md relative z-10">
-                    <button @click="showChatModal = false" class="hover:bg-white/20 p-2 rounded-full transition">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                <div class="flex gap-3">
+                    <button @click="showUploadModal = false" class="flex-1 py-3 rounded-xl border border-gray-300 font-bold text-gray-600 hover:bg-gray-100">Batal</button>
+                    <button @click="submitStatusUpdate" :disabled="!proofFile || isSubmitting" class="flex-1 py-3 rounded-xl bg-[#EBCD5E] text-white font-bold shadow-md hover:bg-[#dcb945] disabled:opacity-50 disabled:cursor-not-allowed">
+                        {{ isSubmitting ? 'Mengirim...' : 'Konfirmasi' }}
                     </button>
-                    <div class="w-10 h-10 rounded-full bg-[#EBCD5E] flex items-center justify-center text-[#3A5F50] font-bold text-xl border-2 border-white">
-                        {{ trackingData.kurir.nama.charAt(0) }}
-                    </div>
-                    <div class="flex-grow flex items-center justify-between">
-                         <span class="font-bold text-lg ml-3">{{ trackingData.kurir.nama }}</span>
-                         <button @click="clearAllChat" class="text-xs bg-red-500/80 hover:bg-red-500 px-3 py-1 rounded-full transition shadow-sm">Hapus Chat</button>
-                    </div>
-                </div>
-
-                <!-- Isi Chat -->
-                <div ref="chatContainerRef" class="flex-grow bg-gray-100 p-4 space-y-6 overflow-y-auto relative scroll-smooth">
-                    <div v-if="chatMessages.length === 0" class="flex justify-center items-center h-full">
-                        <span class="text-gray-400 text-sm">Belum ada pesan.</span>
-                    </div>
-                    <div v-for="(msg, index) in chatMessages" :key="index" class="flex group relative" :class="msg.isMe ? 'justify-end' : 'justify-start'">
-                        <div 
-                          class="p-4 rounded-2xl shadow-sm max-w-[80%] text-sm leading-relaxed relative"
-                          :class="msg.isMe ? 'bg-[#EBCD5E] text-[#1F1F1F] rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none'"
-                        >
-                           {{ msg.text }}
-                           <button @click="deleteMessage(index)" class="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600" title="Hapus">✕</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Footer Input -->
-                <div class="p-4 bg-white border-t flex gap-3 items-center">
-                    <input 
-                      v-model="chatInput" 
-                      @keyup.enter="sendMessage"
-                      type="text" 
-                      placeholder="Ketik pesan..." 
-                      class="flex-grow bg-gray-100 rounded-full px-5 py-3 outline-none focus:ring-2 focus:ring-[#3A5F50] text-sm"
-                    >
-                    <button 
-                      @click="sendMessage"
-                      class="w-12 h-12 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-md hover:bg-[#128C7E] transition flex-shrink-0"
-                    >
-                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1 relative top-[1px] left-[-1px]">
-                         <line x1="22" y1="2" x2="11" y2="13"></line>
-                         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                       </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </teleport>
-
-    <!-- 3. MODAL CALL -->
-    <teleport to="body">
-        <div v-if="showCallModal" class="fixed inset-0 bg-[#1F1F1F]/90 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-            <div class="flex flex-col items-center text-white w-full max-w-sm">
-                <div class="w-32 h-32 rounded-full bg-[#EBCD5E] flex items-center justify-center text-[#3A5F50] font-bold text-6xl border-4 border-[#3A5F50] shadow-2xl mb-6 animate-pulse">
-                    {{ trackingData.kurir.nama.charAt(0) }}
-                </div>
-                <h2 class="text-2xl font-bold mb-2 tracking-wide">{{ trackingData.kurir.nama }}</h2>
-                <p class="text-sm text-gray-300 mb-16 tracking-wider">Memanggil...</p>
-                <div class="flex items-center gap-8">
-                    <button class="w-16 h-16 bg-[#3A3A3A] rounded-full flex items-center justify-center text-2xl hover:bg-[#505050] transition"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></button>
-                    <button @click="showCallModal = false" class="w-20 h-20 bg-[#FF3B30] rounded-full flex items-center justify-center text-3xl hover:bg-red-600 transition shadow-lg transform hover:scale-105"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/></svg></button>
-                    <button class="w-16 h-16 bg-[#3A3A3A] rounded-full flex items-center justify-center text-2xl hover:bg-[#505050] transition"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg></button>
                 </div>
             </div>
         </div>
@@ -277,82 +171,342 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, reactive, computed, onMounted, nextTick, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
+import apiClient from '@/api/http';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// DATA SIMULASI
-const trackingData = reactive({
-    id: '#TRK123456',
-    alamat: 'Cimahi',
-    tujuan: 'Gerlong',
-    kurir: { nama: 'Adit', shelter: 'Kurir - Shelter tigakosongenem', foto: 'https://placehold.co/100x100/EBCD5E/3A5F50?text=A', posisi: [-6.873, 107.592] },
-    laporan: { jenis: 'Laporan Kucing Hilang', pemilik: 'Anas cedua', lokasi: 'JL.Geger Asih No.2 Kec.Sukasari', deskripsi: 'Aku nemu kucing warna abu belang punya anas yang hilang gara gara kabur kemarin', foto: 'https://placehold.co/600x400/E0E0E0/707070?text=Foto+Kucing' },
-    destinasiPosisi: [-6.880, 107.590]
+// Fix icon marker default leaflet yang sering hilang di Vue
+import iconUrl from 'leaflet/dist/images/marker-icon.png';
+import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
+const DefaultIcon = L.icon({
+    iconUrl: iconUrl,
+    shadowUrl: shadowUrl,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+});
+L.Marker.prototype.options.icon = DefaultIcon;
+
+// Custom Icon untuk Kurir (Opsional, biar beda sama titik jemput)
+const courierIcon = L.divIcon({
+    html: '<div style="background-color: #EBCD5E; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"><i class="fas fa-motorcycle text-white text-xs"></i></div>',
+    className: '',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
 });
 
-const trackingStatus = ref({ id: 2, text: 'In Transit', progress: 50 });
-const showChatModal = ref(false);
-const showCallModal = ref(false);
-const showPhotoModal = ref(false);
-const isMapExpanded = ref(false);
+const route = useRoute();
+const userRole = computed(() => localStorage.getItem('userRole') || 'guest');
 
+// STATE
+const isLoading = ref(true);
+const trackingData = ref({
+    id: '', status: 'assigned',
+    alamat: '', tujuan: '',
+    kurir: {}, laporan: {}, bukti: {},
+    posisi_awal: [0,0], posisi_akhir: [0,0]
+});
+
+// MAP VARIABLES (PENTING: Ditaruh di luar function agar bisa diakses updateLocation)
 let map = null;
-let courierMarker = null;
-let simulationInterval = null;
+let courierMarker = null; // Marker khusus Driver
+let routeLine = null;
 
-// DATA CHAT
-const chatInput = ref('');
-const chatMessages = ref([{ text: 'Halo kak, saya sedang menuju lokasi ya.', isMe: false }, { text: 'Oke mas, hati-hati di jalan.', isMe: true }]);
-const chatContainerRef = ref(null);
+// STATE UNTUK TRACKING REALTIME
+let locationInterval = null; // Untuk Driver (Kirim Lokasi)
+let trackingInterval = null; // Untuk User/Shelter (Ambil Lokasi)
 
-onMounted(async () => { await nextTick(); initMap(); });
-onUnmounted(() => { if (map) map.remove(); if (simulationInterval) clearInterval(simulationInterval); });
+
+
+// DRIVER ACTIONS STATE
+const showUploadModal = ref(false);
+const proofFile = ref(null);
+const proofPreview = ref(null);
+const nextStatus = ref('');
+const isSubmitting = ref(false);
+
+
+// --- COMPUTED ---
+const currentStep = computed(() => {
+    if (trackingData.value.status === 'assigned') return 1;
+    if (trackingData.value.status === 'in_transit') return 2;
+    if (trackingData.value.status === 'completed') return 3;
+    return 1;
+});
+
+const progressPercent = computed(() => {
+    if (currentStep.value === 1) return 0;
+    if (currentStep.value === 2) return 50;
+    return 100;
+});
+
+const trackingStatusText = computed(() => {
+    switch(trackingData.value.status) {
+        case 'assigned': return 'Driver Menuju Lokasi';
+        case 'in_transit': return 'Sedang Dijemput';
+        case 'completed': return 'Selesai / Sampai Shelter';
+        default: return 'Menunggu';
+    }
+});
+
+const nextActionTitle = computed(() => {
+    return nextStatus.value === 'in_transit' ? 'Bukti Penjemputan' : 'Bukti Sampai Shelter';
+});
+
+// --- METHODS ---
+
+function resolveImageUrl(path) {
+    if (!path || path.includes('NULL')) return '/img/placeholder.png';
+    if (path.startsWith('http')) return path;
+    // Sesuaikan port backend
+    return `http://localhost:3000${path}`;
+}
+
+function getStatusClass(status) {
+    if (status === 'assigned') return 'bg-blue-100 text-blue-700';
+    if (status === 'in_transit') return 'bg-yellow-100 text-yellow-700';
+    if (status === 'completed') return 'bg-green-100 text-green-700';
+    return 'bg-gray-100';
+}
+
+async function fetchTrackingData() {
+    const assignmentId = route.query.id;
+    if (!assignmentId) return;
+
+    // Jangan destroy map disini, cukup nyalakan loading overlay
+    isLoading.value = true;
+
+    try {
+        const response = await apiClient.get(`/rescue/tracking/${assignmentId}`);
+        trackingData.value = response.data;
+        
+        // Matikan loading overlay
+        isLoading.value = false;
+
+        // Tunggu DOM update, lalu init map jika belum ada
+        await nextTick();
+        if (!map) {
+            initMap();
+        } else {
+            // Jika map sudah ada (misal refresh data), update marker saja
+            updateMapMarkers();
+        }
+
+    } catch (error) {
+        isLoading.value = false;
+        console.error("Gagal load tracking:", error);
+    }
+}
 
 function initMap() {
-    map = L.map('trackingMapContainer').setView(trackingData.kurir.posisi, 15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+    // Pastikan container ada
+    const container = document.getElementById('trackingMap');
+    if (!container) return;
 
-    const courierIcon = L.divIcon({ html: `<div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-xl border-4 border-white animate-bounce"><i class="fas fa-car-side text-sm"></i></div>`, className: '', iconSize: [40,40], iconAnchor: [20,20] });
-    const destIcon = L.divIcon({ html: `<div class="bg-[#EBCD5E] text-[#3A5F50] w-10 h-10 rounded-full flex items-center justify-center shadow-xl border-4 border-white"><i class="fas fa-map-marker-alt text-lg"></i></div>`, className: '', iconSize: [40,40], iconAnchor: [20,40] });
+    // Posisi Awal (Lokasi Kucing)
+    const startPos = trackingData.value.posisi_awal;
+    
+    // Create Map
+    map = L.map('trackingMap').setView(startPos, 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    courierMarker = L.marker(trackingData.kurir.posisi, { icon: courierIcon }).addTo(map);
-    L.marker(trackingData.destinasiPosisi, { icon: destIcon }).addTo(map);
-
-    startSimulation();
+    updateMapMarkers();
 }
 
-function toggleMapExpand() {
-    isMapExpanded.value = !isMapExpanded.value;
-    setTimeout(() => { if (map) map.invalidateSize(); }, 300);
+function updateMapMarkers() {
+    if (!map) return;
+
+    // Bersihkan layer lama jika perlu (opsional)
+    // map.eachLayer((layer) => { ... }) 
+
+    const startPos = trackingData.value.posisi_awal;
+    const endPos = trackingData.value.posisi_akhir;
+
+    // 1. Marker Kucing (Jemput)
+    L.marker(startPos).addTo(map)
+      .bindPopup("<b>Lokasi Penjemputan</b><br>Kucing ada di sini")
+      .openPopup();
+
+    // 2. Marker Shelter (Tujuan)
+    L.marker(endPos).addTo(map)
+      .bindPopup("<b>Lokasi Shelter</b><br>Tujuan Akhir");
+      
+    // 3. Garis Rute (Statis)
+    if (routeLine) map.removeLayer(routeLine);
+    routeLine = L.polyline([startPos, endPos], {color: '#3A5F50', weight: 4, dashArray: '10, 10'}).addTo(map);
+    
+    // Fit Bounds
+    map.fitBounds(L.latLngBounds([startPos, endPos]), { padding: [50, 50] });
+
+    // 4. Inisialisasi Marker Kurir (Awalnya di posisi jemput atau null)
+    if (!courierMarker) {
+        courierMarker = L.marker(startPos, { icon: courierIcon }).addTo(map).bindPopup("Driver");
+    }
 }
 
-function startSimulation() {
-    let steps = 0;
-    const maxSteps = 20; 
-    simulationInterval = setInterval(() => {
-        steps++;
-        const lat = trackingData.kurir.posisi[0] + (trackingData.destinasiPosisi[0] - trackingData.kurir.posisi[0]) * (steps / maxSteps);
-        const lng = trackingData.kurir.posisi[1] + (trackingData.destinasiPosisi[1] - trackingData.kurir.posisi[1]) * (steps / maxSteps);
-        courierMarker.setLatLng([lat, lng]);
-        map.panTo([lat, lng]);
-        trackingStatus.value.progress = 50 + (steps / maxSteps) * 50;
-        if (steps >= maxSteps) { trackingStatus.value = { id: 3, text: 'Selesai', progress: 100 }; clearInterval(simulationInterval); }
-    }, 500);
+// --- REALTIME LOGIC ---
+// Tambahkan variabel di luar function (di bagian atas script)
+let lastSentPosition = null; 
+
+// Fungsi Helper menghitung jarak (Haversine Formula) - dalam meter
+function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
+    var R = 6371; // Radius bumi (km)
+    var dLat = deg2rad(lat2-lat1);
+    var dLon = deg2rad(lon2-lon1); 
+    var a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    var d = R * c; // Jarak dalam km
+    return d * 1000; // Jarak dalam meter
 }
 
-function sendMessage() { if (!chatInput.value.trim()) return; chatMessages.value.push({ text: chatInput.value, isMe: true }); chatInput.value = ''; nextTick(() => { if (chatContainerRef.value) chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight; }); }
-function deleteMessage(index) { if (confirm('Hapus pesan ini?')) chatMessages.value.splice(index, 1); }
-function clearAllChat() { if (confirm('Hapus semua riwayat chat?')) chatMessages.value = []; }
+function deg2rad(deg) {
+    return deg * (Math.PI/180)
+}
+
+// UPDATE FUNGSI startSendingLocation
+function startSendingLocation() {
+    if (!navigator.geolocation) return;
+    console.log("📍 [Driver] Memulai service lokasi (Smart Mode)...");
+
+    locationInterval = setInterval(() => {
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                
+                // Update Marker Peta Sendiri (Visual Driver)
+                if (courierMarker) {
+                    const newLatLng = new L.LatLng(latitude, longitude);
+                    courierMarker.setLatLng(newLatLng);
+                }
+
+                // --- LOGIKA FILTER JARAK ---
+                // Cek apakah sudah pernah kirim lokasi sebelumnya?
+                if (lastSentPosition) {
+                    const distance = getDistanceFromLatLonInMeters(
+                        lastSentPosition.lat, lastSentPosition.long,
+                        latitude, longitude
+                    );
+                    
+                    // Jika jarak pergerakan kurang dari 10 meter, JANGAN kirim ke DB
+                    if (distance < 10) {
+                        console.log(`💤 Driver diam (Jarak: ${Math.round(distance)}m). Skip update DB.`);
+                        return; 
+                    }
+                }
+                // ---------------------------
+
+                try {
+                    await apiClient.post('/rescue/location', {
+                        assignmentId: trackingData.value.db_id,
+                        lat: latitude,
+                        long: longitude
+                    });
+                    
+                    // Simpan posisi terakhir yang sukses terkirim
+                    lastSentPosition = { lat: latitude, long: longitude };
+                    
+                    console.log(`✅ [Driver] Lokasi Terkirim (Bergerak): ${latitude}, ${longitude}`);
+                } catch (e) { console.error("Gagal kirim lokasi", e); }
+            },
+            (err) => console.error("GPS Error:", err),
+            { enableHighAccuracy: true }
+        );
+    }, 5000);
+}
+
+// USER: PANTAU LOKASI
+function startTrackingDriver() {
+    console.log("👀 [User] Memulai memantau driver...");
+    
+    trackingInterval = setInterval(async () => {
+        try {
+            const res = await apiClient.get(`/rescue/location/${trackingData.value.db_id}`);
+            if (res.data.status === 'success') {
+                const { lat, long } = res.data.data;
+                
+                console.log(`📍 [User] Update Driver: ${lat}, ${long}`);
+
+                // ANIMASI PERGERAKAN MARKER
+                if (courierMarker) {
+                    const newLatLng = new L.LatLng(lat, long);
+                    courierMarker.setLatLng(newLatLng);
+                    // Optional: Pan peta ke driver jika mau
+                    // map.panTo(newLatLng);
+                }
+            }
+        } catch (e) { console.error("Gagal ambil lokasi driver", e); }
+    }, 5000);
+}
+
+// --- DRIVER LOGIC ---
+function openActionModal(statusTarget) {
+    nextStatus.value = statusTarget;
+    proofFile.value = null;
+    proofPreview.value = null;
+    showUploadModal.value = true;
+}
+
+function handleProofFile(event) {
+    const file = event.target.files[0];
+    if (file) {
+        proofFile.value = file;
+        proofPreview.value = URL.createObjectURL(file);
+    }
+}
+
+async function submitStatusUpdate() {
+    if (!proofFile.value) return;
+    isSubmitting.value = true;
+
+    try {
+        const formData = new FormData();
+        formData.append('assignmentId', trackingData.value.db_id); // ID asli DB
+        formData.append('status', nextStatus.value);
+        formData.append('photo', proofFile.value);
+
+        await apiClient.post('/rescue/update-status', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        alert('Status berhasil diperbarui!');
+        showUploadModal.value = false;
+        fetchTrackingData(); // Refresh data
+
+    } catch (error) {
+        console.error(error);
+        alert('Gagal update status: ' + (error.response?.data?.error || error.message));
+    } finally {
+        isSubmitting.value = false;
+    }
+}
+
+function previewImage(url) {
+    window.open(resolveImageUrl(url), '_blank');
+}
+
+onMounted(async () => {
+    await fetchTrackingData();
+    
+    // Cek Role untuk Realtime
+    if (trackingData.value.status === 'in_transit' || trackingData.value.status === 'assigned') {
+        if (userRole.value === 'driver') {
+            startSendingLocation();
+        } else {
+            startTrackingDriver();
+        }
+    }
+});
+
+onUnmounted(() => {
+    if (map) { map.remove(); map = null; } // Cleanup map saat keluar halaman
+    if (locationInterval) clearInterval(locationInterval);
+    if (trackingInterval) clearInterval(trackingInterval);
+});
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #999; }
-@keyframes up { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.animate-up { animation: up 0.3s ease-out; }
-.animate-pulse-slow { animation: pulse 2s infinite; }
-#trackingMapContainer { height: 100%; width: 100%; }
+/* Reuse styles */
 </style>
