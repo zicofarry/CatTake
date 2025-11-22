@@ -7,7 +7,6 @@ const pump = util.promisify(pipeline);
 
 class CommunityController {
     
-    // 1. Ambil Semua Postingan
     static async getAll(req, reply) {
         try {
             const userId = req.user ? req.user.id : null;
@@ -18,7 +17,6 @@ class CommunityController {
         }
     }
 
-    // 2. Ambil Satu Postingan (INI YANG TADI HILANG/ERROR)
     static async getOne(req, reply) {
         try {
             const { id } = req.params;
@@ -29,13 +27,12 @@ class CommunityController {
         }
     }
 
-    // 3. Buat Postingan Baru
     static async create(req, reply) {
         try {
             const parts = req.parts();
             let content = '';
             let fileName = null;
-            let title = ''; // <<< BARIS BARU: Inisialisasi title
+            let title = ''; 
 
             for await (const part of parts) {
                 if (part.file) {
@@ -45,12 +42,11 @@ class CommunityController {
                     await pump(part.file, fs.createWriteStream(savePath));
                 } else {
                     if (part.fieldname === 'content') content = part.value;
-                    else if (part.fieldname === 'title') title = part.value; // <<< BARIS BARU: Ambil nilai title
+                    else if (part.fieldname === 'title') title = part.value; 
                 }
             }
 
             const userId = req.user.id;
-            // PASSING 'title' sebagai argumen kedua
             const newPost = await CommunityService.createPost(userId, title, content, fileName);
             
             return reply.code(201).send({ message: 'Post created', data: newPost });
@@ -59,7 +55,6 @@ class CommunityController {
         }
     }
 
-    // 4. Tambah Komentar
     static async addComment(req, reply) {
         try {
             const { id } = req.params;
@@ -73,23 +68,33 @@ class CommunityController {
         }
     }
 
-    // 5. Like / Unlike Postingan
-    static async toggleLike(req, reply) {
+    // [BARU] Reply Komentar
+    static async replyComment(req, reply) {
         try {
-            const { id } = req.params;
+            const { commentId } = req.params; // ID Komentar Induk
+            const { content, parentReplyId } = req.body; // parentReplyId bisa null (jika reply langsung ke komentar)
             const userId = req.user.id;
 
-            const result = await CommunityService.toggleLike(userId, id);
-            return reply.send({ 
-                status: 'success', 
-                data: result 
-            });
+            if (!content) return reply.code(400).send({ error: 'Konten tidak boleh kosong' });
+
+            const newReply = await CommunityService.addReply(userId, commentId, content, parentReplyId);
+            return reply.code(201).send({ message: 'Reply added', data: newReply });
         } catch (error) {
             return reply.code(500).send({ error: error.message });
         }
     }
 
-    // 6. Ambil Data Sidebar (Event, Populer, Fakta)
+    static async toggleLike(req, reply) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+            const result = await CommunityService.toggleLike(userId, id);
+            return reply.send({ status: 'success', data: result });
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
     static async getSidebarData(req, reply) {
         try {
             const [events, popular, fact] = await Promise.all([
@@ -97,15 +102,7 @@ class CommunityController {
                 CommunityService.getPopularPosts(),
                 CommunityService.getRandomFact()
             ]);
-
-            return reply.send({
-                status: 'success',
-                data: {
-                    events,
-                    popular,
-                    fact
-                }
-            });
+            return reply.send({ status: 'success', data: { events, popular, fact } });
         } catch (error) {
             return reply.code(500).send({ error: error.message });
         }
@@ -114,10 +111,53 @@ class CommunityController {
     static async getAllFacts(req, reply) {
         try {
             const facts = await CommunityService.getAllFacts();
-            return reply.send({
-                status: 'success',
-                data: facts
-            });
+            return reply.send({ status: 'success', data: facts });
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    static async editComment(req, reply) {
+        try {
+            const { id } = req.params; // ID Komentar
+            const { content } = req.body;
+            const userId = req.user.id;
+            await CommunityService.updateComment(userId, id, content);
+            return reply.send({ message: 'Comment updated' });
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    static async deleteComment(req, reply) {
+        try {
+            const { id } = req.params; // ID Komentar
+            const userId = req.user.id;
+            await CommunityService.deleteComment(userId, id);
+            return reply.send({ message: 'Comment deleted' });
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    static async editReply(req, reply) {
+        try {
+            const { id } = req.params; // ID Reply
+            const { content } = req.body;
+            const userId = req.user.id;
+            await CommunityService.updateReply(userId, id, content);
+            return reply.send({ message: 'Reply updated' });
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    static async deleteReply(req, reply) {
+        try {
+            const { id } = req.params; // ID Reply
+            const userId = req.user.id;
+            await CommunityService.deleteReply(userId, id);
+            return reply.send({ message: 'Reply deleted' });
         } catch (error) {
             return reply.code(500).send({ error: error.message });
         }
