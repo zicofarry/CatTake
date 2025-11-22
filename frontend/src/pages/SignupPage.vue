@@ -161,7 +161,11 @@
                 <div class="h-px bg-gray-200 flex-grow"></div>
             </div>
             
-            <button class="w-full bg-white border border-gray-200 text-gray-600 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-3 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
+            <button 
+                @click="signupWithGoogle"
+                type="button"
+                class="w-full bg-white border border-gray-200 text-gray-600 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-3 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+            >
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
                 Sign Up with Google
             </button>
@@ -182,6 +186,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router'; 
 import apiClient from '@/api/http';
+import { googleTokenLogin } from 'vue3-google-login';
 
 const router = useRouter(); 
 const fullName = ref('');
@@ -250,6 +255,65 @@ async function handleSignup() {
   } finally {
     isLoading.value = false;
   }
+}
+
+const signupWithGoogle = () => {
+    // Validasi Role
+    if (!selectedRole.value) {
+        alert("Mohon pilih peran (User Biasa / Shelter) terlebih dahulu di atas.");
+        return;
+    }
+
+    googleTokenLogin().then((response) => {
+        // Cek apakah kita dapat access_token
+        if (response.access_token) {
+            console.log("Google Access Token diterima, mengirim ke backend...");
+            sendSignupTokenToBackend(response.access_token);
+        } else {
+            console.error("Gagal mendapatkan Access Token dari Google", response);
+        }
+    }).catch((err) => {
+        console.error("Google Signup Error:", err);
+    });
+}
+
+// 2. Fungsi kirim ke Backend
+async function sendSignupTokenToBackend(googleAccessToken) {
+    try {
+        isLoading.value = true;
+        
+        // Pastikan mapping role benar
+        const roleToSend = selectedRole.value === 'user' ? 'individu' : 'shelter';
+
+        console.log(`Mendaftarkan sebagai: ${roleToSend}`);
+
+        // Request ke Backend
+        const res = await apiClient.post('/auth/google', {
+            accessToken: googleAccessToken, // Kirim token Google
+            role: roleToSend                // Kirim Role pilihan user
+        });
+
+        // Ambil hasil dari backend (Token JWT aplikasi kita)
+        // Perhatikan: Kita destructuring 'token' dan 'role' dari response
+        const { token, role } = res.data.data; 
+
+        console.log("Signup Berhasil! Token diterima.");
+
+        // Simpan ke LocalStorage
+        localStorage.setItem('userToken', token);
+        localStorage.setItem('userRole', role);
+        
+        // Redirect ke Home / Dashboard
+        window.location.href = '/';
+
+    } catch (error) {
+        console.error("Backend Verify Error:", error);
+        // Tampilkan pesan error yang lebih jelas
+        const errorMsg = error.response?.data?.error || "Gagal mendaftar dengan Google.";
+        alert(errorMsg);
+    } finally {
+        isLoading.value = false;
+    }
 }
 </script>
 

@@ -28,6 +28,7 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
    npm install leaflet
    npm install axios
    npm install jwt-decode
+   npm install vue3-google-login
    ```
 
    untuk backend
@@ -38,6 +39,7 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
    npm install @fastify/cors
    npm install @fastify/static
    npm install @fastify/multipart
+   npm install google-auth-library
    ```
 
 3. Import database
@@ -82,12 +84,14 @@ Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://
    npm install leaflet
    npm install axios
    npm install jwt-decode
+   npm install vue3-google-login
    cd ../backend/
    npm install fastify pg
    npm install bcrypt jsonwebtoken
    npm install @fastify/cors
    npm install @fastify/static
    npm install @fastify/multipart
+   npm install google-auth-library
 
    ```
 

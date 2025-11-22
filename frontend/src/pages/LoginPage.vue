@@ -76,7 +76,11 @@
                 <div class="h-px bg-gray-200 flex-grow"></div>
             </div>
             
-            <button class="w-full bg-white border border-gray-200 text-gray-600 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-3 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
+           <button 
+                @click="loginWithGoogle"
+                type="button"
+                class="w-full bg-white border border-gray-200 text-gray-600 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-3 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+            >
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
                 Sign In with Google
             </button>
@@ -97,6 +101,7 @@
 import { ref, defineEmits } from 'vue';
 import { useRouter } from 'vue-router'; 
 import apiClient from '@/api/http';
+import { googleTokenLogin } from 'vue3-google-login';
 
 import logoCatTake from '@/assets/img/catTakePutih.png';
 const logoUrl = logoCatTake;
@@ -138,8 +143,43 @@ async function handleLogin() {
       isLoading.value = false;
   }
 }
-</script>
 
-<style scoped>
-/* Tailwind style */
-</style>
+const loginWithGoogle = () => {
+  googleTokenLogin().then((response) => {
+    // UBAH DI SINI: Cek access_token, bukan credential
+    if (response.access_token) {
+        sendTokenToBackend(response.access_token);
+    } else {
+        console.log("Google Response:", response);
+    }
+  }).catch((err) => {
+      console.error("Google Login Failed:", err);
+  });
+}
+
+// Kirim token ke Backend Cattake
+async function sendTokenToBackend(token) {
+    try {
+        isLoading.value = true;
+        // Kirim sebagai 'accessToken' (sesuai backend baru)
+        const res = await apiClient.post('/auth/google', {
+            accessToken: token
+        });
+
+        const { token: jwtToken, role } = res.data.data; // Rename variabel biar gak bingung
+
+        // Simpan session
+        localStorage.setItem('userToken', jwtToken);
+        localStorage.setItem('userRole', role);
+        
+        emit('user-logged-in', role); 
+        router.push('/'); 
+
+    } catch (error) {
+        console.error("Backend Verify Error:", error);
+        alert("Gagal login dengan Google.");
+    } finally {
+        isLoading.value = false;
+    }
+}
+</script>

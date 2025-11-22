@@ -145,15 +145,20 @@ const props = defineProps({
 });
 
 function resolveImageUrl(path) {
-    if (!path) return '/img/NULL.JPG'; // Fallback default
+    if (!path) return '/img/profile_default.svg';
 
-    // Periksa apakah path berasal dari server backend kita
-    if (path.startsWith('/public/')) {
-        // Asumsi backend berjalan di port 3000
-        return `http://localhost:3000${path}`;
+    // PENTING: Jika URL dimulai dengan http, langsung return (jangan diotak-atik)
+    if (path.startsWith('http')) {
+        return path;
     }
 
-    // Jika path sudah URL lengkap (http/https) atau aset statis frontend
+    // Logika backend lokal
+    if (path.startsWith('/public/')) {
+        const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+        const baseServerUrl = baseApiUrl.replace('/api/v1', '');
+        return `${baseServerUrl}${path}`;
+    }
+
     return path;
 }
 

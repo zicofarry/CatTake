@@ -181,21 +181,23 @@ const props = defineProps({
 });
 
 function resolveImageUrl(path) {
-    // Fallback jika path kosong atau NULL.JPG
-    if (!path || path === '/img/NULL.JPG' || path === '/img/Ellipse.png') return path;
+    if (!path) return '/img/profile_default.svg';
 
-    // Ambil URL server base (e.g., http://localhost:3000) dari VITE_API_BASE_URL
-    const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
-    const baseServerUrl = baseApiUrl.replace('/api/v1', '');
+    // PENTING: Jika URL dimulai dengan http, langsung return (jangan diotak-atik)
+    if (path.startsWith('http')) {
+        return path;
+    }
 
-    // Cek apakah path berasal dari aset statis backend (/public/profile/...)
+    // Logika backend lokal
     if (path.startsWith('/public/')) {
+        const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+        const baseServerUrl = baseApiUrl.replace('/api/v1', '');
         return `${baseServerUrl}${path}`;
     }
 
-    // Jika sudah URL lengkap atau aset statis frontend
     return path;
 }
+
 const activeEditField = ref(null);
 const isPhotoDropdownOpen = ref(false); 
 const isLoading = ref(false);

@@ -10,7 +10,7 @@ class UserService {
                     u.id AS id,
                     u.email,
                     d.full_name AS name,
-                    d.profile_picture AS photo,
+                    d.profile_picture AS photo, -- Nama file di DB (misal: zico.jpg)
                     d.contact_phone,
                     d.address,
                     d.bio,
@@ -33,7 +33,6 @@ class UserService {
                 WHERE u.id = $1
             `;
         } else {
-            // Untuk Admin/Driver/guest, hanya kembalikan ID dan role
             return { id: userId, role };
         }
 
@@ -41,20 +40,28 @@ class UserService {
         if (result.rows.length === 0) {
             throw new Error('Profile not found.');
         }
-        let profileData = result.rows[0]; // Ambil data mentah dari DB
+        let profileData = result.rows[0]; 
 
-        // 🛑 KOREKSI LOGIKA PATH GAMBAR DI SINI
-        const BASE_IMAGE_URL = '/public/profile/';
+        // === PERBAIKAN LOGIKA URL FOTO ===
+        const BASE_IMAGE_URL = '/public/img/profile/'; 
         
-        if (profileData.photo) {
-            // Menggabungkan path file dari DB dengan BASE_IMAGE_URL
-            profileData.photo = `${BASE_IMAGE_URL}${profileData.photo}`;
-        }
-        // Jika profileData.photo adalah NULL atau string kosong, kita biarkan saja.
-        // Frontend akan menggunakan fallback 'diana.png'.
-        // ------------------------------------
+        if (profileData.photo && profileData.photo !== 'NULL.JPG') {
+            
+            // CEK: Apakah ini URL eksternal (Google)?
+            if (profileData.photo.startsWith('http')) {
+                // Jika ya, biarkan apa adanya (jangan ditambah path lokal)
+                // profileData.photo tetap URL Google
+            } else {
+                // Jika bukan http (berarti file lokal), tambahkan path folder
+                profileData.photo = `${BASE_IMAGE_URL}${profileData.photo}`;
+            }
 
-        // Gabungkan hasil query dengan role dari JWT
+        } else {
+            // Default jika kosong
+            profileData.photo = '/img/NULL.JPG'; 
+        }
+        // ==============================
+
         return { ...profileData, role };
     }
 

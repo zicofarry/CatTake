@@ -17,6 +17,9 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+    },
   },
   resolve: {
     alias: {

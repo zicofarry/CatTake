@@ -62,6 +62,69 @@ class AuthService {
 
         return { token, role: user.role, userId: user.id };
     }
+
+    static async loginOrRegisterGoogle(googlePayload, requestedRole) {
+        const { email, name, picture, sub } = googlePayload; 
+
+        const checkUser = await db.query('SELECT id, role, username FROM users WHERE email = $1', [email]);
+
+        let user;
+
+        if (checkUser.rows.length > 0) {
+            // A. USER LAMA -> Login (Abaikan requestedRole, pakai role asli di DB)
+            user = checkUser.rows[0];
+        } else {
+            // B. USER BARU -> Register
+            
+            // Tentukan Role: Gunakan role yang diminta frontend, default ke 'individu' jika kosong/invalid
+            const newRole = ['individu', 'shelter'].includes(requestedRole) ? requestedRole : 'individu';
+            
+            const dummyPassword = await bcrypt.hash(sub + Date.now(), SALT_ROUNDS);
+            const cleanName = name.replace(/\s+/g, '').toLowerCase();
+            const uniqueUsername = `${cleanName}${Math.floor(Math.random() * 10000)}`;
+
+            try {
+                await db.query('BEGIN');
+
+                // 1. Insert User
+                const insertUserQuery = `
+                    INSERT INTO users (username, email, password_hash, role) 
+                    VALUES ($1, $2, $3, $4) 
+                    RETURNING id, role
+                `;
+                const userRes = await db.query(insertUserQuery, [uniqueUsername, email, dummyPassword, newRole]);
+                user = userRes.rows[0];
+
+                // 2. Insert Detail sesuai Role
+                if (newRole === 'individu') {
+                    // Masuk tabel Individu
+                    const insertDetailQuery = `
+                        INSERT INTO detail_user_individu (id, full_name, profile_picture, is_verified) 
+                        VALUES ($1, $2, $3, true)
+                    `;
+                    await db.query(insertDetailQuery, [user.id, name, picture]);
+                
+                } else if (newRole === 'shelter') {
+                    // Masuk tabel Shelter
+                    // Kita gunakan Nama Google sebagai 'Shelter Name' dan 'PJ Name' sementara
+                    const insertDetailQuery = `
+                        INSERT INTO detail_user_shelter (id, shelter_name, pj_name, shelter_picture, is_verified_shelter, organization_type) 
+                        VALUES ($1, $2, $3, $4, false, 'Komunitas')
+                    `;
+                    await db.query(insertDetailQuery, [user.id, name, name, picture]);
+                }
+
+                await db.query('COMMIT');
+            } catch (error) {
+                await db.query('ROLLBACK');
+                throw error;
+            }
+        }
+
+        const token = jwt.sign({ id: user.id, role: user.role }, SECRET, { expiresIn: '1d' });
+
+        return { token, role: user.role, userId: user.id };
+    }
 }
 
 module.exports = AuthService;
