@@ -12,6 +12,16 @@ const comments = ref([])
 const newComment = ref('')
 const isLoading = ref(true)
 
+function resolveImageUrl(path) {
+    if (!path) return '/img/NULL.JPG';
+    if (path.startsWith('/public/')) {
+        const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+        const baseServerUrl = baseApiUrl.replace('/api/v1', '');
+        return `${baseServerUrl}${path}`;
+    }
+    return path;
+}
+
 // 1. Ambil Detail Postingan dari Backend
 async function fetchPostDetail() {
   try {
@@ -78,7 +88,7 @@ onMounted(() => {
       <div class="bg-white text-gray-800 rounded-xl p-6 md:p-8 shadow-lg">
         
         <div class="flex items-center gap-3 mb-4">
-            <img :src="post.profileImg" :alt="post.author" class="w-11 h-11 rounded-full" />
+            <img :src="resolveImageUrl(post.profileImg)" :alt="post.author" class="w-11 h-11 rounded-full" />
             <div class="flex-grow">
                 <strong class="block text-base text-gray-900">{{ post.community }}</strong>
                 <span class="text-sm text-gray-500">{{ post.author }} · {{ post.time }}</span>

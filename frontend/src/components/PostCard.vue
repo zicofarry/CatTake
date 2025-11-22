@@ -24,6 +24,18 @@ const currentLikesDisplay = computed(() => {
   return likeCount.value.toLocaleString('id-ID');
 });
 
+function resolveImageUrl(path) {
+    if (!path) return '/img/NULL.JPG';
+    
+    // Jika path dari backend (diawali /public/), tambahkan host backend
+    if (path.startsWith('/public/')) {
+        const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+        const baseServerUrl = baseApiUrl.replace('/api/v1', '');
+        return `${baseServerUrl}${path}`;
+    }
+    return path;
+}
+
 // Fungsi Like ke API
 async function toggleLike() {
   // Simpan state lama untuk rollback jika error
@@ -66,7 +78,7 @@ async function toggleLike() {
       
       <div class="flex items-center gap-3">
           <img 
-            :src="postData.profileImg || '/img/profile_default.png'" 
+            :src="resolveImageUrl(postData.profileImg) || '/img/profile_default.png'" 
             :alt="postData.author" 
             class="w-11 h-11 rounded-full object-cover" 
             @error="$event.target.src = '/img/NULL.JPG'"

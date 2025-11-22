@@ -2,15 +2,13 @@
 const db = require('../config/db');
 
 class CommunityService {
-    
-// 1. Ambil Semua Postingan (untuk CommunityPage.vue)
+    // 1. Ambil Semua Postingan (FIX PATH GAMBAR)
     static async getAllPosts(currentUserId) {
         const query = `
             SELECT 
                 p.id, p.title, p.content, p.media_path, p.likes_count, p.created_at,
                 u.username, d.full_name, d.profile_picture,
                 (SELECT COUNT(*) FROM "comment" c WHERE c.post_id = p.id) AS total_comments,
-                -- Cek apakah user yang sedang login sudah like (Return true/false)
                 CASE 
                     WHEN pl.user_id IS NOT NULL THEN true 
                     ELSE false 
@@ -18,33 +16,47 @@ class CommunityService {
             FROM community_post p
             JOIN users u ON p.author_id = u.id
             LEFT JOIN detail_user_individu d ON u.id = d.id
-            -- Join ke tabel likes khusus untuk user ini
             LEFT JOIN post_likes pl ON p.id = pl.post_id AND pl.user_id = $1
             ORDER BY p.created_at DESC
         `;
 
         const result = await db.query(query, [currentUserId || null]);
 
-        return result.rows.map(row => ({
-            id: row.id,
-            community: 'CatLover Umum',
-            author: row.full_name || row.username,
-            time: new Date(row.created_at).toLocaleDateString('id-ID'),
-            // Menggunakan title dari DB
-            title: row.title || (row.content.substring(0, 30) + (row.content.length > 30 ? '...' : '')),
-            excerpt: row.content.substring(0, 60) + (row.content.length > 60 ? '...' : ''),
-            description: row.content,
-            profileImg: row.profile_picture ? `/img/${row.profile_picture}` : '/img/NULL.JPG',
-            postImg: row.media_path ? `/img/${row.media_path}` : null,
-            likes: row.likes_count,
-            comments: row.total_comments,
-            isLiked: row.isLiked // <-- Field baru untuk frontend
-        }));
+        return result.rows.map(row => {
+            // LOGIKA PATH PROFILE
+            let profilePath = row.profile_picture;
+            if (!profilePath || profilePath === 'NULL.JPG') {
+                profilePath = '/img/NULL.JPG';
+            } else if (!profilePath.startsWith('http') && !profilePath.startsWith('/img/')) {
+                // Asumsi file upload user ada di folder public backend
+                profilePath = `/public/img/profile/${profilePath}`;
+            }
+
+            // LOGIKA PATH POST IMAGE
+            let postPath = row.media_path;
+            if (postPath) {
+                postPath = `/public/img/${postPath}`;
+            }
+
+            return {
+                id: row.id,
+                community: 'CatLover Umum',
+                author: row.full_name || row.username,
+                time: new Date(row.created_at).toLocaleDateString('id-ID'),
+                title: row.title || (row.content.substring(0, 30) + '...'),
+                excerpt: row.content.substring(0, 60) + '...',
+                description: row.content,
+                profileImg: profilePath, // <-- Path sudah benar
+                postImg: postPath,       // <-- Path sudah benar
+                likes: row.likes_count,
+                comments: row.total_comments,
+                isLiked: row.isLiked
+            };
+        });
     }
 
-    // 2. Ambil Detail Postingan + Komentar (untuk PostDetailPage.vue)
+    // 2. Ambil Detail Postingan (FIX PATH GAMBAR)
     static async getPostById(postId) {
-        // Ambil Post
         const postQuery = `
             SELECT 
                 p.id, p.title, p.content, p.media_path, p.likes_count, p.created_at,
@@ -59,11 +71,9 @@ class CommunityService {
         if (postResult.rows.length === 0) throw new Error('Post not found');
         const row = postResult.rows[0];
 
-        // Ambil Komentar
+        // ... (Query komentar tetap sama) ...
         const commentQuery = `
-            SELECT 
-                c.id, c.content, c.created_at,
-                u.username, d.full_name
+            SELECT c.id, c.content, c.created_at, u.username, d.full_name
             FROM comment c
             JOIN users u ON c.user_id = u.id
             LEFT JOIN detail_user_individu d ON u.id = d.id
@@ -72,16 +82,26 @@ class CommunityService {
         `;
         const commentResult = await db.query(commentQuery, [postId]);
 
+        // LOGIKA PATH PROFILE (Sama seperti getAll)
+        let profilePath = row.profile_picture;
+        if (!profilePath || profilePath === 'NULL.JPG') {
+            profilePath = '/img/NULL.JPG';
+        } else if (!profilePath.startsWith('http') && !profilePath.startsWith('/img/')) {
+            profilePath = `/public/img/profile/${profilePath}`;
+        }
+
+        // LOGIKA PATH POST IMAGE
+        let postPath = row.media_path ? `/public/img/${row.media_path}` : null;
+
         return {
             id: row.id,
             community: 'CatLover Umum',
             author: row.full_name || row.username,
             time: new Date(row.created_at).toLocaleString('id-ID'),
-            // Menggunakan title dari DB
             title: row.title,
             description: row.content,
-            profileImg: row.profile_picture ? `/img/${row.profile_picture}` : '/img/NULL.JPG',
-            postImg: row.media_path ? `/img/${row.media_path}` : null,
+            profileImg: profilePath, // <-- Fix
+            postImg: postPath,       // <-- Fix
             likes: row.likes_count,
             comments: commentResult.rowCount,
             commentData: commentResult.rows.map(c => ({
@@ -188,10 +208,9 @@ class CommunityService {
         const result = await db.query(query);
         return result.rows.map(p => ({
             id: p.id,
-            // Judul diambil dari kolom title (fallback ke potongan content)
-            title: p.title || (p.content.substring(0, 40) + (p.content.length > 40 ? '...' : '')),
-            // Jika tidak ada gambar, pakai placeholder
-            image: p.media_path ? `/img/${p.media_path}` : '/img/postinganPopuler1.png'
+            title: p.title || (p.content.substring(0, 40) + '...'),
+            // Fix path gambar populer
+            image: p.media_path ? `/public/img/${p.media_path}` : '/img/postinganPopuler1.png'
         }));
     }
 
