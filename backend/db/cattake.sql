@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict tgoZf4ktyqjf4dm9AMojGpgHvkGNYt97kOgnang00llv7tVRxlrxvSKx0gZ69Wh
+\restrict VrTfulM7II8zbnVgGcBTPnzvyCLZa0g7jk7zxcSAtnOwSGyCDCRc8A9q0i1ZDx9
 
 -- Dumped from database version 18.0
 -- Dumped by pg_dump version 18.0
 
--- Started on 2025-11-22 23:22:47
+-- Started on 2025-11-22 23:47:57
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -285,6 +285,7 @@ CREATE TABLE public.detail_user_shelter (
     cat_capacity integer DEFAULT 0,
     latitude numeric(10,8),
     longitude numeric(11,8),
+    qr_img character varying(255),
     CONSTRAINT check_org_type CHECK (((organization_type)::text = ANY ((ARRAY['Yayasan'::character varying, 'Komunitas'::character varying, 'Pribadi'::character varying])::text[])))
 );
 
@@ -1069,11 +1070,11 @@ COPY public.detail_user_individu (id, full_name, birth_date, gender, profile_pic
 -- Data for Name: detail_user_shelter; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.detail_user_shelter (id, shelter_name, established_date, organization_type, shelter_picture, bio, contact_phone, legal_certificate, donation_account_number, pj_name, pj_nik, is_verified_shelter, cat_capacity, latitude, longitude) FROM stdin;
-4	Shelter Gerlong	2024-12-21	Komunitas	\N	\N		\N	\N	Ahkam Ibadurrahman	3273PJ87252	f	0	\N	\N
-16	Muhammad 'Azmi	\N	Komunitas	https://lh3.googleusercontent.com/a/ACg8ocJoWXti03NhQHj4U8_eAkJBg5zPgdMVwH6wXCXISxkVlkU4fg=s96-c	\N	\N	\N	\N	Muhammad 'Azmi	\N	f	0	\N	\N
-10	Rumah Kucing Bandung	2015-08-17	Komunitas	\N	\N	0227654321	\N	1234567890	Rina Anggraini	3273zzzzzzzzzzzz	t	50	-6.91750000	107.61910000
-11	Panti Cat Sejahtera	2010-02-28	Yayasan	\N	\N	0219876543	\N	0987654321	Joko Susilo	3174yyyyyyyyyyyy	t	100	-6.20880000	106.84560000
+COPY public.detail_user_shelter (id, shelter_name, established_date, organization_type, shelter_picture, bio, contact_phone, legal_certificate, donation_account_number, pj_name, pj_nik, is_verified_shelter, cat_capacity, latitude, longitude, qr_img) FROM stdin;
+16	Muhammad 'Azmi	\N	Komunitas	https://lh3.googleusercontent.com/a/ACg8ocJoWXti03NhQHj4U8_eAkJBg5zPgdMVwH6wXCXISxkVlkU4fg=s96-c	\N	\N	\N	\N	Muhammad 'Azmi	\N	f	0	\N	\N	\N
+4	Shelter Gerlong	2024-12-21	Komunitas	\N	\N		\N	\N	Ahkam Ibadurrahman	3273PJ87252	f	0	\N	\N	qr1.jpg
+10	Rumah Kucing Bandung	2015-08-17	Komunitas	\N	\N	0227654321	\N	1234567890	Rina Anggraini	3273zzzzzzzzzzzz	t	50	-6.91750000	107.61910000	qr2.jpg
+11	Panti Cat Sejahtera	2010-02-28	Yayasan	\N	\N	0219876543	\N	0987654321	Joko Susilo	3174yyyyyyyyyyyy	t	100	-6.20880000	106.84560000	qr3.jpg
 \.
 
 
@@ -1580,7 +1581,7 @@ SELECT pg_catalog.setval('public.lost_cats_id_seq', 6, true);
 -- Name: reply_comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.reply_comment_id_seq', 3, true);
+SELECT pg_catalog.setval('public.reply_comment_id_seq', 6, true);
 
 
 --
@@ -2222,11 +2223,11 @@ ALTER TABLE ONLY public.verification_log
     ADD CONSTRAINT verification_log_verifier_id_fkey FOREIGN KEY (verifier_id) REFERENCES public.users(id);
 
 
--- Completed on 2025-11-22 23:22:50
+-- Completed on 2025-11-22 23:47:58
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict tgoZf4ktyqjf4dm9AMojGpgHvkGNYt97kOgnang00llv7tVRxlrxvSKx0gZ69Wh
+\unrestrict VrTfulM7II8zbnVgGcBTPnzvyCLZa0g7jk7zxcSAtnOwSGyCDCRc8A9q0i1ZDx9
 
