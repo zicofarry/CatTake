@@ -1,7 +1,7 @@
 <template>
   <div 
     class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300"
-    :class="{ 'border-l-4 border-l-[#EBCD5E]': report.status === 'pending', 'border-l-4 border-l-green-500': report.status === 'approved' || report.status === 'completed' }"
+    :class="{ 'border-l-4 border-l-[#EBCD5E]': report.status === 'pending', 'border-l-4 border-l-green-500': report.status === 'approved' || report.status === 'completed','border-l-4 border-l-red-500': report.status === 'rejected' }"
   >
     <div class="flex items-center justify-between cursor-pointer" @click="toggleDetails">
       
