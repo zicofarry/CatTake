@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict ScCX8gwQfG5NWEuuWfmjRr7FidZAuUhsflz6nRNHdIZf7wx56UX2ijuWgQTJDwO
+\restrict 6znHAuhGDk61wrjwZ74Lgxv0ya3GOBrfsNEM61hYVrPJimlDDkGnNoFH2d5LbY6
 
 -- Dumped from database version 18.0
 -- Dumped by pg_dump version 18.0
 
--- Started on 2025-11-22 12:18:57
+-- Started on 2025-11-22 14:55:00
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -20,25 +20,6 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
-
---
--- TOC entry 4 (class 2615 OID 2200)
--- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
---
-
-CREATE SCHEMA public;
-
-
-ALTER SCHEMA public OWNER TO pg_database_owner;
-
---
--- TOC entry 5295 (class 0 OID 0)
--- Dependencies: 4
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
---
-
-COMMENT ON SCHEMA public IS 'standard public schema';
-
 
 --
 -- TOC entry 245 (class 1259 OID 17880)
@@ -234,7 +215,7 @@ CREATE SEQUENCE public.community_post_id_seq1
 ALTER SEQUENCE public.community_post_id_seq1 OWNER TO postgres;
 
 --
--- TOC entry 5306 (class 0 OID 0)
+-- TOC entry 5294 (class 0 OID 0)
 -- Dependencies: 251
 -- Name: community_post_id_seq1; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -328,7 +309,7 @@ CREATE SEQUENCE public.donations_id_seq
 ALTER SEQUENCE public.donations_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5311 (class 0 OID 0)
+-- TOC entry 5295 (class 0 OID 0)
 -- Dependencies: 246
 -- Name: donations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -370,7 +351,7 @@ CREATE SEQUENCE public.driver_locations_id_seq
 ALTER SEQUENCE public.driver_locations_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5314 (class 0 OID 0)
+-- TOC entry 5296 (class 0 OID 0)
 -- Dependencies: 242
 -- Name: driver_locations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -478,7 +459,7 @@ CREATE SEQUENCE public.global_achievements_id_seq
 ALTER SEQUENCE public.global_achievements_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5321 (class 0 OID 0)
+-- TOC entry 5297 (class 0 OID 0)
 -- Dependencies: 236
 -- Name: global_achievements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -519,7 +500,7 @@ CREATE SEQUENCE public.global_quests_id_seq
 ALTER SEQUENCE public.global_quests_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5324 (class 0 OID 0)
+-- TOC entry 5298 (class 0 OID 0)
 -- Dependencies: 238
 -- Name: global_quests_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -569,7 +550,7 @@ CREATE SEQUENCE public.lost_cats_id_seq
 ALTER SEQUENCE public.lost_cats_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5327 (class 0 OID 0)
+-- TOC entry 5299 (class 0 OID 0)
 -- Dependencies: 253
 -- Name: lost_cats_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -666,7 +647,7 @@ CREATE SEQUENCE public.reports_id_seq
 ALTER SEQUENCE public.reports_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5333 (class 0 OID 0)
+-- TOC entry 5300 (class 0 OID 0)
 -- Dependencies: 255
 -- Name: reports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -732,7 +713,7 @@ CREATE SEQUENCE public.user_progress_id_seq
 ALTER SEQUENCE public.user_progress_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5337 (class 0 OID 0)
+-- TOC entry 5301 (class 0 OID 0)
 -- Dependencies: 240
 -- Name: user_progress_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -808,7 +789,7 @@ CREATE SEQUENCE public.verification_log_id_seq
 ALTER SEQUENCE public.verification_log_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5342 (class 0 OID 0)
+-- TOC entry 5302 (class 0 OID 0)
 -- Dependencies: 257
 -- Name: verification_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -817,7 +798,7 @@ ALTER SEQUENCE public.verification_log_id_seq OWNED BY public.verification_log.i
 
 
 --
--- TOC entry 4987 (class 2604 OID 19292)
+-- TOC entry 4986 (class 2604 OID 19292)
 -- Name: community_post id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -825,7 +806,7 @@ ALTER TABLE ONLY public.community_post ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
--- TOC entry 4975 (class 2604 OID 18342)
+-- TOC entry 4974 (class 2604 OID 18342)
 -- Name: donations id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -833,7 +814,7 @@ ALTER TABLE ONLY public.donations ALTER COLUMN id SET DEFAULT nextval('public.do
 
 
 --
--- TOC entry 4985 (class 2604 OID 17861)
+-- TOC entry 4984 (class 2604 OID 17861)
 -- Name: driver_locations id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -841,7 +822,7 @@ ALTER TABLE ONLY public.driver_locations ALTER COLUMN id SET DEFAULT nextval('pu
 
 
 --
--- TOC entry 4980 (class 2604 OID 17815)
+-- TOC entry 4979 (class 2604 OID 17815)
 -- Name: global_achievements id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -849,7 +830,7 @@ ALTER TABLE ONLY public.global_achievements ALTER COLUMN id SET DEFAULT nextval(
 
 
 --
--- TOC entry 4981 (class 2604 OID 17830)
+-- TOC entry 4980 (class 2604 OID 17830)
 -- Name: global_quests id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -857,7 +838,7 @@ ALTER TABLE ONLY public.global_quests ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
--- TOC entry 4989 (class 2604 OID 19322)
+-- TOC entry 4988 (class 2604 OID 19322)
 -- Name: lost_cats id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -865,7 +846,7 @@ ALTER TABLE ONLY public.lost_cats ALTER COLUMN id SET DEFAULT nextval('public.lo
 
 
 --
--- TOC entry 4993 (class 2604 OID 19347)
+-- TOC entry 4992 (class 2604 OID 19347)
 -- Name: reports id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -873,7 +854,7 @@ ALTER TABLE ONLY public.reports ALTER COLUMN id SET DEFAULT nextval('public.repo
 
 
 --
--- TOC entry 4982 (class 2604 OID 17842)
+-- TOC entry 4981 (class 2604 OID 17842)
 -- Name: user_progress id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -881,7 +862,7 @@ ALTER TABLE ONLY public.user_progress ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
--- TOC entry 4977 (class 2604 OID 19386)
+-- TOC entry 4976 (class 2604 OID 19386)
 -- Name: verification_log id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -889,7 +870,7 @@ ALTER TABLE ONLY public.verification_log ALTER COLUMN id SET DEFAULT nextval('pu
 
 
 --
--- TOC entry 5256 (class 0 OID 17505)
+-- TOC entry 5255 (class 0 OID 17505)
 -- Dependencies: 224
 -- Data for Name: adoptions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -903,18 +884,18 @@ COPY public.adoptions (id, cat_id, applicant_id, statement_letter_path, status, 
 7	11	3	/docs/stmt_chiko.pdf	completed	2025-10-20 08:00:00	2025-10-21 11:00:00	2025-10-23 16:00:00
 8	3	3	identity-3-1763694145368	pending	2025-11-21 10:02:28.366243	\N	2025-11-21 10:02:28.366243
 9	1	3	identity-3-1763694328683.jpg	pending	2025-11-21 10:05:28.846627	\N	2025-11-21 10:05:28.846627
-10	1	3	stmt-3-1763695099635.jpg	pending	2025-11-21 10:18:19.808177	\N	2025-11-21 10:18:19.808177
 13	3	3	stmt-3-1763696749954.jpg	pending	2025-11-21 10:45:50.067367	\N	2025-11-21 10:45:50.067367
 15	1	3	stmt-3-1763715415886.jpg	approved	2025-11-21 15:56:56.107382	2025-11-22 11:26:00.67123	2025-11-21 15:56:56.107382
 14	2	8	stmt-8-1763697336774.jpg	rejected	2025-11-21 10:55:36.921567	2025-11-22 11:27:22.732092	2025-11-21 10:55:36.921567
 12	1	3	stmt-3-1763696674748.jpg	approved	2025-11-21 10:44:34.873486	2025-11-22 11:36:24.295958	2025-11-21 10:44:34.873486
 11	1	3	stmt-3-1763695418652.jpg	rejected	2025-11-21 10:23:38.775822	2025-11-22 11:36:41.785481	2025-11-21 10:23:38.775822
 2	6	20	/docs/surat_pernyataan_andi_luna.pdf	rejected	2025-11-20 10:00:00	2025-11-22 12:04:03.386386	2025-11-20 10:00:00
+10	1	3	stmt-3-1763695099635.jpg	approved	2025-11-21 10:18:19.808177	2025-11-22 12:32:03.885964	2025-11-21 10:18:19.808177
 \.
 
 
 --
--- TOC entry 5264 (class 0 OID 17736)
+-- TOC entry 5263 (class 0 OID 17736)
 -- Dependencies: 232
 -- Data for Name: cat_facts; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -926,7 +907,7 @@ COPY public.cat_facts (id, fact_text, source, image_path, is_verified, created_a
 
 
 --
--- TOC entry 5255 (class 0 OID 17488)
+-- TOC entry 5254 (class 0 OID 17488)
 -- Dependencies: 223
 -- Data for Name: cats; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -947,7 +928,7 @@ COPY public.cats (id, shelter_id, name, age, gender, breed, description, health_
 
 
 --
--- TOC entry 5259 (class 0 OID 17600)
+-- TOC entry 5258 (class 0 OID 17600)
 -- Dependencies: 227
 -- Data for Name: chat_messages; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -959,7 +940,7 @@ COPY public.chat_messages (id, assignment_id, sender_id, message, sent_at) FROM 
 
 
 --
--- TOC entry 5260 (class 0 OID 17640)
+-- TOC entry 5259 (class 0 OID 17640)
 -- Dependencies: 228
 -- Data for Name: comment; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -980,11 +961,12 @@ COPY public.comment (id, user_id, post_id, content, likes_count, created_at, upd
 13	3	3	haloo	0	2025-11-21 13:19:56.856494	2025-11-21 13:19:56.856494
 14	5	3	Kalau ada yang mau share pengalaman boleh komen juga yaa	0	2025-11-21 13:21:23.075208	2025-11-21 13:21:23.075208
 15	4	2	siapa nihh yang suka gratis gratisan	0	2025-11-21 16:28:42.508147	2025-11-21 16:28:42.508147
+16	14	2	halo aku login dari google ternyata bisa lohh	0	2025-11-22 14:00:32.417209	2025-11-22 14:00:32.417209
 \.
 
 
 --
--- TOC entry 5284 (class 0 OID 19289)
+-- TOC entry 5283 (class 0 OID 19289)
 -- Dependencies: 252
 -- Data for Name: community_post; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -999,7 +981,7 @@ COPY public.community_post (id, author_id, title, content, media_path, likes_cou
 
 
 --
--- TOC entry 5252 (class 0 OID 17409)
+-- TOC entry 5251 (class 0 OID 17409)
 -- Dependencies: 220
 -- Data for Name: detail_user_individu; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1014,12 +996,15 @@ COPY public.detail_user_individu (id, full_name, birth_date, gender, profile_pic
 5	Repa Pitriani	2005-11-05	female	profile-5-1763736627106.JPG	Aku adalah pencinta kucing asal cianjur		alamat belum diverifikasi	Unknown	32731763530891182975	\N	f	f	1
 7	Ajipati Alaga	2025-11-28	male	profile-7-1763736794424.JPG			\N	\N	\N	\N	f	f	0
 12	Najmi Alifah Hilmiya	2006-02-22	female	profile-12-1763737054294.JPG			\N	\N	\N	\N	f	f	0
-3	Muhammad 'Azmi Salam	2006-06-30	male	profile-3-1763733926080.jpg	saya adalah pencinta kucing dari umur 3 tahun, nama kucing tercinta saya sejak kecil adalah son goku.	085850603196	RA Ulul 'Azmi Kulalet, RT. 01/RW. 09, Kec. Baleendah, Kab. Bandung, Prov. Jawa Barat	Mahasiswa	3204323006060008	ktp-3-1763715415771.jpg	t	t	6
+3	Muhammad 'Azmi Salam	2006-06-30	male	profile-3-1763789466019.jpg	saya adalah pencinta kucing dari umur 3 tahun, nama kucing tercinta saya sejak kecil adalah son goku.	085850603196	RA Ulul 'Azmi Kulalet, RT. 01/RW. 09, Kec. Baleendah, Kab. Bandung, Prov. Jawa Barat	Mahasiswa	3204323006060008	ktp-3-1763715415771.jpg	t	t	6
+13	Harri	\N	\N	\N	\N		\N	\N	\N	\N	f	f	0
+14	MUHAMMAD 'AZMI SALAM	\N	\N	https://lh3.googleusercontent.com/a/ACg8ocI4jlNMYTBjIfhPbtnoE2jVuCq4bTJx6saVHC59qzipgGeK-w=s96-c	\N	\N	\N	\N	\N	\N	t	f	0
+15	CACICU	\N	\N	https://lh3.googleusercontent.com/a/ACg8ocLCis_yrjICEgKAUmE0oASbrAYVjrGzTsaZIyTr6ZfTWcHfMw=s96-c	\N	\N	\N	\N	\N	\N	t	f	0
 \.
 
 
 --
--- TOC entry 5253 (class 0 OID 17428)
+-- TOC entry 5252 (class 0 OID 17428)
 -- Dependencies: 221
 -- Data for Name: detail_user_shelter; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1028,11 +1013,12 @@ COPY public.detail_user_shelter (id, shelter_name, established_date, organizatio
 10	Rumah Kucing Bandung	2015-08-17	Komunitas	\N	\N	0227654321	\N	1234567890	Rina Anggraini	3273zzzzzzzzzzzz	t	50
 11	Panti Cat Sejahtera	2010-02-28	Yayasan	\N	\N	0219876543	\N	0987654321	Joko Susilo	3174yyyyyyyyyyyy	t	100
 4	Shelter Gerlong	2024-12-21	Komunitas	\N	\N		\N	\N	Ahkam Ibadurrahman	3273PJ87252	f	0
+16	Muhammad 'Azmi	\N	Komunitas	https://lh3.googleusercontent.com/a/ACg8ocJoWXti03NhQHj4U8_eAkJBg5zPgdMVwH6wXCXISxkVlkU4fg=s96-c	\N	\N	\N	\N	Muhammad 'Azmi	\N	f	0
 \.
 
 
 --
--- TOC entry 5262 (class 0 OID 17693)
+-- TOC entry 5261 (class 0 OID 17693)
 -- Dependencies: 230
 -- Data for Name: donations; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1052,7 +1038,7 @@ COPY public.donations (id, donatur_id, shelter_id, amount, donation_date, is_ano
 
 
 --
--- TOC entry 5275 (class 0 OID 17858)
+-- TOC entry 5274 (class 0 OID 17858)
 -- Dependencies: 243
 -- Data for Name: driver_locations; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1064,7 +1050,7 @@ COPY public.driver_locations (id, driver_id, assignment_id, latitude, longitude,
 
 
 --
--- TOC entry 5254 (class 0 OID 17450)
+-- TOC entry 5253 (class 0 OID 17450)
 -- Dependencies: 222
 -- Data for Name: drivers; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1076,7 +1062,7 @@ DRV-BDG-002	31	10	t	SIM C-2026	Cecep Supriadi
 
 
 --
--- TOC entry 5265 (class 0 OID 17747)
+-- TOC entry 5264 (class 0 OID 17747)
 -- Dependencies: 233
 -- Data for Name: events; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1087,7 +1073,7 @@ COPY public.events (id, organizer_id, title, description, event_date, start_time
 
 
 --
--- TOC entry 5266 (class 0 OID 17769)
+-- TOC entry 5265 (class 0 OID 17769)
 -- Dependencies: 234
 -- Data for Name: faq; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1102,7 +1088,7 @@ COPY public.faq (id, question, answer) FROM stdin;
 
 
 --
--- TOC entry 5257 (class 0 OID 17526)
+-- TOC entry 5256 (class 0 OID 17526)
 -- Dependencies: 225
 -- Data for Name: favorite_cats; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1117,7 +1103,7 @@ COPY public.favorite_cats (user_id, cat_id, created_at) FROM stdin;
 
 
 --
--- TOC entry 5269 (class 0 OID 17812)
+-- TOC entry 5268 (class 0 OID 17812)
 -- Dependencies: 237
 -- Data for Name: global_achievements; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1130,7 +1116,7 @@ COPY public.global_achievements (id, name, description, target_condition, points
 
 
 --
--- TOC entry 5271 (class 0 OID 17827)
+-- TOC entry 5270 (class 0 OID 17827)
 -- Dependencies: 239
 -- Data for Name: global_quests; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1144,7 +1130,7 @@ COPY public.global_quests (id, name, target_value, points, type) FROM stdin;
 
 
 --
--- TOC entry 5286 (class 0 OID 19319)
+-- TOC entry 5285 (class 0 OID 19319)
 -- Dependencies: 254
 -- Data for Name: lost_cats; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1160,7 +1146,7 @@ COPY public.lost_cats (id, owner_id, name, age, breed, color, description, last_
 
 
 --
--- TOC entry 5282 (class 0 OID 19270)
+-- TOC entry 5281 (class 0 OID 19270)
 -- Dependencies: 250
 -- Data for Name: post_likes; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1178,7 +1164,7 @@ COPY public.post_likes (user_id, post_id, created_at) FROM stdin;
 
 
 --
--- TOC entry 5261 (class 0 OID 17664)
+-- TOC entry 5260 (class 0 OID 17664)
 -- Dependencies: 229
 -- Data for Name: reply_comment; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1189,7 +1175,7 @@ COPY public.reply_comment (id, user_id, comment_id, parent_reply_id, content, li
 
 
 --
--- TOC entry 5288 (class 0 OID 19344)
+-- TOC entry 5287 (class 0 OID 19344)
 -- Dependencies: 256
 -- Data for Name: reports; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1204,7 +1190,7 @@ COPY public.reports (id, reporter_id, report_type, lost_cat_id, shelter_assigned
 
 
 --
--- TOC entry 5258 (class 0 OID 17570)
+-- TOC entry 5257 (class 0 OID 17570)
 -- Dependencies: 226
 -- Data for Name: rescue_assignments; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1215,7 +1201,7 @@ COPY public.rescue_assignments (id, report_id, driver_id, shelter_id, assignment
 
 
 --
--- TOC entry 5273 (class 0 OID 17839)
+-- TOC entry 5272 (class 0 OID 17839)
 -- Dependencies: 241
 -- Data for Name: user_progress; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1237,7 +1223,7 @@ COPY public.user_progress (id, user_id, global_item_id, item_type, current_progr
 
 
 --
--- TOC entry 5251 (class 0 OID 17393)
+-- TOC entry 5250 (class 0 OID 17393)
 -- Dependencies: 219
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1259,11 +1245,15 @@ COPY public.users (id, username, email, password_hash, role) FROM stdin;
 10	shelter-bandung	shelter_bdg@mail.com	$2a$12$QYCFZ1l2CA56uhoWCg9HKugM5c9kPn8Hib1/G06mfTAukH/wk3QyG	shelter
 9	ahkam	ahkam@gmail.com	$2b$10$8M1t/X/qTGKo0z0BW/1ErORz/APS2A9AB6kXEk.NY/0smvg6PoVYy	individu
 12	najmi	najmi@gmail.com	$2b$10$pwLd7JgiL5VisgFiLvIc2e4JI8.HCT5e3VfuqeUNJXgw.gpsoa9Qu	individu
+13	harri	harri@gmail.com	$2b$10$SGHoHSetwMJnFjDrMdwK0eFrpilgPcZPmLGXkMPVbFLFrOUoCRdZy	individu
+14	muhammad'azmisalam4233	muhammadazmi36@upi.edu	$2a$12$KnzjrkMrv0Va/83HJIp7p.XjFP8HSJy2lzp9URK1pDx7lMJHxnMTK	individu
+15	cacicu7498	c2cacicu@gmail.com	$2b$10$BsZ/2ht./rAb/dXRhZ0wVOJnwEfArE.X4KlA0w4ZpUKF1fsDinxXW	individu
+16	muhammad'azmi2945	muhammadazmi.smaitfibe@gmail.com	$2b$10$2PswEEftRNsF0/fY3WKalu8xKEHqs4KzlirQ9THGua64IkRA1MKFu	shelter
 \.
 
 
 --
--- TOC entry 5263 (class 0 OID 17714)
+-- TOC entry 5262 (class 0 OID 17714)
 -- Dependencies: 231
 -- Data for Name: verification_log; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1279,11 +1269,12 @@ COPY public.verification_log (id, user_id, verifier_id, verification_type, statu
 10	3	10	Adoption_Application	approved	Permintaan adopsi telah di-approved oleh shelter.	2025-11-22 11:36:24.295958
 11	3	10	Adoption_Application	rejected	Permintaan adopsi telah di-rejected oleh shelter.	2025-11-22 11:36:41.785481
 12	20	4	Adoption_Application	rejected	Permintaan adopsi telah di-rejected oleh shelter.	2025-11-22 12:04:03.386386
+13	3	10	Adoption_Application	approved	Permintaan adopsi telah di-approved oleh shelter.	2025-11-22 12:32:03.885964
 \.
 
 
 --
--- TOC entry 5343 (class 0 OID 0)
+-- TOC entry 5303 (class 0 OID 0)
 -- Dependencies: 245
 -- Name: adoptions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1292,7 +1283,7 @@ SELECT pg_catalog.setval('public.adoptions_id_seq', 15, true);
 
 
 --
--- TOC entry 5344 (class 0 OID 0)
+-- TOC entry 5304 (class 0 OID 0)
 -- Dependencies: 244
 -- Name: cats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1301,16 +1292,16 @@ SELECT pg_catalog.setval('public.cats_id_seq', 11, true);
 
 
 --
--- TOC entry 5345 (class 0 OID 0)
+-- TOC entry 5305 (class 0 OID 0)
 -- Dependencies: 247
 -- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.comment_id_seq', 15, true);
+SELECT pg_catalog.setval('public.comment_id_seq', 16, true);
 
 
 --
--- TOC entry 5346 (class 0 OID 0)
+-- TOC entry 5306 (class 0 OID 0)
 -- Dependencies: 249
 -- Name: community_post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1319,7 +1310,7 @@ SELECT pg_catalog.setval('public.community_post_id_seq', 5, true);
 
 
 --
--- TOC entry 5347 (class 0 OID 0)
+-- TOC entry 5307 (class 0 OID 0)
 -- Dependencies: 251
 -- Name: community_post_id_seq1; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1328,7 +1319,7 @@ SELECT pg_catalog.setval('public.community_post_id_seq1', 1, false);
 
 
 --
--- TOC entry 5348 (class 0 OID 0)
+-- TOC entry 5308 (class 0 OID 0)
 -- Dependencies: 246
 -- Name: donations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1337,7 +1328,7 @@ SELECT pg_catalog.setval('public.donations_id_seq', 10, true);
 
 
 --
--- TOC entry 5349 (class 0 OID 0)
+-- TOC entry 5309 (class 0 OID 0)
 -- Dependencies: 242
 -- Name: driver_locations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1346,7 +1337,7 @@ SELECT pg_catalog.setval('public.driver_locations_id_seq', 2, true);
 
 
 --
--- TOC entry 5350 (class 0 OID 0)
+-- TOC entry 5310 (class 0 OID 0)
 -- Dependencies: 236
 -- Name: global_achievements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1355,7 +1346,7 @@ SELECT pg_catalog.setval('public.global_achievements_id_seq', 1, false);
 
 
 --
--- TOC entry 5351 (class 0 OID 0)
+-- TOC entry 5311 (class 0 OID 0)
 -- Dependencies: 238
 -- Name: global_quests_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1364,7 +1355,7 @@ SELECT pg_catalog.setval('public.global_quests_id_seq', 1, false);
 
 
 --
--- TOC entry 5352 (class 0 OID 0)
+-- TOC entry 5312 (class 0 OID 0)
 -- Dependencies: 253
 -- Name: lost_cats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1373,7 +1364,7 @@ SELECT pg_catalog.setval('public.lost_cats_id_seq', 6, true);
 
 
 --
--- TOC entry 5353 (class 0 OID 0)
+-- TOC entry 5313 (class 0 OID 0)
 -- Dependencies: 248
 -- Name: reply_comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1382,7 +1373,7 @@ SELECT pg_catalog.setval('public.reply_comment_id_seq', 1, true);
 
 
 --
--- TOC entry 5354 (class 0 OID 0)
+-- TOC entry 5314 (class 0 OID 0)
 -- Dependencies: 255
 -- Name: reports_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1391,7 +1382,7 @@ SELECT pg_catalog.setval('public.reports_id_seq', 5, true);
 
 
 --
--- TOC entry 5355 (class 0 OID 0)
+-- TOC entry 5315 (class 0 OID 0)
 -- Dependencies: 240
 -- Name: user_progress_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1400,25 +1391,25 @@ SELECT pg_catalog.setval('public.user_progress_id_seq', 12, true);
 
 
 --
--- TOC entry 5356 (class 0 OID 0)
+-- TOC entry 5316 (class 0 OID 0)
 -- Dependencies: 235
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 12, true);
+SELECT pg_catalog.setval('public.users_id_seq', 16, true);
 
 
 --
--- TOC entry 5357 (class 0 OID 0)
+-- TOC entry 5317 (class 0 OID 0)
 -- Dependencies: 257
 -- Name: verification_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.verification_log_id_seq', 12, true);
+SELECT pg_catalog.setval('public.verification_log_id_seq', 13, true);
 
 
 --
--- TOC entry 5029 (class 2606 OID 17515)
+-- TOC entry 5028 (class 2606 OID 17515)
 -- Name: adoptions adoptions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1427,7 +1418,7 @@ ALTER TABLE ONLY public.adoptions
 
 
 --
--- TOC entry 5047 (class 2606 OID 17746)
+-- TOC entry 5046 (class 2606 OID 17746)
 -- Name: cat_facts cat_facts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1436,7 +1427,7 @@ ALTER TABLE ONLY public.cat_facts
 
 
 --
--- TOC entry 5027 (class 2606 OID 17499)
+-- TOC entry 5026 (class 2606 OID 17499)
 -- Name: cats cats_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1445,7 +1436,7 @@ ALTER TABLE ONLY public.cats
 
 
 --
--- TOC entry 5037 (class 2606 OID 17611)
+-- TOC entry 5036 (class 2606 OID 17611)
 -- Name: chat_messages chat_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1454,7 +1445,7 @@ ALTER TABLE ONLY public.chat_messages
 
 
 --
--- TOC entry 5039 (class 2606 OID 17653)
+-- TOC entry 5038 (class 2606 OID 17653)
 -- Name: comment comment_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1463,7 +1454,7 @@ ALTER TABLE ONLY public.comment
 
 
 --
--- TOC entry 5065 (class 2606 OID 19302)
+-- TOC entry 5064 (class 2606 OID 19302)
 -- Name: community_post community_post_pkey1; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1472,7 +1463,7 @@ ALTER TABLE ONLY public.community_post
 
 
 --
--- TOC entry 5013 (class 2606 OID 17422)
+-- TOC entry 5012 (class 2606 OID 17422)
 -- Name: detail_user_individu detail_user_individu_nik_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1481,7 +1472,7 @@ ALTER TABLE ONLY public.detail_user_individu
 
 
 --
--- TOC entry 5015 (class 2606 OID 17420)
+-- TOC entry 5014 (class 2606 OID 17420)
 -- Name: detail_user_individu detail_user_individu_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1490,7 +1481,7 @@ ALTER TABLE ONLY public.detail_user_individu
 
 
 --
--- TOC entry 5017 (class 2606 OID 17442)
+-- TOC entry 5016 (class 2606 OID 17442)
 -- Name: detail_user_shelter detail_user_shelter_donation_account_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1499,7 +1490,7 @@ ALTER TABLE ONLY public.detail_user_shelter
 
 
 --
--- TOC entry 5019 (class 2606 OID 17444)
+-- TOC entry 5018 (class 2606 OID 17444)
 -- Name: detail_user_shelter detail_user_shelter_pj_nik_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1508,7 +1499,7 @@ ALTER TABLE ONLY public.detail_user_shelter
 
 
 --
--- TOC entry 5021 (class 2606 OID 17440)
+-- TOC entry 5020 (class 2606 OID 17440)
 -- Name: detail_user_shelter detail_user_shelter_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1517,7 +1508,7 @@ ALTER TABLE ONLY public.detail_user_shelter
 
 
 --
--- TOC entry 5043 (class 2606 OID 17703)
+-- TOC entry 5042 (class 2606 OID 17703)
 -- Name: donations donations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1526,7 +1517,7 @@ ALTER TABLE ONLY public.donations
 
 
 --
--- TOC entry 5061 (class 2606 OID 17867)
+-- TOC entry 5060 (class 2606 OID 17867)
 -- Name: driver_locations driver_locations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1535,7 +1526,7 @@ ALTER TABLE ONLY public.driver_locations
 
 
 --
--- TOC entry 5023 (class 2606 OID 17461)
+-- TOC entry 5022 (class 2606 OID 17461)
 -- Name: drivers drivers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1544,7 +1535,7 @@ ALTER TABLE ONLY public.drivers
 
 
 --
--- TOC entry 5025 (class 2606 OID 17463)
+-- TOC entry 5024 (class 2606 OID 17463)
 -- Name: drivers drivers_user_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1553,7 +1544,7 @@ ALTER TABLE ONLY public.drivers
 
 
 --
--- TOC entry 5049 (class 2606 OID 17763)
+-- TOC entry 5048 (class 2606 OID 17763)
 -- Name: events events_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1562,7 +1553,7 @@ ALTER TABLE ONLY public.events
 
 
 --
--- TOC entry 5051 (class 2606 OID 17778)
+-- TOC entry 5050 (class 2606 OID 17778)
 -- Name: faq faq_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1571,7 +1562,7 @@ ALTER TABLE ONLY public.faq
 
 
 --
--- TOC entry 5031 (class 2606 OID 17533)
+-- TOC entry 5030 (class 2606 OID 17533)
 -- Name: favorite_cats favorite_cats_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1580,7 +1571,7 @@ ALTER TABLE ONLY public.favorite_cats
 
 
 --
--- TOC entry 5053 (class 2606 OID 17823)
+-- TOC entry 5052 (class 2606 OID 17823)
 -- Name: global_achievements global_achievements_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1589,7 +1580,7 @@ ALTER TABLE ONLY public.global_achievements
 
 
 --
--- TOC entry 5055 (class 2606 OID 17825)
+-- TOC entry 5054 (class 2606 OID 17825)
 -- Name: global_achievements global_achievements_target_condition_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1598,7 +1589,7 @@ ALTER TABLE ONLY public.global_achievements
 
 
 --
--- TOC entry 5057 (class 2606 OID 17837)
+-- TOC entry 5056 (class 2606 OID 17837)
 -- Name: global_quests global_quests_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1607,7 +1598,7 @@ ALTER TABLE ONLY public.global_quests
 
 
 --
--- TOC entry 5067 (class 2606 OID 19332)
+-- TOC entry 5066 (class 2606 OID 19332)
 -- Name: lost_cats lost_cats_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1616,7 +1607,7 @@ ALTER TABLE ONLY public.lost_cats
 
 
 --
--- TOC entry 5063 (class 2606 OID 19277)
+-- TOC entry 5062 (class 2606 OID 19277)
 -- Name: post_likes post_likes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1625,7 +1616,7 @@ ALTER TABLE ONLY public.post_likes
 
 
 --
--- TOC entry 5041 (class 2606 OID 17677)
+-- TOC entry 5040 (class 2606 OID 17677)
 -- Name: reply_comment reply_comment_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1634,7 +1625,7 @@ ALTER TABLE ONLY public.reply_comment
 
 
 --
--- TOC entry 5069 (class 2606 OID 19361)
+-- TOC entry 5068 (class 2606 OID 19361)
 -- Name: reports reports_pkey1; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1643,7 +1634,7 @@ ALTER TABLE ONLY public.reports
 
 
 --
--- TOC entry 5033 (class 2606 OID 17582)
+-- TOC entry 5032 (class 2606 OID 17582)
 -- Name: rescue_assignments rescue_assignments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1652,7 +1643,7 @@ ALTER TABLE ONLY public.rescue_assignments
 
 
 --
--- TOC entry 5035 (class 2606 OID 17584)
+-- TOC entry 5034 (class 2606 OID 17584)
 -- Name: rescue_assignments rescue_assignments_report_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1661,7 +1652,7 @@ ALTER TABLE ONLY public.rescue_assignments
 
 
 --
--- TOC entry 5059 (class 2606 OID 17851)
+-- TOC entry 5058 (class 2606 OID 17851)
 -- Name: user_progress user_progress_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1670,7 +1661,7 @@ ALTER TABLE ONLY public.user_progress
 
 
 --
--- TOC entry 5007 (class 2606 OID 17408)
+-- TOC entry 5006 (class 2606 OID 17408)
 -- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1679,7 +1670,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 5009 (class 2606 OID 17404)
+-- TOC entry 5008 (class 2606 OID 17404)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1688,7 +1679,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 5011 (class 2606 OID 17406)
+-- TOC entry 5010 (class 2606 OID 17406)
 -- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1697,7 +1688,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 5045 (class 2606 OID 17725)
+-- TOC entry 5044 (class 2606 OID 17725)
 -- Name: verification_log verification_log_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1706,7 +1697,7 @@ ALTER TABLE ONLY public.verification_log
 
 
 --
--- TOC entry 5075 (class 2606 OID 17521)
+-- TOC entry 5074 (class 2606 OID 17521)
 -- Name: adoptions adoptions_applicant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1715,7 +1706,7 @@ ALTER TABLE ONLY public.adoptions
 
 
 --
--- TOC entry 5076 (class 2606 OID 17516)
+-- TOC entry 5075 (class 2606 OID 17516)
 -- Name: adoptions adoptions_cat_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1724,7 +1715,7 @@ ALTER TABLE ONLY public.adoptions
 
 
 --
--- TOC entry 5074 (class 2606 OID 17500)
+-- TOC entry 5073 (class 2606 OID 17500)
 -- Name: cats cats_shelter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1733,7 +1724,7 @@ ALTER TABLE ONLY public.cats
 
 
 --
--- TOC entry 5082 (class 2606 OID 17612)
+-- TOC entry 5081 (class 2606 OID 17612)
 -- Name: chat_messages chat_messages_assignment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1742,7 +1733,7 @@ ALTER TABLE ONLY public.chat_messages
 
 
 --
--- TOC entry 5083 (class 2606 OID 17617)
+-- TOC entry 5082 (class 2606 OID 17617)
 -- Name: chat_messages chat_messages_sender_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1751,7 +1742,7 @@ ALTER TABLE ONLY public.chat_messages
 
 
 --
--- TOC entry 5084 (class 2606 OID 19308)
+-- TOC entry 5083 (class 2606 OID 19308)
 -- Name: comment comment_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1760,7 +1751,7 @@ ALTER TABLE ONLY public.comment
 
 
 --
--- TOC entry 5085 (class 2606 OID 17654)
+-- TOC entry 5084 (class 2606 OID 17654)
 -- Name: comment comment_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1769,7 +1760,7 @@ ALTER TABLE ONLY public.comment
 
 
 --
--- TOC entry 5099 (class 2606 OID 19303)
+-- TOC entry 5098 (class 2606 OID 19303)
 -- Name: community_post community_post_author_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1778,7 +1769,7 @@ ALTER TABLE ONLY public.community_post
 
 
 --
--- TOC entry 5070 (class 2606 OID 17806)
+-- TOC entry 5069 (class 2606 OID 17806)
 -- Name: detail_user_individu detail_user_individu_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1787,7 +1778,7 @@ ALTER TABLE ONLY public.detail_user_individu
 
 
 --
--- TOC entry 5071 (class 2606 OID 17445)
+-- TOC entry 5070 (class 2606 OID 17445)
 -- Name: detail_user_shelter detail_user_shelter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1796,7 +1787,7 @@ ALTER TABLE ONLY public.detail_user_shelter
 
 
 --
--- TOC entry 5089 (class 2606 OID 17704)
+-- TOC entry 5088 (class 2606 OID 17704)
 -- Name: donations donations_donatur_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1805,7 +1796,7 @@ ALTER TABLE ONLY public.donations
 
 
 --
--- TOC entry 5090 (class 2606 OID 17709)
+-- TOC entry 5089 (class 2606 OID 17709)
 -- Name: donations donations_shelter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1814,7 +1805,7 @@ ALTER TABLE ONLY public.donations
 
 
 --
--- TOC entry 5095 (class 2606 OID 17873)
+-- TOC entry 5094 (class 2606 OID 17873)
 -- Name: driver_locations driver_locations_assignment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1823,7 +1814,7 @@ ALTER TABLE ONLY public.driver_locations
 
 
 --
--- TOC entry 5096 (class 2606 OID 17868)
+-- TOC entry 5095 (class 2606 OID 17868)
 -- Name: driver_locations driver_locations_driver_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1832,7 +1823,7 @@ ALTER TABLE ONLY public.driver_locations
 
 
 --
--- TOC entry 5072 (class 2606 OID 17469)
+-- TOC entry 5071 (class 2606 OID 17469)
 -- Name: drivers drivers_shelter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1841,7 +1832,7 @@ ALTER TABLE ONLY public.drivers
 
 
 --
--- TOC entry 5073 (class 2606 OID 17464)
+-- TOC entry 5072 (class 2606 OID 17464)
 -- Name: drivers drivers_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1850,7 +1841,7 @@ ALTER TABLE ONLY public.drivers
 
 
 --
--- TOC entry 5093 (class 2606 OID 17764)
+-- TOC entry 5092 (class 2606 OID 17764)
 -- Name: events events_organizer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1859,7 +1850,7 @@ ALTER TABLE ONLY public.events
 
 
 --
--- TOC entry 5077 (class 2606 OID 17539)
+-- TOC entry 5076 (class 2606 OID 17539)
 -- Name: favorite_cats favorite_cats_cat_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1868,7 +1859,7 @@ ALTER TABLE ONLY public.favorite_cats
 
 
 --
--- TOC entry 5078 (class 2606 OID 17534)
+-- TOC entry 5077 (class 2606 OID 17534)
 -- Name: favorite_cats favorite_cats_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1877,7 +1868,7 @@ ALTER TABLE ONLY public.favorite_cats
 
 
 --
--- TOC entry 5100 (class 2606 OID 19333)
+-- TOC entry 5099 (class 2606 OID 19333)
 -- Name: lost_cats fk_owner; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1886,7 +1877,7 @@ ALTER TABLE ONLY public.lost_cats
 
 
 --
--- TOC entry 5101 (class 2606 OID 19372)
+-- TOC entry 5100 (class 2606 OID 19372)
 -- Name: reports fk_reports_lost_cat; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1895,7 +1886,7 @@ ALTER TABLE ONLY public.reports
 
 
 --
--- TOC entry 5097 (class 2606 OID 19313)
+-- TOC entry 5096 (class 2606 OID 19313)
 -- Name: post_likes post_likes_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1904,7 +1895,7 @@ ALTER TABLE ONLY public.post_likes
 
 
 --
--- TOC entry 5098 (class 2606 OID 19278)
+-- TOC entry 5097 (class 2606 OID 19278)
 -- Name: post_likes post_likes_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1913,7 +1904,7 @@ ALTER TABLE ONLY public.post_likes
 
 
 --
--- TOC entry 5086 (class 2606 OID 17683)
+-- TOC entry 5085 (class 2606 OID 17683)
 -- Name: reply_comment reply_comment_comment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1922,7 +1913,7 @@ ALTER TABLE ONLY public.reply_comment
 
 
 --
--- TOC entry 5087 (class 2606 OID 17688)
+-- TOC entry 5086 (class 2606 OID 17688)
 -- Name: reply_comment reply_comment_parent_reply_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1931,7 +1922,7 @@ ALTER TABLE ONLY public.reply_comment
 
 
 --
--- TOC entry 5088 (class 2606 OID 17678)
+-- TOC entry 5087 (class 2606 OID 17678)
 -- Name: reply_comment reply_comment_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1940,7 +1931,7 @@ ALTER TABLE ONLY public.reply_comment
 
 
 --
--- TOC entry 5102 (class 2606 OID 19362)
+-- TOC entry 5101 (class 2606 OID 19362)
 -- Name: reports reports_reporter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1949,7 +1940,7 @@ ALTER TABLE ONLY public.reports
 
 
 --
--- TOC entry 5103 (class 2606 OID 19367)
+-- TOC entry 5102 (class 2606 OID 19367)
 -- Name: reports reports_shelter_assigned_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1958,7 +1949,7 @@ ALTER TABLE ONLY public.reports
 
 
 --
--- TOC entry 5079 (class 2606 OID 17590)
+-- TOC entry 5078 (class 2606 OID 17590)
 -- Name: rescue_assignments rescue_assignments_driver_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1967,7 +1958,7 @@ ALTER TABLE ONLY public.rescue_assignments
 
 
 --
--- TOC entry 5080 (class 2606 OID 19377)
+-- TOC entry 5079 (class 2606 OID 19377)
 -- Name: rescue_assignments rescue_assignments_report_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1976,7 +1967,7 @@ ALTER TABLE ONLY public.rescue_assignments
 
 
 --
--- TOC entry 5081 (class 2606 OID 17595)
+-- TOC entry 5080 (class 2606 OID 17595)
 -- Name: rescue_assignments rescue_assignments_shelter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1985,7 +1976,7 @@ ALTER TABLE ONLY public.rescue_assignments
 
 
 --
--- TOC entry 5094 (class 2606 OID 17852)
+-- TOC entry 5093 (class 2606 OID 17852)
 -- Name: user_progress user_progress_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1994,7 +1985,7 @@ ALTER TABLE ONLY public.user_progress
 
 
 --
--- TOC entry 5091 (class 2606 OID 17726)
+-- TOC entry 5090 (class 2606 OID 17726)
 -- Name: verification_log verification_log_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2003,7 +1994,7 @@ ALTER TABLE ONLY public.verification_log
 
 
 --
--- TOC entry 5092 (class 2606 OID 17731)
+-- TOC entry 5091 (class 2606 OID 17731)
 -- Name: verification_log verification_log_verifier_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2011,361 +2002,11 @@ ALTER TABLE ONLY public.verification_log
     ADD CONSTRAINT verification_log_verifier_id_fkey FOREIGN KEY (verifier_id) REFERENCES public.users(id);
 
 
---
--- TOC entry 5296 (class 0 OID 0)
--- Dependencies: 245
--- Name: SEQUENCE adoptions_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.adoptions_id_seq TO kahya;
-
-
---
--- TOC entry 5297 (class 0 OID 0)
--- Dependencies: 224
--- Name: TABLE adoptions; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.adoptions TO kahya;
-
-
---
--- TOC entry 5298 (class 0 OID 0)
--- Dependencies: 232
--- Name: TABLE cat_facts; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.cat_facts TO kahya;
-
-
---
--- TOC entry 5299 (class 0 OID 0)
--- Dependencies: 244
--- Name: SEQUENCE cats_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.cats_id_seq TO kahya;
-
-
---
--- TOC entry 5300 (class 0 OID 0)
--- Dependencies: 223
--- Name: TABLE cats; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.cats TO kahya;
-
-
---
--- TOC entry 5301 (class 0 OID 0)
--- Dependencies: 227
--- Name: TABLE chat_messages; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.chat_messages TO kahya;
-
-
---
--- TOC entry 5302 (class 0 OID 0)
--- Dependencies: 247
--- Name: SEQUENCE comment_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.comment_id_seq TO kahya;
-
-
---
--- TOC entry 5303 (class 0 OID 0)
--- Dependencies: 228
--- Name: TABLE comment; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.comment TO kahya;
-
-
---
--- TOC entry 5304 (class 0 OID 0)
--- Dependencies: 252
--- Name: TABLE community_post; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.community_post TO kahya;
-
-
---
--- TOC entry 5305 (class 0 OID 0)
--- Dependencies: 249
--- Name: SEQUENCE community_post_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.community_post_id_seq TO kahya;
-
-
---
--- TOC entry 5307 (class 0 OID 0)
--- Dependencies: 251
--- Name: SEQUENCE community_post_id_seq1; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.community_post_id_seq1 TO kahya;
-
-
---
--- TOC entry 5308 (class 0 OID 0)
--- Dependencies: 220
--- Name: TABLE detail_user_individu; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.detail_user_individu TO kahya;
-
-
---
--- TOC entry 5309 (class 0 OID 0)
--- Dependencies: 221
--- Name: TABLE detail_user_shelter; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.detail_user_shelter TO kahya;
-
-
---
--- TOC entry 5310 (class 0 OID 0)
--- Dependencies: 230
--- Name: TABLE donations; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.donations TO kahya;
-
-
---
--- TOC entry 5312 (class 0 OID 0)
--- Dependencies: 246
--- Name: SEQUENCE donations_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.donations_id_seq TO kahya;
-
-
---
--- TOC entry 5313 (class 0 OID 0)
--- Dependencies: 243
--- Name: TABLE driver_locations; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.driver_locations TO kahya;
-
-
---
--- TOC entry 5315 (class 0 OID 0)
--- Dependencies: 242
--- Name: SEQUENCE driver_locations_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.driver_locations_id_seq TO kahya;
-
-
---
--- TOC entry 5316 (class 0 OID 0)
--- Dependencies: 222
--- Name: TABLE drivers; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.drivers TO kahya;
-
-
---
--- TOC entry 5317 (class 0 OID 0)
--- Dependencies: 233
--- Name: TABLE events; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.events TO kahya;
-
-
---
--- TOC entry 5318 (class 0 OID 0)
--- Dependencies: 234
--- Name: TABLE faq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.faq TO kahya;
-
-
---
--- TOC entry 5319 (class 0 OID 0)
--- Dependencies: 225
--- Name: TABLE favorite_cats; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.favorite_cats TO kahya;
-
-
---
--- TOC entry 5320 (class 0 OID 0)
--- Dependencies: 237
--- Name: TABLE global_achievements; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.global_achievements TO kahya;
-
-
---
--- TOC entry 5322 (class 0 OID 0)
--- Dependencies: 236
--- Name: SEQUENCE global_achievements_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.global_achievements_id_seq TO kahya;
-
-
---
--- TOC entry 5323 (class 0 OID 0)
--- Dependencies: 239
--- Name: TABLE global_quests; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.global_quests TO kahya;
-
-
---
--- TOC entry 5325 (class 0 OID 0)
--- Dependencies: 238
--- Name: SEQUENCE global_quests_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.global_quests_id_seq TO kahya;
-
-
---
--- TOC entry 5326 (class 0 OID 0)
--- Dependencies: 254
--- Name: TABLE lost_cats; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.lost_cats TO kahya;
-
-
---
--- TOC entry 5328 (class 0 OID 0)
--- Dependencies: 253
--- Name: SEQUENCE lost_cats_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.lost_cats_id_seq TO kahya;
-
-
---
--- TOC entry 5329 (class 0 OID 0)
--- Dependencies: 250
--- Name: TABLE post_likes; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.post_likes TO kahya;
-
-
---
--- TOC entry 5330 (class 0 OID 0)
--- Dependencies: 248
--- Name: SEQUENCE reply_comment_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.reply_comment_id_seq TO kahya;
-
-
---
--- TOC entry 5331 (class 0 OID 0)
--- Dependencies: 229
--- Name: TABLE reply_comment; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.reply_comment TO kahya;
-
-
---
--- TOC entry 5332 (class 0 OID 0)
--- Dependencies: 256
--- Name: TABLE reports; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.reports TO kahya;
-
-
---
--- TOC entry 5334 (class 0 OID 0)
--- Dependencies: 255
--- Name: SEQUENCE reports_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.reports_id_seq TO kahya;
-
-
---
--- TOC entry 5335 (class 0 OID 0)
--- Dependencies: 226
--- Name: TABLE rescue_assignments; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.rescue_assignments TO kahya;
-
-
---
--- TOC entry 5336 (class 0 OID 0)
--- Dependencies: 241
--- Name: TABLE user_progress; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.user_progress TO kahya;
-
-
---
--- TOC entry 5338 (class 0 OID 0)
--- Dependencies: 240
--- Name: SEQUENCE user_progress_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.user_progress_id_seq TO kahya;
-
-
---
--- TOC entry 5339 (class 0 OID 0)
--- Dependencies: 219
--- Name: TABLE users; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.users TO kahya;
-
-
---
--- TOC entry 5340 (class 0 OID 0)
--- Dependencies: 235
--- Name: SEQUENCE users_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.users_id_seq TO kahya;
-
-
---
--- TOC entry 5341 (class 0 OID 0)
--- Dependencies: 231
--- Name: TABLE verification_log; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.verification_log TO kahya;
-
-
---
--- TOC entry 2158 (class 826 OID 19384)
--- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: postgres
---
-
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO kahya;
-
-
--- Completed on 2025-11-22 12:18:58
+-- Completed on 2025-11-22 14:55:01
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict ScCX8gwQfG5NWEuuWfmjRr7FidZAuUhsflz6nRNHdIZf7wx56UX2ijuWgQTJDwO
+\unrestrict 6znHAuhGDk61wrjwZ74Lgxv0ya3GOBrfsNEM61hYVrPJimlDDkGnNoFH2d5LbY6
 
