@@ -126,6 +126,7 @@
            <div class="space-y-3">
               <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Jenis</span><p class="font-semibold text-sm text-[#1F1F1F] capitalize">{{ trackingData.laporan.jenis }}</p></div>
               <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Pemilik/Pelapor</span><p class="font-semibold text-sm text-[#1F1F1F]">{{ trackingData.laporan.pemilik }}</p></div>
+              <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Lokasi</span><p class="font-semibold text-sm text-[#1F1F1F]">{{ trackingData.laporan.lokasi }}</p></div>
               <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Deskripsi</span><p class="font-semibold text-sm text-[#1F1F1F]">{{ trackingData.laporan.deskripsi }}</p></div>
               
               <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
