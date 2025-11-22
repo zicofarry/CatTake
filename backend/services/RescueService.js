@@ -149,6 +149,7 @@ class RescueService {
 
                 d.full_name AS driver_name, 
                 d.license_info,
+                d.contact_phone AS driver_phone, -- INI YANG BIKIN ERROR KALAU KOLOM GAK ADA
                 
                 dus.shelter_name, 
                 dus.contact_phone AS shelter_phone,
@@ -166,7 +167,8 @@ class RescueService {
             JOIN users u_pelapor ON r.reporter_id = u_pelapor.id
             LEFT JOIN detail_user_individu dui ON u_pelapor.id = dui.id
             
-            WHERE ra.id = $1
+            -- PERBAIKAN LOGIC PENCARIAN (Lebih Aman)
+            WHERE ra.tracking_id = $1::text OR CAST(ra.id AS TEXT) = $1::text
         `;
         
         const result = await db.query(query, [assignmentId]);
@@ -191,7 +193,8 @@ class RescueService {
                 nama: row.driver_name,
                 shelter: row.shelter_name,
                 license: row.license_info,
-                foto: '/img/profile_default.svg' // Default dulu
+                foto: '/img/profile_default.svg', 
+                phone: row.driver_phone || '08123456789' // Default kalau null
             },
             
             laporan: {
@@ -245,6 +248,54 @@ class RescueService {
         const query = `SELECT id FROM drivers WHERE user_id = $1`;
         const res = await db.query(query, [userId]);
         return res.rows[0]; // Return { id: 'DRV-...' }
+    }
+
+    // [BARU] Ambil Chat (Pakai created_at)
+    static async getChatMessages(trackingId) {
+        const query = `
+            SELECT cm.id, cm.sender_id, cm.message, cm.created_at, u.role, u.username
+            FROM chat_messages cm
+            JOIN rescue_assignments ra ON cm.assignment_id = ra.id
+            JOIN users u ON cm.sender_id = u.id
+            WHERE ra.tracking_id = $1 OR CAST(ra.id AS TEXT) = $1
+            ORDER BY cm.created_at ASC
+        `;
+        const res = await db.query(query, [trackingId]);
+        return res.rows;
+    }
+
+    // [BARU] Kirim Chat (Pakai created_at)
+    static async sendChatMessage(trackingId, senderId, message) {
+        // 1. Cari ID Assignment
+        const findQuery = `SELECT id FROM rescue_assignments WHERE tracking_id = $1 OR CAST(id AS TEXT) = $1`;
+        const findRes = await db.query(findQuery, [trackingId]);
+        
+        if (findRes.rows.length === 0) throw new Error("Assignment tidak ditemukan");
+        const assignmentIntId = findRes.rows[0].id;
+
+        // 2. Insert Pesan
+        const query = `
+            INSERT INTO chat_messages (assignment_id, sender_id, message, created_at)
+            VALUES ($1, $2, $3, NOW())
+            RETURNING id, message, created_at, sender_id
+        `;
+        const res = await db.query(query, [assignmentIntId, senderId, message]);
+        return res.rows[0];
+    }
+
+    static async deleteChatMessage(messageId, userId) {
+        // Query memastikan hanya menghapus jika ID pesan cocok DAN sender_id adalah user yang login
+        const query = `
+            DELETE FROM chat_messages 
+            WHERE id = $1 AND sender_id = $2
+            RETURNING id
+        `;
+        const result = await db.query(query, [messageId, userId]);
+        
+        if (result.rowCount === 0) {
+            throw new Error("Gagal menghapus pesan (Mungkin bukan pesan Anda atau pesan tidak ditemukan)");
+        }
+        return true;
     }
 }
 

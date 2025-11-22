@@ -26,5 +26,44 @@ class ReportService {
         const result = await db.query(query, values);
         return result.rows[0];
     }
+
+    // Ambil Riwayat Laporan Milik User Tertentu
+    static async getReportsByUser(userId) {
+        const query = `
+            SELECT 
+                r.*,
+                ra.tracking_id,
+                ra.assignment_status,
+                d.full_name as driver_name
+            FROM reports r
+            LEFT JOIN rescue_assignments ra ON r.id = ra.report_id
+            LEFT JOIN drivers d ON ra.driver_id = d.id
+            WHERE r.reporter_id = $1
+            ORDER BY 
+                -- LOGIKA SORTING CUSTOM --
+                CASE 
+                    -- 1. Paling Atas: Sedang Dijemput / OTW (Butuh Tracking)
+                    WHEN ra.assignment_status IN ('assigned', 'in_transit') THEN 1
+                    
+                    -- 2. Tengah: Belum ada status (Menunggu Shelter)
+                    WHEN ra.assignment_status IS NULL THEN 2
+                    
+                    -- 3. Bawah: Sudah Selesai
+                    WHEN ra.assignment_status = 'completed' THEN 3
+                    
+                    ELSE 4
+                END ASC,
+                r.created_at DESC -- Di dalam grup yang sama, urutkan dari yang terbaru
+        `;
+        
+        const result = await db.query(query, [userId]);
+        
+        return result.rows.map(row => ({
+            ...row,
+            photo: row.photo ? `/public/img/report_cat/${row.photo}` : '/img/placeholder.png',
+            status_label: row.assignment_status || 'Mencari Shelter',
+            is_trackable: !!row.tracking_id // True jika ada driver
+        }));
+    }
 }
 module.exports = ReportService;

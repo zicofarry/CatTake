@@ -161,6 +161,48 @@ class RescueController {
             return reply.code(500).send({ error: error.message });
         }
     }
+
+    // GET /api/v1/rescue/chat/:id
+    static async getChats(req, reply) {
+        try {
+            const { id } = req.params; // id = tracking_id (RES-BDG-...)
+            const chats = await RescueService.getChatMessages(id);
+            return reply.send(chats);
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    // POST /api/v1/rescue/chat
+    static async sendChat(req, reply) {
+        try {
+            const { trackingId, message } = req.body;
+            const senderId = req.user.id; // Ambil dari Token User yang login
+
+            if (!message || !trackingId) {
+                return reply.code(400).send({ error: "Data message dan trackingId wajib diisi" });
+            }
+
+            const result = await RescueService.sendChatMessage(trackingId, senderId, message);
+            return reply.send(result);
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    static async deleteChat(req, reply) {
+        try {
+            const { messageId } = req.params;
+            const userId = req.user.id; // Ambil ID user yang sedang login
+
+            // Panggil service (kirim userId untuk validasi keamanan)
+            await RescueService.deleteChatMessage(messageId, userId);
+            
+            return reply.send({ message: 'Pesan dihapus' });
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
 }
 
 module.exports = RescueController;

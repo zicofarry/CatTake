@@ -48,6 +48,16 @@ class ReportController {
             return reply.code(500).send({ error: error.message });
         }
     }
+
+    static async getMyHistory(req, reply) {
+        try {
+            const userId = req.user.id;
+            const history = await ReportService.getReportsByUser(userId);
+            return reply.send(history);
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
 }
 
 module.exports = ReportController;

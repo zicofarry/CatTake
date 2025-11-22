@@ -27,6 +27,11 @@ async function rescueRoutes(fastify, options) {
     // TRACKING LOCATION
     fastify.post('/location', RescueController.updateLocation); // Driver kirim lokasi
     fastify.get('/location/:assignmentId', RescueController.getLocation); // User/Shelter liat lokasi
+
+    // FITUR CHAT
+    fastify.get('/chat/:id', RescueController.getChats);
+    fastify.post('/chat', RescueController.sendChat);
+    fastify.delete('/chat/:messageId', RescueController.deleteChat);
 }
 
 module.exports = rescueRoutes;

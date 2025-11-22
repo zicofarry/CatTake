@@ -88,14 +88,15 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-2">
-                        <router-link 
-                            :to="`/track?id=${task.assignment_id}`"
-                            class="bg-[#3A5F50] hover:bg-[#2c473c] text-white font-bold py-2 px-6 rounded-xl shadow-md transition text-sm flex items-center gap-2"
-                        >
-                            <i class="fas fa-map"></i> Lacak Status
-                        </router-link>
-                    </div>
+                    <<div v-for="task in myTasks" :key="task.id" class="..."> <div class="flex justify-end gap-2">
+                          <router-link 
+                              :to="`/track?id=${task.tracking_id}`"
+                              class="bg-[#3A5F50] hover:bg-[#2c473c] text-white font-bold py-2 px-6 rounded-xl shadow-md transition text-sm flex items-center gap-2"
+                          >
+                              <i class="fas fa-map"></i> Lacak Status
+                          </router-link>
+                      </div>
+                  </div>
                 </div>
             </div>
 
@@ -114,6 +115,23 @@
                 <p class="text-white mt-4 text-lg max-w-md hidden md:block">
                   Laporkan penemuan kucing liar, kucing orang lain yang hilang, atau umumkan kucingmu yang hilang.
                 </p>
+
+                <div class="bg-white/20 backdrop-blur-md p-1.5 rounded-full flex">
+                    <button 
+                        @click="switchUserTab('create')"
+                        class="px-6 py-2 rounded-full font-bold transition-all text-sm md:text-base"
+                        :class="activeUserTab === 'create' ? 'bg-white text-[#3A5F50] shadow-lg' : 'text-white hover:bg-white/10'"
+                    >
+                        <i class="fas fa-edit mr-2"></i>Buat Laporan
+                    </button>
+                    <button 
+                        @click="switchUserTab('history')"
+                        class="px-6 py-2 rounded-full font-bold transition-all text-sm md:text-base"
+                        :class="activeUserTab === 'history' ? 'bg-white text-[#3A5F50] shadow-lg' : 'text-white hover:bg-white/10'"
+                    >
+                        <i class="fas fa-history mr-2"></i>Riwayat Saya
+                    </button>
+                </div>
               </div>
               <div class="h-full flex items-end">
                   <img 
@@ -126,251 +144,317 @@
       </div>
 
       <div class="max-w-4xl mx-auto px-6 relative z-10 mt-12 md:mt-32">
-        
-        <div class="flex flex-wrap justify-center gap-4 mb-12">
-          <div class="bg-gray-200/80 backdrop-blur-sm p-2 rounded-[25px]">
-              <button 
-                @click="setActiveReportType('stray')"
-                class="min-w-[160px] py-3 px-6 rounded-[20px] font-bold text-lg transition-all duration-300"
-                :class="activeReportType === 'stray' ? 'bg-[#EBCD5E] text-white shadow-md scale-105' : 'bg-transparent text-gray-600 hover:bg-white/50'"
-              >
-                Nemu Kucing Liar
-              </button>
-          </div>
-          <div class="bg-gray-200/80 backdrop-blur-sm p-2 rounded-[25px]">
-              <button 
-                @click="setActiveReportType('missing')"
-                class="min-w-[160px] py-3 px-6 rounded-[20px] font-bold text-lg transition-all duration-300"
-                :class="activeReportType === 'missing' ? 'bg-[#E9B92F] text-white shadow-md scale-105' : 'bg-transparent text-gray-600 hover:bg-white/50'"
-              >
-                Nemu Kucing Hilang
-              </button>
-          </div>
-          <div class="bg-gray-200/80 backdrop-blur-sm p-2 rounded-[25px]">
-              <button 
-                @click="setActiveReportType('my_lost')"
-                class="min-w-[160px] py-3 px-6 rounded-[20px] font-bold text-lg transition-all duration-300 border-2 border-transparent"
-                :class="activeReportType === 'my_lost' ? 'bg-red-500 text-white shadow-md scale-105' : 'bg-transparent text-gray-600 hover:bg-white/50 hover:text-red-500 hover:border-red-200'"
-              >
-                Kucing Saya Hilang!
-              </button>
-          </div>
-        </div>
-
-        <div class="bg-white p-8 md:p-12 rounded-[50px] shadow-2xl relative z-20">
-          
-          <LoginOverlay 
-              :isLoggedIn="isLoggedInProp" 
-              :message="activeReportType === 'my_lost' ? 'Login untuk memposting info kehilangan.' : 'Kamu perlu login dulu sebelum melaporkan kucing.'" 
-              buttonText="Login Sekarang" 
-              loginRoute="/login"
-          />
-
-          <form v-if="activeReportType !== 'my_lost'" @submit.prevent="submitDiscoveryReport" class="space-y-8">
-            
-          <div v-if="activeReportType === 'missing'" class="relative">
-              <label for="ownerName" class="block text-xl font-bold text-[#1F1F1F] mb-4">
-                Cari Data Kucing Hilang
-                <span class="text-sm font-normal text-gray-500 ml-2">*Ketik nama kucing atau pemilik</span>
-              </label>
-              
-              <div class="relative">
-                  <input 
-                    type="text" 
-                    id="ownerName"
-                    v-model="searchQuery"
-                    @input="handleSearchInput" 
-                    @focus="isDropdownOpen = true"
-                    @blur="handleBlur"
-                    placeholder="Cari: 'Mochi' atau 'Andi'..."
-                    autocomplete="off"
-                    class="w-full p-5 bg-gray-100 rounded-2xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] text-lg"
-                  >
-                  <div class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
-                      <i v-if="isSearching" class="fas fa-spinner fa-spin"></i>
-                      <i v-else class="fas fa-search"></i>
-                  </div>
-              </div>
-
-              <transition name="fade">
-                  <ul v-if="isDropdownOpen && searchResults.length > 0" class="absolute z-50 w-full bg-white mt-2 rounded-2xl shadow-xl max-h-60 overflow-y-auto border border-gray-100">
-                      <li 
-                          v-for="item in searchResults" 
-                          :key="item.id"
-                          @mousedown.prevent="selectLostCat(item)"
-                          class="p-4 hover:bg-[#EBCD5E]/10 cursor-pointer transition-colors border-b border-gray-50 flex items-center gap-3"
-                      >
-                          <img :src="item.photo" class="w-10 h-10 rounded-full object-cover bg-gray-200">
-                          
-                          <div class="flex flex-col">
-                              <span class="font-bold text-[#1F1F1F]">{{ item.cat_name }}</span>
-                              <span class="text-xs text-gray-500">Pemilik: {{ item.owner_name }}</span>
-                          </div>
-                      </li>
-                  </ul>
-                  <div v-else-if="isDropdownOpen && searchQuery.length > 2 && !isSearching" class="absolute z-50 w-full bg-white mt-2 rounded-2xl shadow-xl p-4 text-gray-500 text-center">
-                      Data tidak ditemukan.
-                  </div>
-              </transition>
-            </div>
-
-            <div>
-              <label class="block text-xl font-bold text-[#1F1F1F] mb-4">Lokasi Ditemukan</label>
-              <div class="flex gap-4 flex-col md:flex-row">
-                <div 
-                  @click="openMapModal"
-                  class="w-full md:w-40 h-36 flex-none bg-gray-200 rounded-2xl overflow-hidden relative cursor-pointer"
+        <div v-if="activeUserTab === 'create'">
+          <div class="flex flex-wrap justify-center gap-4 mb-12">
+            <div class="bg-gray-200/80 backdrop-blur-sm p-2 rounded-[25px]">
+                <button 
+                  @click="setActiveReportType('stray')"
+                  class="min-w-[160px] py-3 px-6 rounded-[20px] font-bold text-lg transition-all duration-300"
+                  :class="activeReportType === 'stray' ? 'bg-[#EBCD5E] text-white shadow-md scale-105' : 'bg-transparent text-gray-600 hover:bg-white/50'"
                 >
-                  <img src="../assets/img/maps.png" class="w-full h-full object-cover opacity-80">
-
-                  <div class="absolute inset-0 flex items-center justify-center">
-                    <i class="
-                      fas fa-map-marker-alt 
-                      text-3xl 
-                      text-blue-500 
-                      drop-shadow-md
-                      transition-all duration-300
-                      hover:scale-110
-                      hover:text-blue-600
-                    "></i>
-                  </div>
-                </div>
-
-
-                <textarea 
-                  v-model="reportForm.location" 
-                  required 
-                  rows="4" 
-                  placeholder="Klik peta di samping untuk set lokasi otomatis, atau ketik manual..."
-                  class="flex-grow p-5 bg-gray-100 rounded-2xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-lg resize-none"
-                ></textarea>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xl font-bold text-[#1F1F1F] mb-4">Deskripsi Kondisi</label>
-              <textarea v-model="reportForm.description" required rows="3" placeholder="Jelaskan ciri-ciri, kondisi, dll..." class="w-full p-5 bg-gray-100 rounded-2xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-lg resize-none"></textarea>
-            </div>
-
-            <div>
-              <label class="block text-xl font-bold text-[#1F1F1F] mb-4">Foto Bukti</label>
-              <div @click="triggerFileInput" class="bg-gray-100 rounded-2xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-300 hover:border-[#EBCD5E] transition">
-                <input type="file" ref="fileInput" class="hidden" accept="image/*" @change="handleFileChange">
-                <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
-                <p class="text-gray-500" v-if="!reportForm.file">Klik untuk ambil/upload foto</p>
-                <p class="text-[#3A5F50] font-bold" v-else>File: {{ reportForm.file.name }}</p>
-              </div>
-            </div>
-
-            <div class="pt-4 text-center">
-              <button type="submit" class="bg-[#EBCD5E] hover:bg-[#e0c355] text-white text-xl font-bold py-4 px-16 rounded-full shadow-lg transition-transform hover:-translate-y-1 active:scale-95 w-full md:w-auto">
-                Kirim Laporan
-              </button>
-            </div>
-          </form>
-
-
-          <form v-else @submit.prevent="submitLostCatAd" class="space-y-6">
-            <div class="bg-red-50 p-4 rounded-xl border border-red-100 text-red-800 text-sm mb-6 flex gap-3">
-                <i class="fas fa-info-circle mt-1"></i>
-                <p>Data ini akan dipublikasikan di halaman "Daftar Kucing Hilang" agar komunitas bisa bantu mencari.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Nama Kucing</label>
-                    <input type="text" v-model="lostCatForm.name" required class="w-full p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none" placeholder="Misal: Mochi">
-                </div>
-                <div>
-                    <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Umur (Bulan)</label>
-                    <input type="number" v-model="lostCatForm.age" required class="w-full p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none" placeholder="Contoh: 12">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Ras</label>
-                    <input type="text" v-model="lostCatForm.breed" class="w-full p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none" placeholder="Domestik/Persia/dll">
-                </div>
-                <div>
-                    <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Warna Dominan</label>
-                    <input type="text" v-model="lostCatForm.color" required class="w-full p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none" placeholder="Oren/Hitam Putih">
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Ciri-ciri Khusus</label>
-                <textarea v-model="lostCatForm.description" required rows="3" class="w-full p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none resize-none" placeholder="Contoh: Pakai kalung merah, ekor bengkok..."></textarea>
-            </div>
-
-            <div>
-                <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Lokasi Terakhir Dilihat</label>
-                    <div class="flex gap-4 flex-col md:flex-row">
-                                        <div 
-                      @click="openMapModal"
-                      class="w-full md:w-40 h-36 flex-none bg-gray-200 rounded-2xl overflow-hidden relative cursor-pointer"
-                    >
-                      <img src="../assets/img/maps.png" class="w-full h-full object-cover opacity-80">
-
-                      <div class="absolute inset-0 flex items-center justify-center">
-                        <i class="
-                          fas fa-map-marker-alt 
-                          text-3xl 
-                          text-blue-500 
-                          drop-shadow-md
-                          transition-all duration-300
-                          hover:scale-110
-                          hover:text-blue-600
-                        "></i>
-                      </div>
-                    </div>
-                    <textarea v-model="lostCatForm.last_seen_address" required rows="2" class="flex-grow p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none resize-none" placeholder="Klik peta di samping untuk set lokasi otomatis, atau ketik manual..."></textarea>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Imbalan (Opsional)</label>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-500">Rp</span>
-                    <input type="number" v-model="lostCatForm.reward_amount" class="w-full p-4 pl-12 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none" placeholder="0">
-                </div>
-            </div>
-
-            <div>
-              <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Foto Kucing</label>
-              <div
-                  @click="triggerFileInput"
-                  class="bg-gray-100 rounded-2xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-300 hover:border-[#EBCD5E] transition"
-                >
-                  <input
-                    type="file"
-                    ref="fileInput"
-                    class="hidden"
-                    accept="image/*"
-                    @change="handleLostCatFile"
-                  >
-
-                  <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
-
-                  <p class="text-gray-500" v-if="!reportForm.file">
-                    Klik untuk ambil/upload foto
-                  </p>
-
-                  <p class="text-[#3A5F50] font-bold" v-else>
-                    File: {{ reportForm.file.name }}
-                  </p>
-                </div>
-            </div>
-
-            <div class="pt-4">
-                <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-4 rounded-full shadow-lg transition-transform hover:-translate-y-1 active:scale-95">
-                    Pasang Iklan Kehilangan
+                  Nemu Kucing Liar
                 </button>
             </div>
-          </form>
+            <div class="bg-gray-200/80 backdrop-blur-sm p-2 rounded-[25px]">
+                <button 
+                  @click="setActiveReportType('missing')"
+                  class="min-w-[160px] py-3 px-6 rounded-[20px] font-bold text-lg transition-all duration-300"
+                  :class="activeReportType === 'missing' ? 'bg-[#E9B92F] text-white shadow-md scale-105' : 'bg-transparent text-gray-600 hover:bg-white/50'"
+                >
+                  Nemu Kucing Hilang
+                </button>
+            </div>
+            <div class="bg-gray-200/80 backdrop-blur-sm p-2 rounded-[25px]">
+                <button 
+                  @click="setActiveReportType('my_lost')"
+                  class="min-w-[160px] py-3 px-6 rounded-[20px] font-bold text-lg transition-all duration-300 border-2 border-transparent"
+                  :class="activeReportType === 'my_lost' ? 'bg-red-500 text-white shadow-md scale-105' : 'bg-transparent text-gray-600 hover:bg-white/50 hover:text-red-500 hover:border-red-200'"
+                >
+                  Kucing Saya Hilang!
+                </button>
+            </div>
+          </div>
 
+          <div class="bg-white p-8 md:p-12 rounded-[50px] shadow-2xl relative z-20">
+            
+            <LoginOverlay 
+                :isLoggedIn="isLoggedInProp" 
+                :message="activeReportType === 'my_lost' ? 'Login untuk memposting info kehilangan.' : 'Kamu perlu login dulu sebelum melaporkan kucing.'" 
+                buttonText="Login Sekarang" 
+                loginRoute="/login"
+            />
+
+            <form v-if="activeReportType !== 'my_lost'" @submit.prevent="submitDiscoveryReport" class="space-y-8">
+              
+            <div v-if="activeReportType === 'missing'" class="relative">
+                <label for="ownerName" class="block text-xl font-bold text-[#1F1F1F] mb-4">
+                  Cari Data Kucing Hilang
+                  <span class="text-sm font-normal text-gray-500 ml-2">*Ketik nama kucing atau pemilik</span>
+                </label>
+                
+                <div class="relative">
+                    <input 
+                      type="text" 
+                      id="ownerName"
+                      v-model="searchQuery"
+                      @input="handleSearchInput" 
+                      @focus="isDropdownOpen = true"
+                      @blur="handleBlur"
+                      placeholder="Cari: 'Mochi' atau 'Andi'..."
+                      autocomplete="off"
+                      class="w-full p-5 bg-gray-100 rounded-2xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-[#1F1F1F] text-lg"
+                    >
+                    <div class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                        <i v-if="isSearching" class="fas fa-spinner fa-spin"></i>
+                        <i v-else class="fas fa-search"></i>
+                    </div>
+                </div>
+
+                <transition name="fade">
+                    <ul v-if="isDropdownOpen && searchResults.length > 0" class="absolute z-50 w-full bg-white mt-2 rounded-2xl shadow-xl max-h-60 overflow-y-auto border border-gray-100">
+                        <li 
+                            v-for="item in searchResults" 
+                            :key="item.id"
+                            @mousedown.prevent="selectLostCat(item)"
+                            class="p-4 hover:bg-[#EBCD5E]/10 cursor-pointer transition-colors border-b border-gray-50 flex items-center gap-3"
+                        >
+                            <img :src="item.photo" class="w-10 h-10 rounded-full object-cover bg-gray-200">
+                            
+                            <div class="flex flex-col">
+                                <span class="font-bold text-[#1F1F1F]">{{ item.cat_name }}</span>
+                                <span class="text-xs text-gray-500">Pemilik: {{ item.owner_name }}</span>
+                            </div>
+                        </li>
+                    </ul>
+                    <div v-else-if="isDropdownOpen && searchQuery.length > 2 && !isSearching" class="absolute z-50 w-full bg-white mt-2 rounded-2xl shadow-xl p-4 text-gray-500 text-center">
+                        Data tidak ditemukan.
+                    </div>
+                </transition>
+              </div>
+
+              <div>
+                <label class="block text-xl font-bold text-[#1F1F1F] mb-4">Lokasi Ditemukan</label>
+                <div class="flex gap-4 flex-col md:flex-row">
+                  <div 
+                    @click="openMapModal"
+                    class="w-full md:w-40 h-36 flex-none bg-gray-200 rounded-2xl overflow-hidden relative cursor-pointer"
+                  >
+                    <img src="../assets/img/maps.png" class="w-full h-full object-cover opacity-80">
+
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <i class="
+                        fas fa-map-marker-alt 
+                        text-3xl 
+                        text-blue-500 
+                        drop-shadow-md
+                        transition-all duration-300
+                        hover:scale-110
+                        hover:text-blue-600
+                      "></i>
+                    </div>
+                  </div>
+
+
+                  <textarea 
+                    v-model="reportForm.location" 
+                    required 
+                    rows="4" 
+                    placeholder="Klik peta di samping untuk set lokasi otomatis, atau ketik manual..."
+                    class="flex-grow p-5 bg-gray-100 rounded-2xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-lg resize-none"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xl font-bold text-[#1F1F1F] mb-4">Deskripsi Kondisi</label>
+                <textarea v-model="reportForm.description" required rows="3" placeholder="Jelaskan ciri-ciri, kondisi, dll..." class="w-full p-5 bg-gray-100 rounded-2xl border-none focus:ring-2 focus:ring-[#EBCD5E] outline-none text-lg resize-none"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-xl font-bold text-[#1F1F1F] mb-4">Foto Bukti</label>
+                <div @click="triggerFileInput" class="bg-gray-100 rounded-2xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-300 hover:border-[#EBCD5E] transition">
+                  <input type="file" ref="fileInput" class="hidden" accept="image/*" @change="handleFileChange">
+                  <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
+                  <p class="text-gray-500" v-if="!reportForm.file">Klik untuk ambil/upload foto</p>
+                  <p class="text-[#3A5F50] font-bold" v-else>File: {{ reportForm.file.name }}</p>
+                </div>
+              </div>
+
+              <div class="pt-4 text-center">
+                <button type="submit" class="bg-[#EBCD5E] hover:bg-[#e0c355] text-white text-xl font-bold py-4 px-16 rounded-full shadow-lg transition-transform hover:-translate-y-1 active:scale-95 w-full md:w-auto">
+                  Kirim Laporan
+                </button>
+              </div>
+            </form>
+
+
+            <form v-else @submit.prevent="submitLostCatAd" class="space-y-6">
+              <div class="bg-red-50 p-4 rounded-xl border border-red-100 text-red-800 text-sm mb-6 flex gap-3">
+                  <i class="fas fa-info-circle mt-1"></i>
+                  <p>Data ini akan dipublikasikan di halaman "Daftar Kucing Hilang" agar komunitas bisa bantu mencari.</p>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                      <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Nama Kucing</label>
+                      <input type="text" v-model="lostCatForm.name" required class="w-full p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none" placeholder="Misal: Mochi">
+                  </div>
+                  <div>
+                      <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Umur (Bulan)</label>
+                      <input type="number" v-model="lostCatForm.age" required class="w-full p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none" placeholder="Contoh: 12">
+                  </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                      <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Ras</label>
+                      <input type="text" v-model="lostCatForm.breed" class="w-full p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none" placeholder="Domestik/Persia/dll">
+                  </div>
+                  <div>
+                      <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Warna Dominan</label>
+                      <input type="text" v-model="lostCatForm.color" required class="w-full p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none" placeholder="Oren/Hitam Putih">
+                  </div>
+              </div>
+
+              <div>
+                  <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Ciri-ciri Khusus</label>
+                  <textarea v-model="lostCatForm.description" required rows="3" class="w-full p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none resize-none" placeholder="Contoh: Pakai kalung merah, ekor bengkok..."></textarea>
+              </div>
+
+              <div>
+                  <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Lokasi Terakhir Dilihat</label>
+                      <div class="flex gap-4 flex-col md:flex-row">
+                                          <div 
+                        @click="openMapModal"
+                        class="w-full md:w-40 h-36 flex-none bg-gray-200 rounded-2xl overflow-hidden relative cursor-pointer"
+                      >
+                        <img src="../assets/img/maps.png" class="w-full h-full object-cover opacity-80">
+
+                        <div class="absolute inset-0 flex items-center justify-center">
+                          <i class="
+                            fas fa-map-marker-alt 
+                            text-3xl 
+                            text-blue-500 
+                            drop-shadow-md
+                            transition-all duration-300
+                            hover:scale-110
+                            hover:text-blue-600
+                          "></i>
+                        </div>
+                      </div>
+                      <textarea v-model="lostCatForm.last_seen_address" required rows="2" class="flex-grow p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none resize-none" placeholder="Klik peta di samping untuk set lokasi otomatis, atau ketik manual..."></textarea>
+                  </div>
+              </div>
+
+              <div>
+                  <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Imbalan (Opsional)</label>
+                  <div class="relative">
+                      <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-500">Rp</span>
+                      <input type="number" v-model="lostCatForm.reward_amount" class="w-full p-4 pl-12 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none" placeholder="0">
+                  </div>
+              </div>
+
+              <div>
+                <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Foto Kucing</label>
+                <div
+                    @click="triggerFileInput"
+                    class="bg-gray-100 rounded-2xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-300 hover:border-[#EBCD5E] transition"
+                  >
+                    <input
+                      type="file"
+                      ref="fileInput"
+                      class="hidden"
+                      accept="image/*"
+                      @change="handleLostCatFile"
+                    >
+
+                    <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
+
+                    <p class="text-gray-500" v-if="!reportForm.file">
+                      Klik untuk ambil/upload foto
+                    </p>
+
+                    <p class="text-[#3A5F50] font-bold" v-else>
+                      File: {{ reportForm.file.name }}
+                    </p>
+                  </div>
+              </div>
+
+              <div class="pt-4">
+                  <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-4 rounded-full shadow-lg transition-transform hover:-translate-y-1 active:scale-95">
+                      Pasang Iklan Kehilangan
+                  </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
+
+      <div v-if="activeUserTab === 'history'" class="space-y-6 animate-fade-in-up">
+            
+            <div v-if="myReportHistory.length === 0" class="text-center py-20 bg-white rounded-[40px] shadow-lg">
+                <img src="/img/kucingtidur.png" class="h-32 mx-auto mb-4 opacity-50">
+                <p class="text-gray-500 text-lg">Kamu belum pernah membuat laporan.</p>
+                <button @click="switchUserTab('create')" class="mt-4 text-[#EBCD5E] font-bold hover:underline">Buat Laporan Sekarang</button>
+            </div>
+
+            <div v-else v-for="item in myReportHistory" :key="item.id" class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 flex flex-col md:flex-row gap-6 items-center md:items-start">
+                
+                <div class="w-full md:w-32 h-32 flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100">
+                    <img :src="resolveImageUrl(item.photo)" class="w-full h-full object-cover">
+                </div>
+
+                <div class="flex-grow w-full">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span 
+                                class="text-xs font-bold px-2 py-1 rounded-md uppercase mb-1 inline-block"
+                                :class="item.report_type === 'stray' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'"
+                            >
+                                {{ item.report_type === 'stray' ? 'Kucing Liar' : 'Kucing Hilang' }}
+                            </span>
+                            <h3 class="text-xl font-bold text-gray-800">Laporan #{{ item.id }}</h3>
+                        </div>
+                        <span class="text-xs text-gray-400">{{ formatDate(item.created_at) }}</span>
+                    </div>
+
+                    <p class="text-gray-600 text-sm mb-1"><i class="fas fa-map-marker-alt w-5 text-center"></i> {{ item.location }}</p>
+                    <p class="text-gray-500 text-sm line-clamp-2 italic">"{{ item.description }}"</p>
+                    
+                    <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
+                        <div>
+                            <p class="text-xs text-gray-400 uppercase font-bold">Status</p>
+                            <p class="font-bold" :class="getStatusColor(item.assignment_status)">
+                                {{ formatStatus(item.assignment_status || 'Mencari Shelter') }}
+                            </p>
+                        </div>
+
+                        <router-link 
+                            v-if="item.is_trackable && item.assignment_status !== 'completed'"
+                            :to="`/track?id=${item.tracking_id}`"
+                            class="bg-[#EBCD5E] hover:bg-[#dcb945] text-white font-bold py-2 px-6 rounded-xl shadow-md transition-transform active:scale-95 flex items-center gap-2"
+                        >
+                            <i class="fas fa-location-arrow"></i> Lacak Driver
+                        </router-link>
+                        
+                        <div 
+                            v-else-if="item.assignment_status === 'completed'"
+                            class="bg-green-100 text-green-600 font-bold py-2 px-6 rounded-xl border border-green-200 flex items-center gap-2"
+                        >
+                            <i class="fas fa-check-circle"></i> Misi Sukses
+                        </div>
+                        
+                        <button 
+                            v-else 
+                            class="bg-gray-100 text-gray-400 font-bold py-2 px-6 rounded-xl cursor-not-allowed"
+                        >
+                            <i class="fas fa-clock"></i> Menunggu
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
 
       <teleport to="body">
         <div v-if="showMapModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
@@ -469,6 +553,28 @@ const lostCatForm = reactive({
     reward_amount: '',
     file: null
 });
+
+// --- STATE USER ---
+const activeUserTab = ref('create'); // 'create' | 'history'
+const myReportHistory = ref([]);
+
+// --- METHOD USER ---
+async function fetchUserHistory() {
+    try {
+        const res = await apiClient.get('/reports/my-history');
+        myReportHistory.value = res.data;
+    } catch (error) {
+        console.error("Gagal load history:", error);
+    }
+}
+
+// Panggil ini saat tab history diklik
+function switchUserTab(tab) {
+    activeUserTab.value = tab;
+    if (tab === 'history') {
+        fetchUserHistory();
+    }
+}
 
 // STATE SHELTER
 const activeTab = ref('incoming');
@@ -681,7 +787,7 @@ async function submitDiscoveryReport() {
       // Jika tab "Nemu Kucing Liar" aktif -> report_type = 'stray' (nanti dihandle backend)
       let typeToSend = 'stray';
       if (activeReportType.value === 'missing') {
-          typeToSend = 'Found_Missing';
+          typeToSend = 'missing';
       }
       
       formData.append('report_type', typeToSend);
