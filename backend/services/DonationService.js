@@ -48,12 +48,10 @@ class DonationService {
                 d.is_anonymus,
                 d.payment_method,
                 d.proof_file,
-                -- Ambil nama donatur (jika tidak anonim)
                 CASE 
                     WHEN d.is_anonymus = true THEN 'Hamba Allah'
                     ELSE dui.full_name 
                 END as "donorName",
-                -- Ambil foto profil donatur (jika tidak anonim)
                 CASE 
                     WHEN d.is_anonymus = true THEN '/img/NULL.JPG'
                     ELSE COALESCE(dui.profile_picture, 'NULL.JPG')
@@ -68,15 +66,34 @@ class DonationService {
         const result = await db.query(query, [shelterId]);
         
         // Formatting untuk Frontend
-        return result.rows.map(row => ({
-            id: row.id,
-            amount: parseFloat(row.amount),
-            donorName: row.donorName,
-            profilePic: row.donorPhoto.startsWith('http') ? row.donorPhoto : `/img/${row.donorPhoto}`, // Sesuaikan path statis
-            dateTime: new Date(row.donation_date).toLocaleString('id-ID'),
-            paymentMethod: row.payment_method,
-            proofFile: row.proof_file
-        }));
+        return result.rows.map(row => {
+            let pic = row.donorPhoto;
+
+            // LOGIKA BARU: Menentukan Path Gambar yang Benar
+            // 1. Jika Anonymous atau string 'NULL.JPG', gunakan default frontend
+            if (pic === '/img/NULL.JPG' || pic === 'NULL.JPG' || !pic) {
+                pic = '/img/NULL.JPG'; 
+            } 
+            // 2. Jika URL Eksternal (Google Login, dll), biarkan
+            else if (pic.startsWith('http')) {
+                // pic tetap
+            }
+            // 3. Jika nama file biasa (upload user), arahkan ke folder public Backend
+            //    Pastikan tidak double slash jika sudah ada prefix
+            else {
+                pic = `/public/img/profile/${pic}`;
+            }
+
+            return {
+                id: row.id,
+                amount: parseFloat(row.amount),
+                donorName: row.donorName,
+                profilePic: pic, // Path sudah diperbaiki
+                dateTime: new Date(row.donation_date).toLocaleString('id-ID'),
+                paymentMethod: row.payment_method,
+                proofFile: row.proof_file
+            };
+        });
     }
 }
 
