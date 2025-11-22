@@ -117,10 +117,10 @@
               <span class="text-[#3A5F50] font-bold text-sm uppercase tracking-wider">Cara Kerja</span>
             </div>
             <h2 class="text-4xl font-bold text-gray-900 max-w-lg">Langkah Mudah Menyelamatkan <span class="text-[#EBCD5E]">Nyawa</span></h2>
+             <p class="text-gray-500 max-w-md text-sm leading-relaxed mt-4">
+              Tidak perlu jadi ahli untuk membantu. Cukup ikuti 3 langkah sederhana ini.
+            </p>
           </div>
-          <p class="text-gray-500 max-w-md text-sm leading-relaxed">
-            Tidak perlu jadi ahli untuk membantu. Cukup ikuti 3 langkah sederhana ini.
-          </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
