@@ -20,6 +20,11 @@ export default defineConfig({
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
     },
+    
+    allowedHosts: [
+      ".ngrok-free.app"
+      // "4985c1c10c48.ngrok-free.app"
+    ]
   },
   resolve: {
     alias: {

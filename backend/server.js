@@ -18,7 +18,11 @@ const lostCatRoutes = require('./routes/lostCatRoutes');
 const rescueRoutes = require('./routes/rescueRoutes');
 
 fastify.register(cors, {
-    origin: 'http://localhost:5173', 
+    origin: true, // Semua bisa akses
+    // origin: [
+    //     'http://localhost:5173',
+    //     'https://5a99c780ab40.ngrok-free.app'
+    // ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'], // Izinkan semua method yang diperlukan
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
@@ -56,7 +60,7 @@ fastify.register(rescueRoutes, { prefix: '/api/v1/rescue' });
 const start = async () => {
     await connectDB();
     try {
-        await fastify.listen({ port: 3000 });
+        await fastify.listen({ port: 3000, host: "0.0.0.0" });
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);

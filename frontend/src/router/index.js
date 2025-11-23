@@ -51,26 +51,26 @@ const router = createRouter({
   }
 })
 
-  router.beforeEach((to, from, next) => {
-  // 1. Ambil data user dari localStorage
-  const token = localStorage.getItem('userToken');
-  const userRole = localStorage.getItem('userRole'); // misal: 'shelter' atau 'individu'
+//   router.beforeEach((to, from, next) => {
+//   // 1. Ambil data user dari localStorage
+//   const token = localStorage.getItem('userToken');
+//   const userRole = localStorage.getItem('userRole'); // misal: 'shelter' atau 'individu'
 
-  // 2. Cek apakah halaman tujuan butuh Login (requiresAuth)
-  if (to.meta.requiresAuth && !token) {
-    // Kalau butuh login TAPI tidak punya token -> Tendang ke Login
-    next('/login');
-  } 
-  // 3. Cek apakah halaman tujuan butuh Role khusus
-  else if (to.meta.role && to.meta.role !== userRole) {
-    // Kalau butuh role 'shelter' TAPI user-nya 'individu' -> Tendang ke Home
-    alert("Anda tidak punya akses ke halaman ini!");
-    next('/'); 
-  } 
-  // 4. Kalau aman semua -> Silakan masuk
-  else {
-    next();
-  }
-});
+//   // 2. Cek apakah halaman tujuan butuh Login (requiresAuth)
+//   if (to.meta.requiresAuth && !token) {
+//     // Kalau butuh login TAPI tidak punya token -> Tendang ke Login
+//     next('/login');
+//   } 
+//   // 3. Cek apakah halaman tujuan butuh Role khusus
+//   else if (to.meta.role && to.meta.role !== userRole) {
+//     // Kalau butuh role 'shelter' TAPI user-nya 'individu' -> Tendang ke Home
+//     alert("Anda tidak punya akses ke halaman ini!");
+//     next('/'); 
+//   } 
+//   // 4. Kalau aman semua -> Silakan masuk
+//   else {
+//     next();
+//   }
+// });
 
 export default router
