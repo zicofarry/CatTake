@@ -2,6 +2,14 @@ const db = require('../config/db');
 
 class ReportService {
     static async createReport(data) {
+        let type = 'stray';
+        if (data.report_type === 'missing' || data.report_type === 'Found_Missing') {
+            type = 'missing';
+        }
+        let lostCatId = data.lost_cat_id;
+        if (!lostCatId || lostCatId === 'null' || lostCatId === 'undefined' || lostCatId === '') {
+            lostCatId = null;
+        }
         const query = `
             INSERT INTO reports (
                 reporter_id, report_type, lost_cat_id, -- Tambahkan kolom ini

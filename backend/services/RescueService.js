@@ -250,6 +250,42 @@ class RescueService {
         return res.rows[0]; // Return { id: 'DRV-...' }
     }
 
+    static async getDriverTasks(driverId) {
+        const query = `
+            SELECT 
+                ra.id, 
+                ra.tracking_id, 
+                ra.assignment_status as status, 
+                ra.assigned_at as "createdAt",
+                r.id as report_id, 
+                r.location, 
+                r.description, 
+                r.photo, 
+                r.report_type, 
+                lc.name as cat_name
+            FROM rescue_assignments ra
+            JOIN reports r ON ra.report_id = r.id
+            LEFT JOIN lost_cats lc ON r.lost_cat_id = lc.id
+            WHERE ra.driver_id = $1
+            ORDER BY ra.assigned_at DESC
+        `;
+        const res = await db.query(query, [driverId]);
+        
+        // Format return agar sesuai dengan ekspektasi Frontend (item.report.location)
+        return res.rows.map(row => ({
+            id: row.id,
+            tracking_id: row.tracking_id,
+            status: row.status,
+            createdAt: row.createdAt,
+            report: {
+                id: row.report_id,
+                location: row.location,
+                cat_name: row.cat_name || (row.report_type === 'missing' ? 'Kucing Hilang' : 'Kucing Liar'),
+                photo: row.photo ? `/public/img/report_cat/${row.photo}` : '/img/NULL.JPG'
+            }
+        }));
+    }
+    
     // [BARU] Ambil Chat (Pakai created_at)
     static async getChatMessages(trackingId) {
         const query = `

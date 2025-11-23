@@ -18,6 +18,9 @@ async function rescueRoutes(fastify, options) {
     // Shelter melihat riwayat tugas
     fastify.get('/my-tasks', RescueController.getMyTasks);
 
+    // --- TAMBAHKAN INI (Route Khusus Driver) ---
+    fastify.get('/driver-tasks', RescueController.getDriverTasks);
+    
     // Driver/Shelter update status & upload bukti (Multipart)
     fastify.post('/update-status', RescueController.updateStatus);
 
@@ -32,8 +35,7 @@ async function rescueRoutes(fastify, options) {
     fastify.get('/chat/:id', RescueController.getChats);
     fastify.post('/chat', RescueController.sendChat);
     fastify.delete('/chat/:messageId', RescueController.deleteChat);
-
-    // fastify.get('/my-tasks', authentication, RescueController.getDriverTasks);
+    
 }
 
 module.exports = rescueRoutes;

@@ -205,13 +205,18 @@ class RescueController {
     }
 
     // GET /api/v1/rescue/driver/tasks
-    static async getDriverTasks(req, reply) {
+   static async getDriverTasks(req, reply) {
         try {
-            // Asumsi: req.user.id diisi oleh middleware auth (JWT)
-            const driverId = req.user.id; 
+            // 1. Ambil ID Driver berdasarkan User ID yang login
+            const userId = req.user.id; 
+            const driver = await RescueService.getDriverByUserId(userId);
             
-            // Panggil service untuk mengambil tugas spesifik driver ini
-            const tasks = await RescueService.getDriverTasks(driverId);
+            if (!driver) {
+                return reply.code(404).send({ error: "Profil driver tidak ditemukan." });
+            }
+
+            // 2. Ambil Tugas
+            const tasks = await RescueService.getDriverTasks(driver.id);
             
             return reply.send({
                 status: 'success',

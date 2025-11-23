@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
       
       <div class="hidden md:flex items-center font-bold text-xl">
-        <router-link :to="props.userRole === 'driver' ? '/driver/tugas' : '/'">
+        <router-link :to="props.userRole === 'driver' ? '/driver/tasks' : '/'">
             <img src="../assets/img/cattake.png" alt="CatTake Logo" class="h-10 md:h-[70px]">
         </router-link>
       </div>
@@ -132,7 +132,7 @@
           <template v-if="props.userRole === 'driver'">
              <li key="tugas-driver">
                 <router-link 
-                  to="/driver/tugas" 
+                  to="/driver/tasks" 
                   @click="toggleMobileMenu"
                   class="block text-white text-lg font-medium py-3 px-4 border-b border-green-900 no-underline hover:bg-green-700 transition duration-200"
                 >

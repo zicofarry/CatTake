@@ -28,7 +28,7 @@ class ReportController {
             const reportData = {
                 reporter_id: req.user.id,
                 // Logika mapping tipe laporan
-                report_type: fields.report_type === 'stray' ? 'Abandoned' : fields.report_type, 
+                report_type: fields.report_type,
                 
                 // PERBAIKAN DISINI: Ambil lost_cat_id
                 lost_cat_id: fields.lost_cat_id ? parseInt(fields.lost_cat_id) : null,
