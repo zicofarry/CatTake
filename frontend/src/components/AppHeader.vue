@@ -204,18 +204,18 @@ const navLinks = computed(() => {
         { name: 'Beranda', path: '/' },
         { name: 'Lapor', path: '/lapor' },
         { name: 'Adopsi', path: '/adopsi' },
+        { name: 'Donasi', path: '/donasi' },
     ];
 
     if (props.userRole === 'shelter') {
-        links.push({ name: 'Driver', path: '/drivershelter' });
         links.push({ name: 'Kucing', path: '/shelter/cats' });
+        links.push({ name: 'Driver', path: '/drivershelter' });
     } else {
         links.push({ name: 'FAQ', path: '/faq' });
     }
-
+    
     links.push(
-        { name: 'Komunitas', path: '/komunitas' },
-        { name: 'Donasi', path: '/donasi' },
+      { name: 'Komunitas', path: '/komunitas' },
     );
 
     return links;
