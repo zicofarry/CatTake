@@ -576,9 +576,17 @@ const selectedReportId = ref(null);
 
 // Helper URL Image
 function resolveImageUrl(path) {
-    if (!path) return '/img/placeholder.png';
+    if (!path || path.includes('NULL')) return '/img/placeholder.png';
+    
+    // 1. Jika URL eksternal (http/https), kembalikan langsung
     if (path.startsWith('http')) return path;
-    // Sesuaikan path ke backend public
+    
+    // 2. Jika path sudah mengandung '/public/', jangan tambahkan prefix lagi
+    if (path.startsWith('/public/')) {
+        return `http://localhost:3000${path}`;
+    }
+
+    // 3. Jika hanya nama file, tambahkan path lengkap
     return `http://localhost:3000/public/img/report_cat/${path}`;
 }
 
@@ -721,27 +729,69 @@ async function openMapModal() {
     showMapModal.value = true;
     isLoadingMap.value = true;
     await nextTick();
+    
     if (!map) {
         map = L.map('mapContainer').setView([-6.9175, 107.6191], 13); 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        map.on('click', (e) => {
+        
+        // --- MODIFIKASI BAGIAN INI ---
+        map.on('click', async (e) => {
             const { lat, lng } = e.latlng;
+            
+            // 1. Update Marker di Peta
             if (marker) map.removeLayer(marker);
             marker = L.marker([lat, lng]).addTo(map);
+            
+            // 2. Simpan koordinat sementara
             tempLocation.lat = lat;
             tempLocation.lng = lng;
-            tempLocation.address = `Koordinat: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            
+            // 3. Set status loading di text area
+            tempLocation.address = "Mencari alamat...";
+
+            // 4. Panggil API Nominatim (Reverse Geocoding)
+            try {
+                const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data && data.display_name) {
+                    // Jika alamat ditemukan
+                    tempLocation.address = data.display_name;
+                } else {
+                    // Fallback jika alamat tidak ada
+                    tempLocation.address = `Koordinat: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                }
+            } catch (error) {
+                console.error("Gagal mengambil alamat:", error);
+                tempLocation.address = `Koordinat: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            }
         });
+        // -----------------------------
     }
+
+    // Logic GeoLocation browser (Opsional: tambahkan reverse geocoding juga di sini jika mau)
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
             const { latitude, longitude } = pos.coords;
             map.setView([latitude, longitude], 16);
+            
             if (marker) map.removeLayer(marker);
             marker = L.marker([latitude, longitude]).addTo(map);
+            
             tempLocation.lat = latitude;
             tempLocation.lng = longitude;
-            tempLocation.address = `Koordinat: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+            
+            // Auto fetch address untuk lokasi saat ini
+            try {
+                const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                tempLocation.address = data.display_name || `Koordinat: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+            } catch (e) {
+                tempLocation.address = `Koordinat: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+            }
+
             isLoadingMap.value = false;
         }, () => { isLoadingMap.value = false; });
     } else { isLoadingMap.value = false; }
