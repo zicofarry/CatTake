@@ -182,28 +182,6 @@
     </div>
 
     <div v-else>
-        <HeroSection 
-          :title="heroContent.title"
-          :subtitle="heroContent.subtitle"
-          :buttonText="heroContent.buttonText"
-          :buttonLink="heroContent.buttonLink"
-          mainImg="/img/kucingtidur.png"
-          mainAlt="kucingtidur"
-        />
-
-        <div class="bg-[#3A5F50] py-4 overflow-hidden relative">
-          <div class="animate-marquee whitespace-nowrap flex gap-8 items-center text-white/90 font-bold text-lg tracking-widest uppercase">
-            <span>Rescue</span> <span class="text-[#EBCD5E]">•</span>
-            <span>Meow</span> <span class="text-[#EBCD5E]">•</span>
-            <span>Save Lives</span> <span class="text-[#EBCD5E]">•</span>
-            <span>Adopt</span> <span class="text-[#EBCD5E]">•</span>
-            <span>Rescue</span> <span class="text-[#EBCD5E]">•</span>
-            <span>Meow</span> <span class="text-[#EBCD5E]">•</span>
-            <span>Save Lives</span> <span class="text-[#EBCD5E]">•</span>
-            <span>Adopt</span>
-          </div>
-        </div>
-
         <section class="py-20 px-6 bg-white">
           <div class="max-w-6xl mx-auto">
             <div class="flex flex-col md:flex-row items-center gap-12 mb-16">
@@ -249,6 +227,19 @@
             </div>
           </div>
         </section>
+
+        <div class="bg-[#1F352C] py-4 overflow-hidden relative">
+          <div class="animate-marquee whitespace-nowrap flex gap-8 items-center text-white/90 font-bold text-lg tracking-widest uppercase">
+            <span>Rescue</span> <span class="text-[#EBCD5E]">•</span>
+            <span>Meow</span> <span class="text-[#EBCD5E]">•</span>
+            <span>Save Lives</span> <span class="text-[#EBCD5E]">•</span>
+            <span>Adopt</span> <span class="text-[#EBCD5E]">•</span>
+            <span>Rescue</span> <span class="text-[#EBCD5E]">•</span>
+            <span>Meow</span> <span class="text-[#EBCD5E]">•</span>
+            <span>Save Lives</span> <span class="text-[#EBCD5E]">•</span>
+            <span>Adopt</span>
+          </div>
+        </div>
 
         <section class="py-24 px-6 bg-[#1F352C] relative overflow-hidden">
           <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
