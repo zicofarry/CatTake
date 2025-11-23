@@ -40,24 +40,39 @@
       <div class="hidden md:block">
         
         <div v-if="props.userRole === 'driver'" class="relative">
+             <div v-if="isProfileDropdownOpen" @click="toggleProfileDropdown" class="fixed inset-0 z-30"></div>
+             
              <button 
                 @click="toggleProfileDropdown"
-                class="flex items-center gap-2 bg-[#FF862F] text-white py-2 px-4 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-[#e07528] transition duration-200"
+                class="flex items-center gap-2 bg-[#FF862F] text-white py-1.5 pr-6 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-[#e07528] transition duration-200 relative z-40"
             >
-                <span>Driver Panel</span>
-            </button>
+                <img 
+                    :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '/img/NULL.JPG')" 
+                    alt="Driver" 
+                    class="h-9 w-9 rounded-full object-cover border-2 border-white"
+                >
+                <span>{{ props.profileData ? props.profileData.name.split(' ')[0] : 'Driver' }}</span>            </button>
              <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl p-4 z-40 text-left border border-gray-100">
-                <p class="font-bold text-gray-800 text-lg mb-1">Halo, Driver! 🐈</p>
-                <p class="text-xs text-gray-400 mb-4">Selamat bertugas menyelamatkan anabul.</p>
+                <!-- <p class="font-bold text-gray-800 text-lg mb-1">Halo, Driver! 🐈</p>
+                <p class="text-xs text-gray-400 mb-4">Selamat bertugas menyelamatkan anabul.</p> -->
+                <p class="font-bold text-gray-800">{{ props.profileData ? props.profileData.name : 'Driver Profil' }}</p>
+                <p class="text-sm text-gray-500 mb-4">{{ props.profileData ? props.profileData.email : 'driver@cattake.com' }}</p>
                 <button @click="handleSignOut" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition duration-200">Sign Out</button>
             </div>
         </div>
 
         <div v-else-if="props.userRole === 'shelter'" class="relative">
-              <button 
+             <div v-if="isProfileDropdownOpen" @click="toggleProfileDropdown" class="fixed inset-0 z-30"></div>
+            
+             <button 
                 @click="toggleProfileDropdown"
-                class="flex items-center gap-2 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
+                class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-6 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200 relative z-40"
             >
+                <img 
+                    :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '/img/profile_default.svg')" 
+                    alt="Shelter" 
+                    class="h-9 w-9 rounded-full object-cover border-2 border-white"
+                >
                 <span>{{ props.profileData ? props.profileData.name : 'Memuat...' }}</span>
             </button>
             <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl p-4 z-40 text-left">
@@ -68,9 +83,11 @@
         </div>
 
         <div v-else-if="props.userRole === 'individu'" class="relative">
+            <div v-if="isProfileDropdownOpen" @click="toggleProfileDropdown" class="fixed inset-0 z-30"></div>
+            
             <button 
                 @click="toggleProfileDropdown"
-                class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-8 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
+                class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-8 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200 relative z-40"
             >
                 <img :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '../assets/img/diana.png')" alt="Avatar" class="h-9 w-9 rounded-full object-cover border-2 border-white">
                 <span>{{ props.profileData ? props.profileData.name : 'Memuat...' }}</span>
@@ -80,7 +97,7 @@
                 <p class="font-bold text-gray-800">{{ props.profileData ? props.profileData.name : 'User Profil' }}</p>
                 <p class="text-sm text-gray-500 mb-4">{{ props.profileData ? props.profileData.email : 'email@user.com' }}</p>
 
-                <router-link to="/profile" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 rounded-lg transition duration-200 mb-2 no-underline">Edit Profile</router-link>
+                <button @click="handleEditProfileClick" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 rounded-lg transition duration-200 mb-2">Edit Profile</button>
                 <button @click="handleSignOut" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition duration-200">Sign Out</button>
             </div>
         </div>
@@ -92,15 +109,32 @@
 
 
       <div class="flex items-center gap-4 md:hidden w-full">
+          
           <button class="flex flex-col gap-1.5 cursor-pointer p-2" @click="toggleMobileMenu">
               <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors" :class="isScrolled ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
               <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors" :class="isScrolled ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
               <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors" :class="isScrolled ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
           </button>
-          <span class="font-semibold text-xl transition-colors" :class="isScrolled ? 'text-white' : 'text-gray-800'">
-              {{ props.userRole === 'driver' ? 'Driver' : activePage }}
-          </span>
-          <div class="ml-auto"></div>
+
+          <span class="font-semibold text-xl">{{ props.userRole === 'driver' ? 'Driver' : activePage }}</span>
+          
+          <router-link v-if="props.userRole === 'individu'" to="/profile" class="ml-auto flex items-center gap-2 bg-[#578d76] text-white py-1 pr-2 pl-1 rounded-full font-semibold">
+            <img :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '/img/NULL.JPG')" alt="Avatar" class="h-8 w-8 rounded-full object-cover">
+            <span class="text-sm">{{ props.profileData ? props.profileData.name.split(' ')[0] : 'User' }}</span>
+          </router-link>
+
+          <div v-else-if="props.userRole === 'shelter'" class="ml-auto flex items-center gap-2 bg-[#578d76] text-white py-1.5 px-3 rounded-full font-semibold text-sm">
+              <span>{{ props.profileData ? props.profileData.name : 'Shelter' }}</span>
+          </div>
+
+          <div v-else-if="props.userRole === 'driver'" class="ml-auto flex items-center gap-2 bg-[#FF862F] text-white py-1.5 px-3 rounded-full font-semibold text-sm">
+              <span>Driver</span>
+          </div>
+
+          <router-link v-else to="/login" class="ml-auto bg-[#578d76] hover:bg-green-800 text-white font-semibold py-1.5 px-4 rounded-full transition duration-200 shadow-md text-sm">
+            Login
+          </router-link>
+
       </div>
     </div>
   </header>
@@ -186,12 +220,15 @@
           </router-link>
       </div>
   </nav>
+
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router'; 
+import { useRoute, useRouter } from 'vue-router'; // [Perbaikan 1: Import useRouter]
 
+const router = useRouter(); // [Perbaikan 2: Inisialisasi router]
+// Asumsi kita simpan role di localStorage saat login
 const userRole = ref(localStorage.getItem('role') || 'user'); 
 const isDriver = computed(() => userRole.value === 'driver');
 
@@ -202,7 +239,6 @@ const props = defineProps({
 
 // --- SCROLL & AUTH LOGIC ---
 const isScrolled = ref(false);
-const route = useRoute();
 
 // Cek apakah halaman ini Login atau Signup
 const isAuthPage = computed(() => {
@@ -225,7 +261,7 @@ onUnmounted(() => {
 // ---------------------------
 
 function resolveImageUrl(path) {
-    if (!path) return '/img/profile_default.svg';
+    if (!path) return '/img/NULL.JPG';
     if (path.startsWith('http')) return path;
     if (path.startsWith('/public/')) {
         const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
@@ -237,7 +273,10 @@ function resolveImageUrl(path) {
 
 const emit = defineEmits(['update-login-status']);
 
+// --- Config Navigasi ---
 const navLinks = computed(() => {
+    // KHUSUS DRIVER: KEMBALIKAN ARRAY KOSONG
+    // Agar navbar tengah hilang total
     if (props.userRole === 'driver') {
         return [];
     }
@@ -263,17 +302,22 @@ const navLinks = computed(() => {
     return links;
 });
 
+// 1. STATE
+const route = useRoute();
 const isMobileMenuOpen = ref(false);
 const isProfileDropdownOpen = ref(false);
 
 watch(() => props.userRole, (newValue, oldValue) => {}, { immediate: true });
 
+// 2. COMPUTED
 const activePage = computed(() => {
+  // Jika driver, mungkin halaman aktifnya tidak ada di navLinks, defaultkan saja
   if (props.userRole === 'driver') return 'Driver';
   const currentLink = navLinks.value.find(link => link.path === route.path);
   return currentLink ? currentLink.name : 'Beranda';
 });
 
+// 3. METHODS
 function toggleMobileMenu() {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 }
@@ -282,12 +326,25 @@ function toggleProfileDropdown() {
     isProfileDropdownOpen.value = !isProfileDropdownOpen.value;
 }
 
+// [Perbaikan 3: Fungsi baru untuk menutup dropdown lalu navigasi]
+function handleEditProfileClick() {
+    isProfileDropdownOpen.value = false; // Tutup dropdown
+    router.push('/profile');             // Navigasi
+}
+
 function handleSignOut() {
+    // Hapus semua data sesi
     localStorage.removeItem('userToken');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
+    
     emit('update-login-status', false);
     isProfileDropdownOpen.value = false;
     alert('Anda telah keluar.');
+    
+    // Memaksa hard redirect ke halaman login
+    window.location.href = '/login'; 
 }
 </script>
 
