@@ -125,7 +125,7 @@ function resolveProofUrl(filename) {
     if (!filename) return '';
     // Asumsi file disimpan di folder public/img di backend
     // Sesuaikan port jika berbeda
-    return `http://localhost:3000/public/img/${filename}`;
+    return `http://localhost:3000/public/img/proof_payment/${filename}`;
 }
 
 // Fallback Image

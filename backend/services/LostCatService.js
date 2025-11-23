@@ -51,7 +51,7 @@ class LostCatService {
         // Format URL gambar
         return result.rows.map(cat => ({
             ...cat,
-            photo: cat.photo ? `/public/report_cat/${cat.photo}` : '/img/NULL.JPG'
+            photo: cat.photo ? `/public/img/lost_cat/${cat.photo}` : '/img/NULL.JPG'
         }));
     }
 
@@ -76,7 +76,7 @@ class LostCatService {
             id: row.id,
             cat_name: row.cat_name,
             owner_name: row.owner_name,
-            photo: row.photo ? `/img/${row.photo}` : '/img/NULL.JPG'
+            photo: row.photo
         }));
     }
 }

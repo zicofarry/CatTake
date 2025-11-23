@@ -120,7 +120,7 @@
               <p class="text-xs text-gray-500 truncate">{{ contactInfo.subInfo }}</p>
            </div>
            
-           <div v-if="contactInfo.nama && contactInfo.nama !== 'Menunggu Driver...'" class="flex gap-3 flex-shrink-0">
+           <div v-if="userRole !== 'shelter' && contactInfo.nama && contactInfo.nama !== 'Menunggu Driver...'" class="flex gap-3 flex-shrink-0">
               <button 
                 @click="handleRealCall(contactInfo.phone)" 
                 class="w-12 h-12 md:w-14 md:h-14 bg-[#4E7C68] hover:bg-[#3b6150] rounded-[18px] flex items-center justify-center transition shadow-sm group"
@@ -140,7 +140,7 @@
         <div class="bg-gray-100 rounded-[30px] p-6 shadow-sm flex-grow">
            <h3 class="font-bold text-lg text-[#1F1F1F] mb-4">Detail Laporan</h3>
            <div class="space-y-3">
-              <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Jenis</span><p class="font-semibold text-sm text-[#1F1F1F] capitalize">{{ trackingData.laporan.jenis }}</p></div>
+              <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Jenis</span><p class="font-semibold text-sm text-[#1F1F1F] capitalize">{{ trackingData.laporan.jenis === 'stray' ? 'Laporan penemuan kucing liar': trackingData.laporan.jenis === 'missing'? 'Laporan penemuan kucing hilang': trackingData.laporan.jenis}}</p></div>
               <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Pemilik/Pelapor</span><p class="font-semibold text-sm text-[#1F1F1F]">{{ trackingData.laporan.pemilik }}</p></div>
               <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Lokasi</span><p class="font-semibold text-sm text-[#1F1F1F]">{{ trackingData.laporan.lokasi }}</p></div>
               <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Deskripsi</span><p class="font-semibold text-sm text-[#1F1F1F]">{{ trackingData.laporan.deskripsi }}</p></div>

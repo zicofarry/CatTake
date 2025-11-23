@@ -224,7 +224,7 @@
                             @mousedown.prevent="selectLostCat(item)"
                             class="p-4 hover:bg-[#EBCD5E]/10 cursor-pointer transition-colors border-b border-gray-50 flex items-center gap-3"
                         >
-                            <img :src="item.photo" class="w-10 h-10 rounded-full object-cover bg-gray-200">
+                            <img :src="resolveImageUrl(item.photo)" class="w-10 h-10 rounded-full object-cover bg-gray-200">
                             
                             <div class="flex flex-col">
                                 <span class="font-bold text-[#1F1F1F]">{{ item.cat_name }}</span>
@@ -486,9 +486,12 @@
                         @click="assignDriver(driver.id)"
                         class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 cursor-pointer transition border border-transparent hover:border-gray-200 mb-2"
                     >
-                        <div class="w-10 h-10 bg-[#EBCD5E] rounded-full flex items-center justify-center text-white font-bold">
-                            {{ driver.full_name.charAt(0) }}
-                        </div>
+                        <img
+                        :src="resolveImageUrl(driver.profile_picture)"
+                        alt="Driver"
+                        class="w-10 h-10 rounded-full object-cover border border-gray-300"
+                        />
+
                         <div class="flex-grow">
                             <p class="font-bold text-gray-800">{{ driver.full_name }}</p>
                             <p class="text-xs text-gray-500">ID: {{ driver.id }}</p>
@@ -576,19 +579,37 @@ const selectedReportId = ref(null);
 
 // Helper URL Image
 function resolveImageUrl(path) {
-    if (!path || path.includes('NULL')) return '/img/placeholder.png';
-    
-    // 1. Jika URL eksternal (http/https), kembalikan langsung
-    if (path.startsWith('http')) return path;
-    
-    // 2. Jika path sudah mengandung '/public/', jangan tambahkan prefix lagi
-    if (path.startsWith('/public/')) {
-        return `http://localhost:3000${path}`;
+    if (!path || path.includes('NULL')) {
+        return '/img/NULL.JPG'
     }
 
-    // 3. Jika hanya nama file, tambahkan path lengkap
-    return `http://localhost:3000/public/img/report_cat/${path}`;
+    if (path.startsWith('http')) {
+        return path
+    }
+
+    if (path.startsWith('/public/')) {
+        return `http://localhost:3000${path}`
+    }
+
+    if (path.startsWith('report-')) {
+        return `http://localhost:3000/public/img/report_cat/${path}`
+    }
+
+    if (path.startsWith('lost-')) {
+        return `http://localhost:3000/public/img/lost_cat/${path}`
+    }
+
+    if (path.startsWith('profile-') || path.startsWith('driver-')) {
+        return `http://localhost:3000/public/img/profile/${path}`
+    }
+
+    if (path.startsWith('qr')) {
+        return `http://localhost:3000/public/img/qr_img/${path}`
+    }
+
+    return `/img/placeholder.png`
 }
+
 
 // Helper Date
 function formatDate(dateStr) {

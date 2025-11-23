@@ -21,7 +21,7 @@ class DonationController {
                 if (part.file) {
                     const fileExtension = path.extname(part.filename);
                     fileName = `proof-${Date.now()}${fileExtension}`;
-                    const savePath = path.join(__dirname, '../public/img', fileName);
+                    const savePath = path.join(__dirname, '../public/img/proof_payment', fileName);
                     
                     await pump(part.file, fs.createWriteStream(savePath));
                 } else {
