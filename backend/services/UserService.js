@@ -32,6 +32,18 @@ class UserService {
                 JOIN detail_user_shelter d ON u.id = d.id
                 WHERE u.id = $1
             `;
+        } else if (role === 'driver') { 
+            query = `
+                SELECT 
+                    u.id AS id,
+                    u.email,
+                    d.full_name AS name,
+                    d.profile_picture AS photo, -- Pastikan kolom profile_picture ada di tabel drivers
+                    d.contact_phone
+                FROM users u
+                JOIN drivers d ON u.id = d.user_id
+                WHERE u.id = $1
+            `;
         } else {
             return { id: userId, role };
         }

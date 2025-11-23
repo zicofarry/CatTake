@@ -29,13 +29,19 @@
              
              <button 
                 @click="toggleProfileDropdown"
-                class="flex items-center gap-2 bg-[#FF862F] text-white py-2 px-4 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-[#e07528] transition duration-200 relative z-40"
+                class="flex items-center gap-2 bg-[#FF862F] text-white py-1.5 pr-6 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-[#e07528] transition duration-200 relative z-40"
             >
-                <span>Driver Panel</span>
-            </button>
+                <img 
+                    :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '/img/NULL.JPG')" 
+                    alt="Driver" 
+                    class="h-9 w-9 rounded-full object-cover border-2 border-white"
+                >
+                <span>{{ props.profileData ? props.profileData.name.split(' ')[0] : 'Driver' }}</span>            </button>
              <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl p-4 z-40 text-left border border-gray-100">
-                <p class="font-bold text-gray-800 text-lg mb-1">Halo, Driver! 🐈</p>
-                <p class="text-xs text-gray-400 mb-4">Selamat bertugas menyelamatkan anabul.</p>
+                <!-- <p class="font-bold text-gray-800 text-lg mb-1">Halo, Driver! 🐈</p>
+                <p class="text-xs text-gray-400 mb-4">Selamat bertugas menyelamatkan anabul.</p> -->
+                <p class="font-bold text-gray-800">{{ props.profileData ? props.profileData.name : 'Driver Profil' }}</p>
+                <p class="text-sm text-gray-500 mb-4">{{ props.profileData ? props.profileData.email : 'driver@cattake.com' }}</p>
                 <button @click="handleSignOut" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition duration-200">Sign Out</button>
             </div>
         </div>
@@ -43,10 +49,15 @@
         <div v-else-if="props.userRole === 'shelter'" class="relative">
              <div v-if="isProfileDropdownOpen" @click="toggleProfileDropdown" class="fixed inset-0 z-30"></div>
             
-              <button 
+             <button 
                 @click="toggleProfileDropdown"
-                class="flex items-center gap-2 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200 relative z-40"
+                class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-6 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200 relative z-40"
             >
+                <img 
+                    :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '/img/profile_default.svg')" 
+                    alt="Shelter" 
+                    class="h-9 w-9 rounded-full object-cover border-2 border-white"
+                >
                 <span>{{ props.profileData ? props.profileData.name : 'Memuat...' }}</span>
             </button>
             <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl p-4 z-40 text-left">
@@ -63,7 +74,7 @@
                 @click="toggleProfileDropdown"
                 class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-8 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200 relative z-40"
             >
-                <img :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '../assets/img/diana.png')" alt="Avatar" class="h-9 w-9 rounded-full object-cover">
+                <img :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '../assets/img/diana.png')" alt="Avatar" class="h-9 w-9 rounded-full object-cover border-2 border-white">
                 <span>{{ props.profileData ? props.profileData.name : 'Memuat...' }}</span>
             </button>
 
@@ -187,7 +198,7 @@ const props = defineProps({
 });
 
 function resolveImageUrl(path) {
-    if (!path) return '/img/profile_default.svg';
+    if (!path) return '/img/NULL.JPG';
     if (path.startsWith('http')) return path;
     if (path.startsWith('/public/')) {
         const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
