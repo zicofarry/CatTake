@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict nX3CZFDUyUTgy0WGgjhaRe3aEAezKa7Ax8T2rhauCAwinooW1UtvFaFlQBvOXbU
+\restrict RFT7DU6BMvyuB7RFhE0Z6nMHN5zUfNYHjjOpHbtn1hs3aKE3jh5M7ooTPDeqOWg
 
 -- Dumped from database version 18.0
 -- Dumped by pg_dump version 18.0
 
--- Started on 2025-11-23 21:02:53
+-- Started on 2025-11-24 00:15:16
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -20,25 +20,6 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
-
---
--- TOC entry 4 (class 2615 OID 2200)
--- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
---
-
-CREATE SCHEMA public;
-
-
-ALTER SCHEMA public OWNER TO pg_database_owner;
-
---
--- TOC entry 5301 (class 0 OID 0)
--- Dependencies: 4
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
---
-
-COMMENT ON SCHEMA public IS 'standard public schema';
-
 
 --
 -- TOC entry 244 (class 1259 OID 17880)
@@ -249,7 +230,7 @@ CREATE SEQUENCE public.community_post_id_seq1
 ALTER SEQUENCE public.community_post_id_seq1 OWNER TO postgres;
 
 --
--- TOC entry 5302 (class 0 OID 0)
+-- TOC entry 5301 (class 0 OID 0)
 -- Dependencies: 250
 -- Name: community_post_id_seq1; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -346,7 +327,7 @@ CREATE SEQUENCE public.donations_id_seq
 ALTER SEQUENCE public.donations_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5303 (class 0 OID 0)
+-- TOC entry 5302 (class 0 OID 0)
 -- Dependencies: 245
 -- Name: donations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -388,7 +369,7 @@ CREATE SEQUENCE public.driver_locations_id_seq
 ALTER SEQUENCE public.driver_locations_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5304 (class 0 OID 0)
+-- TOC entry 5303 (class 0 OID 0)
 -- Dependencies: 241
 -- Name: driver_locations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -498,7 +479,7 @@ CREATE SEQUENCE public.global_achievements_id_seq
 ALTER SEQUENCE public.global_achievements_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5305 (class 0 OID 0)
+-- TOC entry 5304 (class 0 OID 0)
 -- Dependencies: 235
 -- Name: global_achievements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -539,7 +520,7 @@ CREATE SEQUENCE public.global_quests_id_seq
 ALTER SEQUENCE public.global_quests_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5306 (class 0 OID 0)
+-- TOC entry 5305 (class 0 OID 0)
 -- Dependencies: 237
 -- Name: global_quests_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -589,7 +570,7 @@ CREATE SEQUENCE public.lost_cats_id_seq
 ALTER SEQUENCE public.lost_cats_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5307 (class 0 OID 0)
+-- TOC entry 5306 (class 0 OID 0)
 -- Dependencies: 252
 -- Name: lost_cats_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -686,7 +667,7 @@ CREATE SEQUENCE public.reports_id_seq
 ALTER SEQUENCE public.reports_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5308 (class 0 OID 0)
+-- TOC entry 5307 (class 0 OID 0)
 -- Dependencies: 254
 -- Name: reports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -734,7 +715,7 @@ CREATE SEQUENCE public.rescue_assignments_id_seq
 ALTER SEQUENCE public.rescue_assignments_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5309 (class 0 OID 0)
+-- TOC entry 5308 (class 0 OID 0)
 -- Dependencies: 257
 -- Name: rescue_assignments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -778,7 +759,7 @@ CREATE SEQUENCE public.user_progress_id_seq
 ALTER SEQUENCE public.user_progress_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5310 (class 0 OID 0)
+-- TOC entry 5309 (class 0 OID 0)
 -- Dependencies: 239
 -- Name: user_progress_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -854,7 +835,7 @@ CREATE SEQUENCE public.verification_log_id_seq
 ALTER SEQUENCE public.verification_log_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5311 (class 0 OID 0)
+-- TOC entry 5310 (class 0 OID 0)
 -- Dependencies: 256
 -- Name: verification_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -986,18 +967,19 @@ COPY public.cat_facts (id, fact_text, source, image_path, is_verified, created_a
 --
 
 COPY public.cats (id, shelter_id, name, age, gender, breed, description, health_status, adoption_status, photo) FROM stdin;
-6	4	Luna	12	female	Domestik	Sangat aktif dan suka bermain.	healthy	available	luna.jpg
-7	4	Mimi	12	female	Domestik	Kucing calico yang tenang.	vaccinated	adopted	mimi.jpg
-8	4	Popo	24	male	Persia	Sangat manja dan suka disisir.	healthy	adopted	popo.jpg
-9	4	Lili	5	female	Anggora	Aktif bermain bola.	vaccinated	adopted	lili.jpg
-10	4	Gembul	36	male	British Shorthair	Suka tidur seharian.	healthy	adopted	gembul.jpg
-11	4	Chiko	18	male	Domestik	Pandai berburu mainan tikus.	vaccinated	adopted	chiko.jpg
+8	4	Popo	24	male	Persia	Sangat manja dan suka disisir.	healthy	adopted	cat-1763915639523.png
+7	4	Mimi	12	female	Domestik	Kucing calico yang tenang.	vaccinated	adopted	cat-1763915653912.png
+15	4	Blewah	7	female	Domestik	Kucingnya lucu suka nge wlee	healthy	available	cat-1763915934180.png
 4	10	Mueza	8	female	Persia	Manis, lembut, dan suka tidur di pangkuan.	healthy	available	cat-1763899862115.png
 2	10	Abul	5	male	Domestik	Kucing pemalu tapi sangat manja jika sudah kenal.	healthy	available	cat-1763899939370.png
 1	10	Oyen	6	male	American Shorthair	Suka mencari keributan di komplek. Sering terlihat mencuri ikan asin tetangga.	vaccinated	adopted	cat-1763900718450.png
 3	11	Simba	23	male	Maine Coon	Gagah dan berani, cocok untuk menjaga rumah dari tikus.	vaccinated	available	cat-1763901553570.png
 5	11	Kitty	36	female	Anggora	Tenang dan penyayang, sudah diadopsi.	vaccinated	adopted	cat-1763901780059.png
 14	11	Milo	12	male	Sphynx	Kucingnya baik, suka bikin nyaman, gak berisik	healthy	available	cat-1763901999237.png
+6	4	Luna	12	female	Domestik	Sangat aktif dan suka bermain.	healthy	available	cat-1763915539063.png
+11	4	Chiko	18	male	Domestik	Pandai berburu mainan tikus.	sick	adopted	cat-1763915573623.png
+10	4	Gembul	36	male	British Shorthair	Suka tidur seharian.	healthy	adopted	cat-1763915602307.png
+9	4	Lili	5	female	Anggora	Aktif bermain bola.	vaccinated	adopted	cat-1763915624932.png
 \.
 
 
@@ -1027,6 +1009,10 @@ COPY public.chat_messages (id, assignment_id, sender_id, message, created_at) FR
 20	4	3	kok lama	2025-11-23 16:16:28.192969
 21	5	10	tes	2025-11-23 17:10:19.650416
 22	5	31	hai	2025-11-23 17:11:47.729474
+23	8	19	Haloo mas, sesuai aplikasi?	2025-11-23 22:20:18.895485
+24	8	13	iya pakk	2025-11-23 22:22:15.832274
+26	6	3	Halo pak selamat siang	2025-11-24 00:13:23.322971
+27	6	3	bapak sudah dimana yaa	2025-11-24 00:13:27.374455
 \.
 
 
@@ -1082,12 +1068,12 @@ COPY public.detail_user_individu (id, full_name, birth_date, gender, profile_pic
 5	Repa Pitriani	2005-11-05	female	profile-5-1763874685690.jpg	Aku adalah pencinta kucing asal cianjur		alamat belum diverifikasi	Unknown	32731763530891182975	\N	f	f	3
 6	Salman	\N	\N	profile-6-1763896611740.png	\N		\N	\N	\N	\N	f	f	0
 9	Renata	2017-01-05	female	profile-9-1763896789387.png	Aku adalah pencinta kucing yang slayy		\N	\N	\N	\N	f	f	0
-13	Harri Supriadi	2006-07-31	male	profile-13-1763897083541.jpg	Jangan main main sama aku nanti aku kamu hack!		\N	\N	\N	\N	f	f	0
 8	Anas Miftahul Falah	2006-01-29	male	profile-8-1763733550208.JPG	saya adalah manusia bekasi	085850603147	Bekasi	Mahasiswa	3232290120060008	ktp-8-1763697336713.jpg	f	f	0
 2	Michael 36	2006-06-30	male	profile-2-1763897297728.png			alamat belum diverifikasi	Pelajar	3273100101900005	\N	f	f	0
+13	Harri Supriadi	2006-07-31	male	profile-13-1763897083541.jpg	Jangan main main sama aku, nanti aku kamu hack!		\N	\N	\N	\N	f	f	0
+3	Muhammad 'Azmi Salam	2006-06-30	male	profile-3-1763789466019.jpg	saya adalah pencinta kucing dari umur 3 tahun, nama kucing tercinta saya sejak kecil adalah son goku.	085850603196	RA Ulul 'Azmi Kulalet, RT. 01/RW. 09, Kec. Baleendah, Kab. Bandung, Prov. Jawa Barat	Mahasiswa	3204323006060008	ktp-3-1763715415771.jpg	t	t	8
 7	Ajipati Alaga	2025-11-28	male	profile-7-1763736794424.JPG			\N	\N	\N	\N	f	f	0
 12	Najmi Alifah Hilmiya	2006-02-22	female	profile-12-1763737054294.JPG			\N	\N	\N	\N	f	f	0
-3	Muhammad 'Azmi Salam	2006-06-30	male	profile-3-1763789466019.jpg	saya adalah pencinta kucing dari umur 3 tahun, nama kucing tercinta saya sejak kecil adalah son goku.	085850603196	RA Ulul 'Azmi Kulalet, RT. 01/RW. 09, Kec. Baleendah, Kab. Bandung, Prov. Jawa Barat	Mahasiswa	3204323006060008	ktp-3-1763715415771.jpg	t	t	6
 14	MUHAMMAD 'AZMI SALAM	\N	\N	https://lh3.googleusercontent.com/a/ACg8ocI4jlNMYTBjIfhPbtnoE2jVuCq4bTJx6saVHC59qzipgGeK-w=s96-c	\N	\N	\N	\N	\N	\N	t	f	0
 15	CACICU	\N	\N	https://lh3.googleusercontent.com/a/ACg8ocLCis_yrjICEgKAUmE0oASbrAYVjrGzTsaZIyTr6ZfTWcHfMw=s96-c	\N	\N	\N	\N	\N	\N	t	f	0
 \.
@@ -1126,6 +1112,8 @@ COPY public.donations (id, donatur_id, shelter_id, amount, donation_date, is_ano
 10	3	10	150000.00	2025-11-22 10:56:26.245511	f	qris	proof-1763783786008.png
 11	5	11	20000.00	2025-11-22 19:37:06.087246	f	qris	proof-1763815025889.JPG
 12	5	10	50000.00	2025-11-23 09:09:23.909739	f	qris	proof-1763863763794.png
+13	3	11	200000.00	2025-11-23 23:41:47.188839	t	qris	proof-1763916107019.png
+14	3	11	300000.00	2025-11-23 23:43:50.737189	f	bri	proof-1763916230620.png
 \.
 
 
@@ -1269,6 +1257,12 @@ COPY public.driver_locations (id, driver_id, assignment_id, latitude, longitude,
 310	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:13:11.642245+07
 311	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:13:16.797513+07
 312	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:13:21.625842+07
+314	DRV-04-002	8	-6.88455680	107.60028160	2025-11-23 22:20:10.545774+07
+315	DRV-04-002	8	-6.88455680	107.60028160	2025-11-23 22:20:15.295705+07
+316	DRV-04-002	8	-6.88455680	107.60028160	2025-11-23 22:20:20.300693+07
+317	DRV-04-002	8	-6.88455680	107.60028160	2025-11-23 22:20:25.374305+07
+318	DRV-04-002	8	-6.88455680	107.60028160	2025-11-23 22:20:30.299009+07
+319	DRV-04-002	8	-6.88455680	107.60028160	2025-11-23 22:20:35.323961+07
 1	DRV-10-001	1	-6.91400000	107.60800000	2025-11-19 16:17:54.863664+07
 2	DRV-10-001	1	-6.91450000	107.60900000	2025-11-19 16:22:54.863664+07
 3	DRV-10-001	1	-6.91470000	107.60980000	2025-11-22 17:29:50.257566+07
@@ -1449,6 +1443,10 @@ COPY public.driver_locations (id, driver_id, assignment_id, latitude, longitude,
 291	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:11:36.757388+07
 292	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:11:41.627008+07
 313	DRV-10-001	4	-6.88455680	107.60028160	2025-11-23 18:36:34.703785+07
+320	DRV-04-002	8	-6.88455680	107.60028160	2025-11-23 22:20:40.368509+07
+321	DRV-04-002	8	-6.88455680	107.60028160	2025-11-23 22:20:45.291752+07
+322	DRV-04-002	8	-6.88455680	107.60028160	2025-11-23 22:20:50.307097+07
+323	DRV-04-002	8	-6.88455680	107.60028160	2025-11-23 22:20:55.388442+07
 \.
 
 
@@ -1506,6 +1504,9 @@ COPY public.favorite_cats (user_id, cat_id, created_at) FROM stdin;
 3	1	2025-11-20 21:38:18.3317
 3	3	2025-11-21 16:43:29.913018
 5	4	2025-11-23 12:20:53.974637
+14	6	2025-11-23 21:47:47.305951
+14	14	2025-11-23 21:47:48.55626
+3	15	2025-11-23 23:40:11.40842
 \.
 
 
@@ -1549,6 +1550,8 @@ COPY public.lost_cats (id, owner_id, name, age, breed, color, description, last_
 4	8	Oreo	6	Domestik	Hitam Putih	Kucing kecil lincah, ada motif seperti masker di wajahnya. Ekornya pendek bengkok.	Komp. Margahayu Raya, Bandung	-6.94510000	107.65430000	lost-oreo.jpg	150000.00	searching	2025-11-21 11:36:51.416413
 5	3	Garfield	24	Persia	Oren	Badan sangat gemuk, muka ceper, suara mengeong pelan. Suka takut sama orang asing.	Jl. Adopsi No. 5, Bandung	-6.91470000	107.60980000	lost-garfield.jpg	1000000.00	searching	2025-11-19 16:36:51.416413
 6	7	Blacky	36	Bombay	Hitam	Hitam legam seluruh badan, mata kuning terang. Ada bekas luka kecil di telinga kiri.	Jl. Donasi No. 10, Jakarta	-6.17540000	106.82720000	lost-blacky.jpg	250000.00	searching	2025-11-14 16:36:51.416413
+7	9	Mikey	13	Persia	Putih	pake kalung emas	Rumah Mode, #41, Jalan Dr. Setiabudi, Pasteur, Sukasari, Bandung City, West Java, Java, 40161, Indonesia	-6.88297307	107.59955907	lost-1763913332428.png	200000.00	searching	2025-11-23 22:55:32.739297
+8	9	Blacky	23	Kucing Hitam	Hitam	Matanya hijau keemasan	Ny. Suharti, 171, Jalan Raden Adipati Aria Wiranatakusumah, Cipaganti, Coblong, Bandung City, West Java, Java, 40161, Indonesia	-6.88443723	107.60126495	lost-1763913530873.png	0.00	searching	2025-11-23 22:58:51.06906
 \.
 
 
@@ -1591,12 +1594,13 @@ COPY public.reply_comment (id, user_id, comment_id, parent_reply_id, content, li
 COPY public.reports (id, reporter_id, report_type, lost_cat_id, shelter_assigned_id, location, latitude, longitude, description, photo, report_date, created_at) FROM stdin;
 1	20	stray	\N	10	Jl. Kebon Jati, Bandung	-6.91470000	107.60980000	Kucing tertabrak, kaki belakang luka parah.	photo_report_1.jpg	2025-11-18	2025-11-21 16:12:08.271329
 2	21	stray	\N	11	Jl. Thamrin, Jakarta	-6.17540000	106.82720000	Ditinggalkan di depan ruko, sangat kurus.	photo_report_2.jpg	2025-11-17	2025-11-21 16:12:08.271329
-5	3	missing	1	10	Koordinat: -6.85834, 107.59045	-6.85834240	107.59045120	Saya menemukan kucing milik azmi	report-1763717038437.jpg	2025-11-21	2025-11-21 16:23:58.575199
-4	3	stray	\N	10	Koordinat: -6.85834, 107.59045	-6.85834240	107.59045120	Saya menemukan kucing liar yang kayaknya lagi sakit	report-1763716897731.jpg	2025-11-21	2025-11-21 16:21:37.881511
 3	3	stray	\N	10	Jl. Gegerkalong Girang	-6.87300000	107.59200000	Kucing oren pincang di pinggir jalan	report-1763716333850.jpg	2025-11-21	2025-11-21 16:12:14.755683
-8	3	missing	5	10	Koordinat: -6.88468, 107.59754	-6.88468337	107.59753561	saya menemukan kucing milik azmi	report-1763881767103.png	2025-11-23	2025-11-23 14:09:27.26002
-9	3	stray	\N	11	Koordinat: -6.88456, 107.60028	-6.88455680	107.60028160	saya liat kucing liar	report-1763881918827.png	2025-11-23	2025-11-23 14:11:58.96954
-11	3	stray	\N	4	Koordinat: -6.88456, 107.60028	-6.88455680	107.60028160	saya nemu kucing liar lagi di gerlong	report-1763882675590.png	2025-11-23	2025-11-23 14:24:35.735636
+12	13	stray	\N	4	Pasteur, Sukasari, Bandung City, West Java, Java, 40161, Indonesia	-6.88455680	107.60028160	Nemu kucing liar di pasteur eyy	report-1763910613606.png	2025-11-23	2025-11-23 22:10:13.851051
+4	3	stray	\N	10	Indonesia University of Education, 229, Gang Bapak Arsadi, Ledeng, Cidadap, Bandung City, West Java, 40154, Indonesia	-6.85834240	107.59045120	Saya menemukan kucing liar yang kayaknya lagi sakit	report-1763716897731.jpg	2025-11-21	2025-11-21 16:21:37.881511
+5	3	missing	1	10	Indonesia University of Education, 229, Gang Bapak Arsadi, Ledeng, Cidadap, Bandung City, West Java, 40154, Indonesia	-6.85834240	107.59045120	Saya menemukan kucing milik azmi	report-1763717038437.jpg	2025-11-21	2025-11-21 16:23:58.575199
+8	3	missing	5	10	Sirna Manah, Pasteur, Sukasari, Bandung City, West Java 40161, Indonesia	-6.88468337	107.59753561	saya menemukan kucing milik azmi	report-1763881767103.png	2025-11-23	2025-11-23 14:09:27.26002
+9	3	stray	\N	11	Pasteur, Sukasari, Bandung City, West Java 40161, Indonesia	-6.88455680	107.60028160	saya liat kucing liar	report-1763881918827.png	2025-11-23	2025-11-23 14:11:58.96954
+11	3	stray	\N	4	Pasteur, Sukasari, Bandung City, West Java 40161, Indonesia	-6.88455680	107.60028160	saya nemu kucing liar lagi di gerlong	report-1763882675590.png	2025-11-23	2025-11-23 14:24:35.735636
 \.
 
 
@@ -1613,6 +1617,7 @@ COPY public.rescue_assignments (id, tracking_id, report_id, driver_id, shelter_i
 5	RES-BDG-0005	8	DRV-10-002	10	assigned	2025-11-23 14:11:08.332897	\N	\N	\N	\N	\N
 6	RES-BDG-0006	9	DRV-11-001	11	assigned	2025-11-23 14:15:13.576105	\N	\N	\N	\N	\N
 7	RES-BDG-0007	11	DRV-04-002	4	completed	2025-11-23 14:50:34.763009	2025-11-23 16:12:48.451475	2025-11-23 16:13:15.11699	rescue-1763889168403.png	rescue-1763889195074.png	\N
+8	RES-BDG-0008	12	DRV-04-002	4	assigned	2025-11-23 22:19:43.856501	\N	\N	\N	\N	\N
 \.
 
 
@@ -1693,7 +1698,7 @@ COPY public.verification_log (id, user_id, verifier_id, verification_type, statu
 
 
 --
--- TOC entry 5312 (class 0 OID 0)
+-- TOC entry 5311 (class 0 OID 0)
 -- Dependencies: 244
 -- Name: adoptions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1702,25 +1707,25 @@ SELECT pg_catalog.setval('public.adoptions_id_seq', 15, true);
 
 
 --
--- TOC entry 5313 (class 0 OID 0)
+-- TOC entry 5312 (class 0 OID 0)
 -- Dependencies: 243
 -- Name: cats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.cats_id_seq', 14, true);
+SELECT pg_catalog.setval('public.cats_id_seq', 15, true);
 
 
 --
--- TOC entry 5314 (class 0 OID 0)
+-- TOC entry 5313 (class 0 OID 0)
 -- Dependencies: 259
 -- Name: chat_messages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.chat_messages_id_seq', 22, true);
+SELECT pg_catalog.setval('public.chat_messages_id_seq', 27, true);
 
 
 --
--- TOC entry 5315 (class 0 OID 0)
+-- TOC entry 5314 (class 0 OID 0)
 -- Dependencies: 246
 -- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1729,7 +1734,7 @@ SELECT pg_catalog.setval('public.comment_id_seq', 17, true);
 
 
 --
--- TOC entry 5316 (class 0 OID 0)
+-- TOC entry 5315 (class 0 OID 0)
 -- Dependencies: 248
 -- Name: community_post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1738,7 +1743,7 @@ SELECT pg_catalog.setval('public.community_post_id_seq', 5, true);
 
 
 --
--- TOC entry 5317 (class 0 OID 0)
+-- TOC entry 5316 (class 0 OID 0)
 -- Dependencies: 250
 -- Name: community_post_id_seq1; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1747,25 +1752,25 @@ SELECT pg_catalog.setval('public.community_post_id_seq1', 1, false);
 
 
 --
--- TOC entry 5318 (class 0 OID 0)
+-- TOC entry 5317 (class 0 OID 0)
 -- Dependencies: 245
 -- Name: donations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.donations_id_seq', 12, true);
+SELECT pg_catalog.setval('public.donations_id_seq', 14, true);
 
 
 --
--- TOC entry 5319 (class 0 OID 0)
+-- TOC entry 5318 (class 0 OID 0)
 -- Dependencies: 241
 -- Name: driver_locations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.driver_locations_id_seq', 313, true);
+SELECT pg_catalog.setval('public.driver_locations_id_seq', 323, true);
 
 
 --
--- TOC entry 5320 (class 0 OID 0)
+-- TOC entry 5319 (class 0 OID 0)
 -- Dependencies: 235
 -- Name: global_achievements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1774,7 +1779,7 @@ SELECT pg_catalog.setval('public.global_achievements_id_seq', 1, false);
 
 
 --
--- TOC entry 5321 (class 0 OID 0)
+-- TOC entry 5320 (class 0 OID 0)
 -- Dependencies: 237
 -- Name: global_quests_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1783,16 +1788,16 @@ SELECT pg_catalog.setval('public.global_quests_id_seq', 1, false);
 
 
 --
--- TOC entry 5322 (class 0 OID 0)
+-- TOC entry 5321 (class 0 OID 0)
 -- Dependencies: 252
 -- Name: lost_cats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.lost_cats_id_seq', 6, true);
+SELECT pg_catalog.setval('public.lost_cats_id_seq', 8, true);
 
 
 --
--- TOC entry 5323 (class 0 OID 0)
+-- TOC entry 5322 (class 0 OID 0)
 -- Dependencies: 247
 -- Name: reply_comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1801,25 +1806,25 @@ SELECT pg_catalog.setval('public.reply_comment_id_seq', 6, true);
 
 
 --
--- TOC entry 5324 (class 0 OID 0)
+-- TOC entry 5323 (class 0 OID 0)
 -- Dependencies: 254
 -- Name: reports_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.reports_id_seq', 11, true);
+SELECT pg_catalog.setval('public.reports_id_seq', 12, true);
 
 
 --
--- TOC entry 5325 (class 0 OID 0)
+-- TOC entry 5324 (class 0 OID 0)
 -- Dependencies: 257
 -- Name: rescue_assignments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.rescue_assignments_id_seq', 7, true);
+SELECT pg_catalog.setval('public.rescue_assignments_id_seq', 8, true);
 
 
 --
--- TOC entry 5326 (class 0 OID 0)
+-- TOC entry 5325 (class 0 OID 0)
 -- Dependencies: 239
 -- Name: user_progress_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1828,7 +1833,7 @@ SELECT pg_catalog.setval('public.user_progress_id_seq', 12, true);
 
 
 --
--- TOC entry 5327 (class 0 OID 0)
+-- TOC entry 5326 (class 0 OID 0)
 -- Dependencies: 234
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1837,7 +1842,7 @@ SELECT pg_catalog.setval('public.users_id_seq', 22, true);
 
 
 --
--- TOC entry 5328 (class 0 OID 0)
+-- TOC entry 5327 (class 0 OID 0)
 -- Dependencies: 256
 -- Name: verification_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -2439,11 +2444,11 @@ ALTER TABLE ONLY public.verification_log
     ADD CONSTRAINT verification_log_verifier_id_fkey FOREIGN KEY (verifier_id) REFERENCES public.users(id);
 
 
--- Completed on 2025-11-23 21:02:55
+-- Completed on 2025-11-24 00:15:18
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict nX3CZFDUyUTgy0WGgjhaRe3aEAezKa7Ax8T2rhauCAwinooW1UtvFaFlQBvOXbU
+\unrestrict RFT7DU6BMvyuB7RFhE0Z6nMHN5zUfNYHjjOpHbtn1hs3aKE3jh5M7ooTPDeqOWg
 
