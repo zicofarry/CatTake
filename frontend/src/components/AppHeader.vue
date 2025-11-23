@@ -270,11 +270,18 @@ function handleEditProfileClick() {
 }
 
 function handleSignOut() {
+    // Hapus semua data sesi
     localStorage.removeItem('userToken');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
+    
     emit('update-login-status', false);
     isProfileDropdownOpen.value = false;
     alert('Anda telah keluar.');
+    
+    // Memaksa hard redirect ke halaman login
+    window.location.href = '/login'; 
 }
 </script>
 

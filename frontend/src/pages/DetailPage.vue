@@ -383,10 +383,19 @@ async function handleFileUpload(event) {
 }
 
 function handleSignOut() {
+    // Hapus semua token dan ID sesi dari localStorage untuk logout yang bersih
     localStorage.removeItem('userToken');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
+    
+    // Memberi tahu komponen induk (App.vue) untuk reset state (tetap dipertahankan)
     emit('update-login-status', false); 
-    router.push('/login');
+    
+    // Melakukan hard redirect ke halaman login.
+    // Ini setara dengan logout + refresh, memastikan semua komponen di-reset
+    // dan membaca localStorage yang sekarang kosong.
+    window.location.href = '/login'; 
 }
 </script>
 
