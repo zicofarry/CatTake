@@ -1,41 +1,45 @@
 <template>
-  <div class="min-h-screen bg-gray-100 font-sans overflow-x-hidden">
+  <div class="min-h-screen font-sans overflow-x-hidden pt-20 pb-32 relative"
+    style="
+        background: radial-gradient(circle at top right, #cfe3d4 10%, oklch(39.3% 0.095 152.535) 80%);
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    ">
     
-    <!-- Ambil Role dari localStorage (Simulasi) -->
     <div v-if="userRole === 'shelter'">
-        <div class="max-w-5xl mx-auto px-4 pt-12 pb-20">
+        
+        <div class="text-center mb-8 -mt-2 space-y-6">
+            <h1 class="inline-block text-3xl md:text-4xl font-extrabold text-white drop-shadow-md py-3 px-8">
+                Dashboard Adopsi
+            </h1>
             
-            <div class="text-center mb-8 space-y-6">
-                <h1 class="inline-block text-3xl md:text-4xl font-extrabold text-gray-800">
-                    Dashboard Adopsi
-                </h1>
-                
-                <div class="flex justify-center">
-                    <div class="bg-white p-1.5 rounded-full shadow-md inline-flex">
-                        <button 
-                            @click="activeTab = 'pending'"
-                            class="px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300"
-                            :class="activeTab === 'pending' ? 'bg-[#EBCD5E] text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'"
-                        >
-                            Menunggu ({{ pendingReports.length }})
-                        </button>
-                        <button 
-                            @click="activeTab = 'history'"
-                            class="px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300"
-                            :class="activeTab === 'history' ? 'bg-[#3A5F50] text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'"
-                        >
-                            Riwayat
-                        </button>
-                    </div>
+            <div class="flex justify-center">
+                <div class="bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-lg inline-flex">
+                    <button 
+                        @click="activeTab = 'pending'"
+                        class="px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 flex items-center gap-2"
+                        :class="activeTab === 'pending' ? 'bg-[#EBCD5E] text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'"
+                    >
+                        Menunggu <span v-if="pendingReports.length" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingReports.length }}</span>
+                    </button>
+                    <button 
+                        @click="activeTab = 'history'"
+                        class="px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300"
+                        :class="activeTab === 'history' ? 'bg-[#3A5F50] text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'"
+                    >
+                        Riwayat
+                    </button>
                 </div>
             </div>
+        </div>
 
+        <div class="max-w-5xl mx-auto px-4">
             <div class="relative">
                 
                 <div v-if="activeTab === 'pending'" class="flex flex-col gap-4 animate-fade-in">
-                    <div v-if="pendingReports.length === 0" class="text-center py-16 bg-white rounded-3xl shadow-sm">
-                        <i class="fas fa-clipboard-check text-4xl text-gray-300 mb-3"></i>
-                        <p class="text-gray-500">Tidak ada permintaan adopsi baru.</p>
+                    <div v-if="pendingReports.length === 0" class="bg-white/80 backdrop-blur-md rounded-3xl p-10 text-center text-gray-500 shadow-lg">
+                        <i class="fas fa-clipboard-check text-4xl mb-3 opacity-50"></i>
+                        <p>Tidak ada permintaan adopsi baru.</p>
                     </div>
                     <AdoptionReportCard 
                         v-else
@@ -47,9 +51,9 @@
                 </div>
 
                 <div v-if="activeTab === 'history'" class="flex flex-col gap-4 animate-fade-in">
-                    <div v-if="historyReports.length === 0" class="text-center py-16 bg-white rounded-3xl shadow-sm">
-                        <i class="fas fa-history text-4xl text-gray-300 mb-3"></i>
-                        <p class="text-gray-500">Belum ada riwayat adopsi.</p>
+                    <div v-if="historyReports.length === 0" class="bg-white/80 backdrop-blur-md rounded-3xl p-10 text-center text-gray-500 shadow-lg">
+                        <i class="fas fa-history text-4xl mb-3 opacity-50"></i>
+                        <p>Belum ada riwayat adopsi.</p>
                     </div>
                     <AdoptionReportCard 
                         v-else
@@ -64,9 +68,6 @@
     </div>
 
     <div v-else>
-        <!-- ============================================== -->
-        <!-- TAMPILAN USER/GUEST: DAFTAR KUCING & FILTER -->
-        <!-- ============================================== -->
         <HeroSection 
           title="Berikan Rumah, Dapatkan Cinta."
           subtitle="Mari bersama menciptakan cerita baru bagi mereka, dari kesepian menuju rumah yang hangat dan penuh cinta."
@@ -80,7 +81,6 @@
 
         <div class="relative mt-10 z-10">
             
-            <!-- Filter Bar (Sesuai Desain) -->
             <div class="absolute left-0 right-0 -top-8 z-30 px-4 pointer-events-none">
                 <div class="max-w-3xl mx-auto flex flex-wrap justify-center items-center gap-4 p-4 pointer-events-auto">
                 
@@ -120,9 +120,7 @@
                 </div>
             </div>
 
-            <!-- List Kucing -->
             <div id="listkucing" class="bg-[#3A5F50] pt-36 pb-28 px-6 rounded-t-[50px] md:rounded-t-[80px] min-h-[700px]">
-                <!-- Login Overlay untuk Guest -->
                 <LoginOverlay v-if="userRole === 'guest'" message="Silakan login dulu untuk mengadopsi kucing." buttonText="Login Sekarang" loginRoute="/login"/>
                 
                 <div class="max-w-6xl mx-auto">
