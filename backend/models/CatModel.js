@@ -70,7 +70,13 @@ class CatModel {
         const query = `
             SELECT * FROM cats 
             WHERE shelter_id = $1 
-            ORDER BY id DESC
+            ORDER BY 
+            CASE 
+                WHEN adoption_status = 'available' THEN 0
+                ELSE 1
+            END,
+            id DESC;
+
         `;
         const result = await db.query(query, [shelterId]);
         return result.rows;
