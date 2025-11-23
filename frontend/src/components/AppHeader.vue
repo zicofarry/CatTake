@@ -207,7 +207,8 @@ const navLinks = computed(() => {
     ];
 
     if (props.userRole === 'shelter') {
-        links.push({ name: 'DriverShelter', path: '/drivershelter' });
+        links.push({ name: 'Driver', path: '/drivershelter' });
+        links.push({ name: 'Kucing', path: '/shelter/cats' });
     } else {
         links.push({ name: 'FAQ', path: '/faq' });
     }

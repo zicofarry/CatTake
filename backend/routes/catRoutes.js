@@ -1,19 +1,40 @@
-const CatController = require('../controllers/catController'); // Sesuaikan path
-const authentication = require('../middlewares/authentication'); // Sesuaikan path middleware
+const CatController = require('../controllers/catController');
+const authentication = require('../middlewares/authentication');
 const optionalAuthentication = require('../middlewares/optionalAuthentication');
 
-// Di Fastify, routes itu dibungkus function async
 async function catRoutes(fastify, options) {
 
-    // Route: POST /api/v1/cats/:id/favorite
+    // Route: Tambah Kucing Baru (Upload File)
+    // POST /api/v1/cats
+    fastify.post('/', {
+        preHandler: [authentication]
+    }, CatController.createCat);
+
+    // Route Update Kucing
+    fastify.put('/:id', {
+        preHandler: [authentication]
+    }, CatController.updateCat);
+
+    // Route Hapus Kucing
+    fastify.delete('/:id', {
+        preHandler: [authentication]
+    }, CatController.deleteCat);
+
+    // Route: Ambil Semua Kucing Milik Shelter Tertentu
+    // GET /api/v1/cats/shelter/:id
+    fastify.get('/shelter/:id', {
+        preHandler: [authentication] 
+    }, CatController.getShelterCats);
+
+    // Route: Toggle Favorite
     fastify.post('/:id/favorite', {
-        preHandler: [authentication] // <--- Cara pasang middleware di Fastify beda dengan Express
+        preHandler: [authentication]
     }, CatController.toggleLike);
 
-    // Route: GET /api/v1/cats/:id (Detail Kucing)
+    // Route: Detail Kucing
     fastify.get('/:id', CatController.getDetail);
 
-    // Route: GET /api/v1/cats (Contoh kalau ada)
+    // Route: Get All Cats (Public/Optional Auth)
     fastify.get('/', { preHandler: [optionalAuthentication] }, CatController.getCats);
 }
 

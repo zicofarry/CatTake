@@ -7,7 +7,7 @@
       
       <div class="mb-4">
         <img 
-          :src="`/img/${cat.image}`"
+          :src="resolveImageUrl(cat.image || cat.photo)"
           :alt="cat.name" 
           class="w-full h-56 object-cover rounded-[25px] shadow-sm"
         >
@@ -60,6 +60,14 @@ import axios from 'axios';
 const props = defineProps({
   cat: { type: Object, required: true }
 });
+
+function resolveImageUrl(imageName) {
+    if (!imageName) return '/img/cat-placeholder.png'; // Gambar default local jika null
+    if (imageName.startsWith('http')) return imageName; // Jika URL external
+    
+    // Arahkan ke folder backend public/img/cats
+    return `http://localhost:3000/public/img/cats/${imageName}`;
+}
 
 async function toggleFavorite() {
   // 1. Ambil token (Asumsi kamu simpan token di localStorage saat login)

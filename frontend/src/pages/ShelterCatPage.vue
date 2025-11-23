@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue'; // Tambahkan computed
 import apiClient from '@/api/http';
 import { jwtDecode } from 'jwt-decode';
 
@@ -10,6 +10,10 @@ const shelterName = ref('');
 const showAddModal = ref(false);
 const isSubmitting = ref(false);
 const imagePreview = ref(null);
+
+// State untuk Edit
+const isEditing = ref(false);
+const editId = ref(null);
 
 // Form Data
 const form = ref({
@@ -22,7 +26,7 @@ const form = ref({
   photo: null
 });
 
-// Opsi Dropdown (Value harus huruf kecil semua sesuai SQL check constraint)
+// Options (sama seperti sebelumnya)
 const genderOptions = [
   { label: 'Jantan (Male)', value: 'male' },
   { label: 'Betina (Female)', value: 'female' }
@@ -34,16 +38,14 @@ const healthOptions = [
   { label: 'Steril', value: 'sterilized' }
 ];
 
-// --- HELPERS ---
+// Helper URL Gambar
 function resolveImageUrl(path) {
     if (!path) return '/img/cat-placeholder.png';
-    // Cek apakah path sudah URL lengkap atau path relatif
     if (path.startsWith('http')) return path; 
-    // Sesuaikan URL base server kamu
-    return `http://localhost:3000/uploads/${path}`; 
+    return `http://localhost:3000/public/img/cats/${path}`; 
 }
 
-// Ambil ID Shelter dari Token
+// Get Shelter ID
 function getShelterId() {
     const token = localStorage.getItem('userToken');
     if (token) {
@@ -56,11 +58,10 @@ function getShelterId() {
     return null;
 }
 
-// --- LOGIC UTAMA ---
+// Fetch Data
 async function fetchMyCats() {
     const shelterId = getShelterId();
     if (!shelterId) return;
-
     try {
         isLoading.value = true;
         const response = await apiClient.get(`/cats/shelter/${shelterId}`);
@@ -72,12 +73,36 @@ async function fetchMyCats() {
     }
 }
 
-// --- MODAL ---
-function openModal() {
-    // Reset form
+// --- MODAL LOGIC ---
+
+// Buka Modal untuk TAMBAH
+function openAddModal() {
+    isEditing.value = false;
+    editId.value = null;
     form.value = { name: '', breed: '', age: '', gender: '', health_status: '', description: '', photo: null };
     imagePreview.value = null;
     showAddModal.value = true; 
+}
+
+// Buka Modal untuk EDIT
+function openEditModal(cat) {
+    isEditing.value = true;
+    editId.value = cat.id;
+
+    // Isi form dengan data yang ada
+    form.value = {
+        name: cat.name,
+        breed: cat.breed,
+        age: cat.age,
+        gender: cat.gender,
+        health_status: cat.health_status,
+        description: cat.description,
+        photo: null // Reset photo input file karena kita tidak bisa set value input file secara programatis
+    };
+
+    // Tampilkan preview foto lama
+    imagePreview.value = resolveImageUrl(cat.photo || cat.image);
+    showAddModal.value = true;
 }
 
 function closeModal() {
@@ -87,71 +112,96 @@ function closeModal() {
 function handleFileUpload(event) {
     const file = event.target.files[0];
     if (file) {
-        form.value.photo = file;
+        form.value.photo = file; // Simpan file objek baru
         imagePreview.value = URL.createObjectURL(file);
     }
 }
 
-// --- SUBMIT DATA (SESUAI SQL) ---
+// --- SUBMIT (CREATE / UPDATE) ---
 async function submitCat() {
-    // 1. Validasi Input Wajib
-    if (!form.value.name || !form.value.gender || !form.value.photo) {
-        alert("Nama, Gender, dan Foto wajib diisi!");
+    // Validasi Dasar
+    if (!form.value.name || !form.value.gender) {
+        alert("Nama dan Gender wajib diisi!");
         return;
     }
 
-    // 2. Validasi Shelter ID (Wajib NOT NULL di SQL)
-    const currentShelterId = getShelterId();
-    if (!currentShelterId) {
-        alert("Error: ID Shelter tidak ditemukan. Silakan login ulang.");
+    // Jika mode TAMBAH, foto wajib. Jika mode EDIT, foto opsional.
+    if (!isEditing.value && !form.value.photo) {
+        alert("Foto wajib diisi untuk data baru!");
         return;
     }
+
+    const currentShelterId = getShelterId();
+    if (!currentShelterId) return;
 
     try {
         isSubmitting.value = true;
         const formData = new FormData();
         
-        // Masukkan Data Sesuai Kolom SQL
-        formData.append('shelter_id', currentShelterId); // int
-        formData.append('name', form.value.name);        // varchar
-        formData.append('gender', form.value.gender);    // varchar (male/female)
-        formData.append('adoption_status', 'available'); // varchar (available)
-        
-        // Data Opsional (Kirim string kosong atau 0 jika tidak diisi, biar ga error di backend)
+        formData.append('shelter_id', currentShelterId);
+        formData.append('name', form.value.name);
+        formData.append('gender', form.value.gender);
+        // formData.append('adoption_status', 'available'); // Tidak perlu kirim status saat update kecuali mau diubah
+        if (!isEditing.value) {
+            formData.append('adoption_status', 'available'); // Default saat create
+        }
+
         formData.append('breed', form.value.breed || '');
         formData.append('age', form.value.age || 0);     
         formData.append('health_status', form.value.health_status || 'healthy');
         formData.append('description', form.value.description || '');
-        formData.append('photo', form.value.photo);      // file object
+        
+        // Hanya append foto jika user memilih file baru
+        if (form.value.photo) {
+            formData.append('photo', form.value.photo);
+        }
 
-        // Debugging: Cek isi data di Console
-        console.log("Mengirim Data:", Object.fromEntries(formData));
+        if (isEditing.value) {
+            // --- UPDATE (PUT) ---
+            await apiClient.put(`/cats/${editId.value}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            alert('Sukses! Data kucing diperbarui.');
+        } else {
+            // --- CREATE (POST) ---
+            await apiClient.post('/cats', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            alert('Sukses! Kucing berhasil ditambahkan.');
+        }
 
-        await apiClient.post('/cats', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-
-        alert('Sukses! Kucing berhasil ditambahkan.');
         closeModal();
         fetchMyCats(); 
 
     } catch (error) {
         console.error("Error Submit:", error);
-        // Tampilkan pesan error spesifik dari backend jika ada
-        const msg = error.response?.data?.message || error.response?.data?.error || "Gagal menambah data.";
+        const msg = error.response?.data?.message || "Gagal menyimpan data.";
         alert(`Gagal: ${msg}`);
     } finally {
         isSubmitting.value = false;
     }
 }
 
-// Helper UI
+// --- DELETE ---
+async function deleteCat(id) {
+    if (!confirm("Apakah Anda yakin ingin menghapus kucing ini? Data tidak bisa dikembalikan.")) return;
+
+    try {
+        await apiClient.delete(`/cats/${id}`);
+        alert("Kucing berhasil dihapus.");
+        fetchMyCats();
+    } catch (error) {
+        console.error("Gagal hapus:", error);
+        alert("Gagal menghapus data.");
+    }
+}
+
+// Helper UI (Sama)
 function statusColor(status) {
     if (status === 'available') return 'bg-green-100 text-green-700';
     if (status === 'adopted') return 'bg-gray-100 text-gray-600';
     return 'bg-yellow-100 text-yellow-700';
 }
-
 function formatStatus(status) {
     const map = { 'available': 'Tersedia', 'adopted': 'Teradopsi', 'pending': 'Menunggu' };
     return map[status] || status;
@@ -181,7 +231,7 @@ onMounted(() => {
             </div>
 
             <button 
-                @click="openModal" 
+                @click="openAddModal" 
                 class="bg-[#E8C32A] hover:bg-amber-500 text-gray-900 px-6 py-3 rounded-xl font-bold shadow-lg flex items-center gap-2 transition-all transform hover:scale-105 cursor-pointer"
             >
                 <i class="fas fa-plus"></i>
@@ -190,24 +240,17 @@ onMounted(() => {
         </div>
 
         <div v-if="isLoading" class="text-center py-20">
-            <i class="fas fa-spinner fa-spin text-4xl text-white drop-shadow-md"></i>
-            <p class="text-white mt-2 font-medium">Memuat data kucing...</p>
+            <i class="fas fa-spinner fa-spin text-4xl text-white"></i>
         </div>
-
-        <div v-else-if="cats.length === 0" class="bg-white/90 backdrop-blur-xl rounded-3xl p-10 text-center shadow-2xl border border-white/50">
-            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400 text-3xl">
-                <i class="fas fa-cat"></i>
-            </div>
-            <h3 class="text-xl font-bold text-gray-800">Belum ada kucing</h3>
-            <p class="text-gray-600 mb-6">Yuk tambahkan kucing pertamamu agar bisa dilihat calon adopter!</p>
-            <button @click="openModal" class="text-[#558a74] font-bold hover:underline cursor-pointer text-lg">Tambah Sekarang</button>
+        <div v-else-if="cats.length === 0" class="bg-white/90 backdrop-blur-xl rounded-3xl p-10 text-center shadow-2xl">
+            <button @click="openAddModal" class="text-[#558a74] font-bold hover:underline cursor-pointer text-lg">Tambah Sekarang</button>
         </div>
 
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div v-for="cat in cats" :key="cat.id" class="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group relative transform hover:-translate-y-1">
                 
                 <div class="h-56 overflow-hidden relative">
-                    <img :src="resolveImageUrl(cat.photo)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img :src="resolveImageUrl(cat.photo || cat.image)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     <div class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold shadow-md backdrop-blur-sm bg-white/90" :class="statusColor(cat.adoption_status)">
                         {{ formatStatus(cat.adoption_status) }}
                     </div>
@@ -230,8 +273,18 @@ onMounted(() => {
                     <hr class="border-gray-100 mb-4"/>
                     
                     <div class="flex gap-3">
-                        <button class="flex-1 bg-gray-50 hover:bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-bold transition-colors">Edit</button>
-                        <button class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-2 rounded-lg text-sm font-bold transition-colors">Hapus</button>
+                        <button 
+                            @click="openEditModal(cat)"
+                            class="flex-1 bg-gray-50 hover:bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-bold transition-colors cursor-pointer"
+                        >
+                            Edit
+                        </button>
+                        <button 
+                            @click="deleteCat(cat.id)"
+                            class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-2 rounded-lg text-sm font-bold transition-colors cursor-pointer"
+                        >
+                            Hapus
+                        </button>
                     </div>
                 </div>
             </div>
@@ -239,13 +292,11 @@ onMounted(() => {
     </div>
 
     <div v-if="showAddModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-all">
-        
         <div class="absolute inset-0" @click="closeModal"></div>
-
         <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl relative animate-scale-up z-10 flex flex-col">
             
             <div class="sticky top-0 bg-white px-8 py-5 border-b border-gray-100 flex justify-between items-center z-20 shadow-sm">
-                <h2 class="text-2xl font-bold text-gray-800">Tambah Kucing Baru</h2>
+                <h2 class="text-2xl font-bold text-gray-800">{{ isEditing ? 'Edit Data Kucing' : 'Tambah Kucing Baru' }}</h2>
                 <button @click="closeModal" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-red-100 hover:text-red-500 transition-colors cursor-pointer">
                     <i class="fas fa-times text-lg"></i>
                 </button>
@@ -269,15 +320,15 @@ onMounted(() => {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Nama Kucing</label>
-                            <input v-model="form.name" type="text" class="w-full p-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#558a74] focus:border-transparent outline-none transition-all" placeholder="Nama" required />
+                            <input v-model="form.name" type="text" class="w-full p-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#558a74] focus:border-transparent outline-none transition-all" required />
                         </div>
                         <div>
                             <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Ras / Jenis</label>
-                            <input v-model="form.breed" type="text" class="w-full p-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#558a74] focus:border-transparent outline-none transition-all" placeholder="Contoh: Domestik" />
+                            <input v-model="form.breed" type="text" class="w-full p-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#558a74] focus:border-transparent outline-none transition-all" />
                         </div>
                         <div>
                             <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Umur (Bulan)</label>
-                            <input v-model="form.age" type="number" class="w-full p-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#558a74] focus:border-transparent outline-none transition-all" placeholder="0" />
+                            <input v-model="form.age" type="number" class="w-full p-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#558a74] focus:border-transparent outline-none transition-all" />
                         </div>
                         <div>
                             <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Jenis Kelamin</label>
@@ -305,7 +356,7 @@ onMounted(() => {
 
                     <div>
                         <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Deskripsi</label>
-                        <textarea v-model="form.description" rows="3" class="w-full p-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#558a74] focus:border-transparent outline-none resize-none transition-all" placeholder="Ceritakan tentang kucing ini..."></textarea>
+                        <textarea v-model="form.description" rows="3" class="w-full p-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#558a74] focus:border-transparent outline-none resize-none transition-all"></textarea>
                     </div>
 
                     <button 
@@ -314,7 +365,7 @@ onMounted(() => {
                         class="w-full bg-[#E8C32A] hover:bg-amber-500 text-gray-900 font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transform active:scale-95 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-2 cursor-pointer"
                     >
                         <i v-if="isSubmitting" class="fas fa-spinner fa-spin"></i>
-                        <span>{{ isSubmitting ? 'Sedang Menyimpan...' : 'Simpan Data Kucing' }}</span>
+                        <span>{{ isSubmitting ? 'Sedang Menyimpan...' : (isEditing ? 'Simpan Perubahan' : 'Simpan Data Kucing') }}</span>
                     </button>
 
                 </form>
@@ -324,8 +375,3 @@ onMounted(() => {
 
   </div>
 </template>
-
-<style scoped>
-.animate-scale-up { animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-@keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-</style>
