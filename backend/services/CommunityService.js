@@ -7,7 +7,7 @@ class CommunityService {
         const query = `
             SELECT 
                 p.id, p.title, p.content, p.media_path, p.likes_count, p.created_at,
-                u.username, d.full_name, d.profile_picture,
+                u.username, d.full_name, ds.shelter_name, d.profile_picture,
                 (SELECT COUNT(*) FROM "comment" c WHERE c.post_id = p.id) AS total_comments,
                 CASE 
                     WHEN pl.user_id IS NOT NULL THEN true 
@@ -16,6 +16,7 @@ class CommunityService {
             FROM community_post p
             JOIN users u ON p.author_id = u.id
             LEFT JOIN detail_user_individu d ON u.id = d.id
+            LEFT JOIN detail_user_shelter ds ON u.id = ds.id
             LEFT JOIN post_likes pl ON p.id = pl.post_id AND pl.user_id = $1
             ORDER BY p.created_at DESC
         `;
@@ -33,7 +34,7 @@ class CommunityService {
             return {
                 id: row.id,
                 community: 'CatLover Umum',
-                author: row.full_name || row.username,
+                author: row.full_name || row.shelter_name || row.username,
                 time: new Date(row.created_at).toLocaleDateString('id-ID'),
                 title: row.title || (row.content.substring(0, 30) + '...'),
                 excerpt: row.content.substring(0, 60) + '...',
