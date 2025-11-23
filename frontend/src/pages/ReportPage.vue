@@ -1,40 +1,48 @@
 <template>
-  <div class="min-h-screen bg-gray-50 font-sans overflow-x-hidden pt-20 pb-32 relative">
+  <div class="min-h-screen font-sans overflow-x-hidden pt-20 pb-32 relative"
+    style="
+        background: radial-gradient(circle at top right, #cfe3d4 10%, oklch(39.3% 0.095 152.535) 80%);
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    ">
     
     <div v-if="userRole === 'shelter'">
-        <div class="text-center mb-8 -mt-2">
-            <h1 class="inline-block text-3xl md:text-4xl font-extrabold text-gray-800 py-3 px-8 bg-white rounded-full shadow-xl">
+        
+        <div class="text-center mb-8 -mt-2 space-y-6">
+            <h1 class="inline-block text-3xl md:text-4xl font-extrabold text-white drop-shadow-md py-3 px-8">
                 Dashboard Rescue
             </h1>
-        </div>
 
-        <div class="flex justify-center gap-4 mb-8">
-            <button 
-                @click="activeTab = 'incoming'"
-                class="px-6 py-2 rounded-full font-bold transition-all"
-                :class="activeTab === 'incoming' ? 'bg-[#EBCD5E] text-white shadow-md' : 'bg-white text-gray-500 hover:bg-gray-100'"
-            >
-                Permintaan Masuk 
-                <span v-if="incomingReports.length" class="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ incomingReports.length }}</span>
-            </button>
-            <button 
-                @click="activeTab = 'tasks'"
-                class="px-6 py-2 rounded-full font-bold transition-all"
-                :class="activeTab === 'tasks' ? 'bg-[#3A5F50] text-white shadow-md' : 'bg-white text-gray-500 hover:bg-gray-100'"
-            >
-                Tugas Saya
-            </button>
+            <div class="flex justify-center">
+                <div class="bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-lg inline-flex">
+                    <button 
+                        @click="activeTab = 'incoming'"
+                        class="px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 flex items-center gap-2"
+                        :class="activeTab === 'incoming' ? 'bg-[#EBCD5E] text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'"
+                    >
+                        Permintaan Masuk 
+                        <span v-if="incomingReports.length" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ incomingReports.length }}</span>
+                    </button>
+                    <button 
+                        @click="activeTab = 'tasks'"
+                        class="px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300"
+                        :class="activeTab === 'tasks' ? 'bg-[#3A5F50] text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'"
+                    >
+                        Tugas Saya
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="max-w-4xl mx-auto px-4">
             
             <div v-if="activeTab === 'incoming'" class="space-y-4">
-                <div v-if="incomingReports.length === 0" class="text-center text-gray-400 py-10">
-                    <i class="fas fa-check-circle text-4xl mb-2"></i>
+                <div v-if="incomingReports.length === 0" class="bg-white/80 backdrop-blur-md rounded-3xl p-10 text-center text-gray-500 shadow-lg">
+                    <i class="fas fa-check-circle text-4xl mb-2 opacity-50"></i>
                     <p>Tidak ada laporan baru di sekitar Anda.</p>
                 </div>
                 
-                <div v-for="report in incomingReports" :key="report.id" class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 hover:border-[#EBCD5E] transition-colors relative overflow-hidden">
+                <div v-for="report in incomingReports" :key="report.id" class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 hover:border-[#EBCD5E] transition-colors relative overflow-hidden group">
                     <div class="absolute top-0 left-0 w-2 h-full bg-[#EBCD5E]"></div>
                     <div class="flex flex-col md:flex-row gap-6">
                         <img :src="resolveImageUrl(report.photo)" class="w-full md:w-40 h-40 object-cover rounded-2xl bg-gray-200">
@@ -46,15 +54,15 @@
                             </div>
                             
                             <div class="space-y-1 text-sm text-gray-600 mb-4">
-                                <p><i class="fas fa-user w-5"></i> Pelapor: <strong>{{ report.full_name || report.reporter_name }}</strong></p>
-                                <p><i class="fas fa-map-marker-alt w-5"></i> {{ report.location }}</p>
-                                <p><i class="fas fa-align-left w-5"></i> {{ report.description }}</p>
+                                <p><i class="fas fa-user w-5 text-center"></i> Pelapor: <strong>{{ report.full_name || report.reporter_name }}</strong></p>
+                                <p><i class="fas fa-map-marker-alt w-5 text-center"></i> {{ report.location }}</p>
+                                <p><i class="fas fa-align-left w-5 text-center"></i> {{ report.description }}</p>
                             </div>
 
                             <div class="flex justify-end">
                                 <button 
                                     @click="openDriverModal(report)"
-                                    class="bg-[#EBCD5E] hover:bg-[#dcb945] text-white font-bold py-2 px-6 rounded-xl shadow-md transition-transform active:scale-95"
+                                    class="bg-[#EBCD5E] hover:bg-[#dcb945] text-white font-bold py-2 px-6 rounded-xl shadow-md transition-transform active:scale-95 cursor-pointer"
                                 >
                                     Ambil Laporan
                                 </button>
@@ -65,7 +73,7 @@
             </div>
 
             <div v-if="activeTab === 'tasks'" class="space-y-4">
-                <div v-if="myTasks.length === 0" class="text-center text-gray-400 py-10">
+                <div v-if="myTasks.length === 0" class="bg-white/80 backdrop-blur-md rounded-3xl p-10 text-center text-gray-500 shadow-lg">
                     Belum ada tugas yang diambil.
                 </div>
 
@@ -88,15 +96,14 @@
                         </div>
                     </div>
 
-                    <<div v-for="task in myTasks" :key="task.id" class="..."> <div class="flex justify-end gap-2">
-                          <router-link 
-                              :to="`/track?id=${task.tracking_id}`"
-                              class="bg-[#3A5F50] hover:bg-[#2c473c] text-white font-bold py-2 px-6 rounded-xl shadow-md transition text-sm flex items-center gap-2"
-                          >
-                              <i class="fas fa-map"></i> Lacak Status
-                          </router-link>
-                      </div>
-                  </div>
+                    <div class="flex justify-end gap-2">
+                        <router-link 
+                            :to="`/track?id=${task.tracking_id}`"
+                            class="bg-[#3A5F50] hover:bg-[#2c473c] text-white font-bold py-2 px-6 rounded-xl shadow-md transition text-sm flex items-center gap-2"
+                        >
+                            <i class="fas fa-map"></i> Lacak Status
+                        </router-link>
+                    </div>
                 </div>
             </div>
 
@@ -105,18 +112,17 @@
       
     <div v-else>
       
-      <div class="relative w-full h-[400px] overflow-visible bg-[#A0C8B1] z-0">
-          <div class="absolute inset-0 bg-gradient-to-r from-[#A0C8B1] to-[#60997E] opacity-90 overflow-hidden"></div>
+      <div class="relative w-full h-[400px] overflow-visible bg-transparent z-0">
           <div class="relative z-10 h-full max-w-6xl mx-auto px-6 flex items-center justify-center gap-12">
               <div class="flex-shrink-0 text-center md:text-left">
-                <h1 class="text-5xl md:text-7xl font-bold text-[#1F1F1F] drop-shadow-sm leading-tight">
+                <h1 class="text-5xl md:text-7xl font-bold text-white drop-shadow-lg leading-tight">
                     Lapor &<br>Temukan
                 </h1>
-                <p class="text-white mt-4 text-lg max-w-md hidden md:block">
+                <p class="text-white mt-4 text-lg max-w-md hidden md:block drop-shadow-md font-medium">
                   Laporkan penemuan kucing liar, kucing orang lain yang hilang, atau umumkan kucingmu yang hilang.
                 </p>
 
-                <div class="bg-white/20 backdrop-blur-md p-1.5 rounded-full flex">
+                <div class="bg-white/20 backdrop-blur-md p-1.5 rounded-full flex mt-6 shadow-lg border border-white/30 inline-flex">
                     <button 
                         @click="switchUserTab('create')"
                         class="px-6 py-2 rounded-full font-bold transition-all text-sm md:text-base"
@@ -137,7 +143,7 @@
                   <img 
                     src="../assets/img/tigakucing.png" 
                     alt="Tiga Kucing" 
-                    class="h-[75%] md:h-[135%] w-auto object-contain object-bottom md:translate-y-16"
+                    class="h-[75%] md:h-[135%] w-auto object-contain object-bottom md:translate-y-16 drop-shadow-2xl"
                   >
               </div>
           </div>
@@ -146,36 +152,36 @@
       <div class="max-w-4xl mx-auto px-6 relative z-10 mt-12 md:mt-32">
         <div v-if="activeUserTab === 'create'">
           <div class="flex flex-wrap justify-center gap-4 mb-12">
-            <div class="bg-gray-200/80 backdrop-blur-sm p-2 rounded-[25px]">
+            <div class="bg-white/80 backdrop-blur-sm p-2 rounded-[25px] shadow-sm">
                 <button 
                   @click="setActiveReportType('stray')"
                   class="min-w-[160px] py-3 px-6 rounded-[20px] font-bold text-lg transition-all duration-300"
-                  :class="activeReportType === 'stray' ? 'bg-[#EBCD5E] text-white shadow-md scale-105' : 'bg-transparent text-gray-600 hover:bg-white/50'"
+                  :class="activeReportType === 'stray' ? 'bg-[#EBCD5E] text-white shadow-md scale-105' : 'bg-transparent text-gray-600 hover:bg-gray-100'"
                 >
                   Nemu Kucing Liar
                 </button>
             </div>
-            <div class="bg-gray-200/80 backdrop-blur-sm p-2 rounded-[25px]">
+            <div class="bg-white/80 backdrop-blur-sm p-2 rounded-[25px] shadow-sm">
                 <button 
                   @click="setActiveReportType('missing')"
                   class="min-w-[160px] py-3 px-6 rounded-[20px] font-bold text-lg transition-all duration-300"
-                  :class="activeReportType === 'missing' ? 'bg-[#E9B92F] text-white shadow-md scale-105' : 'bg-transparent text-gray-600 hover:bg-white/50'"
+                  :class="activeReportType === 'missing' ? 'bg-[#E9B92F] text-white shadow-md scale-105' : 'bg-transparent text-gray-600 hover:bg-gray-100'"
                 >
                   Nemu Kucing Hilang
                 </button>
             </div>
-            <div class="bg-gray-200/80 backdrop-blur-sm p-2 rounded-[25px]">
+            <div class="bg-white/80 backdrop-blur-sm p-2 rounded-[25px] shadow-sm">
                 <button 
                   @click="setActiveReportType('my_lost')"
                   class="min-w-[160px] py-3 px-6 rounded-[20px] font-bold text-lg transition-all duration-300 border-2 border-transparent"
-                  :class="activeReportType === 'my_lost' ? 'bg-red-500 text-white shadow-md scale-105' : 'bg-transparent text-gray-600 hover:bg-white/50 hover:text-red-500 hover:border-red-200'"
+                  :class="activeReportType === 'my_lost' ? 'bg-red-500 text-white shadow-md scale-105' : 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-red-500'"
                 >
                   Kucing Saya Hilang!
                 </button>
             </div>
           </div>
 
-          <div class="bg-white p-8 md:p-12 rounded-[50px] shadow-2xl relative z-20">
+          <div class="bg-white/95 backdrop-blur-xl p-8 md:p-12 rounded-[50px] shadow-2xl relative z-20 border border-white/50">
             
             <LoginOverlay 
                 :isLoggedIn="isLoggedInProp" 
@@ -237,20 +243,12 @@
                 <div class="flex gap-4 flex-col md:flex-row">
                   <div 
                     @click="openMapModal"
-                    class="w-full md:w-40 h-36 flex-none bg-gray-200 rounded-2xl overflow-hidden relative cursor-pointer"
+                    class="w-full md:w-40 h-36 flex-none bg-gray-200 rounded-2xl overflow-hidden relative cursor-pointer group"
                   >
-                    <img src="../assets/img/maps.png" class="w-full h-full object-cover opacity-80">
+                    <img src="../assets/img/maps.png" class="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-500">
 
-                    <div class="absolute inset-0 flex items-center justify-center">
-                      <i class="
-                        fas fa-map-marker-alt 
-                        text-3xl 
-                        text-blue-500 
-                        drop-shadow-md
-                        transition-all duration-300
-                        hover:scale-110
-                        hover:text-blue-600
-                      "></i>
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
+                      <i class="fas fa-map-marker-alt text-3xl text-red-500 drop-shadow-md"></i>
                     </div>
                   </div>
 
@@ -324,26 +322,17 @@
               <div>
                   <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Lokasi Terakhir Dilihat</label>
                       <div class="flex gap-4 flex-col md:flex-row">
-                                          <div 
-                        @click="openMapModal"
-                        class="w-full md:w-40 h-36 flex-none bg-gray-200 rounded-2xl overflow-hidden relative cursor-pointer"
-                      >
-                        <img src="../assets/img/maps.png" class="w-full h-full object-cover opacity-80">
-
-                        <div class="absolute inset-0 flex items-center justify-center">
-                          <i class="
-                            fas fa-map-marker-alt 
-                            text-3xl 
-                            text-blue-500 
-                            drop-shadow-md
-                            transition-all duration-300
-                            hover:scale-110
-                            hover:text-blue-600
-                          "></i>
-                        </div>
+                          <div 
+                            @click="openMapModal"
+                            class="w-full md:w-40 h-36 flex-none bg-gray-200 rounded-2xl overflow-hidden relative cursor-pointer group"
+                          >
+                            <img src="../assets/img/maps.png" class="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
+                              <i class="fas fa-map-marker-alt text-3xl text-red-500 drop-shadow-md"></i>
+                            </div>
+                          </div>
+                          <textarea v-model="lostCatForm.last_seen_address" required rows="2" class="flex-grow p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none resize-none" placeholder="Klik peta di samping untuk set lokasi otomatis, atau ketik manual..."></textarea>
                       </div>
-                      <textarea v-model="lostCatForm.last_seen_address" required rows="2" class="flex-grow p-4 bg-gray-100 rounded-xl focus:ring-2 focus:ring-red-400 outline-none resize-none" placeholder="Klik peta di samping untuk set lokasi otomatis, atau ketik manual..."></textarea>
-                  </div>
               </div>
 
               <div>
@@ -390,17 +379,17 @@
         </div>
       </div>
 
-      <div v-if="activeUserTab === 'history'" class="space-y-6 animate-fade-in-up">
+      <div v-if="activeUserTab === 'history'" class="space-y-6 animate-fade-in-up max-w-4xl mx-auto px-6 pb-20 relative z-10">
             
-            <div v-if="myReportHistory.length === 0" class="text-center py-20 bg-white rounded-[40px] shadow-lg">
+            <div v-if="myReportHistory.length === 0" class="text-center py-20 bg-white/90 backdrop-blur-md rounded-[40px] shadow-lg border border-white/50">
                 <img src="/img/kucingtidur.png" class="h-32 mx-auto mb-4 opacity-50">
                 <p class="text-gray-500 text-lg">Kamu belum pernah membuat laporan.</p>
                 <button @click="switchUserTab('create')" class="mt-4 text-[#EBCD5E] font-bold hover:underline">Buat Laporan Sekarang</button>
             </div>
 
-            <div v-else v-for="item in myReportHistory" :key="item.id" class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 flex flex-col md:flex-row gap-6 items-center md:items-start">
+            <div v-else v-for="item in myReportHistory" :key="item.id" class="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-gray-100 flex flex-col md:flex-row gap-6 items-center md:items-start">
                 
-                <div class="w-full md:w-32 h-32 flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100">
+                <div class="w-full md:w-32 h-32 flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 shadow-inner">
                     <img :src="resolveImageUrl(item.photo)" class="w-full h-full object-cover">
                 </div>
 
@@ -432,21 +421,21 @@
                         <router-link 
                             v-if="item.is_trackable && item.assignment_status !== 'completed'"
                             :to="`/track?id=${item.tracking_id}`"
-                            class="bg-[#EBCD5E] hover:bg-[#dcb945] text-white font-bold py-2 px-6 rounded-xl shadow-md transition-transform active:scale-95 flex items-center gap-2"
+                            class="bg-[#EBCD5E] hover:bg-[#dcb945] text-white font-bold py-2 px-6 rounded-xl shadow-md transition-transform active:scale-95 flex items-center gap-2 text-sm"
                         >
                             <i class="fas fa-location-arrow"></i> Lacak Driver
                         </router-link>
                         
                         <div 
                             v-else-if="item.assignment_status === 'completed'"
-                            class="bg-green-100 text-green-600 font-bold py-2 px-6 rounded-xl border border-green-200 flex items-center gap-2"
+                            class="bg-green-100 text-green-600 font-bold py-2 px-6 rounded-xl border border-green-200 flex items-center gap-2 text-sm"
                         >
                             <i class="fas fa-check-circle"></i> Misi Sukses
                         </div>
                         
                         <button 
                             v-else 
-                            class="bg-gray-100 text-gray-400 font-bold py-2 px-6 rounded-xl cursor-not-allowed"
+                            class="bg-gray-100 text-gray-400 font-bold py-2 px-6 rounded-xl cursor-not-allowed text-sm"
                         >
                             <i class="fas fa-clock"></i> Menunggu
                         </button>
