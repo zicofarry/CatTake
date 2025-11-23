@@ -25,9 +25,11 @@
       <div class="hidden md:block">
         
         <div v-if="props.userRole === 'driver'" class="relative">
+             <div v-if="isProfileDropdownOpen" @click="toggleProfileDropdown" class="fixed inset-0 z-30"></div>
+             
              <button 
                 @click="toggleProfileDropdown"
-                class="flex items-center gap-2 bg-[#FF862F] text-white py-2 px-4 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-[#e07528] transition duration-200"
+                class="flex items-center gap-2 bg-[#FF862F] text-white py-2 px-4 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-[#e07528] transition duration-200 relative z-40"
             >
                 <span>Driver Panel</span>
             </button>
@@ -39,9 +41,11 @@
         </div>
 
         <div v-else-if="props.userRole === 'shelter'" class="relative">
+             <div v-if="isProfileDropdownOpen" @click="toggleProfileDropdown" class="fixed inset-0 z-30"></div>
+            
               <button 
                 @click="toggleProfileDropdown"
-                class="flex items-center gap-2 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
+                class="flex items-center gap-2 bg-[#578d76] text-white py-2 px-4 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200 relative z-40"
             >
                 <span>{{ props.profileData ? props.profileData.name : 'Memuat...' }}</span>
             </button>
@@ -53,9 +57,11 @@
         </div>
 
         <div v-else-if="props.userRole === 'individu'" class="relative">
+            <div v-if="isProfileDropdownOpen" @click="toggleProfileDropdown" class="fixed inset-0 z-30"></div>
+            
             <button 
                 @click="toggleProfileDropdown"
-                class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-8 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200"
+                class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-8 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200 relative z-40"
             >
                 <img :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '../assets/img/diana.png')" alt="Avatar" class="h-9 w-9 rounded-full object-cover">
                 <span>{{ props.profileData ? props.profileData.name : 'Memuat...' }}</span>
@@ -65,7 +71,7 @@
                 <p class="font-bold text-gray-800">{{ props.profileData ? props.profileData.name : 'User Profil' }}</p>
                 <p class="text-sm text-gray-500 mb-4">{{ props.profileData ? props.profileData.email : 'email@user.com' }}</p>
 
-                <router-link to="/profile" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 rounded-lg transition duration-200 mb-2 no-underline">Edit Profile</router-link>
+                <button @click="handleEditProfileClick" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 rounded-lg transition duration-200 mb-2">Edit Profile</button>
                 <button @click="handleSignOut" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition duration-200">Sign Out</button>
             </div>
         </div>
@@ -168,8 +174,9 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { useRoute } from 'vue-router'; 
+import { useRoute, useRouter } from 'vue-router'; // [Perbaikan 1: Import useRouter]
 
+const router = useRouter(); // [Perbaikan 2: Inisialisasi router]
 // Asumsi kita simpan role di localStorage saat login
 const userRole = ref(localStorage.getItem('role') || 'user'); 
 const isDriver = computed(() => userRole.value === 'driver');
@@ -243,6 +250,12 @@ function toggleMobileMenu() {
 
 function toggleProfileDropdown() {
     isProfileDropdownOpen.value = !isProfileDropdownOpen.value;
+}
+
+// [Perbaikan 3: Fungsi baru untuk menutup dropdown lalu navigasi]
+function handleEditProfileClick() {
+    isProfileDropdownOpen.value = false; // Tutup dropdown
+    router.push('/profile');             // Navigasi
 }
 
 function handleSignOut() {

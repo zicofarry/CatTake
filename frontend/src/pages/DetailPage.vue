@@ -16,6 +16,8 @@
                     </svg>
                 </button>
             </div>
+            
+            <div v-if="activeEditField" @click="toggleEditMode(activeEditField)" class="fixed inset-0 z-10 cursor-default"></div>
 
             <div class="flex flex-col md:flex-row gap-8">
                 
@@ -52,24 +54,24 @@
                                 </button>
                             </div>
                             
-                            <div v-if="isPhotoDropdownOpen" @click="togglePhotoDropdown" class="fixed inset-0 z-40"></div>
+                            <div v-if="isPhotoDropdownOpen" @click="togglePhotoDropdown" class="fixed inset-0 z-50"></div>
 
                         </div>
                         
                     </div>
                 </div>
                 <div class="flex flex-col gap-4 w-full md:flex-grow">
-                    <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800">
+                    <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800 relative z-20">
                         <input v-if="activeEditField === 'name'" type="text" v-model="formState.name" class="w-full focus:outline-none focus:ring-0">
                         <span v-else :class="{ 'text-gray-800': formState.name, 'text-gray-500': !formState.name }">{{ displayPlaceholder(formState.name, 'Isi nama lengkap anda...') }}</span>
-                        <button v-if="activeEditField !== 'name'" @click="toggleEditMode('name')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
-                        <button v-else @click="handleSaveProfile('name')" :disabled="isLoading" class="text-green-600 font-bold text-sm ml-4 disabled:opacity-50">
+                        <button v-if="activeEditField !== 'name'" @click.stop="toggleEditMode('name')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
+                        <button v-else @click.stop="handleSaveProfile('name')" :disabled="isLoading" class="bg-green-100 hover:bg-green-200 text-green-700 font-bold text-sm ml-4 disabled:opacity-50 px-3 py-1 rounded transition-colors active:scale-95">
                             {{ isLoading ? 'Menyimpan...' : 'SIMPAN' }}
                         </button>
                     </div>
 
                     <div class="flex flex-row gap-4">
-                        <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800 flex-1">
+                        <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800 flex-1 relative z-20">
                             <select v-if="activeEditField === 'gender'" v-model="formState.gender" class="w-full focus:outline-none focus:ring-0 text-base">
                                 <option value="male">Laki-laki</option>
                                 <option value="female">Perempuan</option>
@@ -83,27 +85,27 @@
                                 }}
                             </span>
 
-                            <button v-if="activeEditField !== 'gender'" @click="toggleEditMode('gender')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
-                            <button v-else @click="handleSaveProfile('gender')" class="text-green-600 font-bold text-sm ml-4">SIMPAN</button>
+                            <button v-if="activeEditField !== 'gender'" @click.stop="toggleEditMode('gender')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
+                            <button v-else @click.stop="handleSaveProfile('gender')" class="bg-green-100 hover:bg-green-200 text-green-700 font-bold text-sm ml-4 disabled:opacity-50 px-3 py-1 rounded transition-colors active:scale-95">SIMPAN</button>
                         </div>
 
-                        <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800 flex-1">
+                        <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800 flex-1 relative z-20">
                             <input v-if="activeEditField === 'birthDate'" type="date" v-model="formState.birthDate" class="w-full focus:outline-none focus:ring-0">
                             
                             <span v-else :class="{ 'text-gray-800': userData.birthDateDisplay, 'text-gray-500': !userData.birthDateDisplay }">
                                 {{ userData.birthDateDisplay || 'Isi tanggal lahir..' }}
                             </span>
                             
-                            <button v-if="activeEditField !== 'birthDate'" @click="toggleEditMode('birthDate')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
-                            <button v-else @click="handleSaveProfile('birthDate')" class="text-green-600 font-bold text-sm ml-4">SIMPAN</button>
+                            <button v-if="activeEditField !== 'birthDate'" @click.stop="toggleEditMode('birthDate')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
+                            <button v-else @click.stop="handleSaveProfile('birthDate')" class="bg-green-100 hover:bg-green-200 text-green-700 font-bold text-sm ml-4 disabled:opacity-50 px-3 py-1 rounded transition-colors active:scale-95">SIMPAN</button>
                         </div>
                     </div>
                     
-                    <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800">
+                    <div class="bg-white p-4 rounded-xl shadow-md flex justify-between items-center text-lg font-semibold text-gray-800 relative z-20">
                         <textarea v-if="activeEditField === 'profileDescription'" v-model="formState.profileDescription" class="w-full focus:outline-none focus:ring-0 h-16"></textarea>
                         <span v-else :class="{ 'text-gray-800': formState.profileDescription, 'text-gray-500': !formState.profileDescription }">{{ displayPlaceholder(formState.profileDescription, 'Tulis bio singkat tentang dirimu...') }}</span>
-                        <button v-if="activeEditField !== 'profileDescription'" @click="toggleEditMode('profileDescription')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
-                        <button v-else @click="handleSaveProfile('profileDescription')" class="text-green-600 font-bold text-sm ml-4">SIMPAN</button>
+                        <button v-if="activeEditField !== 'profileDescription'" @click.stop="toggleEditMode('profileDescription')" class="text-gray-500 cursor-pointer text-sm ml-4"><i class="fas fa-pencil-alt"></i></button>
+                        <button v-else @click.stop="handleSaveProfile('profileDescription')" class="bg-green-100 hover:bg-green-200 text-green-700 font-bold text-sm ml-4 disabled:opacity-50 px-3 py-1 rounded transition-colors active:scale-95">SIMPAN</button>
                     </div>
                 </div>
             </div>
@@ -269,11 +271,25 @@ const achievements = computed(() => props.profileData?.achievements || []);
 
 // --- Fungsi Interaksi ---
 function toggleEditMode(field) {
-    activeEditField.value = (activeEditField.value === field) ? null : field;
+    if (activeEditField.value === field) {
+        // Jika mengklik tombol saat mode edit aktif, tutup
+        activeEditField.value = null;
+    } else if (!activeEditField.value) {
+        // Jika tidak ada yang aktif, aktifkan mode edit
+        activeEditField.value = field;
+        isPhotoDropdownOpen.value = false; // [Perbaikan Tambahan: Tutup dropdown foto saat edit dimulai]
+    } else {
+        // Jika ada mode edit lain yang aktif, tutup yang lama dan aktifkan yang baru
+        // Ini memastikan hanya satu yang terbuka pada satu waktu.
+        activeEditField.value = field;
+    }
 }
 
 function togglePhotoDropdown() {
     isPhotoDropdownOpen.value = !isPhotoDropdownOpen.value;
+    if (isPhotoDropdownOpen.value) {
+        activeEditField.value = null; // [Perbaikan Tambahan: Tutup mode edit saat dropdown foto dibuka]
+    }
 }
 
 function handleChoosePhoto() {
