@@ -135,7 +135,7 @@ async function handleLogin() {
       emit('user-logged-in', role); 
       if (role === 'driver') {
           // Jika Driver, arahkan ke halaman khusus Driver
-          router.push('/driver'); 
+          router.push('/driver/tasks'); 
       } else {
           // Jika User Biasa / Shelter, arahkan ke Home
           router.push('/'); 

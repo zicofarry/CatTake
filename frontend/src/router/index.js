@@ -36,9 +36,13 @@ const router = createRouter({
     { path: '/post/:id', name: 'Post', component: PostDetailPage }, 
     { path: '/fakta', name: 'Fakta', component: FaktaKucingPage }, 
     { path: '/track', name: 'Track', component: TrackingPage }, 
-    { path: '/driver', name: 'DriverTask', component: DriverPage },
+    { path: '/driver/tasks', name: 'DriverTask', component: DriverPage, meta: { requiresAuth: true, role: 'driver' } },
     { path: '/shelter/driver', name: 'ShelterDriver', component: ShelterDriverPage },
-    { path: '/shelter/cats', name: 'ShelterCats', component: ShelterCatPage, meta: { requiresAuth: true, role: 'shelter' } }
+    { path: '/shelter/cats', name: 'ShelterCats', component: ShelterCatPage, meta: { requiresAuth: true, role: 'shelter' } },
+    { 
+      path: '/driver', 
+      redirect: '/driver/tasks' 
+    },
   ],
 
   // Pastikan halaman di-scroll ke atas saat berpindah rute

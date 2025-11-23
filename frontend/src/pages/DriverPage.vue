@@ -1,9 +1,11 @@
 <script setup>
-import { ref } from 'vue';
+// 1. Import computed dan onMounted yang sebelumnya hilang
+import { ref, computed, onMounted } from 'vue'; 
 import { useRouter } from 'vue-router';
+import apiClient from '@/api/http'; // 2. Import apiClient agar bisa fetch data
 
 const router = useRouter();
-const activeTab = ref('proses'); // Default langsung ke 'proses'
+const activeTab = ref('proses'); 
 const tasks = ref([]);
 const isLoading = ref(false);
 
@@ -11,32 +13,28 @@ const isLoading = ref(false);
 const fetchDriverTasks = async () => {
   isLoading.value = true;
   try {
-    // Panggil endpoint yang baru kita buat di backend
-    const response = await apiClient.get('/rescues/my-tasks');
+    // Pastikan URL ini sesuai dengan backend (/api/v1/rescue/driver-tasks)
+    const response = await apiClient.get('/rescue/driver-tasks');
     
-    // Mapping data dari format Backend ke format Frontend
     tasks.value = response.data.data.map(item => ({
-      id: item.id, // ID Rescue
+      id: item.id, 
       reportId: item.report?.id,
-      status: item.status, // status dari tabel rescue (misal: 'assigned', 'completed')
+      status: item.status,
       catName: item.report?.cat_name || 'Kucing Tanpa Nama',
       location: item.report?.location || 'Lokasi tidak diketahui',
-      // Hitung jarak jika ada lat/long user (opsional, di sini kita hardcode dulu atau null)
       distance: 'Calculating...', 
       date: formatDate(item.createdAt),
       img: resolveImageUrl(item.report?.photo)
     }));
   } catch (error) {
     console.error("Gagal mengambil tugas driver:", error);
-    alert("Gagal memuat data tugas.");
+    // Jangan alert agar tidak mengganggu UX saat reload
   } finally {
     isLoading.value = false;
   }
 };
 
 // === 2. HELPER FUNCTIONS ===
-
-// Format Tanggal (Contoh: 22 Nov 2025, 14:00)
 const formatDate = (dateString) => {
   if (!dateString) return '-';
   const date = new Date(dateString);
@@ -46,30 +44,22 @@ const formatDate = (dateString) => {
   }).format(date);
 };
 
-// Resolve Image URL (Handle gambar dari backend)
 const resolveImageUrl = (path) => {
-  if (!path) return '/img/kucingtidur.png'; // Gambar default
+  if (!path) return '/img/kucingtidur.png';
   if (path.startsWith('http')) return path;
   
-  // Sesuaikan BASE URL backend kamu
-  const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'; 
-  // Hapus '/api/v1' jika ada di variable env, ambil host-nya saja
-  const host = baseApiUrl.replace('/api/v1', ''); 
-  
-  return `${host}${path}`;
+  // Sesuaikan path agar mengarah ke backend public folder
+  return `http://localhost:3000${path}`;
 };
 
-// === 3. FILTER LOGIC (Tanpa 'Baru') ===
+// === 3. FILTER LOGIC ===
 const filteredTasks = computed(() => {
   if (activeTab.value === 'proses') {
-    // Tampilkan status yang masih berjalan (sesuaikan string status di database kamu)
-    // Contoh status: 'assigned', 'on_the_way', 'rescue_in_progress'
     return tasks.value.filter(t => 
-      ['assigned', 'on_the_way', 'prosess', 'pending'].includes(t.status)
+      ['assigned', 'in_transit', 'prosess', 'pending'].includes(t.status)
     );
   }
   if (activeTab.value === 'selesai') {
-    // Tampilkan status selesai
     return tasks.value.filter(t => 
       ['completed', 'sheltered', 'selesai'].includes(t.status)
     );
@@ -81,7 +71,6 @@ const goToDetail = (id) => {
   router.push(`/driver/tracking/${id}`);
 };
 
-// Jalankan saat halaman dibuka
 onMounted(() => {
   fetchDriverTasks();
 });
