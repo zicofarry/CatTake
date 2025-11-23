@@ -37,6 +37,7 @@ const router = createRouter({
     { path: '/fakta', name: 'Fakta', component: FaktaKucingPage }, 
     { path: '/track', name: 'Track', component: TrackingPage }, 
     { path: '/driver/tasks', name: 'DriverTask', component: DriverPage, meta: { requiresAuth: true, role: 'driver' } },
+    { path: '/driver/tracking/:id', name: 'DriverTrackingDetail', component: TrackingPage, meta: { requiresAuth: true, role: 'driver' } },
     { path: '/shelter/driver', name: 'ShelterDriver', component: ShelterDriverPage },
     { path: '/shelter/cats', name: 'ShelterCats', component: ShelterCatPage, meta: { requiresAuth: true, role: 'shelter' } },
     { 

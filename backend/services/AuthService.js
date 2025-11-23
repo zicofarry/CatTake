@@ -60,7 +60,7 @@ class AuthService {
         // Generate JWT Token
         const token = jwt.sign({ id: user.id, role: user.role }, SECRET, { expiresIn: '1d' });
 
-        return { token, role: user.role, userId: user.id };
+        return { token, role: user.role, id: user.id, username: user.username};
     }
 
     static async loginOrRegisterGoogle(googlePayload, requestedRole) {
@@ -123,7 +123,7 @@ class AuthService {
 
         const token = jwt.sign({ id: user.id, role: user.role }, SECRET, { expiresIn: '1d' });
 
-        return { token, role: user.role, userId: user.id };
+        return { token, role: user.role, id: user.id , username: user.username };
     }
 }
 

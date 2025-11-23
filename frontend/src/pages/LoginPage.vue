@@ -127,10 +127,12 @@ async function handleLogin() {
           password: password.value,
       });
 
-      const { token, role } = response.data.data;
+      const { token, role, id, username } = response.data.data;
 
       localStorage.setItem('userToken', token);
       localStorage.setItem('userRole', role);
+      localStorage.setItem('userId', id);
+      localStorage.setItem('username', username);
       
       emit('user-logged-in', role); 
       if (role === 'driver') {

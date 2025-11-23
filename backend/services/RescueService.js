@@ -149,7 +149,8 @@ class RescueService {
 
                 d.full_name AS driver_name, 
                 d.license_info,
-                d.contact_phone AS driver_phone, -- INI YANG BIKIN ERROR KALAU KOLOM GAK ADA
+                d.contact_phone AS driver_phone,
+                d.profile_picture AS driver_foto, -- Ambil foto profil driver
                 
                 dus.shelter_name, 
                 dus.contact_phone AS shelter_phone,
@@ -157,17 +158,18 @@ class RescueService {
                 dus.longitude AS long_tujuan,
 
                 dui.full_name AS pelapor_name,
-                dui.contact_phone AS pelapor_phone
+                dui.contact_phone AS pelapor_phone,
+                dui.profile_picture AS pelapor_foto -- Ambil foto profil pelapor
 
             FROM rescue_assignments ra
             JOIN reports r ON ra.report_id = r.id
-            JOIN drivers d ON ra.driver_id = d.id
-            JOIN users u_shelter ON ra.shelter_id = u_shelter.id
-            JOIN detail_user_shelter dus ON u_shelter.id = dus.id
-            JOIN users u_pelapor ON r.reporter_id = u_pelapor.id
+            -- Gunakan LEFT JOIN untuk driver agar tidak error jika driver dihapus/null
+            LEFT JOIN drivers d ON ra.driver_id = d.id
+            LEFT JOIN users u_shelter ON ra.shelter_id = u_shelter.id
+            LEFT JOIN detail_user_shelter dus ON u_shelter.id = dus.id
+            LEFT JOIN users u_pelapor ON r.reporter_id = u_pelapor.id
             LEFT JOIN detail_user_individu dui ON u_pelapor.id = dui.id
             
-            -- PERBAIKAN LOGIC PENCARIAN (Lebih Aman)
             WHERE ra.tracking_id = $1::text OR CAST(ra.id AS TEXT) = $1::text
         `;
         
@@ -177,35 +179,36 @@ class RescueService {
         
         const row = result.rows[0];
 
-        // Format Data untuk Frontend
         return {
-            id: row.tracking_id || row.id, // Prioritaskan ID Keren
-            db_id: row.id, // ID Asli untuk update API
+            id: row.tracking_id || row.id, 
+            db_id: row.id, 
             status: row.assignment_status,
             alamat: row.lokasi_jemput,
-            tujuan: row.shelter_name,
+            tujuan: row.shelter_name || 'Shelter',
             
-            // Koordinat untuk Peta
-            posisi_awal: [parseFloat(row.lat_jemput), parseFloat(row.long_jemput)],
-            posisi_akhir: [parseFloat(row.lat_tujuan || -6.9175), parseFloat(row.long_tujuan || 107.6191)], // Default Bandung jika null
+            posisi_awal: [parseFloat(row.lat_jemput || 0), parseFloat(row.long_jemput || 0)],
+            posisi_akhir: [parseFloat(row.lat_tujuan || -6.9175), parseFloat(row.long_tujuan || 107.6191)],
             
             kurir: {
-                nama: row.driver_name,
+                nama: row.driver_name || 'Menunggu Driver',
                 shelter: row.shelter_name,
                 license: row.license_info,
-                foto: '/img/profile_default.svg', 
-                phone: row.driver_phone || '08123456789' // Default kalau null
+                // Pastikan path foto driver benar
+                foto: row.driver_foto ? `/public/img/profile/${row.driver_foto}` : null, 
+                phone: row.driver_phone || '-'
             },
             
             laporan: {
                 jenis: row.report_type,
                 pemilik: row.pelapor_name || 'Anonim',
+                phone: row.pelapor_phone || '-',
+                // Pastikan path foto pelapor benar
+                foto_profil: row.pelapor_foto ? `/public/img/profile/${row.pelapor_foto}` : null,
                 lokasi: row.lokasi_jemput,
                 deskripsi: row.description,
                 foto: row.foto_laporan ? `/public/img/report_cat/${row.foto_laporan}` : '/img/placeholder.png'
             },
 
-            // Foto Bukti dari Driver
             bukti: {
                 pickup: row.pickup_photo ? `/public/img/rescue_proof/${row.pickup_photo}` : null,
                 dropoff: row.dropoff_photo ? `/public/img/rescue_proof/${row.dropoff_photo}` : null
@@ -274,7 +277,7 @@ class RescueService {
         // Format return agar sesuai dengan ekspektasi Frontend (item.report.location)
         return res.rows.map(row => ({
             id: row.id,
-            tracking_id: row.tracking_id,
+            trackingId: row.tracking_id,
             status: row.status,
             createdAt: row.createdAt,
             report: {
@@ -285,7 +288,7 @@ class RescueService {
             }
         }));
     }
-    
+
     // [BARU] Ambil Chat (Pakai created_at)
     static async getChatMessages(trackingId) {
         const query = `

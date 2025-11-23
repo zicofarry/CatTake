@@ -17,7 +17,7 @@ const fetchDriverTasks = async () => {
     const response = await apiClient.get('/rescue/driver-tasks');
     
     tasks.value = response.data.data.map(item => ({
-      id: item.id, 
+      id: item.trackingId, 
       reportId: item.report?.id,
       status: item.status,
       catName: item.report?.cat_name || 'Kucing Tanpa Nama',

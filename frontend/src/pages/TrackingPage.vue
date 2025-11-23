@@ -105,19 +105,35 @@
         </div>
 
         <div class="bg-gray-100 rounded-[30px] p-4 md:p-5 flex items-center gap-4 shadow-sm">
-           <img :src="resolveImageUrl(trackingData.kurir.foto)" class="w-14 h-14 rounded-full bg-gray-300 object-cover border-2 border-white shadow-sm flex-shrink-0">
+           
+           <img 
+             :src="resolveImageUrl(contactInfo.foto)" 
+             class="w-14 h-14 rounded-full bg-gray-300 object-cover border-2 border-white shadow-sm flex-shrink-0"
+             @error="$event.target.src = '/img/profile_default.svg'"
+           >
+           
            <div class="flex-grow min-w-0">
-              <h3 class="font-bold text-lg md:text-xl text-[#1F1F1F] truncate">{{ trackingData.kurir.nama || 'Menunggu Driver...' }}</h3>
-              <p class="text-xs text-gray-500 truncate">{{ trackingData.kurir.shelter || '...' }}</p>
+              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ contactInfo.roleLabel }}</span>
+              
+              <h3 class="font-bold text-lg md:text-xl text-[#1F1F1F] truncate">{{ contactInfo.nama }}</h3>
+              
+              <p class="text-xs text-gray-500 truncate">{{ contactInfo.subInfo }}</p>
            </div>
            
-           <div v-if="trackingData.kurir.nama" class="flex gap-3 flex-shrink-0">
-              <button @click="showCallModal = true" class="w-12 h-12 md:w-14 md:h-14 bg-[#4E7C68] hover:bg-[#3b6150] rounded-[18px] flex items-center justify-center transition shadow-sm group">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+           <div v-if="contactInfo.nama && contactInfo.nama !== 'Menunggu Driver...'" class="flex gap-3 flex-shrink-0">
+              <button 
+                @click="handleRealCall(contactInfo.phone)" 
+                class="w-12 h-12 md:w-14 md:h-14 bg-[#4E7C68] hover:bg-[#3b6150] rounded-[18px] flex items-center justify-center transition shadow-sm group"
+              >
+                  <i class="fas fa-phone text-white group-hover:scale-110 transition-transform"></i>
               </button>
-              <button @click="openChat" class="w-12 h-12 md:w-14 md:h-14 bg-[#4E7C68] hover:bg-[#3b6150] rounded-[18px] flex items-center justify-center transition shadow-sm group text-white">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                  </button>
+              
+              <button 
+                @click="openChat" 
+                class="w-12 h-12 md:w-14 md:h-14 bg-[#4E7C68] hover:bg-[#3b6150] rounded-[18px] flex items-center justify-center transition shadow-sm group text-white"
+              >
+                  <i class="fas fa-comment-alt text-white group-hover:scale-110 transition-transform"></i>
+              </button>
            </div>
         </div>
 
@@ -129,9 +145,9 @@
               <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Lokasi</span><p class="font-semibold text-sm text-[#1F1F1F]">{{ trackingData.laporan.lokasi }}</p></div>
               <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100"><span class="text-[10px] text-gray-400 block uppercase tracking-wider mb-0.5">Deskripsi</span><p class="font-semibold text-sm text-[#1F1F1F]">{{ trackingData.laporan.deskripsi }}</p></div>
               
-              <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+              <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 h-50">
                  <span class="text-xs text-gray-500 font-medium ml-2">Foto:</span>
-                 <div class="h-16 flex-grow rounded-lg overflow-hidden relative group cursor-pointer" @click="previewImage(trackingData.laporan.foto)">
+                 <div class="h-42 flex-grow rounded-lg overflow-hidden relative group cursor-pointer" @click="previewImage(trackingData.laporan.foto)">
                     <img :src="resolveImageUrl(trackingData.laporan.foto)" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                     <div class="absolute bottom-1 right-1 bg-white/90 rounded-full w-6 h-6 flex items-center justify-center shadow-md">
                         <i class="fas fa-expand-alt text-xs"></i>
@@ -197,10 +213,22 @@
                 
                 <div class="bg-[#3A5F50] p-4 px-6 flex items-center gap-4 text-white shadow-md z-10">
                     <button @click="showChatModal = false" class="hover:bg-white/20 p-2 rounded-full transition"><i class="fas fa-arrow-left"></i></button>
-                    <div class="w-10 h-10 rounded-full bg-[#EBCD5E] flex items-center justify-center text-[#3A5F50] font-bold text-xl border-2 border-white">
-                        {{ trackingData.kurir.nama?.charAt(0) || 'D' }}
+                    
+                    <div class="w-10 h-10 rounded-full bg-[#EBCD5E] flex items-center justify-center text-[#3A5F50] font-bold text-xl border-2 border-white overflow-hidden">
+                        <img 
+                            v-if="contactInfo.foto" 
+                            :src="resolveImageUrl(contactInfo.foto)" 
+                            class="w-full h-full object-cover"
+                            @error="$event.target.style.display='none'"
+                        >
+                        <span v-else>{{ contactInfo.nama?.charAt(0) || 'U' }}</span>
                     </div>
-                    <div class="flex-grow"><span class="font-bold text-lg ml-2">{{ trackingData.kurir.nama }}</span></div>
+
+                    <div class="flex-grow flex flex-col">
+                        <span class="font-bold text-lg ml-2">{{ contactInfo.nama }}</span>
+                        <span class="text-[10px] ml-2 opacity-80 uppercase tracking-wider">{{ contactInfo.roleLabel }}</span>
+                    </div>
+
                     <button @click="fetchChatMessages" class="hover:bg-white/20 p-2 rounded-full"><i class="fas fa-sync-alt"></i></button>
                 </div>
 
@@ -249,15 +277,23 @@
     <teleport to="body">
         <div v-if="showCallModal" class="fixed inset-0 bg-[#1F1F1F]/90 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
             <div class="flex flex-col items-center text-white w-full max-w-sm animate-up">
-                <div class="w-32 h-32 rounded-full bg-[#EBCD5E] flex items-center justify-center text-[#3A5F50] font-bold text-6xl border-4 border-[#3A5F50] shadow-2xl mb-6 animate-pulse">
-                    {{ trackingData.kurir.nama?.charAt(0) || 'D' }}
+                
+                <div class="w-32 h-32 rounded-full bg-[#EBCD5E] flex items-center justify-center text-[#3A5F50] font-bold text-6xl border-4 border-[#3A5F50] shadow-2xl mb-6 animate-pulse overflow-hidden">
+                    <img 
+                        v-if="contactInfo.foto" 
+                        :src="resolveImageUrl(contactInfo.foto)" 
+                        class="w-full h-full object-cover"
+                    >
+                    <span v-else>{{ contactInfo.nama?.charAt(0) || 'U' }}</span>
                 </div>
-                <h2 class="text-2xl font-bold mb-2 tracking-wide">{{ trackingData.kurir.nama }}</h2>
-                <p class="text-sm text-gray-300 mb-8 tracking-wider">Lakukan Panggilan...</p>
+
+                <h2 class="text-2xl font-bold mb-1 tracking-wide text-center">{{ contactInfo.nama }}</h2>
+                <p class="text-sm text-[#EBCD5E] mb-8 tracking-wider font-bold uppercase">{{ contactInfo.roleLabel }}</p>
+                
                 <div class="flex items-center gap-8">
-                     <button @click="showCallModal = false" class="w-16 h-16 bg-[#3A3A3A] rounded-full flex items-center justify-center text-2xl hover:bg-[#505050] transition"><i class="fas fa-comment-alt"></i></button>
-                     <button @click="showCallModal = false" class="w-20 h-20 bg-[#FF3B30] rounded-full flex items-center justify-center text-3xl hover:bg-red-600 transition shadow-lg transform hover:scale-105"><i class="fas fa-phone-slash"></i></button>
-                     <button @click="handleRealCall" class="w-16 h-16 bg-[#25D366] rounded-full flex items-center justify-center text-2xl hover:bg-green-600 transition"><i class="fas fa-phone"></i></button>
+                    <button @click="showCallModal = false; openChat()" class="w-16 h-16 bg-[#3A3A3A] rounded-full flex items-center justify-center text-2xl hover:bg-[#505050] transition"><i class="fas fa-comment-alt"></i></button>
+                    <button @click="showCallModal = false" class="w-20 h-20 bg-[#FF3B30] rounded-full flex items-center justify-center text-3xl hover:bg-red-600 transition shadow-lg transform hover:scale-105"><i class="fas fa-phone-slash"></i></button>
+                    <button @click="handleCall(contactInfo.phone)" class="w-16 h-16 bg-[#25D366] rounded-full flex items-center justify-center text-2xl hover:bg-green-600 transition"><i class="fas fa-phone"></i></button>
                 </div>
             </div>
         </div>
@@ -344,6 +380,29 @@ const trackingStatusText = computed(() => {
 const nextActionTitle = computed(() => nextStatus.value === 'in_transit' ? 'Bukti Penjemputan' : 'Bukti Sampai Shelter');
 
 // --- METHODS UTAMA ---
+const contactInfo = computed(() => {
+    // Jika saya adalah DRIVER, tampilkan info PELAPOR
+    if (userRole.value === 'driver') {
+        return {
+            roleLabel: 'Pelapor',
+            nama: trackingData.value.laporan.pemilik,
+            subInfo: 'Pemilik Laporan', // atau trackingData.value.laporan.phone
+            foto: trackingData.value.laporan.foto_profil, // Foto profil user
+            phone: trackingData.value.laporan.phone
+        };
+    } 
+    
+    // Jika saya USER/GUEST, tampilkan info DRIVER
+    else {
+        return {
+            roleLabel: 'Driver',
+            nama: trackingData.value.kurir.nama || 'Menunggu Driver...',
+            subInfo: trackingData.value.kurir.shelter || '...',
+            foto: trackingData.value.kurir.foto,
+            phone: trackingData.value.kurir.phone
+        };
+    }
+});
 
 function resolveImageUrl(path) {
     if (!path || path.includes('NULL')) return '/img/placeholder.png';
@@ -377,8 +436,11 @@ function toggleMapExpand() {
 
 // --- FETCHING ---
 async function fetchTrackingData() {
-    const assignmentId = route.query.id;
-    if (!assignmentId) return;
+    const assignmentId = route.params.id || route.query.id;
+    if (!assignmentId) {
+        console.error("Tracking ID tidak ditemukan di URL");
+        return;
+    }
     if (!trackingData.value.id) isLoading.value = true;
 
     try {
@@ -522,11 +584,13 @@ function handleRealCall() {
 onMounted(async () => {
     // 1. Ambil ID User dari LocalStorage
     const storedId = localStorage.getItem('userId');
-    if (storedId) {
+    if (storedId && storedId !== 'undefined') {
         currentUserId.value = parseInt(storedId);
-        console.log("User ID Saya:", currentUserId.value);
     } else {
+        // Jangan warn error, cukup set 0 agar tidak crash, 
+        // tapi fitur chat mungkin terbatas (read-only)
         console.warn("User ID tidak ditemukan di LocalStorage! Chat akan error.");
+        currentUserId.value = 0; 
     }
 
     await fetchTrackingData();
