@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict PwEmxgJW3zsKLQTxb0RcODVkCwgYXbGDyFIMiaAndvilGrDRuDkfLU4fBt2YR14
+\restrict nX3CZFDUyUTgy0WGgjhaRe3aEAezKa7Ax8T2rhauCAwinooW1UtvFaFlQBvOXbU
 
 -- Dumped from database version 18.0
 -- Dumped by pg_dump version 18.0
 
--- Started on 2025-11-23 16:47:25
+-- Started on 2025-11-23 21:02:53
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -20,6 +20,25 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
+
+--
+-- TOC entry 4 (class 2615 OID 2200)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
+--
+
+CREATE SCHEMA public;
+
+
+ALTER SCHEMA public OWNER TO pg_database_owner;
+
+--
+-- TOC entry 5301 (class 0 OID 0)
+-- Dependencies: 4
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
 
 --
 -- TOC entry 244 (class 1259 OID 17880)
@@ -230,7 +249,7 @@ CREATE SEQUENCE public.community_post_id_seq1
 ALTER SEQUENCE public.community_post_id_seq1 OWNER TO postgres;
 
 --
--- TOC entry 5301 (class 0 OID 0)
+-- TOC entry 5302 (class 0 OID 0)
 -- Dependencies: 250
 -- Name: community_post_id_seq1; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -327,7 +346,7 @@ CREATE SEQUENCE public.donations_id_seq
 ALTER SEQUENCE public.donations_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5302 (class 0 OID 0)
+-- TOC entry 5303 (class 0 OID 0)
 -- Dependencies: 245
 -- Name: donations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -369,7 +388,7 @@ CREATE SEQUENCE public.driver_locations_id_seq
 ALTER SEQUENCE public.driver_locations_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5303 (class 0 OID 0)
+-- TOC entry 5304 (class 0 OID 0)
 -- Dependencies: 241
 -- Name: driver_locations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -479,7 +498,7 @@ CREATE SEQUENCE public.global_achievements_id_seq
 ALTER SEQUENCE public.global_achievements_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5304 (class 0 OID 0)
+-- TOC entry 5305 (class 0 OID 0)
 -- Dependencies: 235
 -- Name: global_achievements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -520,7 +539,7 @@ CREATE SEQUENCE public.global_quests_id_seq
 ALTER SEQUENCE public.global_quests_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5305 (class 0 OID 0)
+-- TOC entry 5306 (class 0 OID 0)
 -- Dependencies: 237
 -- Name: global_quests_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -570,7 +589,7 @@ CREATE SEQUENCE public.lost_cats_id_seq
 ALTER SEQUENCE public.lost_cats_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5306 (class 0 OID 0)
+-- TOC entry 5307 (class 0 OID 0)
 -- Dependencies: 252
 -- Name: lost_cats_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -667,7 +686,7 @@ CREATE SEQUENCE public.reports_id_seq
 ALTER SEQUENCE public.reports_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5307 (class 0 OID 0)
+-- TOC entry 5308 (class 0 OID 0)
 -- Dependencies: 254
 -- Name: reports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -715,7 +734,7 @@ CREATE SEQUENCE public.rescue_assignments_id_seq
 ALTER SEQUENCE public.rescue_assignments_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5308 (class 0 OID 0)
+-- TOC entry 5309 (class 0 OID 0)
 -- Dependencies: 257
 -- Name: rescue_assignments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -759,7 +778,7 @@ CREATE SEQUENCE public.user_progress_id_seq
 ALTER SEQUENCE public.user_progress_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5309 (class 0 OID 0)
+-- TOC entry 5310 (class 0 OID 0)
 -- Dependencies: 239
 -- Name: user_progress_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -835,7 +854,7 @@ CREATE SEQUENCE public.verification_log_id_seq
 ALTER SEQUENCE public.verification_log_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5310 (class 0 OID 0)
+-- TOC entry 5311 (class 0 OID 0)
 -- Dependencies: 256
 -- Name: verification_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -967,17 +986,18 @@ COPY public.cat_facts (id, fact_text, source, image_path, is_verified, created_a
 --
 
 COPY public.cats (id, shelter_id, name, age, gender, breed, description, health_status, adoption_status, photo) FROM stdin;
-3	11	Simba	23	male	Maine Coon	Gagah dan berani, cocok untuk menjaga rumah dari tikus.	vaccinated	available	bradercat.png
-4	10	Mueza	8	female	Persia	Manis, lembut, dan suka tidur di pangkuan.	healthy	available	mochacat.png
-5	11	Kitty	36	female	Anggora	Tenang dan penyayang, sudah diadopsi.	vaccinated	adopted	kitty.png
-2	10	Abul	5	male	Domestik	Kucing pemalu tapi sangat manja jika sudah kenal.	healthy	available	minicat.png
 6	4	Luna	12	female	Domestik	Sangat aktif dan suka bermain.	healthy	available	luna.jpg
 7	4	Mimi	12	female	Domestik	Kucing calico yang tenang.	vaccinated	adopted	mimi.jpg
 8	4	Popo	24	male	Persia	Sangat manja dan suka disisir.	healthy	adopted	popo.jpg
 9	4	Lili	5	female	Anggora	Aktif bermain bola.	vaccinated	adopted	lili.jpg
 10	4	Gembul	36	male	British Shorthair	Suka tidur seharian.	healthy	adopted	gembul.jpg
 11	4	Chiko	18	male	Domestik	Pandai berburu mainan tikus.	vaccinated	adopted	chiko.jpg
-1	10	Oyen	6	male	American Shorthair	Suka mencari keributan di komplek. Sering terlihat mencuri ikan asin tetangga.	vaccinated	adopted	oyencat.png
+4	10	Mueza	8	female	Persia	Manis, lembut, dan suka tidur di pangkuan.	healthy	available	cat-1763899862115.png
+2	10	Abul	5	male	Domestik	Kucing pemalu tapi sangat manja jika sudah kenal.	healthy	available	cat-1763899939370.png
+1	10	Oyen	6	male	American Shorthair	Suka mencari keributan di komplek. Sering terlihat mencuri ikan asin tetangga.	vaccinated	adopted	cat-1763900718450.png
+3	11	Simba	23	male	Maine Coon	Gagah dan berani, cocok untuk menjaga rumah dari tikus.	vaccinated	available	cat-1763901553570.png
+5	11	Kitty	36	female	Anggora	Tenang dan penyayang, sudah diadopsi.	vaccinated	adopted	cat-1763901780059.png
+14	11	Milo	12	male	Sphynx	Kucingnya baik, suka bikin nyaman, gak berisik	healthy	available	cat-1763901999237.png
 \.
 
 
@@ -1005,6 +1025,8 @@ COPY public.chat_messages (id, assignment_id, sender_id, message, created_at) FR
 18	4	3	Pak	2025-11-23 16:16:23.227417
 19	4	3	udah dimana	2025-11-23 16:16:26.632024
 20	4	3	kok lama	2025-11-23 16:16:28.192969
+21	5	10	tes	2025-11-23 17:10:19.650416
+22	5	31	hai	2025-11-23 17:11:47.729474
 \.
 
 
@@ -1058,16 +1080,14 @@ COPY public.community_post (id, author_id, title, content, media_path, likes_cou
 
 COPY public.detail_user_individu (id, full_name, birth_date, gender, profile_picture, bio, contact_phone, address, job, nik, ktp_file_path, is_verified, is_adopter_ready, donasi_history_count) FROM stdin;
 5	Repa Pitriani	2005-11-05	female	profile-5-1763874685690.jpg	Aku adalah pencinta kucing asal cianjur		alamat belum diverifikasi	Unknown	32731763530891182975	\N	f	f	3
-20	Andi Gunawan	1995-05-10	male	\N	\N	081234567890	Jl. Adopsi No. 5, Bandung	Software Engineer	3273xxxxxxxxxxxx	\N	t	f	1
-21	Budi Santoso	1990-01-20	male	\N	\N	081234567891	Jl. Donasi No. 10, Jakarta	Pengusaha	3174xxxxxxxxxxxx	\N	t	f	2
-2	Azmi Tester	1990-01-01	male	\N	\N		alamat belum diverifikasi	Pelajar	3273100101900005	\N	f	f	0
-6	Salman	\N	\N	\N	\N		\N	\N	\N	\N	f	f	0
+6	Salman	\N	\N	profile-6-1763896611740.png	\N		\N	\N	\N	\N	f	f	0
+9	Renata	2017-01-05	female	profile-9-1763896789387.png	Aku adalah pencinta kucing yang slayy		\N	\N	\N	\N	f	f	0
+13	Harri Supriadi	2006-07-31	male	profile-13-1763897083541.jpg	Jangan main main sama aku nanti aku kamu hack!		\N	\N	\N	\N	f	f	0
 8	Anas Miftahul Falah	2006-01-29	male	profile-8-1763733550208.JPG	saya adalah manusia bekasi	085850603147	Bekasi	Mahasiswa	3232290120060008	ktp-8-1763697336713.jpg	f	f	0
-9	Ahkam Ibadurrahman	\N	\N	\N	\N		\N	\N	\N	\N	f	f	0
+2	Michael 36	2006-06-30	male	profile-2-1763897297728.png			alamat belum diverifikasi	Pelajar	3273100101900005	\N	f	f	0
 7	Ajipati Alaga	2025-11-28	male	profile-7-1763736794424.JPG			\N	\N	\N	\N	f	f	0
 12	Najmi Alifah Hilmiya	2006-02-22	female	profile-12-1763737054294.JPG			\N	\N	\N	\N	f	f	0
 3	Muhammad 'Azmi Salam	2006-06-30	male	profile-3-1763789466019.jpg	saya adalah pencinta kucing dari umur 3 tahun, nama kucing tercinta saya sejak kecil adalah son goku.	085850603196	RA Ulul 'Azmi Kulalet, RT. 01/RW. 09, Kec. Baleendah, Kab. Bandung, Prov. Jawa Barat	Mahasiswa	3204323006060008	ktp-3-1763715415771.jpg	t	t	6
-13	Harri	\N	\N	\N	\N		\N	\N	\N	\N	f	f	0
 14	MUHAMMAD 'AZMI SALAM	\N	\N	https://lh3.googleusercontent.com/a/ACg8ocI4jlNMYTBjIfhPbtnoE2jVuCq4bTJx6saVHC59qzipgGeK-w=s96-c	\N	\N	\N	\N	\N	\N	t	f	0
 15	CACICU	\N	\N	https://lh3.googleusercontent.com/a/ACg8ocLCis_yrjICEgKAUmE0oASbrAYVjrGzTsaZIyTr6ZfTWcHfMw=s96-c	\N	\N	\N	\N	\N	\N	t	f	0
 \.
@@ -1229,6 +1249,26 @@ COPY public.driver_locations (id, driver_id, assignment_id, latitude, longitude,
 285	DRV-04-002	7	-6.88455680	107.60028160	2025-11-23 16:13:31.306957+07
 286	DRV-04-002	7	-6.88455680	107.60028160	2025-11-23 16:13:36.243944+07
 287	DRV-04-002	7	-6.88455680	107.60028160	2025-11-23 16:13:41.241327+07
+293	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:11:46.630985+07
+294	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:11:51.688674+07
+295	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:11:56.634444+07
+296	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:12:01.795421+07
+297	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:12:06.645226+07
+298	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:12:11.817985+07
+299	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:12:16.631777+07
+300	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:12:21.633578+07
+301	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:12:26.789153+07
+302	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:12:31.627652+07
+303	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:12:36.630008+07
+304	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:12:41.784064+07
+305	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:12:46.631851+07
+306	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:12:51.802725+07
+307	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:12:56.634073+07
+308	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:13:01.810228+07
+309	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:13:06.629708+07
+310	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:13:11.642245+07
+311	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:13:16.797513+07
+312	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:13:21.625842+07
 1	DRV-10-001	1	-6.91400000	107.60800000	2025-11-19 16:17:54.863664+07
 2	DRV-10-001	1	-6.91450000	107.60900000	2025-11-19 16:22:54.863664+07
 3	DRV-10-001	1	-6.91470000	107.60980000	2025-11-22 17:29:50.257566+07
@@ -1403,6 +1443,12 @@ COPY public.driver_locations (id, driver_id, assignment_id, latitude, longitude,
 214	DRV-04-002	7	-6.88455680	107.60028160	2025-11-23 16:07:31.008845+07
 215	DRV-04-002	7	-6.88455680	107.60028160	2025-11-23 16:07:35.999974+07
 216	DRV-04-002	7	-6.88455680	107.60028160	2025-11-23 16:07:41.104669+07
+288	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:11:21.86438+07
+289	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:11:26.625954+07
+290	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:11:31.629389+07
+291	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:11:36.757388+07
+292	DRV-10-002	5	-6.88455680	107.60028160	2025-11-23 17:11:41.627008+07
+313	DRV-10-001	4	-6.88455680	107.60028160	2025-11-23 18:36:34.703785+07
 \.
 
 
@@ -1413,11 +1459,11 @@ COPY public.driver_locations (id, driver_id, assignment_id, latitude, longitude,
 --
 
 COPY public.drivers (id, user_id, shelter_id, is_available, license_info, full_name, contact_phone, profile_picture) FROM stdin;
-DRV-04-001	18	4	t	sim-1763873723959.JPG	Andi Santoso	085850603196	driver-1763873723998.JPG
-DRV-10-001	30	10	t	SIM C-2027	Budi Kurniawan	+62 812-9502-0503	\N
-DRV-10-002	31	10	t	SIM C-2026	Cecep Supriadi	081234567890	\N
-DRV-04-002	19	4	t	sim-1763874278197.png	Rahman Putra	085850603196	driver-1763874278214.png
-DRV-11-001	22	11	t	sim-1763882101861.png	Suherman	085850603196	driver-1763882101903.png
+DRV-04-001	18	4	t	sim-1763873723959.JPG	Andi Santoso	085850603196	driver-1763897487222.png
+DRV-04-002	19	4	t	sim-1763874278197.png	Rahman Putra	085850603196	driver-1763897501968.png
+DRV-11-001	22	11	t	sim-1763882101861.png	Suherman	085850603196	driver-1763897556636.png
+DRV-10-002	31	10	t	SIM C-2026	Mawar Putri	081234567890	driver-1763897629648.png
+DRV-10-001	30	10	t	SIM C-2027	Budi Kurniawan	+62 812-9502-0503	driver-1763897665572.png
 \.
 
 
@@ -1599,10 +1645,6 @@ COPY public.user_progress (id, user_id, global_item_id, item_type, current_progr
 --
 
 COPY public.users (id, username, email, password_hash, role) FROM stdin;
-20	andi_adopter	andi@mail.com	hashed_andi_pw	individu
-21	budi_donatur	budi@mail.com	hashed_budi_pw	individu
-1	admin_super	admin@cattake.id	$2a$12$d/ZK/aMZymZ2cZZmeHG4lO96xdfnzf1aNUe4hPalXvA.ZJy5ZW6ae	admin
-2	tester_azmi_001	azmi.test.001@mail.com	$2b$10$rW1H7VCzKWWmB34tZ/epmeh0HTDfFY4VucoY3P7hbg3t9sjjrsdiy	individu
 3	zicofarry	mhmmdzmslm36@gmail.com	$2b$10$S/.SrKBrNC0Lt7QTIauaDe4KiQZJ4w3QxTa5Y4OnT.c07yIEMzd6S	individu
 5	repa	repapit@gmail.com	$2b$10$Nh4VBkWfDYoC9k9AAjwOUuPJ6Lq6ytPzSi2Eek2FCFri214Knkb6.	individu
 6	salman	salman@gmail.com	$2b$10$AeaVKPcAQVhjtauAtlPGY.qAeU.HdcnnxvMOfFh.7ks2VHXH5KRjy	individu
@@ -1617,11 +1659,15 @@ COPY public.users (id, username, email, password_hash, role) FROM stdin;
 14	muhammad'azmisalam4233	muhammadazmi36@upi.edu	$2a$12$KnzjrkMrv0Va/83HJIp7p.XjFP8HSJy2lzp9URK1pDx7lMJHxnMTK	individu
 15	cacicu7498	c2cacicu@gmail.com	$2b$10$BsZ/2ht./rAb/dXRhZ0wVOJnwEfArE.X4KlA0w4ZpUKF1fsDinxXW	individu
 16	muhammad'azmi2945	muhammadazmi.smaitfibe@gmail.com	$2b$10$2PswEEftRNsF0/fY3WKalu8xKEHqs4KzlirQ9THGua64IkRA1MKFu	shelter
-30	driver-budi	budi_drv@mail.com	$2a$12$5mH1ze4JchRj3UqwckKh5uyRS95.mGQwz1by74lIvMtQjsEvhkdZa	driver
-31	driver-cecep	cecep_drv@mail.com	$2a$12$6HUA33V6IV4IdFjb3y6slucV1GwMvRWayo0s7.CHs0HkIOMQyhIOu	driver
-22	driver-suher	suher_drv@gmail.com	$2b$10$tBo7qYz/bvqzfurHxEkCUuFTC1SLHRxf4NRLQam1LW1GjoeqGqQ/i	driver
+20	adopter-andi	andi@mail.com	$2a$12$V7sBJmn.UZFfo2Hn9kda4OkXC6PoN/H3I7zczoH0vCFjRZbcve5NG	individu
+21	donatur-bambang	bambang@mail.com	$2a$12$IIc7LrjwQSWZVXTqwBUsF.Xn2nCgZ4dbhufObIFDb.UxqYSUIlQUe	individu
+1	admin36	admin@cattake.id	$2a$12$mf/UN16PC8UXHoVgcpwraOY7IDx9ewbmfJVbkyiAuw9QO6ZKtejae	admin
+2	michael	azmi.test.001@mail.com	$2a$12$gR9X5xmgnx1Ofaf0WJYqm.YFgwrCE3zIWESzg3esC2IvgdDWfjIgG	individu
 18	driver-andi	andi_drv@gmail.com	$2b$10$ttwEUQeteiAeUm0tjgUiee1ql2/s17pwYr6BkZSmdcffjapLSDPOO	driver
 19	driver-rahman	rahman_drv@gmail.com	$2b$10$inqXtItfpppc4ck6z5DGhOLZG3HSx2juvLcijQJA99IcKo5qMdYvC	driver
+22	driver-suher	suher_drv@gmail.com	$2b$10$tBo7qYz/bvqzfurHxEkCUuFTC1SLHRxf4NRLQam1LW1GjoeqGqQ/i	driver
+30	driver-budi	budi_drv@mail.com	$2a$12$5mH1ze4JchRj3UqwckKh5uyRS95.mGQwz1by74lIvMtQjsEvhkdZa	driver
+31	driver-mawar	mawar_drv@mail.com	$2a$12$4aY1NCJGJbpI743W94xPzOe1bIq9V8G5ktIErqaddHRcsbifNQp/u	driver
 \.
 
 
@@ -1647,7 +1693,7 @@ COPY public.verification_log (id, user_id, verifier_id, verification_type, statu
 
 
 --
--- TOC entry 5311 (class 0 OID 0)
+-- TOC entry 5312 (class 0 OID 0)
 -- Dependencies: 244
 -- Name: adoptions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1656,25 +1702,25 @@ SELECT pg_catalog.setval('public.adoptions_id_seq', 15, true);
 
 
 --
--- TOC entry 5312 (class 0 OID 0)
+-- TOC entry 5313 (class 0 OID 0)
 -- Dependencies: 243
 -- Name: cats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.cats_id_seq', 12, true);
-
-
---
--- TOC entry 5313 (class 0 OID 0)
--- Dependencies: 259
--- Name: chat_messages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.chat_messages_id_seq', 20, true);
+SELECT pg_catalog.setval('public.cats_id_seq', 14, true);
 
 
 --
 -- TOC entry 5314 (class 0 OID 0)
+-- Dependencies: 259
+-- Name: chat_messages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.chat_messages_id_seq', 22, true);
+
+
+--
+-- TOC entry 5315 (class 0 OID 0)
 -- Dependencies: 246
 -- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1683,7 +1729,7 @@ SELECT pg_catalog.setval('public.comment_id_seq', 17, true);
 
 
 --
--- TOC entry 5315 (class 0 OID 0)
+-- TOC entry 5316 (class 0 OID 0)
 -- Dependencies: 248
 -- Name: community_post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1692,7 +1738,7 @@ SELECT pg_catalog.setval('public.community_post_id_seq', 5, true);
 
 
 --
--- TOC entry 5316 (class 0 OID 0)
+-- TOC entry 5317 (class 0 OID 0)
 -- Dependencies: 250
 -- Name: community_post_id_seq1; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1701,7 +1747,7 @@ SELECT pg_catalog.setval('public.community_post_id_seq1', 1, false);
 
 
 --
--- TOC entry 5317 (class 0 OID 0)
+-- TOC entry 5318 (class 0 OID 0)
 -- Dependencies: 245
 -- Name: donations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1710,16 +1756,16 @@ SELECT pg_catalog.setval('public.donations_id_seq', 12, true);
 
 
 --
--- TOC entry 5318 (class 0 OID 0)
+-- TOC entry 5319 (class 0 OID 0)
 -- Dependencies: 241
 -- Name: driver_locations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.driver_locations_id_seq', 287, true);
+SELECT pg_catalog.setval('public.driver_locations_id_seq', 313, true);
 
 
 --
--- TOC entry 5319 (class 0 OID 0)
+-- TOC entry 5320 (class 0 OID 0)
 -- Dependencies: 235
 -- Name: global_achievements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1728,7 +1774,7 @@ SELECT pg_catalog.setval('public.global_achievements_id_seq', 1, false);
 
 
 --
--- TOC entry 5320 (class 0 OID 0)
+-- TOC entry 5321 (class 0 OID 0)
 -- Dependencies: 237
 -- Name: global_quests_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1737,7 +1783,7 @@ SELECT pg_catalog.setval('public.global_quests_id_seq', 1, false);
 
 
 --
--- TOC entry 5321 (class 0 OID 0)
+-- TOC entry 5322 (class 0 OID 0)
 -- Dependencies: 252
 -- Name: lost_cats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1746,7 +1792,7 @@ SELECT pg_catalog.setval('public.lost_cats_id_seq', 6, true);
 
 
 --
--- TOC entry 5322 (class 0 OID 0)
+-- TOC entry 5323 (class 0 OID 0)
 -- Dependencies: 247
 -- Name: reply_comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1755,7 +1801,7 @@ SELECT pg_catalog.setval('public.reply_comment_id_seq', 6, true);
 
 
 --
--- TOC entry 5323 (class 0 OID 0)
+-- TOC entry 5324 (class 0 OID 0)
 -- Dependencies: 254
 -- Name: reports_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1764,7 +1810,7 @@ SELECT pg_catalog.setval('public.reports_id_seq', 11, true);
 
 
 --
--- TOC entry 5324 (class 0 OID 0)
+-- TOC entry 5325 (class 0 OID 0)
 -- Dependencies: 257
 -- Name: rescue_assignments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1773,7 +1819,7 @@ SELECT pg_catalog.setval('public.rescue_assignments_id_seq', 7, true);
 
 
 --
--- TOC entry 5325 (class 0 OID 0)
+-- TOC entry 5326 (class 0 OID 0)
 -- Dependencies: 239
 -- Name: user_progress_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1782,7 +1828,7 @@ SELECT pg_catalog.setval('public.user_progress_id_seq', 12, true);
 
 
 --
--- TOC entry 5326 (class 0 OID 0)
+-- TOC entry 5327 (class 0 OID 0)
 -- Dependencies: 234
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1791,7 +1837,7 @@ SELECT pg_catalog.setval('public.users_id_seq', 22, true);
 
 
 --
--- TOC entry 5327 (class 0 OID 0)
+-- TOC entry 5328 (class 0 OID 0)
 -- Dependencies: 256
 -- Name: verification_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -2393,11 +2439,11 @@ ALTER TABLE ONLY public.verification_log
     ADD CONSTRAINT verification_log_verifier_id_fkey FOREIGN KEY (verifier_id) REFERENCES public.users(id);
 
 
--- Completed on 2025-11-23 16:47:26
+-- Completed on 2025-11-23 21:02:55
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict PwEmxgJW3zsKLQTxb0RcODVkCwgYXbGDyFIMiaAndvilGrDRuDkfLU4fBt2YR14
+\unrestrict nX3CZFDUyUTgy0WGgjhaRe3aEAezKa7Ax8T2rhauCAwinooW1UtvFaFlQBvOXbU
 
