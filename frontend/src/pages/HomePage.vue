@@ -42,8 +42,8 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-gray-500 text-sm font-bold uppercase mb-1">Rescue Masuk</p>
-                            <h3 class="text-4xl font-extrabold text-gray-800">3</h3>
-                            <p class="text-xs text-gray-400 mt-2">Laporan baru di sekitarmu</p>
+                            <h3 class="text-4xl font-extrabold text-gray-800">{{ dashboardData.incoming_rescue }}</h3>
+                            <p class="text-xs text-gray-400 mt-2">Laporan masuk</p>
                         </div>
                         <div class="w-12 h-12 bg-yellow-100 rounded-2xl flex items-center justify-center text-[#dcb945] text-2xl">
                             <i class="fas fa-ambulance"></i>
@@ -56,7 +56,7 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-gray-500 text-sm font-bold uppercase mb-1">Permintaan Adopsi</p>
-                            <h3 class="text-4xl font-extrabold text-gray-800">5</h3>
+                            <h3 class="text-4xl font-extrabold text-gray-800">{{ dashboardData.pending_adoption }}</h3>
                             <p class="text-xs text-gray-400 mt-2">Menunggu verifikasi</p>
                         </div>
                         <div class="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-[#3A5F50] text-2xl">
@@ -70,7 +70,7 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-gray-500 text-sm font-bold uppercase mb-1">Kucing Dikelola</p>
-                            <h3 class="text-4xl font-extrabold text-gray-800">12</h3>
+                            <h3 class="text-4xl font-extrabold text-gray-800">{{ dashboardData.managed_cats }}</h3>
                             <p class="text-xs text-gray-400 mt-2">Total penghuni shelter</p>
                         </div>
                         <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-600 text-2xl">
@@ -342,9 +342,17 @@
 import { ref, computed, onMounted } from 'vue';
 import HeroSection from '../components/HeroSection.vue';
 import { jwtDecode } from 'jwt-decode'; // Import buat ambil nama shelter
+import apiClient from '@/api/http'; // Import apiClient
 
 const userRole = computed(() => localStorage.getItem('userRole') || 'guest');
 const shelterName = ref('Shelter');
+
+// [BARU] State untuk menyimpan data dashboard
+const dashboardData = ref({
+    incoming_rescue: 0,
+    pending_adoption: 0,
+    managed_cats: 0
+});
 
 // --- LOGIC SHELTER ---
 function getShelterName() {
@@ -356,6 +364,19 @@ function getShelterName() {
         } catch (error) { 
             console.error(error); 
         }
+    }
+}
+
+// [BARU] Fungsi untuk mengambil data dashboard dari backend
+async function fetchDashboardData() {
+    if (userRole.value !== 'shelter') return;
+    try {
+        const response = await apiClient.get('/dashboard'); // Endpoint baru
+        dashboardData.value = response.data.data;
+    } catch (error) {
+        console.error("Gagal mengambil data dashboard shelter:", error);
+        // Fallback ke 0 jika gagal
+        dashboardData.value = { incoming_rescue: 0, pending_adoption: 0, managed_cats: 0 };
     }
 }
 
@@ -407,6 +428,7 @@ function toggleView() {
 onMounted(() => {
     if(userRole.value === 'shelter') {
         getShelterName();
+        fetchDashboardData(); // Panggil fungsi fetch data baru
     }
 });
 </script>
