@@ -82,41 +82,101 @@
             </div>
 
             <h2 class="text-2xl font-bold text-gray-800 mb-6">Menu Cepat</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                
-                <router-link to="/shelter/cats" class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-[#3A5F50] flex flex-col items-center text-center">
-                    <div class="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center text-[#3A5F50] text-2xl mb-3 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-paw"></i>
-                    </div>
-                    <h3 class="font-bold text-gray-800">Kucing Saya</h3>
-                    <p class="text-xs text-gray-500 mt-1">Tambah & edit data</p>
-                </router-link>
 
-                <router-link to="/lapor" class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-[#EBCD5E] flex flex-col items-center text-center">
-                    <div class="w-14 h-14 bg-yellow-50 rounded-full flex items-center justify-center text-[#EBCD5E] text-2xl mb-3 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-map-marked-alt"></i>
-                    </div>
-                    <h3 class="font-bold text-gray-800">Misi Rescue</h3>
-                    <p class="text-xs text-gray-500 mt-1">Tugaskan driver</p>
-                </router-link>
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 place-items-stretch">
 
-                <router-link to="/adopsi" class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-blue-500 flex flex-col items-center text-center">
-                    <div class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center text-blue-500 text-2xl mb-3 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3 class="font-bold text-gray-800">Calon Adopter</h3>
-                    <p class="text-xs text-gray-500 mt-1">Seleksi berkas</p>
-                </router-link>
+              <!-- Rescue -->
+              <router-link
+                  to="/lapor"
+                  class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-[#EBCD5E] flex flex-col items-center text-center justify-between min-h-[180px]"
+              >
+                  <div class="flex flex-col items-center">
+                      <div
+                          class="w-14 h-14 bg-yellow-50 rounded-full flex items-center justify-center text-[#EBCD5E] text-2xl mb-3 group-hover:scale-110 transition-transform"
+                      >
+                          <i class="fas fa-map-marked-alt"></i>
+                      </div>
+                      <h3 class="font-bold text-gray-800">Misi Rescue</h3>
+                      <p class="text-xs text-gray-500 mt-1">
+                          Tugaskan driver
+                      </p>
+                  </div>
+              </router-link>
 
-                <router-link to="/donasi" class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-purple-500 flex flex-col items-center text-center">
-                    <div class="w-14 h-14 bg-purple-50 rounded-full flex items-center justify-center text-purple-500 text-2xl mb-3 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-hand-holding-heart"></i>
-                    </div>
-                    <h3 class="font-bold text-gray-800">Laporan Donasi</h3>
-                    <p class="text-xs text-gray-500 mt-1">Cek pemasukan</p>
-                </router-link>
+              <!-- Adopter -->
+              <router-link
+                  to="/adopsi"
+                  class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-blue-500 flex flex-col items-center text-center justify-between min-h-[180px]"
+              >
+                  <div class="flex flex-col items-center">
+                      <div
+                          class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center text-blue-500 text-2xl mb-3 group-hover:scale-110 transition-transform"
+                      >
+                          <i class="fas fa-users"></i>
+                      </div>
+                      <h3 class="font-bold text-gray-800">Calon Adopter</h3>
+                      <p class="text-xs text-gray-500 mt-1">
+                          Seleksi berkas
+                      </p>
+                  </div>
+              </router-link>
 
-            </div>
+              <!-- Donasi -->
+              <router-link
+                  to="/donasi"
+                  class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-purple-500 flex flex-col items-center text-center justify-between min-h-[180px]"
+              >
+                  <div class="flex flex-col items-center">
+                      <div
+                          class="w-14 h-14 bg-purple-50 rounded-full flex items-center justify-center text-purple-500 text-2xl mb-3 group-hover:scale-110 transition-transform"
+                      >
+                          <i class="fas fa-hand-holding-heart"></i>
+                      </div>
+                      <h3 class="font-bold text-gray-800">Laporan Donasi</h3>
+                      <p class="text-xs text-gray-500 mt-1">
+                          Cek pemasukan
+                      </p>
+                  </div>
+              </router-link>
+
+              <!-- Kucing -->
+              <router-link
+                  to="/shelter/cats"
+                  class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-[#3A5F50] flex flex-col items-center text-center justify-between min-h-[180px]"
+              >
+                  <div class="flex flex-col items-center">
+                      <div
+                          class="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center text-[#3A5F50] text-2xl mb-3 group-hover:scale-110 transition-transform"
+                      >
+                          <i class="fas fa-paw"></i>
+                      </div>
+                      <h3 class="font-bold text-gray-800">Kucing Saya</h3>
+                      <p class="text-xs text-gray-500 mt-1">
+                          Tambah & edit data
+                      </p>
+                  </div>
+              </router-link>
+
+              <!-- Driver -->
+              <!-- <router-link
+                  to="/shelter/driver"
+                  class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-[#2563eb] flex flex-col items-center text-center justify-between min-h-[180px]"
+              >
+                  <div class="flex flex-col items-center">
+                      <div
+                          class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center text-[#2563eb] text-2xl mb-3 group-hover:scale-110 transition-transform"
+                      >
+                          <i class="fas fa-truck"></i>
+                      </div>
+                      <h3 class="font-bold text-gray-800">Driver Saya</h3>
+                      <p class="text-xs text-gray-500 mt-1">
+                          Tambah & edit data
+                      </p>
+                  </div>
+              </router-link> -->
+
+          </div>
+
 
         </div>
     </div>
