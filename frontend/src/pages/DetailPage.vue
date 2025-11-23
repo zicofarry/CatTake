@@ -183,7 +183,7 @@ const props = defineProps({
 });
 
 function resolveImageUrl(path) {
-    if (!path) return '/img/profile_default.svg';
+    if (!path) return '/img/NULL.JPG';
 
     // PENTING: Jika URL dimulai dengan http, langsung return (jangan diotak-atik)
     if (path.startsWith('http')) {
