@@ -14,8 +14,8 @@ import DetailPage from '../pages/DetailPage.vue'
 import PostDetailPage from '../pages/PostDetailPage.vue'
 import FaktaKucingPage from '../pages/FaktaKucingPage.vue'
 import TrackingPage from '../pages/TrackingPage.vue'
-import DriverShelter from '../pages/DriverShelter.vue'
 import DriverPage from '../pages/DriverPage.vue'
+import ShelterDriverPage from '../pages/ShelterDriverPage.vue'
 import ShelterCatPage from '../pages/ShelterCatPage.vue';
 
 const router = createRouter({
@@ -36,8 +36,8 @@ const router = createRouter({
     { path: '/post/:id', name: 'Post', component: PostDetailPage }, 
     { path: '/fakta', name: 'Fakta', component: FaktaKucingPage }, 
     { path: '/track', name: 'Track', component: TrackingPage }, 
-    { path: '/drivershelter', name: 'DriverShelter', component: DriverShelter },
-    { path: '/driver/tasks', name: 'DriverTask', component: DriverPage },
+    { path: '/driver', name: 'DriverTask', component: DriverPage },
+    { path: '/shelter/driver', name: 'ShelterDriver', component: ShelterDriverPage },
     { path: '/shelter/cats', name: 'ShelterCats', component: ShelterCatPage, meta: { requiresAuth: true, role: 'shelter' } }
   ],
 

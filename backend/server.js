@@ -16,6 +16,7 @@ const communityRoutes = require('./routes/communityRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const lostCatRoutes = require('./routes/lostCatRoutes');
 const rescueRoutes = require('./routes/rescueRoutes');
+const driverRoutes = require('./routes/driverRoutes');
 
 fastify.register(cors, {
     origin: 'http://localhost:5173', 
@@ -27,7 +28,7 @@ fastify.register(cors, {
 fastify.register(multipart, {
     limits: {
         fileSize: 5 * 1024 * 1024, // Batas 5 MB (dalam bytes)
-        files: 1 // Opsional: Memastikan hanya satu file yang diizinkan per request
+        files: 5 // Opsional: Memastikan hanya satu file yang diizinkan per request
     }
 });
 
@@ -51,6 +52,7 @@ fastify.register(communityRoutes, { prefix: '/api/v1/community' });
 fastify.register(reportRoutes, { prefix: '/api/v1/reports' });
 fastify.register(lostCatRoutes, { prefix: '/api/v1/lost-cats' });
 fastify.register(rescueRoutes, { prefix: '/api/v1/rescue' });
+fastify.register(driverRoutes, { prefix: '/api/v1/drivers' });
 
 // Jalankan server
 const start = async () => {
