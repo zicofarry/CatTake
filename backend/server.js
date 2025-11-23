@@ -6,6 +6,7 @@ const fastifyStatic = require('@fastify/static');
 const { connectDB } = require('./config/db');
 
 // Import route
+const DashboardController = require('./controllers/DashboardController');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const faqRoutes = require('./routes/faqRoutes');
@@ -17,6 +18,7 @@ const reportRoutes = require('./routes/reportRoutes');
 const lostCatRoutes = require('./routes/lostCatRoutes');
 const rescueRoutes = require('./routes/rescueRoutes');
 const driverRoutes = require('./routes/driverRoutes');
+const authentication = require('./middlewares/authentication');
 
 fastify.register(cors, {
     origin: 'http://localhost:5173', 
@@ -53,6 +55,10 @@ fastify.register(reportRoutes, { prefix: '/api/v1/reports' });
 fastify.register(lostCatRoutes, { prefix: '/api/v1/lost-cats' });
 fastify.register(rescueRoutes, { prefix: '/api/v1/rescue' });
 fastify.register(driverRoutes, { prefix: '/api/v1/drivers' });
+
+fastify.get('/api/v1/dashboard', {
+    preHandler: [authentication] 
+}, DashboardController.getSummary);
 
 // Jalankan server
 const start = async () => {
