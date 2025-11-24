@@ -1,7 +1,6 @@
 <template>
   <section class="max-w-7xl mx-auto px-6 lg:px-8 pt-10 pb-5 md:pb-48 mt-12 md:mt-0">
     <div class="flex flex-col md:flex-row items-center gap-8 md:gap-16">
-      <!-- Gambar Hero -->
       <div class="lg:w-1/2 relative flex justify-center items-center -mt-10 md:mt-0 mb-12 md:mb-0">
         <img 
           :src="ellipseImg" 
@@ -17,18 +16,28 @@
         >
       </div>
 
-      <!-- Teks Hero -->
       <div class="lg:w-1/2 text-center lg:text-left space-y-6 lg:space-y-8 -mt-10 lg:-mt-20">
-        <h1 :class="titleClass">{{ title }}</h1>
-        <p :class="subtitleClass">{{ subtitle }}</p>
+        
+        <h1 :class="titleClass">
+          <slot name="title">{{ title }}</slot>
+        </h1>
+        
+        <p :class="subtitleClass">
+          <slot name="subtitle">{{ subtitle }}</slot>
+        </p>
+
         <div class="pt-2 md:pt-6">
-          <a
-            :href="buttonLink"
-            :class="['bg-[#EBCD5E] hover:bg-[#e0c355] text-white font-bold text-lg px-10 py-4 rounded-full shadow-[0_10px_20px_-10px_rgba(235,205,94,1)] transition-all hover:-translate-y-1 active:scale-95 inline-block', buttonClass]"
-          >
-            {{ buttonText }}
-          </a>  
+          <slot name="actions">
+            <a
+              v-if="buttonText"
+              :href="buttonLink"
+              :class="['bg-[#EBCD5E] hover:bg-[#e0c355] text-white font-bold text-lg px-10 py-4 rounded-full shadow-[0_10px_20px_-10px_rgba(235,205,94,1)] transition-all hover:-translate-y-1 active:scale-95 inline-block', buttonClass]"
+            >
+              {{ buttonText }}
+            </a>  
+          </slot>
         </div>
+
       </div>
     </div>
   </section>
@@ -53,12 +62,12 @@ defineProps({
   titleClass: {
     type: String,
     default:
-      'text-5xl md:text-6xl lg:text-[4rem] font-serif font-bold text-[#1F1F1F] leading-[1.1] tracking-tight',
+      'text-5xl md:text-6xl lg:text-[4rem] font-sans font-bold text-white leading-[1.1] tracking-tight',
   },
   subtitleClass: {
     type: String,
     default:
-      'text-lg md:text-xl text-gray-600 max-w-lg leading-relaxed font-medium mb-6',
+      'text-lg md:text-xl text-white max-w-lg leading-relaxed font-medium mb-6',
   },
   buttonClass: {
     type: String,

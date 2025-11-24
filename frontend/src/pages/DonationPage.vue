@@ -8,7 +8,7 @@
 
     <div v-if="userRole === 'shelter'">
       
-        <div class="text-center mb-8 -mt-2 space-y-6">
+        <div class="text-center mb-8 -mt-7 space-y-6">
             <h1 class="inline-block text-3xl md:text-4xl font-extrabold text-white drop-shadow-md py-3 px-8">
                 Laporan Donasi
             </h1>
@@ -39,7 +39,7 @@
     </div>
 
     <div v-else>
-        <div class="-mt-20"> 
+        <div class="-mt-15"> 
             <HeroSection 
             title="Satu Donasi, Seribu Harapan."
             subtitle="Bersama mendukung langkah kecil mereka, dari jalanan penuh bahaya menuju tempat yang aman, sehat, dan dicintai."
@@ -52,7 +52,7 @@
         </div>
 
         <div>
-            <section id="formDonasi" class="text-white pt-30 pb-30 !mt-20 lg:-mt-60">
+            <section id="formDonasi" class="text-white pt-30 pb-30 !mt-5 lg:-mt-60">
                 <div class="relative max-w-sm md:max-w-4xl mx-auto bg-white/90 backdrop-blur-xl text-gray-800 rounded-3xl p-8 md:p-16 shadow-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden border border-white/50">
                 <LoginOverlay :isLoggedIn="isLoggedInProp" />
                 

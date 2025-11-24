@@ -8,7 +8,7 @@
     
     <div v-if="userRole === 'shelter'">
         
-        <div class="text-center mb-8 -mt-2 space-y-6">
+        <div class="text-center mb-8 pt-10 md:pt-15 space-y-6">
             <h1 class="inline-block text-3xl md:text-4xl font-extrabold text-white drop-shadow-md py-3 px-8">
                 Dashboard Rescue
             </h1>
@@ -111,46 +111,45 @@
     </div>
       
     <div v-else>
-      
-      <div class="relative w-full h-[400px] overflow-visible bg-transparent z-0">
-          <div class="relative z-10 h-full max-w-6xl mx-auto px-6 flex items-center justify-center gap-12">
-              <div class="flex-shrink-0 text-center md:text-left">
-                <h1 class="text-5xl md:text-7xl font-bold text-white drop-shadow-lg leading-tight">
-                    Lapor &<br>Temukan
-                </h1>
-                <p class="text-white mt-4 text-lg max-w-md hidden md:block drop-shadow-md font-medium">
-                  Laporkan penemuan kucing liar, kucing orang lain yang hilang, atau umumkan kucingmu yang hilang.
-                </p>
+      <div class="md:pt-15">
+          <HeroSection 
+          :mainImg="tigaKucingImg" 
+          mainAlt="Tiga Kucing"
+          mainMaxWidth="500px"
+          titleClass="text-5xl md:text-7xl font-bold text-white drop-shadow-lg leading-tight font-sans"
+          subtitleClass="text-white mt-4 text-lg drop-shadow-md font-medium leading-relaxed"
+          >
+          <template #title>
+              Lapor &<br>Temukan
+        </template>
+        
+        <template #subtitle>
+            Laporkan penemuan kucing liar, kucing orang lain yang hilang, atau umumkan kucingmu yang hilang.
+        </template>
+        
+        <template #actions>
+            <div class="bg-white/20 backdrop-blur-md p-1.5 rounded-full flex mt-8 shadow-lg border border-white/30 inline-flex justify-center md:justify-start">
+                <button 
+                @click="switchUserTab('create')"
+                class="px-6 py-3 rounded-full font-bold transition-all text-sm md:text-base flex items-center gap-2"
+                :class="activeUserTab === 'create' ? 'bg-white text-[#3A5F50] shadow-lg' : 'text-white hover:bg-white/10'"
+                >
+                <i class="fas fa-edit"></i> Buat Laporan
+                </button>
+                <button 
+                @click="switchUserTab('history')"
+                class="px-6 py-3 rounded-full font-bold transition-all text-sm md:text-base flex items-center gap-2"
+                :class="activeUserTab === 'history' ? 'bg-white text-[#3A5F50] shadow-lg' : 'text-white hover:bg-white/10'"
+                >
+                <i class="fas fa-history"></i> Riwayat Saya
+            </button>
+        </div>
+    </template>
+</HeroSection>
+</div>
 
-                <div class="bg-white/20 backdrop-blur-md p-1.5 rounded-full flex mt-6 shadow-lg border border-white/30 inline-flex">
-                    <button 
-                        @click="switchUserTab('create')"
-                        class="px-6 py-2 rounded-full font-bold transition-all text-sm md:text-base"
-                        :class="activeUserTab === 'create' ? 'bg-white text-[#3A5F50] shadow-lg' : 'text-white hover:bg-white/10'"
-                    >
-                        <i class="fas fa-edit mr-2"></i>Buat Laporan
-                    </button>
-                    <button 
-                        @click="switchUserTab('history')"
-                        class="px-6 py-2 rounded-full font-bold transition-all text-sm md:text-base"
-                        :class="activeUserTab === 'history' ? 'bg-white text-[#3A5F50] shadow-lg' : 'text-white hover:bg-white/10'"
-                    >
-                        <i class="fas fa-history mr-2"></i>Riwayat Saya
-                    </button>
-                </div>
-              </div>
-              <div class="h-full flex items-end">
-                  <img 
-                    src="../assets/img/tigakucing.png" 
-                    alt="Tiga Kucing" 
-                    class="h-[75%] md:h-[135%] w-auto object-contain object-bottom md:translate-y-16 drop-shadow-2xl"
-                  >
-              </div>
-          </div>
-      </div>
-
-      <div class="max-w-4xl mx-auto px-6 relative z-10 mt-12 md:mt-32">
-        <div v-if="activeUserTab === 'create'">
+<div class="max-w-4xl mx-auto px-6 relative z-10 mt-4 md:mt-10">
+    <div v-if="activeUserTab === 'create'">
           <div class="flex flex-wrap justify-center gap-4 mb-12">
             <div class="bg-white/80 backdrop-blur-sm p-2 rounded-[25px] shadow-sm">
                 <button 
@@ -586,6 +585,8 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import LoginOverlay from '../components/LoginOverlay.vue';
 import ReportCard from '../components/ReportCardItem.vue';
+import HeroSection from '../components/HeroSection.vue';
+import tigaKucingImg from '@/assets/img/tigakucing.png';
 
 const router = useRouter();
 const userRole = computed(() => localStorage.getItem('userRole') || 'guest');

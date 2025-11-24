@@ -2,7 +2,7 @@
   <header 
     v-if="!isAuthPage"
     class="fixed top-0 left-0 w-full z-50 transition-all duration-500 py-4"
-    :class="isScrolled ? 'backdrop-blur-md bg-[#1d3b31]/80 shadow-lg' : 'bg-transparent'"
+    :class="headerClass"
   >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
       
@@ -109,12 +109,12 @@
       <div class="flex items-center gap-4 md:hidden w-full">
           
           <button class="flex flex-col gap-1.5 cursor-pointer p-2" @click="toggleMobileMenu">
-              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors" :class="isScrolled ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
-              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors" :class="isScrolled ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
-              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors" :class="isScrolled ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
+              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors bg-white"></span>
+              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors bg-white"></span>
+              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors bg-white"></span>
           </button>
 
-            <span class="font-semibold text-xl transition-colors" :class="isScrolled ? 'text-white' : 'text-gray-800'">
+            <span class="font-semibold text-xl transition-colors text-white">
               {{ props.userRole === 'driver' ? 'Driver' : activePage }}
           </span>
           
@@ -247,6 +247,23 @@ const isAuthPage = computed(() => {
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 20;
 };
+
+// --- LOGIKA BARU: Header Class ---
+const headerClass = computed(() => {
+  // 1. Jika sedang di-scroll, TETAP gunakan style blur (sesuai permintaan jangan diubah)
+  if (isScrolled.value) {
+    return 'backdrop-blur-md bg-[#1d3b31]/80 shadow-lg';
+  }
+
+  // 2. Jika di Homepage ('/') DAN User adalah 'individu', gunakan Hijau Solid
+  // (Ini akan aktif hanya saat TIDAK di-scroll, karena kondisi scroll di atas return duluan)
+  if (route.path === '/' && props.userRole === 'individu') {
+    return 'bg-[#3A5F50]'; 
+  }
+
+  // 3. Default: Transparan (untuk halaman lain atau user lain saat di top)
+  return 'bg-transparent';
+});
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll);
