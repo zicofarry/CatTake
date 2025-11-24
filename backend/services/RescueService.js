@@ -110,7 +110,7 @@ class RescueService {
         }));
     }
 
-    // 5. Update Status & Upload Bukti (Untuk Driver/Shelter)
+    // 5. Update Status & Upload Bukti (Update Logic Status lost_cats)
     static async updateJobStatus(assignmentId, status, photoFileName = null) {
         let query = '';
         let params = [];
@@ -119,17 +119,38 @@ class RescueService {
             // Status: Dijemput (Driver bawa kucing)
             query = `UPDATE rescue_assignments SET assignment_status = 'in_transit', pickup_photo = $1, pickup_time = NOW() WHERE id = $2`;
             params = [photoFileName, assignmentId];
-        
+            
+            // Eksekusi langsung untuk in_transit
+            await db.query(query, params);
+
         } else if (status === 'completed') {
             // Status: Selesai (Sampai Shelter)
-            query = `UPDATE rescue_assignments SET assignment_status = 'completed', dropoff_photo = $1, completion_time = NOW() WHERE id = $2`;
+            // PERUBAHAN: Tambahkan "RETURNING report_id" agar kita tahu laporan mana yang selesai
+            query = `UPDATE rescue_assignments SET assignment_status = 'completed', dropoff_photo = $1, completion_time = NOW() WHERE id = $2 RETURNING report_id`;
             params = [photoFileName, assignmentId];
-        
+            
+            // Eksekusi query dan simpan hasilnya
+            const res = await db.query(query, params);
+
+            // --- LOGIKA TAMBAHAN: Update status lost_cats jadi 'at_shelter' ---
+            if (res.rows.length > 0) {
+                const reportId = res.rows[0].report_id;
+                
+                // Cek apakah report ini terhubung ke data kucing hilang (lost_cat_id)
+                const checkReport = await db.query(`SELECT lost_cat_id FROM reports WHERE id = $1`, [reportId]);
+                const lostCatId = checkReport.rows[0]?.lost_cat_id;
+
+                // Jika ada ID Kucing Hilang, update statusnya
+                if (lostCatId) {
+                    await db.query(`UPDATE lost_cats SET status = 'at_shelter' WHERE id = $1`, [lostCatId]);
+                }
+            }
+            // ------------------------------------------------------------------
+
         } else {
             throw new Error('Status tidak valid');
         }
 
-        await db.query(query, params);
         return { message: 'Status berhasil diperbarui' };
     }
 
@@ -335,6 +356,90 @@ class RescueService {
             throw new Error("Gagal menghapus pesan (Mungkin bukan pesan Anda atau pesan tidak ditemukan)");
         }
         return true;
+    }
+
+    static async getShelterRescuedCats(shelterId) {
+        const query = `
+            SELECT 
+                ra.id as assignment_id,
+                r.id as report_id,
+                r.report_type,
+                r.photo,
+                r.description,
+                r.location,
+                r.is_converted,
+                ra.completion_time,
+                lc.id as lost_cat_id,
+                lc.name as lost_cat_name,
+                lc.owner_id,
+                lc.status as lost_cat_status,
+                
+                -- Ambil Nama, Telepon, dan Email
+                COALESCE(dui.full_name, u.username) as owner_name,
+                dui.contact_phone, 
+                u.email
+                
+            FROM rescue_assignments ra
+            JOIN reports r ON ra.report_id = r.id
+            LEFT JOIN lost_cats lc ON r.lost_cat_id = lc.id
+            LEFT JOIN users u ON lc.owner_id = u.id
+            LEFT JOIN detail_user_individu dui ON u.id = dui.id
+            
+            WHERE ra.shelter_id = $1 
+            AND ra.assignment_status = 'completed'
+            ORDER BY ra.completion_time DESC
+        `;
+        const result = await db.query(query, [shelterId]);
+        
+        return result.rows.map(row => ({
+            ...row,
+            photo: row.photo ? `/public/img/report_cat/${row.photo}` : '/img/NULL.JPG',
+            display_name: row.report_type === 'missing' ? row.lost_cat_name : 'Kucing Liar (Rescue)',
+            is_processed: row.lost_cat_status === 'returned',
+            
+            // [LOGIKA KONTAK]: Prioritaskan Telepon, jika kosong pakai Email
+            owner_contact: row.contact_phone || row.email
+        }));
+    }
+
+    // [BARU] Aksi: Kembalikan ke Pemilik
+    static async markAsReturned(lostCatId) {
+        await db.query(`UPDATE lost_cats SET status = 'returned' WHERE id = $1`, [lostCatId]);
+        return { message: 'Status diupdate menjadi Returned' };
+    }
+
+    // [BARU] Aksi: Pindahkan Stray ke Kucing Adopsi
+    static async moveStrayToAdoption(shelterId, reportId, catData) {
+        const client = await db.connect();
+        try {
+            await client.query('BEGIN');
+
+            // 1. Insert ke tabel CATS (Tetap sama)
+            const insertQuery = `
+                INSERT INTO cats (
+                    shelter_id, name, breed, age, gender, 
+                    health_status, description, adoption_status, photo
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, 'available', $8)
+                RETURNING id
+            `;
+            const values = [
+                shelterId, catData.name, catData.breed, catData.age, catData.gender,
+                'healthy', catData.description, catData.photo
+            ];
+            await client.query(insertQuery, values);
+
+            // 2. [BARU] Update report jadi is_converted = true
+            await client.query(`UPDATE reports SET is_converted = true WHERE id = $1`, [reportId]);
+
+            await client.query('COMMIT');
+            return { message: 'Kucing berhasil dipindahkan ke daftar adopsi' };
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 }
 

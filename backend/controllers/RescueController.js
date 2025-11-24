@@ -227,6 +227,36 @@ class RescueController {
             return reply.code(500).send({ error: error.message });
         }
     }
+
+    static async getShelterRescuedCats(req, reply) {
+        try {
+            const shelterId = req.user.id;
+            const data = await RescueService.getShelterRescuedCats(shelterId);
+            return reply.send(data);
+        } catch (error) { return reply.code(500).send({ error: error.message }); }
+    }
+
+    static async returnToOwner(req, reply) {
+        try {
+            const { lostCatId } = req.body;
+            await RescueService.markAsReturned(lostCatId);
+            return reply.send({ message: 'Kucing berhasil dikembalikan.' });
+        } catch (error) { return reply.code(500).send({ error: error.message }); }
+    }
+
+    static async moveToAdoption(req, reply) {
+        try {
+            // Kita butuh data kucing baru (Nama, Gender, dll)
+            // Dan ID Report asalnya untuk referensi foto
+            const { reportId, name, breed, age, gender, description, photoPath } = req.body;
+            const shelterId = req.user.id;
+
+            const catData = { name, breed, age, gender, description, photo: photoPath };
+            
+            await RescueService.moveStrayToAdoption(shelterId, reportId, catData);
+            return reply.send({ message: 'Berhasil masuk ke daftar adopsi.' });
+        } catch (error) { return reply.code(500).send({ error: error.message }); }
+    }
 }
 
 module.exports = RescueController;

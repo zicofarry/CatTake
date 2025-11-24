@@ -36,6 +36,14 @@ async function rescueRoutes(fastify, options) {
     fastify.post('/chat', RescueController.sendChat);
     fastify.delete('/chat/:messageId', RescueController.deleteChat);
     
+    // [BARU] Get List Rescue di Shelter
+    fastify.get('/shelter-history', RescueController.getShelterRescuedCats);
+
+    // [BARU] Aksi Return Owner
+    fastify.post('/return-owner', RescueController.returnToOwner);
+
+    // [BARU] Aksi Move to Adoption
+    fastify.post('/move-adoption', RescueController.moveToAdoption);
 }
 
 module.exports = rescueRoutes;

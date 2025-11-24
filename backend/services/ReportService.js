@@ -32,6 +32,13 @@ class ReportService {
         ];
 
         const result = await db.query(query, values);
+        if (data.lost_cat_id) {
+            await db.query(
+                `UPDATE lost_cats SET status = 'found' WHERE id = $1`, 
+                [data.lost_cat_id]
+            );
+        }
+        
         return result.rows[0];
     }
 
