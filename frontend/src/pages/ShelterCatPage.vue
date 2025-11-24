@@ -222,7 +222,7 @@ onMounted(() => {
     "
   >
     
-    <div class="max-w-6xl mx-auto pb-20">
+    <div class="max-w-6xl mx-auto pt-24 md:pt-24 pb-20">
         
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white/10 backdrop-blur-sm p-6 rounded-3xl shadow-lg border border-white/20">
             <div>

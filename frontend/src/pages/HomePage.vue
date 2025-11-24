@@ -1,15 +1,15 @@
 <template>
-  <main class="overflow-x-hidden min-h-screen bg-gray-50">
+  <main class="overflow-x-hidden min-h-screen bg-gray-50 pt-20">
     
     <div v-if="userRole === 'shelter'" class="min-h-screen pb-20 relative">
         
-        <div class="absolute top-0 left-0 w-full h-[400px] z-0" 
-             style="
-                background: radial-gradient(circle at top right, #cfe3d4 10%, oklch(39.3% 0.095 152.535) 80%);
-                border-bottom-left-radius: 50px;
-                border-bottom-right-radius: 50px;
-             ">
-        </div>
+        <div class="absolute top-0 left-0 w-full h-[600px] z-0 -mt-32 md:-mt-40" 
+            style="
+              background: radial-gradient(circle at top right, #cfe3d4 10%, oklch(39.3% 0.095 152.535) 80%);
+              border-bottom-left-radius: 50px;
+              border-bottom-right-radius: 50px;
+          ">
+    </div>
 
         <div class="relative z-10 max-w-6xl mx-auto px-6 pt-32">
             

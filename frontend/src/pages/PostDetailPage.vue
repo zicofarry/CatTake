@@ -75,11 +75,15 @@ onMounted(() => {
   <div class="bg-[#2c473c] min-h-screen p-5 md:p-10 font-sans"
     style="background-image: url('/img/background.png'); background-size: 360px;">
     
-    <router-link 
-      to="/komunitas" 
-      class="inline-block bg-[#2D4A45] text-white font-semibold py-2 px-4 rounded-lg mb-6 hover:bg-[#4a6d68] transition-colors no-underline">
-      &lt; Kembali
-    </router-link>
+    <div class="fixed top-6 left-4 md:top-8 md:left-8 z-[999]">
+        <router-link 
+          to="/komunitas" 
+          class="inline-flex items-center gap-2 bg-[#2D4A45]/80 backdrop-blur-md text-white font-bold py-2.5 px-6 rounded-full shadow-2xl transition-all duration-300 hover:bg-[#2D4A45] hover:-translate-x-1 no-underline border border-white/20"
+        >
+            <i class="fas fa-arrow-left"></i>
+            <span>Kembali</span>
+        </router-link>
+    </div>
 
     <div v-if="post" class="max-w-3xl mx-auto">
       

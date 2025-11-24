@@ -1,6 +1,6 @@
 <template>
 <main
-  class="min-h-screen flex flex-col items-center justify-center py-16 px-4"
+  class="min-h-screen flex flex-col items-center justify-center pt-24 md:pt-40 pb-16 px-4"
   style="
     background: radial-gradient(circle at top right, #cfe3d4 10%, oklch(39.3% 0.095 152.535) 80%);
     background-repeat: no-repeat;

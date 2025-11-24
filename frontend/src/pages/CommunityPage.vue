@@ -1,8 +1,8 @@
 <template>
-  <main 
-    class="bg-[#2c473c] text-white min-h-screen py-8 font-sans bg-fixed bg-center bg-repeat"
+ <main 
+    class="bg-[#2c473c] text-white min-h-screen pt-32 pb-20 font-sans bg-fixed bg-center bg-repeat"
     style="background-image: url('/img/background.png'); background-size: 360px;"
-  >
+>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="main-content flex-auto md:w-2/3">
         <h1 class="text-4xl font-bold">Komunitas</h1>
