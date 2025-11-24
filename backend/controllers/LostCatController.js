@@ -67,6 +67,34 @@ class LostCatController {
         }
     }
 
+    // [BARU] Endpoint khusus untuk halaman LostCatListPage (Format Data Frontend)
+    static async getList(req, reply) {
+        try {
+            const list = await LostCatService.getAllLostCats();
+            
+            // Mapping data agar sesuai properti yang diminta Vue (image, owner, reward, dll)
+            const formattedList = list.map(cat => ({
+                id: cat.id,
+                name: cat.name,
+                image: cat.photo, // Service sudah memformat path ini
+                owner: cat.owner_name,
+                breed: cat.breed,
+                age: cat.age,
+                color: cat.color,
+                address: cat.last_seen_address,
+                description: cat.description,
+                reward: cat.reward_amount
+            }));
+
+            return reply.send({
+                status: 'success',
+                data: formattedList
+            });
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
     static async search(req, reply) {
         try {
             const { q } = req.query; // Ambil query param ?q=...

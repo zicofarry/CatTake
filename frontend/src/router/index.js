@@ -13,13 +13,13 @@ import CommunityPage from '../pages/CommunityPage.vue'
 import DetailPage from '../pages/DetailPage.vue'
 import PostDetailPage from '../pages/PostDetailPage.vue'
 import FaktaKucingPage from '../pages/FaktaKucingPage.vue'
+import LostCatListPage from '../pages/LostCatListPage.vue' // <-- Update Import
 import TrackingPage from '../pages/TrackingPage.vue'
 import DriverPage from '../pages/DriverPage.vue'
 import ShelterDriverPage from '../pages/ShelterDriverPage.vue'
 import ShelterCatPage from '../pages/ShelterCatPage.vue';
 
 const router = createRouter({
-  // Menggunakan history mode untuk URL yang bersih (tanpa #)
   history: createWebHistory(), 
   
   routes: [
@@ -35,47 +35,36 @@ const router = createRouter({
     { path: '/profile', name: 'Profile', component: DetailPage }, 
     { path: '/post/:id', name: 'Post', component: PostDetailPage }, 
     { path: '/fakta', name: 'Fakta', component: FaktaKucingPage }, 
+    
+    // [UPDATE] Gunakan komponen LostCatListPage
+    { path: '/lost-cats', name: 'KucingHilang', component: LostCatListPage }, 
+    
     { path: '/track', name: 'Track', component: TrackingPage }, 
     { path: '/driver/tasks', name: 'DriverTask', component: DriverPage, meta: { requiresAuth: true, role: 'driver' } },
     { path: '/driver/tracking/:id', name: 'DriverTrackingDetail', component: TrackingPage, meta: { requiresAuth: true, role: 'driver' } },
     { path: '/shelter/driver', name: 'ShelterDriver', component: ShelterDriverPage },
     { path: '/shelter/cats', name: 'ShelterCats', component: ShelterCatPage, meta: { requiresAuth: true, role: 'shelter' } },
-    { 
-      path: '/driver', 
-      redirect: '/driver/tasks' 
-    },
+    { path: '/driver', redirect: '/driver/tasks' },
   ],
 
-  // Pastikan halaman di-scroll ke atas saat berpindah rute
   scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition
-    } else {
-      return { top: 0 }
-    }
+    if (savedPosition) return savedPosition;
+    return { top: 0 };
   }
 })
 
-  router.beforeEach((to, from, next) => {
-  // 1. Ambil data user dari localStorage
+router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('userToken');
-  const userRole = localStorage.getItem('userRole'); // misal: 'shelter' atau 'individu'
+  const userRole = localStorage.getItem('userRole'); 
 
-  // 2. Cek apakah halaman tujuan butuh Login (requiresAuth)
   if (to.meta.requiresAuth && !token) {
-    // Kalau butuh login TAPI tidak punya token -> Tendang ke Login
     next('/login');
-  } 
-  // 3. Cek apakah halaman tujuan butuh Role khusus
-  else if (to.meta.role && to.meta.role !== userRole) {
-    // Kalau butuh role 'shelter' TAPI user-nya 'individu' -> Tendang ke Home
+  } else if (to.meta.role && to.meta.role !== userRole) {
     alert("Anda tidak punya akses ke halaman ini!");
     next('/'); 
-  } 
-  // 4. Kalau aman semua -> Silakan masuk
-  else {
+  } else {
     next();
   }
 });
 
-export default router
+export default router;

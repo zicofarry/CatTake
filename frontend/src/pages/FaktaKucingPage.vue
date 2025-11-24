@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import apiClient from '@/api/http'; // Import Axios Client
+import apiClient from '@/api/http'; 
 
 const catFacts = ref([]);
 const isLoading = ref(true);
@@ -8,7 +8,6 @@ const isLoading = ref(true);
 async function fetchFacts() {
   try {
     isLoading.value = true;
-    // Panggil endpoint baru
     const response = await apiClient.get('/community/facts');
     catFacts.value = response.data.data;
   } catch (error) {
@@ -27,13 +26,17 @@ onMounted(() => {
   <div class="bg-[#2c473c] min-h-screen p-5 md:p-10 font-sans"
     style="background-image: url('/img/background.png'); background-size: 360px;">
     
-    <router-link 
-      to="/komunitas" 
-      class="inline-block bg-[#2D4A45] text-white font-semibold py-2 px-4 rounded-lg mb-6 hover:bg-[#4a6d68] transition-colors no-underline">
-      &lt; Kembali
-    </router-link>
+    <div class="fixed top-6 left-4 md:top-8 md:left-8 z-[999]">
+        <router-link 
+          to="/komunitas" 
+          class="inline-flex items-center gap-2 bg-[#2D4A45]/80 backdrop-blur-md text-white font-bold py-2.5 px-6 rounded-full shadow-2xl transition-all duration-300 hover:bg-[#2D4A45] hover:-translate-x-1 no-underline border border-white/20"
+        >
+            <i class="fas fa-arrow-left"></i>
+            <span>Kembali</span>
+        </router-link>
+    </div>
 
-    <div class="max-w-3xl mx-auto">
+    <div class="max-w-3xl mx-auto pt-16 md:pt-8">
       
       <h1 class="text-4xl font-bold text-white">Semua Fakta Kucing</h1>
       <p class="text-gray-400 mb-8">Temukan hal-hal menakjubkan tentang sahabat berbulumu.</p>

@@ -48,7 +48,7 @@ class CommunityService {
         });
     }
 
-    // 2. Ambil Detail Postingan (UPDATE: Logika Waktu Edit)
+    // 2. Ambil Detail Postingan
     static async getPostById(postId) {
         // A. Ambil Data Post
         const postQuery = `
@@ -64,7 +64,7 @@ class CommunityService {
         if (postResult.rows.length === 0) throw new Error('Post not found');
         const row = postResult.rows[0];
 
-        // B. Ambil Komentar Utama (Tambah field updated_at)
+        // B. Ambil Komentar Utama
         const commentQuery = `
             SELECT c.id, c.content, c.created_at, c.updated_at, u.id as user_id, u.username, d.full_name, d.profile_picture
             FROM "comment" c
@@ -75,7 +75,7 @@ class CommunityService {
         `;
         const commentResult = await db.query(commentQuery, [postId]);
 
-        // C. Ambil Balasan (Tambah field updated_at)
+        // C. Ambil Balasan
         let allReplies = [];
         if (commentResult.rows.length > 0) {
             const commentIds = commentResult.rows.map(c => c.id);
@@ -91,13 +91,11 @@ class CommunityService {
             allReplies = replyResult.rows;
         }
 
-        // Helper: Format Waktu (Cek Edit)
+        // Helper: Format Waktu
         const formatTime = (createdAt, updatedAt) => {
             const created = new Date(createdAt);
             const updated = new Date(updatedAt);
             
-            // Jika selisih updated dan created lebih dari 2 detik, anggap sudah diedit
-            // (2000ms toleransi untuk eksekusi server saat insert awal)
             if (updated - created > 2000) {
                 return `Diupdate pada: ${updated.toLocaleString('id-ID')}`;
             }
@@ -120,7 +118,7 @@ class CommunityService {
                         user: r.full_name || r.username,
                         profileImg: repProfile,
                         text: r.content,
-                        time: formatTime(r.created_at, r.updated_at), // <--- PAKAI HELPER
+                        time: formatTime(r.created_at, r.updated_at),
                         replies: buildReplyTree(replies, r.id)
                     };
                 });
@@ -140,7 +138,7 @@ class CommunityService {
                 user: c.full_name || c.username,
                 profileImg: comProfile,
                 text: c.content,
-                time: formatTime(c.created_at, c.updated_at), // <--- PAKAI HELPER
+                time: formatTime(c.created_at, c.updated_at),
                 replies: buildReplyTree(rootRepliesForThisComment, null) 
             };
         });
@@ -165,7 +163,7 @@ class CommunityService {
         };
     }
 
-    // (CREATE POST, COMMENT, REPLY )
+    // === CREATE POST, COMMENT, REPLY ===
     static async createPost(userId, title, content, mediaPath) {
         const query = `INSERT INTO community_post (author_id, title, content, media_path, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING id`;
         const result = await db.query(query, [userId, title, content, mediaPath]);
@@ -183,9 +181,7 @@ class CommunityService {
     }
 
     // === EDIT & DELETE ===
-
     static async updateComment(userId, commentId, content) {
-        // Saat update, updated_at di-set NOW()
         const query = `UPDATE "comment" SET content = $1, updated_at = NOW() WHERE id = $2 AND user_id = $3 RETURNING *`;
         const result = await db.query(query, [content, commentId, userId]);
         if (result.rows.length === 0) throw new Error('Gagal update: Komentar tidak ditemukan atau bukan milik Anda.');
@@ -200,7 +196,6 @@ class CommunityService {
     }
 
     static async updateReply(userId, replyId, content) {
-        // Saat update, updated_at di-set NOW()
         const query = `UPDATE reply_comment SET content = $1, updated_at = NOW() WHERE id = $2 AND user_id = $3 RETURNING *`;
         const result = await db.query(query, [content, replyId, userId]);
         if (result.rows.length === 0) throw new Error('Gagal update: Balasan tidak ditemukan atau bukan milik Anda.');
@@ -214,7 +209,7 @@ class CommunityService {
         return true;
     }
 
-    // (Toggle Like & Sidebar)
+    // === TOGGLE LIKE ===
     static async toggleLike(userId, postId) {
         const checkQuery = `SELECT 1 FROM post_likes WHERE user_id = $1 AND post_id = $2`;
         const check = await db.query(checkQuery, [userId, postId]);
@@ -240,6 +235,7 @@ class CommunityService {
         }
     }
 
+    // === SIDEBAR DATA HELPERS ===
     static async getUpcomingEvents() {
         const query = `SELECT title, event_date, start_time, location_name FROM events WHERE is_active = true AND event_date >= CURRENT_DATE ORDER BY event_date ASC LIMIT 3`;
         const result = await db.query(query);
@@ -261,11 +257,51 @@ class CommunityService {
         }));
     }
 
+    // [BARU] Method untuk mengambil Highlight Kucing Hilang (Limit 3)
+    static async getMissingCats() {
+        const query = `
+            SELECT 
+                id, 
+                name, 
+                breed, 
+                last_seen_address,
+                photo,
+                reward_amount
+            FROM lost_cats 
+            WHERE status = 'searching'
+            ORDER BY created_at DESC 
+            LIMIT 3
+        `;
+        const result = await db.query(query);
+        return result.rows.map(cat => ({
+            id: cat.id,
+            name: cat.name,
+            address: cat.last_seen_address || 'Lokasi tidak diketahui',
+            reward: parseFloat(cat.reward_amount || 0),
+            image: cat.photo ? `/public/img/lost_cat/${cat.photo}` : '/img/NULL.JPG'
+        }));
+    }
+
     static async getRandomFact() {
         const query = `SELECT fact_text, image_path FROM cat_facts ORDER BY RANDOM() LIMIT 1`;
         const result = await db.query(query);
         if (result.rows.length === 0) return null;
         return { fact: result.rows[0].fact_text, image: result.rows[0].image_path ? `/img/${result.rows[0].image_path}` : '/img/logoFaktaKucing.png' };
+    }
+
+    // [UPDATE] Method getSidebarData sekarang memanggil getMissingCats juga
+    static async getSidebarData(req, reply) {
+        try {
+            const [events, popular, fact, missing] = await Promise.all([
+                CommunityService.getUpcomingEvents(),
+                CommunityService.getPopularPosts(),
+                CommunityService.getRandomFact(),
+                CommunityService.getMissingCats() // <-- Panggilan Baru
+            ]);
+            return { events, popular, fact, missing }; // <-- Return missing juga
+        } catch (error) {
+            throw error;
+        }
     }
 
     static async getAllFacts() {
