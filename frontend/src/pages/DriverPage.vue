@@ -41,14 +41,38 @@ const formatDate = (dateString) => {
   }).format(date);
 };
 
-const resolveImageUrl = (path) => {
-  if (!path) return '/img/kucingtidur.png';
-  if (path.startsWith('http')) return path;
-  
-  // PERHATIAN: Gunakan Base URL Dinamis (disarankan)
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-  return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-};
+function resolveImageUrl(path) {
+    // 1. Handle Null/Undefined
+    if (!path || path === 'NULL' || path === 'NULL.JPG') return '/img/NULL.JPG';
+
+    // 2. Handle URL Eksternal (Google, dll)
+    if (path.startsWith('http')) return path;
+
+    // 3. Handle Path Lengkap dari Backend (jika sudah ada /public/)
+    if (path.startsWith('/public/')) return `http://localhost:3000${path}`;
+
+    // 4. Handle Berdasarkan Prefix Nama File
+    
+    // Foto Profil (User/Driver) -> Folder profile
+    if (path.startsWith('profile-') || path.startsWith('driver-')) {
+        return `http://localhost:3000/public/img/profile/${path}`;
+    }
+
+    // Foto Kucing Hilang -> Folder lost_cat
+    if (path.startsWith('lost-')) {
+        return `http://localhost:3000/public/img/lost_cat/${path}`;
+    }
+    
+    // Foto Laporan Penemuan -> Folder report_cat
+    if (path.startsWith('report-')) {
+        return `http://localhost:3000/public/img/report_cat/${path}`;
+    }
+
+
+    // 5. Default Fallback (Asumsi aset statis frontend di folder /img/)
+    // Misal: 'postingan1.png' -> '/img/postingan1.png'
+    return `/img/${path}`;
+}
 
 // === 3. FILTER LOGIC ===
 const filteredTasks = computed(() => {
@@ -113,7 +137,7 @@ onMounted(() => {
         <div class="flex gap-5">
           
           <div class="w-28 h-28 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-100 relative shadow-inner border border-gray-200">
-            <img :src="task.img" :alt="task.catName" class="w-full h-full object-cover">
+            <img :src="resolveImageUrl(task.img)" :alt="task.catName" class="w-full h-full object-cover">
           </div>
 
           <div class="flex-1 flex flex-col justify-between">
