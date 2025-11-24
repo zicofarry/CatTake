@@ -109,7 +109,7 @@ class CatModel {
                 c.name,
                 c.age,
                 c.gender,
-                c.image_url,
+                c.photo AS image,
                 c.shelter_id,
                 
                 -- LOGIC PENTING: Cek status favorite

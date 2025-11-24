@@ -62,7 +62,7 @@ const props = defineProps({
 });
 
 function resolveImageUrl(imageName) {
-    if (!imageName) return '/img/cat-placeholder.png'; // Gambar default local jika null
+    if (!imageName) return '/img/NULL.JPG'; // Gambar default local jika null
     if (imageName.startsWith('http')) return imageName; // Jika URL external
     
     // Arahkan ke folder backend public/img/cats

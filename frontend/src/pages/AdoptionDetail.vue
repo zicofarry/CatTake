@@ -21,7 +21,7 @@
         
         <div class="bg-white p-3 rounded-[35px] shadow-xl flex-none w-full md:w-[280px] h-[280px] flex justify-center items-center">
            <img 
-            :src="cat.image ? `/img/${cat.image}` : ''" 
+            :src="resolveImageUrl(cat.photo)" 
             :alt="cat.name || 'Kucing'" 
             class="w-full h-full object-cover rounded-[28px]"
            >
@@ -174,7 +174,7 @@ const cat = ref({
     gender: '',
     breed: '',
     characteristics: [],
-    image: '', // Nanti diisi path gambar dari DB
+    photo: '', // Nanti diisi path gambar dari DB
     description: ''
 });
 
@@ -210,8 +210,8 @@ onMounted(async () => {
         cat.value = response.data;
         
         // Fallback jika gambar kosong/null
-        if (!cat.value.image) {
-            cat.value.image = 'NULL.JPG'; 
+        if (!cat.value.photo) {
+            cat.value.photo = 'NULL.JPG'; 
         }
     } catch (error) {
         console.error("Gagal mengambil detail kucing:", error);
@@ -219,6 +219,14 @@ onMounted(async () => {
         router.push('/'); // Redirect jika error
     }
 });
+
+function resolveImageUrl(imageName) {
+    if (!imageName) return '/img/NULL.JPG'; // Gambar default local jika null
+    if (imageName.startsWith('http')) return imageName; // Jika URL external
+    
+    // Arahkan ke folder backend public/img/cats
+    return `http://localhost:3000/public/img/cats/${imageName}`;
+}
 
 function toggleAccordion(section) {
     accordionState[section] = !accordionState[section];
