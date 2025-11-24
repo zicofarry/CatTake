@@ -46,7 +46,7 @@ apiClient.interceptors.response.use(
                 localStorage.removeItem('userRole');
 
                 // Jika menggunakan vue-router, gunakan router.push('/login') di store/main.js
-                // window.location.href = '/login'; // Halaman login default
+                window.location.href = '/login'; // Halaman login default
             }
         }
         return Promise.reject(error);
