@@ -50,6 +50,8 @@
               v-for="post in filteredPosts"
               :key="post.id"
               :postData="post"
+              :current-user-id="currentUserId"
+              @refresh="fetchPosts" 
             />
             <div v-if="filteredPosts.length === 0" class="text-gray-400 text-center mt-10">
               Belum ada postingan.
@@ -132,9 +134,23 @@
 
           <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
             <h3 class="text-lg font-semibold mb-4 text-gray-900">Sobat Paws Teraktif</h3>
-            <div v-for="member in activeMembers" :key="member.name" class="flex items-center gap-3 mb-3 last:mb-0">
-              <img :src="member.profilePic" :alt="member.name" class="w-10 h-10 rounded-full object-cover border border-gray-200" />
-              <span class="font-medium">{{ member.name }}</span>
+            
+            <div v-if="activeMembers.length === 0" class="text-sm text-gray-500 italic text-center py-2">
+                Belum ada data aktivitas.
+            </div>
+
+            <div v-for="(member, index) in activeMembers" :key="member.name" class="flex items-center gap-3 mb-3 last:mb-0">
+              <div class="relative">
+                  <img :src="resolveImageUrl(member.profilePic)" :alt="member.name" class="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                  <div v-if="index < 3" class="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] border border-white shadow-sm" 
+                       :class="index === 0 ? 'bg-yellow-400 text-white' : index === 1 ? 'bg-gray-300 text-gray-700' : 'bg-orange-300 text-white'">
+                      <i class="fas fa-crown"></i>
+                  </div>
+              </div>
+              <div class="flex-grow">
+                  <span class="font-bold text-sm block">{{ member.name }}</span>
+                  <span class="text-xs text-gray-500">{{ member.score }} Aktivitas</span>
+              </div>
             </div>
           </section>
 
@@ -147,7 +163,7 @@
             
             <div v-for="popular in popularPosts" :key="popular.id" class="flex items-center gap-3 mb-4 last:mb-0 hover:bg-gray-50 p-1 rounded-lg transition-colors cursor-pointer">
               <img 
-                :src="popular.image" 
+                :src="resolveImageUrl(popular.image)" 
                 :alt="popular.title" 
                 class="w-12 h-12 rounded-lg object-cover bg-gray-200 border border-gray-200 flex-shrink-0" 
                 @error="$event.target.src='/img/postinganPopuler1.png'"
@@ -190,76 +206,88 @@
       <i class="fas fa-plus text-2xl md:text-3xl"></i>
     </button>
 
-    <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4 backdrop-blur-sm">
-      <div class="bg-white text-gray-800 rounded-xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in-up">
+    <div 
+      v-if="showCreateModal" 
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md px-4 transition-all duration-300"
+      @click.self="closeModal"
+    >
+      <div class="bg-white text-gray-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-scale-up transform transition-all border border-white/20">
         
-        <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/80">
           <h3 class="text-lg font-bold text-gray-700">Buat Postingan Baru</h3>
+          <button 
+            @click="closeModal" 
+            class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-200 hover:text-red-500 transition-colors"
+          >
+            <i class="fas fa-times"></i>
+          </button>
         </div>
 
         <div class="p-6">
-          <form @submit.prevent="submitPost" class="space-y-4">
+          <form @submit.prevent="submitPost" class="space-y-5">
             
-            <div>
-              <label class="block text-sm font-semibold text-gray-600 mb-1">Judul <span class="text-gray-400 font-normal">(Opsional)</span></label>
+            <div class="group">
+              <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Judul <span class="text-gray-300 font-normal normal-case"></span></label>
               <input 
                 v-model="newPost.title" 
                 type="text" 
-                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#78C89F] focus:border-transparent outline-none transition-all"
+                class="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-[#78C89F] focus:border-transparent outline-none transition-all"
                 placeholder="Berikan judul menarik..." 
               />
             </div>
 
-            <div>
-              <label class="block text-sm font-semibold text-gray-600 mb-1">Cerita Kamu</label>
+            <div class="group">
+              <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Cerita Kamu</label>
               <textarea 
                 v-model="newPost.content" 
                 rows="4" 
-                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#78C89F] focus:border-transparent outline-none transition-all resize-none"
+                class="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-[#78C89F] focus:border-transparent outline-none transition-all resize-none"
                 placeholder="Ceritakan pengalamanmu atau tanyakan sesuatu..." 
                 required
               ></textarea>
             </div>
 
             <div>
-              <label class="block text-sm font-semibold text-gray-600 mb-1">Foto <span class="text-gray-400 font-normal">(Opsional)</span></label>
-              <div class="flex items-center gap-3">
-                <label class="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm border border-dashed border-gray-400 flex items-center gap-2 transition-colors">
-                  <i class="fas fa-camera"></i> Pilih Foto
+              <label class="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">Foto <span class="text-gray-300 font-normal normal-case">(Opsional)</span></label>
+              
+              <div v-if="!previewImage" class="flex items-center gap-3">
+                <label class="cursor-pointer bg-gray-50 hover:bg-gray-100 text-gray-500 w-full py-8 rounded-xl border-2 border-dashed border-gray-300 hover:border-[#78C89F] flex flex-col items-center justify-center gap-2 transition-all group">
+                  <div class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="fas fa-camera text-[#78C89F]"></i>
+                  </div>
+                  <span class="text-sm font-medium group-hover:text-[#78C89F]">Klik untuk pilih foto</span>
                   <input type="file" @change="handleFileUpload" class="hidden" accept="image/*" />
                 </label>
-                <span v-if="newPost.file" class="text-xs text-[#78C89F] font-semibold truncate max-w-[200px]">
-                  {{ newPost.file.name }}
-                </span>
               </div>
               
-              <div v-if="previewImage" class="mt-3 relative">
-                <img :src="previewImage" class="w-full h-48 object-cover rounded-lg border border-gray-200" />
-                <button 
-                  type="button" 
-                  @click="removeImage" 
-                  class="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:text-red-500 transition-colors"
-                >
-                  &times;
-                </button>
+              <div v-else class="relative rounded-xl overflow-hidden border border-gray-200 shadow-sm group">
+                <img :src="previewImage" class="w-full h-48 object-cover bg-gray-100" />
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                    <button type="button" @click="removeImage" class="bg-red-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg hover:bg-red-600 hover:scale-105 transition-all">
+                        Hapus Foto
+                    </button>
+                </div>
+                <div class="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md truncate max-w-[200px]">
+                    {{ newPost.file?.name }}
+                </div>
               </div>
             </div>
 
-            <div class="pt-4 flex justify-end gap-3">
+            <div class="pt-2 flex justify-end gap-3">
               <button 
                 type="button" 
                 @click="closeModal" 
-                class="px-5 py-2 rounded-lg text-gray-600 hover:bg-gray-100 font-medium transition-colors"
+                class="px-6 py-2.5 rounded-xl text-gray-500 font-bold hover:bg-gray-100 transition-colors"
               >
                 Batal
               </button>
               <button 
                 type="submit" 
                 :disabled="isSubmitting"
-                class="bg-[#78C89F] text-white px-6 py-2 rounded-lg font-bold shadow-lg hover:bg-[#5ba880] hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                class="bg-[#78C89F] text-white px-8 py-2.5 rounded-xl font-bold shadow-lg hover:bg-[#5ba880] hover:shadow-[#78C89F]/40 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-2"
               >
-                <span v-if="isSubmitting">Mengirim...</span>
-                <span v-else>Posting</span>
+                <span v-if="isSubmitting"><i class="fas fa-spinner fa-spin"></i> Mengirim...</span>
+                <span v-else>Posting <i class="fas fa-paper-plane ml-1"></i></span>
               </button>
             </div>
 
@@ -274,22 +302,21 @@
 import { ref, computed, onMounted } from "vue";
 import PostCard from "../components/PostCard.vue";
 import apiClient from "@/api/http";
+import { jwtDecode } from 'jwt-decode';
 
 // State Utama
 const allPostsData = ref([]);
 const searchQuery = ref("");
 const isLoading = ref(true);
 const activeTab = ref("untukAnda");
+const currentUserId = ref(null);
 
 // --- STATE SIDEBAR ---
 const upcomingEvents = ref([]);
 const popularPosts = ref([]);
 const lostCatHighlights = ref([]); // <-- State Data Kucing Hilang
 const catFact = ref({ fact: "Memuat fakta...", image: "/img/logoFaktaKucing.png" });
-const activeMembers = ref([
-  { name: "Anas", profilePic: "/img/profileAnas.png" },
-  { name: "Azmi", profilePic: "/img/profileAzmi.png" },
-]);
+const activeMembers = ref([]);
 
 // --- STATE UNTUK MODAL POST ---
 const showCreateModal = ref(false);
@@ -299,9 +326,15 @@ const previewImage = ref(null);
 
 // Helper Image URL
 function resolveImageUrl(path) {
-    if (!path) return '/img/NULL.JPG';
+    if (!path || path === 'NULL.JPG') return '/img/NULL.JPG';
     if (path.startsWith('http')) return path;
-    return `http://localhost:3000${path}`;
+    
+    // Path dari backend (sudah termasuk /public/...)
+    if (path.startsWith('/public/')) {
+        return `http://localhost:3000${path}`;
+    }
+    // Fallback dummy image frontend
+    return path;
 }
 
 // --- FUNGSI FETCH API ---
@@ -334,6 +367,7 @@ async function fetchSidebar() {
     if (data.fact) {
       catFact.value = data.fact;
     }
+    if (data.activeMembers) activeMembers.value = data.activeMembers;
   } catch (error) {
     console.error("Gagal load sidebar:", error);
   }
@@ -371,15 +405,18 @@ async function submitPost() {
     if (newPost.value.title) formData.append("title", newPost.value.title);
     if (newPost.value.file) formData.append("file", newPost.value.file);
 
+    // [PERBAIKAN UTAMA] 
+    // Set Content-Type ke undefined agar browser otomatis mengatur boundary-nya
     await apiClient.post("/community/posts", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+        headers: { "Content-Type": undefined } 
     });
 
     closeModal();
     fetchPosts(); 
   } catch (error) {
     console.error("Gagal membuat postingan:", error);
-    alert("Gagal memposting. Pastikan Anda sudah login.");
+    const msg = error.response?.data?.error || "Gagal memposting. Pastikan Anda sudah login.";
+    alert(msg);
   } finally {
     isSubmitting.value = false;
   }
@@ -387,6 +424,13 @@ async function submitPost() {
 
 // Panggil saat komponen dimuat
 onMounted(() => {
+  const token = localStorage.getItem('userToken');
+  if (token) {
+      try {
+          const decoded = jwtDecode(token);
+          currentUserId.value = decoded.id;
+      } catch (e) {}
+  }
   fetchPosts();
   fetchSidebar();
 });

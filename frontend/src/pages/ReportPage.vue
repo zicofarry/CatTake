@@ -284,12 +284,22 @@
                 </button>
               </div>
             </form>
-
+            
 
             <form v-else @submit.prevent="submitLostCatAd" class="space-y-6">
-              <div class="bg-red-50 p-4 rounded-xl border border-red-100 text-red-800 text-sm mb-6 flex gap-3">
+                
+                <div class="bg-red-50 p-4 rounded-xl border border-red-100 text-red-800 text-sm mb-6 flex gap-3">
                   <i class="fas fa-info-circle mt-1"></i>
                   <p>Data ini akan dipublikasikan di halaman "Daftar Kucing Hilang" agar komunitas bisa bantu mencari.</p>
+              </div>
+              <div class="flex items-center gap-3 bg-yellow-50 p-4 rounded-xl border border-yellow-200 cursor-pointer" @click="lostCatForm.shareToCommunity = !lostCatForm.shareToCommunity">
+                  <div class="relative flex items-center">
+                    <input type="checkbox" v-model="lostCatForm.shareToCommunity" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-400 transition-all checked:border-[#EBCD5E] checked:bg-[#EBCD5E]">
+                    <i class="fas fa-check absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 pointer-events-none text-xs"></i>
+                  </div>
+                  <label class="text-sm font-bold text-gray-700 cursor-pointer select-none">
+                      Bagikan otomatis ke postingan Komunitas agar lebih banyak yang melihat?
+                  </label>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -543,7 +553,8 @@ const lostCatForm = reactive({
     last_seen_lat: null,
     last_seen_long: null,
     reward_amount: '',
-    file: null
+    file: null,
+    shareToCommunity: false
 });
 
 // --- STATE USER ---
@@ -898,6 +909,7 @@ async function submitLostCatAd() {
         if (lostCatForm.last_seen_lat) formData.append('last_seen_lat', lostCatForm.last_seen_lat);
         if (lostCatForm.last_seen_long) formData.append('last_seen_long', lostCatForm.last_seen_long);
         if (lostCatForm.reward_amount) formData.append('reward_amount', lostCatForm.reward_amount);
+        formData.append('share_to_community', lostCatForm.shareToCommunity);
         formData.append('photo', lostCatForm.file);
 
         await apiClient.post('/lost-cats', formData, { headers: { 'Content-Type': 'multipart/form-data' } });

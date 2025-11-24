@@ -1,8 +1,8 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { ref, onMounted, computed } from 'vue' // Tambah computed
+import { ref, onMounted, computed, watch } from 'vue'
 import apiClient from '@/api/http';
-import { jwtDecode } from 'jwt-decode'; // Pastikan import jwt-decode
+import { jwtDecode } from 'jwt-decode'; 
 import CommentItem from '@/components/CommentItem.vue';
 
 const route = useRoute()
@@ -14,7 +14,11 @@ const comments = ref([])
 const newComment = ref('')
 const isLoading = ref(true)
 
-// Ambil User ID yang sedang login
+// State Like & User Image
+const isLiked = ref(false);
+const likeCount = ref(0);
+const currentUserImg = ref(null); // [BARU] State foto user login
+
 const currentUserId = computed(() => {
     const token = localStorage.getItem('userToken');
     if (!token) return null;
@@ -25,14 +29,21 @@ const currentUserId = computed(() => {
 });
 
 function resolveImageUrl(path) {
-    if (!path) return '/img/NULL.JPG';
+    if (!path || path === 'NULL.JPG') return '/img/NULL.JPG';
     if (path.startsWith('http')) return path;
-    if (path.startsWith('/public/')) {
-        const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
-        const baseServerUrl = baseApiUrl.replace('/api/v1', '');
-        return `${baseServerUrl}${path}`;
-    }
+    if (path.startsWith('/public/')) return `http://localhost:3000${path}`;
     return path;
+}
+
+// [BARU] Ambil Foto Profil User Login
+async function fetchCurrentUser() {
+    if (!currentUserId.value) return;
+    try {
+        const response = await apiClient.get(`/users/profile/${currentUserId.value}`);
+        currentUserImg.value = response.data.profile_picture;
+    } catch (error) {
+        console.error("Gagal ambil profil user:", error);
+    }
 }
 
 async function fetchPostDetail() {
@@ -40,10 +51,34 @@ async function fetchPostDetail() {
     const response = await apiClient.get(`/community/posts/${postId}`);
     post.value = response.data;
     comments.value = response.data.commentData || [];
+    
+    isLiked.value = response.data.isLiked;
+    likeCount.value = response.data.likes;
   } catch (error) {
     console.error("Gagal mengambil detail post:", error);
   } finally {
     isLoading.value = false;
+  }
+}
+
+async function toggleLike() {
+  const oldIsLiked = isLiked.value;
+  const oldCount = likeCount.value;
+
+  if (isLiked.value) {
+      isLiked.value = false;
+      likeCount.value--;
+  } else {
+      isLiked.value = true;
+      likeCount.value++;
+  }
+
+  try {
+    await apiClient.post(`/community/posts/${postId}/like`);
+  } catch (error) {
+    isLiked.value = oldIsLiked;
+    likeCount.value = oldCount;
+    if (error.response?.status === 401) alert("Silakan login untuk menyukai postingan.");
   }
 }
 
@@ -62,12 +97,13 @@ async function addComment() {
 }
 
 function handleActionSuccess() {
-    fetchPostDetail(); // Refresh seluruh data (setelah edit/delete/reply)
+    fetchPostDetail(); 
 }
 
 onMounted(() => {
   isLoading.value = true;
   fetchPostDetail();
+  fetchCurrentUser(); // [BARU] Panggil fungsi ambil foto user
 })
 </script>
 
@@ -85,34 +121,53 @@ onMounted(() => {
         </router-link>
     </div>
 
-    <div v-if="post" class="max-w-3xl mx-auto">
+    <div v-if="post" class="max-w-3xl mx-auto mt-16 md:mt-0">
       
       <div class="bg-white text-gray-800 rounded-2xl p-6 md:p-8 shadow-xl mb-8 border border-gray-100">
         <div class="flex items-center gap-3 mb-5">
-            <img :src="resolveImageUrl(post.profileImg)" class="w-12 h-12 rounded-full object-cover border-2 border-gray-100 shadow-sm" />
+            <img :src="resolveImageUrl(post.profileImg)" class="w-12 h-12 rounded-full object-cover border-2 border-gray-100 shadow-sm" @error="$event.target.src = '/img/NULL.JPG'" />
             <div class="flex-grow">
-                <strong class="block text-lg text-gray-900 leading-tight">{{ post.community }}</strong>
-                <span class="text-sm text-gray-500 font-medium">{{ post.author }} · {{ post.time }}</span>
+                <strong class="block text-lg text-gray-900 leading-tight">{{ post.author }}</strong>
+                <span class="text-sm text-gray-500 font-medium">@{{ post.username }} · {{ post.time }}</span>
             </div>
         </div>
 
         <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4 leading-snug">{{ post.title }}</h1>
-        <img v-if="post.postImg" :src="post.postImg" class="w-full rounded-xl mb-6 object-cover max-h-[500px] shadow-md" />
+        
+        <img 
+            v-if="post.postImg" 
+            :src="resolveImageUrl(post.postImg)" 
+            class="w-full rounded-xl mb-6 object-cover max-h-[500px] shadow-md bg-gray-50" 
+            @error="$event.target.style.display='none'" 
+        />
+        
         <p class="text-gray-700 text-lg leading-relaxed whitespace-pre-line">{{ post.description }}</p>
         
-        <div class="flex items-center gap-6 mt-6 pt-4 border-t border-gray-100 text-gray-500 font-medium">
-            <div class="flex items-center gap-2"><i class="fas fa-heart text-red-500"></i> {{ post.likes }} Suka</div>
-            <div class="flex items-center gap-2"><i class="fas fa-comment text-blue-500"></i> {{ comments.length }} Komentar</div>
+        <div class="flex items-center gap-6 mt-6 pt-4 border-t border-gray-100 text-gray-500 font-medium select-none">
+            <div 
+                @click="toggleLike" 
+                class="flex items-center gap-2 cursor-pointer transition-colors hover:text-gray-700"
+                :class="isLiked ? 'text-red-500' : 'text-gray-500'"
+            >
+                <i class="fas fa-heart" :class="isLiked ? 'text-red-500' : 'text-gray-400'"></i> 
+                <span>{{ likeCount }} Suka</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <i class="fas fa-comment text-blue-500"></i> 
+                <span>{{ post.comments }} Komentar</span>
+            </div>
         </div>
       </div>
 
       <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg backdrop-blur-sm">
         <h2 class="text-2xl font-bold mb-6 text-[#2c473c] flex items-center gap-2 border-b border-[#2c473c]/20 pb-4">
-            <i class="fas fa-comments"></i> Diskusi ({{ comments.length }})
+            <i class="fas fa-comments"></i> Komentar ({{ post.comments }})
         </h2>
         
         <div class="flex gap-3 mb-10">
-          <img :src="resolveImageUrl(null)" class="w-10 h-10 rounded-full bg-gray-200 hidden md:block">
+          <img :src="resolveImageUrl(currentUserImg)" class="w-10 h-10 rounded-full object-cover border border-gray-200 hidden md:block" @error="$event.target.src = '/img/NULL.JPG'">
+          
           <div class="flex-grow relative">
              <input 
                 v-model="newComment"

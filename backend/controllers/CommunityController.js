@@ -38,7 +38,16 @@ class CommunityController {
                 if (part.file) {
                     const fileExtension = path.extname(part.filename);
                     fileName = `post-${Date.now()}${fileExtension}`;
-                    const savePath = path.join(__dirname, '../public/img', fileName);
+                    
+                    // [PERBAIKAN] Simpan ke folder public/img/post
+                    const uploadDir = path.join(__dirname, '../public/img/post');
+                    
+                    // Buat folder jika belum ada
+                    if (!fs.existsSync(uploadDir)) {
+                        fs.mkdirSync(uploadDir, { recursive: true });
+                    }
+
+                    const savePath = path.join(uploadDir, fileName);
                     await pump(part.file, fs.createWriteStream(savePath));
                 } else {
                     if (part.fieldname === 'content') content = part.value;
@@ -50,6 +59,54 @@ class CommunityController {
             const newPost = await CommunityService.createPost(userId, title, content, fileName);
             
             return reply.code(201).send({ message: 'Post created', data: newPost });
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    // [BARU] Handler Update Post
+    static async updatePost(req, reply) {
+        try {
+            const { id } = req.params;
+            // Kita handle text content dulu, update gambar butuh logic upload terpisah jika mau kompleks
+            const { title, content } = req.body; 
+            const userId = req.user.id;
+
+            await CommunityService.updatePost(userId, id, title, content);
+            return reply.send({ message: 'Post updated successfully' });
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    // [BARU] Handler Delete Post
+    static async deletePost(req, reply) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+
+            // 1. Hapus dari Database & Ambil Data Postingan
+            const deletedPost = await CommunityService.deletePost(userId, id);
+
+            // 2. Hapus File Fisik (Hanya jika file ada dan berawalan 'post-')
+            // Kita filter 'post-' agar tidak tidak sengaja menghapus gambar 'lost-' (kucing hilang) 
+            // yang mungkin masih dipakai di menu Laporan Kehilangan.
+            if (deletedPost.media_path && deletedPost.media_path.startsWith('post-')) {
+                
+                const filePath = path.join(__dirname, '../public/img/post', deletedPost.media_path);
+                
+                try {
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath); // Hapus file
+                        console.log(`[File Deleted] ${filePath}`);
+                    }
+                } catch (err) {
+                    console.error("[File Error] Gagal menghapus file fisik:", err);
+                    // Kita tidak throw error di sini agar response ke user tetap sukses (karena DB sudah kehapus)
+                }
+            }
+
+            return reply.send({ message: 'Post deleted successfully' });
         } catch (error) {
             return reply.code(500).send({ error: error.message });
         }

@@ -12,6 +12,8 @@ async function communityRoutes(fastify, options) {
 
     // Private Actions (Authentication Required)
     fastify.post('/posts', { preHandler: [authentication] }, CommunityController.create);
+    fastify.put('/posts/:id', { preHandler: [authentication] }, CommunityController.updatePost);
+    fastify.delete('/posts/:id', { preHandler: [authentication] }, CommunityController.deletePost);
     fastify.post('/posts/:id/comments', { preHandler: [authentication] }, CommunityController.addComment);
     fastify.post('/comments/:commentId/replies', { preHandler: [authentication] }, CommunityController.replyComment);
     fastify.post('/posts/:id/like', { preHandler: [authentication] }, CommunityController.toggleLike);

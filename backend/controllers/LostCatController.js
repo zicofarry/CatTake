@@ -1,5 +1,6 @@
 // backend/controllers/LostCatController.js
 const LostCatService = require('../services/LostCatService');
+const CommunityService = require('../services/CommunityService');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
@@ -38,7 +39,7 @@ class LostCatController {
                 color: fields.color,
                 description: fields.description,
                 last_seen_address: fields.last_seen_address,
-                // Koordinat opsional (kalau user tidak klik peta)
+                // Koordinat opsional
                 last_seen_lat: fields.last_seen_lat ? parseFloat(fields.last_seen_lat) : null,
                 last_seen_long: fields.last_seen_long ? parseFloat(fields.last_seen_long) : null,
                 reward_amount: fields.reward_amount ? parseFloat(fields.reward_amount) : 0,
@@ -47,6 +48,17 @@ class LostCatController {
 
             const newReport = await LostCatService.createLostCatReport(lostCatData);
             
+            // [FITUR BARU] Auto Post ke Komunitas jika dicentang
+            if (fields.share_to_community === 'true' || fields.share_to_community === 'on' || fields.share_to_community === true) {
+                
+                const postTitle = `[DICARI] ${fields.name} Hilang!`;
+                const postContent = `Halo teman-teman, kucing saya hilang.\n\nNama: ${fields.name}\nCiri-ciri: ${fields.description}\nLokasi Terakhir: ${fields.last_seen_address}\n\nMohon bantuannya jika melihat. Bisa hubungi saya atau lapor di menu Kucing Hilang. Terima kasih.`;
+                
+                // Kita reuse fileName yang sama (sudah ada di folder lost_cat)
+                // Service Community sudah kita update untuk handle prefix 'lost-'
+                await CommunityService.createPost(req.user.id, postTitle, postContent, fileName);
+            }
+
             return reply.code(201).send({ 
                 message: 'Laporan kehilangan berhasil dibuat', 
                 data: newReport 
