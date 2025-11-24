@@ -1,98 +1,238 @@
-<!-- # Vue 3 + Vite
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+# 🐾 CatTake - Platform Penyelamatan & Adopsi Kucing
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support). -->
+![CatTake Logo](frontend/public/cattake.svg)
 
-# How to Install and Run
-1. Clone repository ke local dulu, bisa 2 cara:
-   ```terminal
-   git clone https://github.com/zicofarry/CatTake.git
-   ```
-   atau dengan clone menggunakan GitHub Desktop.
+**CatTake** adalah platform berbasis web yang menghubungkan masyarakat (pecinta kucing), shelter, dan driver untuk menciptakan ekosistem penyelamatan kucing yang terintegrasi. Aplikasi ini memfasilitasi pelaporan kucing terlantar, proses adopsi yang terverifikasi, donasi transparan, serta sistem gamifikasi untuk meningkatkan partisipasi komunitas.
 
-2. Install requirements
-   dengan command:
-   
-   untuk auto-update server, di direktori CatTake
-   ```
-   npm install -g nodemon
-   ```
+---
 
-   untuk frontend
-   ```
-   cd frontend/
-   npm install vue-router@4
-   npm install tailwindcss @tailwindcss/vite
-   npm install vite-plugin-vue-devtools --save-dev
-   npm install leaflet
-   npm install axios
-   npm install jwt-decode
-   npm install vue3-google-login
-   ```
+## 📋 Daftar Isi
+- [🐾 CatTake - Platform Penyelamatan \& Adopsi Kucing](#-cattake---platform-penyelamatan--adopsi-kucing)
+  - [📋 Daftar Isi](#-daftar-isi)
+  - [🌟 Fitur Utama](#-fitur-utama)
+    - [1. 🚑 Rescue \& Pelaporan](#1--rescue--pelaporan)
+    - [2. 🏠 Adopsi \& Shelter](#2--adopsi--shelter)
+    - [3. 💰 Donasi Transparan](#3--donasi-transparan)
+    - [4. 🎮 Gamifikasi \& Komunitas](#4--gamifikasi--komunitas)
+    - [5. 🚚 Manajemen Driver](#5--manajemen-driver)
+  - [🛠 Teknologi yang Digunakan](#-teknologi-yang-digunakan)
+    - [Frontend](#frontend)
+    - [Backend](#backend)
+    - [Database](#database)
+  - [💻 Prasyarat Sistem](#-prasyarat-sistem)
+  - [🚀 Panduan Instalasi](#-panduan-instalasi)
+    - [1. Instalasi Database (PostgreSQL)](#1-instalasi-database-postgresql)
+    - [2. Instalasi Backend](#2-instalasi-backend)
+    - [3. Instalasi Frontend](#3-instalasi-frontend)
+  - [▶️ Cara Menjalankan Aplikasi](#️-cara-menjalankan-aplikasi)
+  - [🔄 Alur Kode \& Arsitektur](#-alur-kode--arsitektur)
+  - [🗄️ Struktur Database](#️-struktur-database)
+  - [🤝 Kontribusi](#-kontribusi)
 
-   untuk backend
-   ```
-   cd backend/
-   npm install fastify pg
-   npm install bcrypt jsonwebtoken
-   npm install @fastify/cors
-   npm install @fastify/static
-   npm install @fastify/multipart
-   npm install google-auth-library
-   ```
+---
 
-3. Import database
-   
-   Kembali ke direktori CatTake, lalu lakukan ini:
-   - Jika belum membuat database cattake
-     ```
-     createdb -U postgres cattake && psql -U postgres -d cattake -f "backend/db/cattake.sql"
-     ```
+## 🌟 Fitur Utama
 
-   - Jika sudah membuat database cattake (database wajib kosong)
-     ```
-     psql -U postgres -d cattake -f "backend/db/cattake.sql"
-     ```
+### 1. 🚑 Rescue & Pelaporan
+- **Lapor Kucing Liar/Hilang:** Pengguna dapat melaporkan lokasi penemuan kucing dengan integrasi peta (Leaflet).
+- **Sistem Tracking Driver:** Pelacakan *real-time* posisi driver saat menjemput kucing menuju shelter.
+- **Live Chat:** Komunikasi langsung antara pelapor dan driver.
 
-   - sesuaikan config, cd backend/config/db.js (ubah password sesuai password postgre kamu)
+### 2. 🏠 Adopsi & Shelter
+- **Manajemen Kucing:** Shelter dapat mengelola data kucing (sehat, sakit, siap adopsi).
+- **Proses Adopsi Terverifikasi:** Pengguna mengajukan adopsi dengan unggah KTP dan surat pernyataan; Shelter melakukan verifikasi (Approve/Reject).
 
-4. Jalankan server
-   dengan command:
+### 3. 💰 Donasi Transparan
+- **Donasi Uang:** Mendukung pembayaran via QRIS dan Transfer Bank.
+- **Laporan Keuangan:** Shelter dapat melihat riwayat donasi masuk.
 
-   untuk frontend
-   ```
-   cd frontend/
-   npm run dev
-   ```
+### 4. 🎮 Gamifikasi & Komunitas
+- **Quest & Achievement:** Pengguna mendapatkan poin (XP) dan lencana untuk setiap aksi (lapor, adopsi, donasi).
+- **Forum Komunitas:** Berbagi cerita, *likes*, dan komentar antar pengguna.
+- **Leaderboard:** Peringkat pengguna teraktif.
 
-   untuk backend
-   ```
-   cd backend/
-   nodemon server.js
-   ```
+### 5. 🚚 Manajemen Driver
+- **Penugasan Otomatis/Manual:** Shelter dapat menugaskan driver untuk misi penyelamatan.
+- **Dashboard Driver:** Antarmuka khusus untuk driver menerima tugas dan update status.
 
-5. Script setup, pastikan database cattake sudah di drop
-   
-   ```
-   createdb -U postgres cattake && psql -U postgres -d cattake -f "backend/db/cattake.sql"
-   npm install -g nodemon
-   cd frontend/
-   npm install vue-router@4
-   npm install tailwindcss @tailwindcss/vite
-   npm install vite-plugin-vue-devtools --save-dev
-   npm install leaflet
-   npm install axios
-   npm install jwt-decode
-   npm install vue3-google-login
-   cd ../backend/
-   npm install fastify pg
-   npm install bcrypt jsonwebtoken
-   npm install @fastify/cors
-   npm install @fastify/static
-   npm install @fastify/multipart
-   npm install google-auth-library
+---
 
-   ```
+## 🛠 Teknologi yang Digunakan
 
-   lalu jalankan server seperti di no 4
+### Frontend
+- **Framework:** Vue 3 (Composition API)
+- **Build Tool:** Vite
+- **Styling:** Tailwind CSS
+- **Maps:** Leaflet.js
+- **State/Network:** Axios, JWT Decode
+
+### Backend
+- **Runtime:** Node.js
+- **Framework:** Fastify
+- **Database Driver:** `pg` (node-postgres)
+- **Authentication:** JWT (JSON Web Token) & Google OAuth
+- **File Handling:** `@fastify/multipart`
+
+### Database
+- **RDBMS:** PostgreSQL
+
+---
+
+## 💻 Prasyarat Sistem
+
+Sebelum memulai, pastikan perangkat Anda telah terinstal:
+
+1.  **Node.js** (Versi 16.x atau lebih baru)
+    * *Windows/Mac:* Unduh dari [nodejs.org](https://nodejs.org/).
+    * *Linux:* Gunakan package manager (misal: `sudo apt install nodejs npm`).
+2.  **PostgreSQL** (Versi 13.x atau lebih baru)
+    * *Windows:* Gunakan installer resmi PostgreSQL.
+    * *Mac:* Gunakan `brew install postgresql`.
+    * *Linux:* `sudo apt install postgresql postgresql-contrib`.
+3.  **Git** (Untuk kloning repositori).
+
+---
+
+## 🚀 Panduan Instalasi
+
+### 1. Instalasi Database (PostgreSQL)
+
+Sebelum menjalankan aplikasi, kita perlu menyiapkan database.
+
+1.  Buka terminal atau GUI PostgreSQL (pgAdmin).
+2.  Buat database baru bernama `cattake`.
+    ```bash
+    # Contoh menggunakan terminal (pastikan postgres service berjalan)
+    createdb -U postgres cattake
+    ```
+3.  Import skema dan data awal dari file SQL yang disediakan.
+    ```bash
+    # Arahkan ke folder root project
+    psql -U postgres -d cattake -f backend/db/cattake.sql
+    ```
+    *(Catatan: Ganti `postgres` dengan username database Anda jika berbeda)*.
+
+### 2. Instalasi Backend
+
+1.  Masuk ke direktori backend:
+    ```bash
+    cd backend
+    ```
+2.  Instal dependensi:
+    ```bash
+    npm install
+    ```
+3.  **Konfigurasi Database:**
+    Buka file `backend/config/db.js` dan sesuaikan kredensial database Anda:
+    ```javascript
+    const pool = new Pool({
+        user: 'postgres',      // Username DB Anda
+        host: 'localhost',
+        database: 'cattake',
+        password: 'password_anda', // Ganti dengan password DB Anda
+        port: 5432,
+    });
+    ```
+
+### 3. Instalasi Frontend
+
+1.  Buka terminal baru, masuk ke direktori frontend:
+    ```bash
+    cd frontend
+    ```
+2.  Instal dependensi:
+    ```bash
+    npm install
+    ```
+3.  **Konfigurasi Environment:**
+    Pastikan file `.env.development` (atau buat `.env`) berisi:
+    ```properties
+    VITE_API_BASE_URL="http://localhost:3000/api/v1"
+    ```
+
+---
+
+## ▶️ Cara Menjalankan Aplikasi
+
+Anda perlu menjalankan **dua terminal** secara bersamaan.
+
+**Terminal 1 (Backend Server):**
+```bash
+cd backend
+nodemon server.js
+````
+
+*Server akan berjalan di `http://localhost:3000`*
+
+**Terminal 2 (Frontend Client):**
+
+```bash
+cd frontend
+npm run dev
+```
+
+*Aplikasi akan dapat diakses di `http://localhost:5173` (atau port lain yang ditampilkan)*
+
+-----
+
+## 🔄 Alur Kode & Arsitektur
+
+Proyek ini menggunakan arsitektur **MVC (Model-View-Controller)** yang dimodifikasi untuk API Service-based pattern.
+
+1.  **Request (Frontend):**
+
+      * User melakukan aksi di Vue.js.
+      * `api/http.js` (Axios interceptor) mengirim request ke Backend dengan menyertakan Token JWT di header.
+
+2.  **Routing (Backend - Fastify):**
+
+      * `routes/*.js` menerima request.
+      * Middleware `authentication.js` memverifikasi token.
+
+3.  **Controller:**
+
+      * `controllers/*.js` memparsing input (body/params/files).
+      * Memanggil logika bisnis di Service.
+
+4.  **Service (Business Logic):**
+
+      * `services/*.js` menangani logika kompleks (misal: hitung poin gamifikasi, logika transaksi database).
+      * Memanggil Model atau `db.query` langsung.
+
+5.  **Database Access:**
+
+      * Menggunakan Raw SQL Query via `pg` pool untuk performa dan kontrol penuh.
+
+-----
+
+## 🗄️ Struktur Database
+
+Database `cattake` terdiri dari tabel-tabel utama berikut:
+
+  * **`users`**: Tabel induk untuk autentikasi (email, password, role). Role: `individu`, `shelter`, `driver`, `admin`.
+  * **`detail_user_individu` / `detail_user_shelter`**: Menyimpan profil detail berdasarkan role (One-to-One dengan `users`).
+  * **`cats`**: Data kucing yang dikelola shelter (status: available, adopted).
+  * **`lost_cats`**: Laporan kucing hilang dari pengguna umum.
+  * **`reports`**: Laporan penemuan kucing liar (stray) atau hilang.
+  * **`rescue_assignments`**: Tabel transaksi penugasan driver untuk menjemput kucing. Menghubungkan `reports`, `drivers`, dan `shelters`.
+  * **`drivers`**: Profil khusus driver yang terikat dengan shelter.
+  * **`adoptions`**: Mencatat pengajuan adopsi dari user ke shelter.
+  * **`donations`**: Mencatat riwayat donasi.
+  * **`quests` & `user_quest_progress`**: Menyimpan data misi dan progres gamifikasi user.
+
+-----
+
+## 🤝 Kontribusi
+
+Kontribusi sangat diterima\! Jika Anda ingin berkontribusi:
+
+1.  Fork repositori ini.
+2.  Buat branch fitur baru (`git checkout -b fitur-keren`).
+3.  Commit perubahan Anda (`git commit -m 'Menambahkan fitur keren'`).
+4.  Push ke branch (`git push origin fitur-keren`).
+5.  Buat Pull Request.
+
+-----
+
+**Dibuat dengan ❤️ oleh Tim CatTake**
