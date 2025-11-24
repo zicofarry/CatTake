@@ -270,13 +270,49 @@
 
               <div>
                 <label class="block text-xl font-bold text-[#1F1F1F] mb-4">Foto Bukti</label>
-                <div @click="triggerFileInput" class="bg-gray-100 rounded-2xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-300 hover:border-[#EBCD5E] transition">
-                  <input type="file" ref="fileInput" class="hidden" accept="image/*" @change="handleFileChange">
-                  <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
-                  <p class="text-gray-500" v-if="!reportForm.file">Klik untuk ambil/upload foto</p>
-                  <p class="text-[#3A5F50] font-bold" v-else>File: {{ reportForm.file.name }}</p>
+                
+                <div 
+                    v-if="!imagePreview"
+                    @click="triggerFileInput" 
+                    class="bg-gray-50 rounded-2xl p-10 text-center cursor-pointer border-2 border-dashed border-gray-300 hover:border-[#EBCD5E] hover:bg-yellow-50/30 transition-all group"
+                >
+                    <input type="file" ref="fileInput" class="hidden" accept="image/*" @change="handleFileChange">
+                    
+                    <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-camera text-3xl text-gray-400 group-hover:text-[#EBCD5E] transition-colors"></i>
+                    </div>
+                    
+                    <p class="text-gray-500 font-medium group-hover:text-gray-700">
+                        Klik untuk ambil / upload foto
+                    </p>
+                    <p class="text-xs text-gray-400 mt-2">Format: JPG, PNG (Max 5MB)</p>
                 </div>
-              </div>
+
+                <div v-else class="relative rounded-2xl overflow-hidden border border-gray-200 shadow-md group">
+                    <img :src="imagePreview" class="w-full h-64 object-cover bg-gray-100" />
+                    
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                        <button 
+                            type="button" 
+                            @click="triggerFileInput" 
+                            class="bg-white/20 backdrop-blur-md border border-white text-white px-4 py-2 rounded-full font-bold hover:bg-white hover:text-gray-800 transition-all text-sm"
+                        >
+                            Ganti Foto
+                        </button>
+                        <button 
+                            type="button" 
+                            @click="removeImage" 
+                            class="bg-red-500 text-white px-4 py-2 rounded-full font-bold hover:bg-red-600 hover:scale-105 transition-all shadow-lg text-sm"
+                        >
+                            <i class="fas fa-trash mr-1"></i> Hapus
+                        </button>
+                    </div>
+
+                    <div class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-lg max-w-[80%] truncate">
+                        {{ reportForm.file?.name }}
+                    </div>
+                </div>
+            </div>
 
               <div class="pt-4 text-center">
                 <button type="submit" class="bg-[#EBCD5E] hover:bg-[#e0c355] text-white text-xl font-bold py-4 px-16 rounded-full shadow-lg transition-transform hover:-translate-y-1 active:scale-95 w-full md:w-auto">
@@ -355,28 +391,55 @@
 
               <div>
                 <label class="block text-lg font-bold text-[#1F1F1F] mb-2">Foto Kucing</label>
-                <div
-                    @click="triggerFileInput"
-                    class="bg-gray-100 rounded-2xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-300 hover:border-[#EBCD5E] transition"
-                  >
-                    <input
-                      type="file"
-                      ref="fileInput"
-                      class="hidden"
-                      accept="image/*"
+                
+                <div 
+                    v-if="!imagePreview"
+                    @click="triggerFileInput" 
+                    class="bg-gray-100 rounded-2xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-300 hover:border-[#EBCD5E] hover:bg-yellow-50/30 transition-all group"
+                >
+                    <input 
+                      type="file" 
+                      ref="fileInput" 
+                      class="hidden" 
+                      accept="image/*" 
                       @change="handleLostCatFile"
                     >
-
-                    <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
-
-                    <p class="text-gray-500" v-if="!reportForm.file">
-                      Klik untuk ambil/upload foto
+                    
+                   
+                    <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-camera text-3xl text-gray-400 group-hover:text-[#EBCD5E] transition-colors"></i>
+                    </div>
+                    
+                    <p class="text-gray-500 font-medium group-hover:text-gray-700">
+                        Klik untuk ambil / upload foto
                     </p>
+                    <p class="text-xs text-gray-400 mt-2">Format: JPG, PNG (Max 5MB)</p>
+                </div>
 
-                    <p class="text-[#3A5F50] font-bold" v-else>
-                      File: {{ reportForm.file.name }}
-                    </p>
-                  </div>
+                <div v-else class="relative rounded-2xl overflow-hidden border border-gray-200 shadow-md group">
+                    <img :src="imagePreview" class="w-full h-64 object-cover bg-gray-100" />
+                    
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <button 
+                            type="button" 
+                            @click="triggerFileInput" 
+                            class="bg-white/20 backdrop-blur-md border border-white text-white px-4 py-2 rounded-full font-bold hover:bg-white hover:text-gray-800 transition-all text-xs"
+                        >
+                            Ganti
+                        </button>
+                        <button 
+                            type="button" 
+                            @click="removeImage" 
+                            class="bg-red-500 text-white px-4 py-2 rounded-full font-bold hover:bg-red-600 hover:scale-105 transition-all shadow-lg text-xs"
+                        >
+                            Hapus
+                        </button>
+                    </div>
+
+                    <div class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-lg max-w-[80%] truncate">
+                        {{ lostCatForm.file?.name }}
+                    </div>
+                </div>
               </div>
 
               <div class="pt-4">
@@ -530,7 +593,8 @@ const props = defineProps({ isLoggedInProp: Boolean });
 
 // --- STATE ---
 const activeReportType = ref('stray'); // 'stray', 'missing', 'my_lost'
-const fileInput = ref(null);
+const imagePreview = ref(null);
+const fileInput = ref(null); // Ref untuk elemen input file
 
 // State Form Penemuan (Existing)
 const reportForm = reactive({
@@ -750,12 +814,51 @@ function handleBlur() {
 
 function setActiveReportType(type) {
     activeReportType.value = type;
+    // Reset form & preview agar bersih saat pindah jenis laporan
+    imagePreview.value = null;
+    if (fileInput.value) fileInput.value.value = '';
 }
 // File Handling
 function triggerFileInput() { fileInput.value.click(); }
-function handleFileChange(event) { const file = event.target.files[0]; if (file) reportForm.file = file; }
-function handleLostCatFile(event) { const file = event.target.files[0]; if (file) lostCatForm.file = file; }
+function handleFileChange(event) {
+  const file = event.target.files[0];
+  if (file) {
+    reportForm.file = file;
+    
+    // Buat Preview Gambar
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      imagePreview.value = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+function removeImage() {
+  imagePreview.value = null;
+  if (fileInput.value) {
+    fileInput.value.value = ''; 
+  }
 
+  // Cek tab mana yang aktif untuk menghapus data yang benar
+  if (activeReportType.value === 'my_lost') {
+      lostCatForm.file = null;
+  } else {
+      reportForm.file = null;
+  }
+}
+function handleLostCatFile(event) {
+  const file = event.target.files[0];
+  if (file) {
+    lostCatForm.file = file;
+    
+    // Tambahkan Logic Preview Gambar
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      imagePreview.value = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+}
 // Map Logic
 async function openMapModal() {
     showMapModal.value = true;
@@ -849,13 +952,10 @@ function closeMapModal() {
 
 async function submitDiscoveryReport() {
     if (!reportForm.file) { alert('Mohon sertakan foto bukti.'); return; }
-    // Di sini nanti kirim reportForm.lostCatId juga ke backend
+    
     try {
       const formData = new FormData();
       
-      // 2. Tentukan Tipe Laporan untuk Backend
-      // Jika tab "Nemu Kucing Hilang" aktif -> report_type = 'Found_Missing'
-      // Jika tab "Nemu Kucing Liar" aktif -> report_type = 'stray' (nanti dihandle backend)
       let typeToSend = 'stray';
       if (activeReportType.value === 'missing') {
           typeToSend = 'missing';
@@ -865,26 +965,21 @@ async function submitDiscoveryReport() {
       formData.append('location', reportForm.location);
       formData.append('description', reportForm.description);
       
-      // 3. Kirim Koordinat (Jika user set lokasi via peta)
       if (reportForm.lat) formData.append('lat', reportForm.lat);
       if (reportForm.long) formData.append('long', reportForm.long);
       
-      // 4. Kirim ID Kucing Hilang (PENTING: Agar terhubung ke tabel lost_cats)
       if (activeReportType.value === 'missing' && reportForm.lostCatId) {
           formData.append('lost_cat_id', reportForm.lostCatId);
       }
       
-      // 5. Kirim File Foto
       formData.append('photo', reportForm.file);
 
-      // 6. Panggil API Backend
+      // [PERBAIKAN] Hapus header manual atau set undefined
       await apiClient.post('/reports', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': undefined }
       });
 
       alert('Terima kasih! Laporan penemuan berhasil dikirim. Tim kami akan segera memproses.');
-      
-      // Redirect ke halaman tracking atau beranda
       router.push('/track'); 
 
   } catch (error) {
@@ -909,15 +1004,25 @@ async function submitLostCatAd() {
         if (lostCatForm.last_seen_lat) formData.append('last_seen_lat', lostCatForm.last_seen_lat);
         if (lostCatForm.last_seen_long) formData.append('last_seen_long', lostCatForm.last_seen_long);
         if (lostCatForm.reward_amount) formData.append('reward_amount', lostCatForm.reward_amount);
+        
+        // Pastikan boolean dikirim sebagai string jika backend butuh parsing khusus, 
+        // tapi FormData biasanya handle ini. Cuma untuk aman:
         formData.append('share_to_community', lostCatForm.shareToCommunity);
+        
         formData.append('photo', lostCatForm.file);
 
-        await apiClient.post('/lost-cats', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        // [PERBAIKAN] Hapus header manual atau set undefined
+        await apiClient.post('/lost-cats', formData, { 
+            headers: { 'Content-Type': undefined } 
+        });
+        
         alert('Iklan Kehilangan Berhasil Diposting!');
         router.push('/'); 
     } catch (error) {
         console.error(error);
-        alert('Gagal memposting iklan: ' + (error.response?.data?.error || error.message));
+        // Tampilkan pesan error lebih jelas
+        const msg = error.response?.data?.error || error.message;
+        alert('Gagal memposting iklan: ' + msg);
     }
 }
 
