@@ -100,6 +100,37 @@
           </section>
 
           <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
+            <h3 class="text-lg font-semibold mb-4 text-gray-900">Kucing Hilang</h3>
+            
+            <div v-if="lostCatHighlights.length === 0" class="text-sm text-gray-500 italic text-center py-2">
+                Tidak ada laporan kucing hilang saat ini.
+            </div>
+            
+            <div v-for="(cat, idx) in lostCatHighlights" :key="idx" class="flex items-center gap-3 mb-4 last:mb-0 hover:bg-gray-50 p-2 rounded-lg transition-colors cursor-pointer">
+              <img 
+                :src="resolveImageUrl(cat.image)" 
+                :alt="cat.name" 
+                class="w-12 h-12 rounded-full object-cover bg-gray-200 border border-gray-200 flex-shrink-0" 
+                @error="$event.target.src='/img/kucingtidur.png'"
+              />
+              <router-link to="/lost-cats" class="text-sm font-medium text-gray-800 hover:text-[#78C89F] transition-colors line-clamp-2 leading-snug">
+                  <strong class="text-sm block text-gray-800 font-bold mb-1 line-clamp-1">{{ cat.name }}</strong>
+                  <p class="text-xs leading-relaxed text-gray-700">Terakhir terlihat di: {{ cat.address.substring(0, 20) }}...</p>
+                  <p v-if="cat.reward > 0" class="text-xs leading-relaxed text-gray-800 mt-1 font-bold">Reward: Rp{{ cat.reward.toLocaleString('id-ID') }}</p>
+              </router-link>
+            </div>
+
+            <div class="text-right mt-4" v-if="lostCatHighlights.length > 0">
+                <router-link
+                    to="/lost-cats"
+                    class="inline-block bg-[#78C89F] text-white font-bold text-xs py-2 px-4 rounded-full hover:bg-[#5ba880] transition-colors shadow-sm"
+                >
+                    Cek Lainnya
+                </router-link>
+            </div>
+          </section>
+
+          <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
             <h3 class="text-lg font-semibold mb-4 text-gray-900">Sobat Paws Teraktif</h3>
             <div v-for="member in activeMembers" :key="member.name" class="flex items-center gap-3 mb-3 last:mb-0">
               <img :src="member.profilePic" :alt="member.name" class="w-10 h-10 rounded-full object-cover border border-gray-200" />
@@ -158,6 +189,7 @@
     >
       <i class="fas fa-plus text-2xl md:text-3xl"></i>
     </button>
+
     <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4 backdrop-blur-sm">
       <div class="bg-white text-gray-800 rounded-xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in-up">
         
@@ -249,9 +281,10 @@ const searchQuery = ref("");
 const isLoading = ref(true);
 const activeTab = ref("untukAnda");
 
-// --- STATE SIDEBAR (BARU) ---
+// --- STATE SIDEBAR ---
 const upcomingEvents = ref([]);
 const popularPosts = ref([]);
+const lostCatHighlights = ref([]); // <-- State Data Kucing Hilang
 const catFact = ref({ fact: "Memuat fakta...", image: "/img/logoFaktaKucing.png" });
 const activeMembers = ref([
   { name: "Anas", profilePic: "/img/profileAnas.png" },
@@ -264,12 +297,19 @@ const isSubmitting = ref(false);
 const newPost = ref({ title: "", content: "", file: null });
 const previewImage = ref(null);
 
+// Helper Image URL
+function resolveImageUrl(path) {
+    if (!path) return '/img/NULL.JPG';
+    if (path.startsWith('http')) return path;
+    return `http://localhost:3000${path}`;
+}
+
 // --- FUNGSI FETCH API ---
 async function fetchPosts() {
   try {
     isLoading.value = true;
-    const response = await apiClient.get('/community/posts'); // Panggil API Backend
-    allPostsData.value = response.data; // Simpan data ke state
+    const response = await apiClient.get('/community/posts');
+    allPostsData.value = response.data; 
   } catch (error) {
     console.error("Gagal mengambil postingan:", error);
   } finally {
@@ -277,13 +317,20 @@ async function fetchPosts() {
   }
 }
 
-// --- FETCH DATA SIDEBAR (BARU) ---
+// --- FETCH DATA SIDEBAR (Termasuk Missing Cats) ---
 async function fetchSidebar() {
   try {
     const response = await apiClient.get('/community/sidebar');
     const data = response.data.data;
+    
     upcomingEvents.value = data.events;
     popularPosts.value = data.popular;
+    
+    // [UPDATE] Set data highlight kucing hilang
+    if (data.missing) {
+        lostCatHighlights.value = data.missing;
+    }
+
     if (data.fact) {
       catFact.value = data.fact;
     }
@@ -346,9 +393,7 @@ onMounted(() => {
 
 // Filter pencarian
 const filteredPosts = computed(() => {
-  // Jika data belum ada, kembalikan array kosong
   if (!allPostsData.value) return [];
-  
   if (!searchQuery.value) return allPostsData.value;
 
   const query = searchQuery.value.toLowerCase().trim();

@@ -68,11 +68,10 @@ class CommunityController {
         }
     }
 
-    // [BARU] Reply Komentar
     static async replyComment(req, reply) {
         try {
-            const { commentId } = req.params; // ID Komentar Induk
-            const { content, parentReplyId } = req.body; // parentReplyId bisa null (jika reply langsung ke komentar)
+            const { commentId } = req.params;
+            const { content, parentReplyId } = req.body;
             const userId = req.user.id;
 
             if (!content) return reply.code(400).send({ error: 'Konten tidak boleh kosong' });
@@ -95,14 +94,15 @@ class CommunityController {
         }
     }
 
+    // [PERBAIKAN UTAMA DI SINI]
+    // Menggunakan method service yang sudah mengembalikan 'missing'
     static async getSidebarData(req, reply) {
         try {
-            const [events, popular, fact] = await Promise.all([
-                CommunityService.getUpcomingEvents(),
-                CommunityService.getPopularPosts(),
-                CommunityService.getRandomFact()
-            ]);
-            return reply.send({ status: 'success', data: { events, popular, fact } });
+            // Panggil service yang sudah menggabungkan semua data (termasuk kucing hilang)
+            const data = await CommunityService.getSidebarData();
+            
+            // Kirim response
+            return reply.send({ status: 'success', data: data });
         } catch (error) {
             return reply.code(500).send({ error: error.message });
         }
@@ -119,7 +119,7 @@ class CommunityController {
 
     static async editComment(req, reply) {
         try {
-            const { id } = req.params; // ID Komentar
+            const { id } = req.params;
             const { content } = req.body;
             const userId = req.user.id;
             await CommunityService.updateComment(userId, id, content);
@@ -131,7 +131,7 @@ class CommunityController {
 
     static async deleteComment(req, reply) {
         try {
-            const { id } = req.params; // ID Komentar
+            const { id } = req.params;
             const userId = req.user.id;
             await CommunityService.deleteComment(userId, id);
             return reply.send({ message: 'Comment deleted' });
@@ -142,7 +142,7 @@ class CommunityController {
 
     static async editReply(req, reply) {
         try {
-            const { id } = req.params; // ID Reply
+            const { id } = req.params;
             const { content } = req.body;
             const userId = req.user.id;
             await CommunityService.updateReply(userId, id, content);
@@ -154,7 +154,7 @@ class CommunityController {
 
     static async deleteReply(req, reply) {
         try {
-            const { id } = req.params; // ID Reply
+            const { id } = req.params;
             const userId = req.user.id;
             await CommunityService.deleteReply(userId, id);
             return reply.send({ message: 'Reply deleted' });

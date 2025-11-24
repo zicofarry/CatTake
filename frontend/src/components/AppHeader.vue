@@ -53,8 +53,6 @@
                 >
                 <span>{{ props.profileData ? props.profileData.name.split(' ')[0] : 'Driver' }}</span>            </button>
              <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl p-4 z-40 text-left border border-gray-100">
-                <!-- <p class="font-bold text-gray-800 text-lg mb-1">Halo, Driver! 🐈</p>
-                <p class="text-xs text-gray-400 mb-4">Selamat bertugas menyelamatkan anabul.</p> -->
                 <p class="font-bold text-gray-800">{{ props.profileData ? props.profileData.name : 'Driver Profil' }}</p>
                 <p class="text-sm text-gray-500 mb-4">{{ props.profileData ? props.profileData.email : 'driver@cattake.com' }}</p>
                 <button @click="handleSignOut" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition duration-200">Sign Out</button>
@@ -227,10 +225,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router'; // [Perbaikan 1: Import useRouter]
+import { useRoute, useRouter } from 'vue-router'; 
 
-const router = useRouter(); // [Perbaikan 2: Inisialisasi router]
-// Asumsi kita simpan role di localStorage saat login
+const router = useRouter(); 
 const userRole = ref(localStorage.getItem('role') || 'user'); 
 const isDriver = computed(() => userRole.value === 'driver');
 
@@ -242,11 +239,9 @@ const props = defineProps({
 // --- SCROLL & AUTH LOGIC ---
 const isScrolled = ref(false);
 
-// Cek apakah halaman ini Login atau Signup dll.
 const isAuthPage = computed(() => {
-    // Sesuaikan nama route kamu di router/index.js
-    // Biasanya 'Login' dan 'Signup'
-    return ['Login', 'Signup', 'AdopsiDetail', 'Post', 'Track', 'Profile'].includes(route.name);
+    // Update: Menambahkan 'KucingHilang' dan 'Fakta' agar navbar hilang
+    return ['Login', 'Signup', 'AdopsiDetail', 'Post', 'Track', 'Profile', 'KucingHilang', 'Fakta'].includes(route.name);
 });
 
 const handleScroll = () => {
@@ -275,10 +270,7 @@ function resolveImageUrl(path) {
 
 const emit = defineEmits(['update-login-status']);
 
-// --- Config Navigasi ---
 const navLinks = computed(() => {
-    // KHUSUS DRIVER: KEMBALIKAN ARRAY KOSONG
-    // Agar navbar tengah hilang total
     if (props.userRole === 'driver') {
         return [];
     }
@@ -304,22 +296,18 @@ const navLinks = computed(() => {
     return links;
 });
 
-// 1. STATE
 const route = useRoute();
 const isMobileMenuOpen = ref(false);
 const isProfileDropdownOpen = ref(false);
 
 watch(() => props.userRole, (newValue, oldValue) => {}, { immediate: true });
 
-// 2. COMPUTED
 const activePage = computed(() => {
-  // Jika driver, mungkin halaman aktifnya tidak ada di navLinks, defaultkan saja
   if (props.userRole === 'driver') return 'Driver';
   const currentLink = navLinks.value.find(link => link.path === route.path);
   return currentLink ? currentLink.name : 'Beranda';
 });
 
-// 3. METHODS
 function toggleMobileMenu() {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 }
@@ -328,14 +316,12 @@ function toggleProfileDropdown() {
     isProfileDropdownOpen.value = !isProfileDropdownOpen.value;
 }
 
-// [Perbaikan 3: Fungsi baru untuk menutup dropdown lalu navigasi]
 function handleEditProfileClick() {
-    isProfileDropdownOpen.value = false; // Tutup dropdown
-    router.push('/profile');             // Navigasi
+    isProfileDropdownOpen.value = false; 
+    router.push('/profile');             
 }
 
 function handleSignOut() {
-    // Hapus semua data sesi
     localStorage.removeItem('userToken');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userId');
@@ -345,7 +331,6 @@ function handleSignOut() {
     isProfileDropdownOpen.value = false;
     alert('Anda telah keluar.');
     
-    // Memaksa hard redirect ke halaman login
     window.location.href = '/login'; 
 }
 </script>
