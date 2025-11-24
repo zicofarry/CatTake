@@ -1,6 +1,15 @@
 <template>
-  <div class="min-h-screen bg-[#3A5F50] font-sans overflow-x-hidden pt-20 md:pt-24 pb-10 md:pb-20 flex justify-center items-start md:items-center relative px-0 md:px-4">
-    
+  <div class="min-h-screen bg-[#3A5F50] font-sans overflow-x-hidden pt-6 pb-10 md:pb-20 flex flex-col justify-center items-center relative px-0 md:px-4 gap-4">
+
+    <div class="fixed top-6 left-4 md:top-8 md:left-8 z-[999]">
+         <router-link 
+            to="/lapor" 
+           class="inline-flex items-center gap-2 bg-[#2D4A45]/80 backdrop-blur-md text-white font-bold py-2.5 px-6 rounded-full shadow-2xl transition-all duration-300 hover:bg-[#2D4A45] hover:-translate-x-1 no-underline border border-white/20"
+        >
+            <i class="fas fa-arrow-left"></i>
+            <span>Kembali</span>
+        </router-link>
+    </div>
     <div v-if="isLoading" class="absolute inset-0 z-50 flex items-center justify-center bg-[#3A5F50]">
         <div class="text-center text-white">
             <i class="fas fa-spinner fa-spin text-4xl mb-4"></i>

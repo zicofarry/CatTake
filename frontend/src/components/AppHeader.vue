@@ -116,7 +116,9 @@
               <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors" :class="isScrolled ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
           </button>
 
-          <span class="font-semibold text-xl">{{ props.userRole === 'driver' ? 'Driver' : activePage }}</span>
+            <span class="font-semibold text-xl transition-colors" :class="isScrolled ? 'text-white' : 'text-gray-800'">
+              {{ props.userRole === 'driver' ? 'Driver' : activePage }}
+          </span>
           
           <router-link v-if="props.userRole === 'individu'" to="/profile" class="ml-auto flex items-center gap-2 bg-[#578d76] text-white py-1 pr-2 pl-1 rounded-full font-semibold">
             <img :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '/img/NULL.JPG')" alt="Avatar" class="h-8 w-8 rounded-full object-cover">
@@ -240,11 +242,11 @@ const props = defineProps({
 // --- SCROLL & AUTH LOGIC ---
 const isScrolled = ref(false);
 
-// Cek apakah halaman ini Login atau Signup
+// Cek apakah halaman ini Login atau Signup dll.
 const isAuthPage = computed(() => {
     // Sesuaikan nama route kamu di router/index.js
     // Biasanya 'Login' dan 'Signup'
-    return ['Login', 'Signup'].includes(route.name);
+    return ['Login', 'Signup', 'AdopsiDetail', 'Post', 'Track', 'Profile'].includes(route.name);
 });
 
 const handleScroll = () => {

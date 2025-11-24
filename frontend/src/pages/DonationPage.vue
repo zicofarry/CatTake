@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen font-sans overflow-x-hidden pt-20 pb-32 relative"
+  <div class="min-h-screen font-sans overflow-x-hidden pt-32 md:pt-40 pb-32 relative"
     style="
         background: radial-gradient(circle at top right, #cfe3d4 10%, oklch(39.3% 0.095 152.535) 80%);
         background-repeat: no-repeat;

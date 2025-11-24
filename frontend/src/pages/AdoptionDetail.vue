@@ -5,7 +5,17 @@
       <div class="absolute bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-white rounded-full blur-3xl"></div>
     </div>
 
-    <div class="max-w-5xl mx-auto px-6 relative z-10">
+    <div class="fixed top-6 left-4 md:top-8 md:left-8 z-[999]">
+        <router-link 
+          to="/adopsi" 
+          class="inline-flex items-center gap-2 bg-[#2D4A45]/80 backdrop-blur-md text-white font-bold py-2.5 px-6 rounded-full shadow-2xl transition-all duration-300 hover:bg-[#2D4A45] hover:-translate-x-1 no-underline border border-white/20"
+        >
+            <i class="fas fa-arrow-left"></i>
+            <span>Kembali</span>
+        </router-link>
+    </div>
+
+    <div class="max-w-5xl mx-auto px-6 relative z-10 pt-10">
       
       <section class="flex flex-col md:flex-row items-center md:items-stretch gap-6 mb-12">
         
