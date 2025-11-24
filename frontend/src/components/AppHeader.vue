@@ -241,7 +241,7 @@ const isScrolled = ref(false);
 
 const isAuthPage = computed(() => {
     // Update: Menambahkan 'KucingHilang' dan 'Fakta' agar navbar hilang
-    return ['Login', 'Signup', 'AdopsiDetail', 'Post', 'Track', 'Profile', 'KucingHilang', 'Fakta'].includes(route.name);
+    return ['Login', 'Signup', 'AdopsiDetail', 'Post', 'Track', 'Profile', 'KucingHilang', 'Fakta', 'DriverTrackingDetail'].includes(route.name);
 });
 
 const handleScroll = () => {

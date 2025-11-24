@@ -3,9 +3,9 @@
 
     <div class="fixed top-6 left-4 md:top-8 md:left-8 z-[999]">
          <router-link 
-            to="/lapor" 
-           class="inline-flex items-center gap-2 bg-[#2D4A45]/80 backdrop-blur-md text-white font-bold py-2.5 px-6 rounded-full shadow-2xl transition-all duration-300 hover:bg-[#2D4A45] hover:-translate-x-1 no-underline border border-white/20"
-        >
+            :to="pathToReturn" 
+            class="inline-flex items-center gap-2 bg-[#2D4A45]/80 backdrop-blur-md text-white font-bold py-2.5 px-6 rounded-full shadow-2xl transition-all duration-300 hover:bg-[#2D4A45] hover:-translate-x-1 no-underline border border-white/20"
+            >
             <i class="fas fa-arrow-left"></i>
             <span>Kembali</span>
         </router-link>
@@ -318,6 +318,7 @@ import apiClient from '@/api/http';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
+
 // --- ICONS ---
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
@@ -332,6 +333,15 @@ const route = useRoute();
 // PERBAIKAN: Gunakan ref agar reaktif & cek saat mounted
 const currentUserId = ref(0); 
 const userRole = computed(() => localStorage.getItem('userRole') || 'guest');
+
+const pathToReturn = computed(() => {
+    // Jika peran adalah 'driver', kembali ke '/driver'
+    if (userRole.value === 'driver') {
+        return '/driver';
+    }
+    // Jika peran lain (user/guest), kembali ke '/lapor' (default)
+    return '/lapor';
+});
 
 // --- STATE DATA ---
 const isLoading = ref(true);
