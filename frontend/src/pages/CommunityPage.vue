@@ -1,6 +1,6 @@
 <template>
   <main 
-    class="bg-[#2c473c] text-white min-h-screen py-8 font-sans bg-fixed bg-center bg-repeat relative"
+    class="bg-[#2c473c] text-white min-h-screen py-8 pt-24 font-sans bg-fixed bg-center bg-repeat relative"
     style="background-image: url('/img/background.png'); background-size: 360px;"
   >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -53,7 +53,7 @@
               :postData="post"
             />
             <div v-if="filteredPosts.length === 0" class="text-gray-400 text-center mt-10">
-              Belum ada postingan. Jadilah yang pertama!
+              Belum ada postingan
             </div>
           </div>
         </div>
@@ -160,9 +160,6 @@
         
         <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
           <h3 class="text-lg font-bold text-gray-700">Buat Postingan Baru</h3>
-          <button @click="closeModal" class="text-gray-400 hover:text-red-500 transition-colors">
-            <span class="text-2xl">&times;</span>
-          </button>
         </div>
 
         <div class="p-6">
@@ -258,7 +255,7 @@ const activeMembers = ref([
   { name: "Azmi", profilePic: "/img/profileAzmi.png" },
 ]);
 
-// --- [KODE LAMA] STATE UNTUK MODAL POST ---
+// --- STATE UNTUK MODAL POST ---
 const showCreateModal = ref(false);
 const isSubmitting = ref(false);
 const newPost = ref({ title: "", content: "", file: null });
@@ -289,7 +286,7 @@ async function fetchSidebar() {
   }
 }
 
-// --- [KODE LAMA] LOGIKA SUBMIT POST ---
+// --- LOGIKA SUBMIT POST ---
 function handleFileUpload(event) {
   const file = event.target.files[0];
   if (file) {
