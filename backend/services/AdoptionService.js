@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const GamificationService = require('./GamificationService');
 
 class AdoptionService {
     // 1. PROSES PENGAJUAN ADOPSI (Transaction)
@@ -156,6 +157,13 @@ class AdoptionService {
             if (status === 'approved' || status === 'completed') {
                 const updateCat = `UPDATE cats SET adoption_status = 'adopted' WHERE id = $1`;
                 await client.query(updateCat, [cat_id]);
+                
+                // --- NEW LOGIC: TRIGGER ADOPTION_COUNT ---
+                // Hanya hitung saat status berubah menjadi 'approved'
+                if (status === 'approved') { 
+                   GamificationService.updateProgress(applicant_id, 'ADOPTION_COUNT', 1).catch(err => console.error("Quest Update Error:", err));
+                }
+                // -----------------------------------------
             }
 
             // 4. [BARU] Masukkan Log ke Tabel 'verification_log'

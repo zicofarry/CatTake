@@ -111,30 +111,74 @@
             </div>
 
             <div class="mt-12 flex flex-col md:flex-row gap-8">
-                
+    
                 <section class="bg-white p-6 rounded-2xl shadow-xl md:w-1/2">
                     <h2 class="text-2xl font-bold mb-6 text-gray-800">Quest</h2>
-                    <div v-for="(quest, index) in quests" :key="index" class="mb-4">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="font-semibold">{{ quest.name }}</span>
-                            <span class="text-yellow-500 flex items-center">
-                                {{ quest.points }} <i class="fas fa-star ml-1 text-sm"></i>
-                            </span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-green-700 h-2.5 rounded-full" :style="{ width: `${(quest.progress / quest.target) * 100}%` }"></div>
+                    
+                    <div v-if="quests.length > 0">
+                        <div v-for="(quest, index) in quests" :key="index" class="mb-4">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-semibold">{{ quest.name }}</span>
+                                <span class="text-gray-500 text-sm ml-2">
+                                    {{ parseFloat(quest.progress).toLocaleString('id-ID') }} / {{ parseFloat(quest.target).toLocaleString('id-ID') }}
+                                </span>
+                                <span class="text-yellow-500 flex items-center">
+                                    {{ quest.points }} <i class="fas fa-star ml-1 text-sm"></i>
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div 
+                                    class="bg-green-700 h-2.5 rounded-full" 
+                                    :style="{ width: `${(quest.progress / quest.target) * 100}%` }"
+                                ></div>
+                            </div>
                         </div>
                     </div>
+                    
+                    <div v-else class="text-center py-4 text-gray-500 italic">
+                        Semua Quest telah diselesaikan atau belum ada misi yang tersedia.
+                    </div>
                 </section>
-
                 <section class="bg-white p-6 rounded-2xl shadow-xl md:w-1/2">
-                    <h2 class="text-2xl font-bold mb-6 text-gray-800">Achievement</h2>
-                    <div v-for="(achievement, index) in achievements" :key="index" class="mb-4">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="font-semibold">{{ achievement.name }}</span>
-                            <span class="text-amber-500 flex items-center">
+                    
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Achievement</h2>
+                        
+                        <div v-if="profileData.total_points !== undefined" class="flex items-center text-xl font-extrabold text-[#EBCD5E]">
+                            {{ Math.floor(profileData.total_points).toLocaleString('id-ID') }}                            <i class="fas fa-trophy ml-2 text-2xl"></i>
+                            <span class="text-sm font-semibold text-gray-600 ml-1">Poin</span>
+                        </div>
+                        </div>
+                    <div v-if="achievements.length === 0" class="text-center py-4 text-gray-500 italic">
+                        Belum ada achievement yang didapatkan.
+                    </div>
+                    
+                    <div v-else v-for="(achievement, index) in achievements" :key="index" class="mb-4 p-3 rounded-xl border"
+                        :class="achievement.isClaimed ? 'bg-green-100 border-green-200' : 'bg-yellow-50 border-yellow-200'">
+                        
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-semibold text-gray-800 flex items-center gap-2"
+                                :class="achievement.isClaimed ? 'text-green-800' : 'text-orange-600'">
+                                <i class="fas fa-medal text-xl text-amber-500"></i>
+                                {{ achievement.name }}
+                            </span>
+                            <span class="text-amber-500 flex items-center font-bold">
                                 {{ achievement.points }} <i class="fas fa-trophy ml-1 text-sm"></i>
                             </span>
+                        </div>
+                        
+                        <p class="text-sm text-gray-600 mt-1 mb-3">{{ achievement.description }}</p>
+                        
+                        <button 
+                            v-if="!achievement.isClaimed"
+                            @click="claimReward(achievement.id)"
+                            :disabled="isLoading"
+                            class="w-full bg-[#EBCD5E] hover:bg-[#dcb945] text-gray-900 py-2 rounded-lg text-sm font-bold shadow-md transition disabled:opacity-50"
+                        >
+                            {{ isLoading ? 'Memproses...' : 'Klaim Poin!' }}
+                        </button>
+                        <div v-else class="text-green-700 text-sm font-bold text-center py-1">
+                            <i class="fas fa-check"></i> Poin Sudah Diklaim
                         </div>
                     </div>
                 </section>
@@ -238,36 +282,73 @@ const formState = ref({
     profileDescription: '',
 });
 
-// --- Watch untuk Sinkronisasi Data ---
-watch(
-    () => props.profileData, 
-    (newData) => {
-        if (newData && newData.id) {
-            formState.value.name = newData.name || '';
-            
-            // FIX 2: Parsing Tanggal untuk Input Form (Menghindari Bug Off-by-1)
-            // Jangan pakai toISOString() karena akan mengonversi ke UTC (bisa jadi H-1)
-            // Gunakan komponen tanggal lokal
-            if (newData.birth_date) {
-                const d = new Date(newData.birth_date);
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
-                const day = String(d.getDate()).padStart(2, '0');
-                
-                formState.value.birthDate = `${year}-${month}-${day}`;
-            } else {
-                formState.value.birthDate = '';
-            }
-
-            formState.value.gender = newData.gender || '';
-            formState.value.profileDescription = newData.bio || '';
-        }
-    },
-    { immediate: true, deep: true }
-);
-
+// --- Computed Properties Gamifikasi ---
+// FIX: Ini yang digunakan di template.
 const quests = computed(() => props.profileData?.quests || []);
 const achievements = computed(() => props.profileData?.achievements || []);
+
+// --- FUNGSI DEBUG BARU: Melacak Prop ProfileData ---
+watch(() => props.profileData, (newProfile) => {
+    if (newProfile && newProfile.id) {
+        // console.log("--- DEBUG FRONTEND (PROFILE DATA RECEIVED) ---");
+        // console.log("Profile Name:", newProfile.name);
+        // // Pastikan properties quests dan achievements terkirim dengan benar
+        // console.log("Raw Quests Received (Length):", newProfile.quests ? newProfile.quests.length : 0);
+        // console.log("Raw Achievements Received (Length):", newProfile.achievements ? newProfile.achievements.length : 0);
+        
+        // // Log the state of the computed properties immediately after prop update
+        // console.log("Quests Computed Length (Final check):", quests.value.length);
+        
+        // if (quests.value.length === 0 && newProfile.quests && newProfile.quests.length > 0) {
+        //      console.error("CRITICAL ERROR: Computed property failed to update or data loss.");
+        // }
+    }
+
+    // --- Sinkronisasi Data Form (Logic lama yang dipindahkan ke sini) ---
+    if (newProfile && newProfile.id) {
+        formState.value.name = newProfile.name || '';
+        if (newProfile.birth_date) {
+            const d = new Date(newProfile.birth_date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            formState.value.birthDate = `${year}-${month}-${day}`;
+        } else {
+            formState.value.birthDate = '';
+        }
+        formState.value.gender = newProfile.gender || '';
+        formState.value.profileDescription = newProfile.bio || '';
+    }
+    // --- Akhir Sinkronisasi ---
+    
+}, { immediate: true, deep: true });
+// --------------------------------------------------------------------
+
+async function claimReward(questId) {
+    if (!props.isLoggedInProp) {
+        alert("Silakan login untuk mengklaim poin.");
+        return;
+    }
+    
+    // Konfirmasi klaim (opsional)
+    if (!confirm(`Klaim poin ${achievements.value.find(a => a.id === questId).points} untuk Achievement ini?`)) return;
+
+    isLoading.value = true;
+    try {
+        const response = await apiClient.post(`/gamification/claim/${questId}`);
+        alert(`Berhasil! Anda mendapatkan ${response.data.data.points} poin. Total poin Anda sekarang: ${response.data.data.totalPoints.toLocaleString('id-ID')}`);
+        
+        // Perlu refresh data profil untuk update isClaimed status dan total points di header
+        window.location.reload(); 
+
+    } catch (error) {
+        const msg = error.response?.data?.error || "Gagal mengklaim poin.";
+        alert(msg);
+        console.error("Claim Error:", error);
+    } finally {
+        isLoading.value = false;
+    }
+}
 
 // --- Fungsi Interaksi ---
 function toggleEditMode(field) {

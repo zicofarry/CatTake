@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const GamificationService = require('./GamificationService');
 
 class CommunityService {
     
@@ -271,6 +272,16 @@ class CommunityService {
     }
 
     static async toggleLike(userId, postId) {
+        // 1. Ambil ID Penulis SEBELUM transaksi dimulai
+        const authorRes = await db.query('SELECT author_id FROM community_post WHERE id = $1', [postId]);
+        if (authorRes.rows.length === 0) {
+            // Kita masih bisa lanjut ke langkah-langkah selanjutnya, 
+            // tapi kita harus tahu siapa penulisnya agar bisa update quest
+            // Jika post tidak ditemukan, kita bisa throw error lebih awal atau menangani di sini.
+            throw new Error('Postingan tidak ditemukan.');
+        }
+        const authorId = authorRes.rows[0].author_id; // Penulis Postingan
+
         const checkQuery = `SELECT 1 FROM post_likes WHERE user_id = $1 AND post_id = $2`;
         const check = await db.query(checkQuery, [userId, postId]);
         let isLiked = false;
@@ -286,6 +297,24 @@ class CommunityService {
                 isLiked = true;
             }
             await db.query('COMMIT');
+
+            // --- NEW LOGIC: TRIGGER POST_LIKE_COUNT QUEST ---
+            // 2. Hitung TOTAL likes yang dimiliki penulis (authorId) di SEMUA postingannya.
+            const totalLikesQuery = `
+                SELECT COALESCE(SUM(likes_count), 0) AS total_likes 
+                FROM community_post 
+                WHERE author_id = $1
+            `;
+            // NOTE: Query ini aman dijalankan di luar transaction karena COMMIT sudah selesai
+            const totalLikesRes = await db.query(totalLikesQuery, [authorId]);
+            const totalLikes = parseInt(totalLikesRes.rows[0].total_likes);
+            
+            // 3. Panggil GamificationService (Fire and forget: tidak perlu await)
+            // Quest ini menggunakan total akumulasi sebagai nilai progress.
+            GamificationService.updateProgress(authorId, 'POST_LIKE_COUNT', totalLikes)
+                .catch(err => console.error("Quest Update Error (POST_LIKE_COUNT):", err));
+            // ------------------------------------------------------------------   
+
             const countQuery = `SELECT likes_count FROM community_post WHERE id = $1`;
             const countRes = await db.query(countQuery, [postId]);
             return { isLiked, likesCount: countRes.rows[0].likes_count };
@@ -297,7 +326,8 @@ class CommunityService {
     
     // --- 4. SIDEBAR & DATA LAIN ---
 
-    static async getTopMembers() {
+    // --- FUNGSI 1: Leaderboard Berdasarkan Keaktifan (Aktivitas Forum) ---
+    static async getTopMembersByActivity() {
         const query = `
             SELECT 
                 u.id, 
@@ -324,7 +354,36 @@ class CommunityService {
             return {
                 name: row.name,
                 profilePic: pic,
-                score: parseInt(row.activity_score)
+                score: parseInt(row.activity_score) // Score adalah Activity Count
+            };
+        });
+    }
+
+    // --- FUNGSI 2: Leaderboard Berdasarkan Poin (Gamification Points) ---
+    static async getTopMembersByPoints() {
+        const query = `
+            SELECT 
+                u.id, 
+                COALESCE(d.full_name, u.username) as name, 
+                d.profile_picture,
+                COALESCE(u.total_points, 0) as total_points
+            FROM users u
+            JOIN detail_user_individu d ON u.id = d.id
+            WHERE u.role = 'individu' 
+            ORDER BY total_points DESC
+            LIMIT 5
+        `;
+        const result = await db.query(query);
+        
+        return result.rows.map(row => {
+            let pic = row.profile_picture;
+            if (!pic || pic === 'NULL.JPG') pic = '/img/NULL.JPG';
+            else if (!pic.startsWith('http')) pic = `/public/img/profile/${pic}`;
+
+            return {
+                name: row.name,
+                profilePic: pic,
+                score: parseFloat(row.total_points) // Score adalah Total Poin
             };
         });
     }
@@ -359,14 +418,14 @@ class CommunityService {
 
     // Gabungan Data Sidebar
     static async getSidebarData() {
-        const [events, popular, fact, activeMembers] = await Promise.all([
+        const [events, popular, fact, activeMembersByActivity, activeMembersByPoints] = await Promise.all([
             this.getUpcomingEvents(),
             this.getPopularPosts(),
             this.getRandomFact(),
-            this.getTopMembers()
+            this.getTopMembersByActivity(), // Leaderboard Keaktifan
+            this.getTopMembersByPoints()    // Leaderboard Poin
         ]);
 
-        // Ambil data Kucing Hilang untuk Sidebar
         const lostQuery = `SELECT id, name, last_seen_address, reward_amount, photo FROM lost_cats WHERE status = 'searching' ORDER BY created_at DESC LIMIT 3`;
         const lostRes = await db.query(lostQuery);
         const missing = lostRes.rows.map(l => ({
@@ -377,7 +436,14 @@ class CommunityService {
             image: l.photo ? `/public/img/lost_cat/${l.photo}` : '/img/NULL.JPG'
         }));
 
-        return { events, popular, fact, activeMembers, missing };
+        return { 
+            events, 
+            popular, 
+            fact, 
+            activeMembersByActivity, 
+            activeMembersByPoints,
+            missing 
+        };
     }
 
     static async getAllFacts() {

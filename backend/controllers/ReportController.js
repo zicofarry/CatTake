@@ -1,4 +1,5 @@
 const ReportService = require('../services/ReportService');
+const GamificationService = require('../services/GamificationService');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
@@ -41,6 +42,16 @@ class ReportController {
             };
 
             const result = await ReportService.createReport(reportData);
+            
+            // --- NEW LOGIC: TRIGGER QUESTS ---
+            const userId = req.user.id;
+            if (reportData.report_type === 'stray') {
+                GamificationService.updateProgress(userId, 'RESCUE_STRAY_COUNT', 1).catch(err => console.error("Quest Update Error:", err));
+            } else if (reportData.report_type === 'missing') {
+                GamificationService.updateProgress(userId, 'RESCUE_MISSING_COUNT', 1).catch(err => console.error("Quest Update Error:", err));
+            }
+            // ---------------------------------
+
             return reply.code(201).send({ message: 'Report submitted', data: result });
 
         } catch (error) {

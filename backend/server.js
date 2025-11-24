@@ -19,6 +19,7 @@ const lostCatRoutes = require('./routes/lostCatRoutes');
 const rescueRoutes = require('./routes/rescueRoutes');
 const driverRoutes = require('./routes/driverRoutes');
 const authentication = require('./middlewares/authentication');
+const gamificationRoutes = require('./routes/gamificationRoutes');
 
 fastify.register(cors, {
     origin: 'http://localhost:5173', 
@@ -55,6 +56,7 @@ fastify.register(reportRoutes, { prefix: '/api/v1/reports' });
 fastify.register(lostCatRoutes, { prefix: '/api/v1/lost-cats' });
 fastify.register(rescueRoutes, { prefix: '/api/v1/rescue' });
 fastify.register(driverRoutes, { prefix: '/api/v1/drivers' });
+fastify.register(gamificationRoutes, { prefix: '/api/v1/gamification' });
 
 fastify.get('/api/v1/dashboard', {
     preHandler: [authentication] 

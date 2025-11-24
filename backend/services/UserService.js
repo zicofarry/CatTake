@@ -1,14 +1,21 @@
 const db = require('../config/db');
+const GamificationService = require('./GamificationService');
 
 class UserService {
     static async getProfile(userId, role) {
         let query;
+
+        // 1. FIX: Deklarasi 'id' dan variabel gamifikasi di awal fungsi
+        const id = parseInt(userId, 10); // FIX: Definisikan id di sini
+        let quests = []; 
+        let achievements = [];
 
         if (role === 'individu') {
             query = `
                 SELECT 
                     u.id AS id,
                     u.email,
+                    COALESCE(u.total_points, 0) as total_points,
                     d.full_name AS name,
                     d.profile_picture AS photo,
                     d.contact_phone,
@@ -48,11 +55,43 @@ class UserService {
             return { id: userId, role };
         }
 
-        const result = await db.query(query, [userId]);
+        // Jalankan query menggunakan 'id' yang sudah diconvert
+        const result = await db.query(query, [id]);
         if (result.rows.length === 0) {
             throw new Error('Profile not found.');
         }
         let profileData = result.rows[0]; 
+
+        // --- LOKASI PENGAMBILAN DATA GAMIFIKASI ---
+        // 1. Inisialisasi properti gamifikasi pada profileData (Untuk Non-individu dan Fallback)
+        profileData.quests = [];
+        profileData.achievements = [];
+
+
+        // 2. Pengambilan Gamifikasi hanya untuk 'individu'
+        if (role === 'individu') {
+            try {
+                const gamificationData = await GamificationService.getUserQuestsAndAchievements(id);
+                
+                // FIX KRUSIAL: Tempelkan array hasil langsung ke profileData
+                profileData.quests = gamificationData.quests; 
+                profileData.achievements = gamificationData.achievements;
+                
+                // DEBUGGING LOG: (Menggunakan profileData yang sudah diupdate)
+                // console.log("DEBUG_USER_SERVICE: Data Gamifikasi Diterima:", {
+                //     user: profileData.username,
+                //     total_quests: profileData.quests.length, 
+                //     total_achievements: profileData.achievements.length,
+                //     example_quest: profileData.quests.length > 0 ? profileData.quests[0] : 'Tidak ada misi aktif'
+                // });
+
+            } catch (e) {
+                console.error("Gagal ambil gamifikasi:", e.message); 
+                profileData.quests = []; // Biarkan array kosong jika gagal
+                profileData.achievements = [];
+            }
+        }
+        // ------------------------------------------
 
         // Logic URL Foto Profil
         const BASE_IMAGE_URL = '/public/img/profile/'; 

@@ -47,7 +47,8 @@ class DonationController {
 
             // 4. Simpan ke DB
             const result = await DonationService.createDonation(donationData);
-
+            // TRIGGER QUEST: Tambah nominal donasi ke progress
+            GamificationService.updateProgress(userId, 'DONATION_AMOUNT', parseFloat(fields.amount));
             return reply.code(201).send({ 
                 status: 'success', 
                 message: 'Donasi berhasil dikirim', 

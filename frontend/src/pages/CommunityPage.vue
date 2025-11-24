@@ -133,13 +133,13 @@
           </section>
 
           <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
-            <h3 class="text-lg font-semibold mb-4 text-gray-900">Sobat Paws Teraktif</h3>
+            <h3 class="text-lg font-semibold mb-4 text-gray-900">Leaderboard Paws (Poin)</h3>
             
-            <div v-if="activeMembers.length === 0" class="text-sm text-gray-500 italic text-center py-2">
-                Belum ada data aktivitas.
+            <div v-if="activeMembersByPoints.length === 0" class="text-sm text-gray-500 italic text-center py-2">
+                Belum ada data poin.
             </div>
 
-            <div v-for="(member, index) in activeMembers" :key="member.name" class="flex items-center gap-3 mb-3 last:mb-0">
+            <div v-for="(member, index) in activeMembersByPoints" :key="'point-' + member.name" class="flex items-center gap-3 mb-3 last:mb-0">
               <div class="relative">
                   <img :src="resolveImageUrl(member.profilePic)" :alt="member.name" class="w-10 h-10 rounded-full object-cover border border-gray-200" />
                   <div v-if="index < 3" class="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] border border-white shadow-sm" 
@@ -149,7 +149,29 @@
               </div>
               <div class="flex-grow">
                   <span class="font-bold text-sm block">{{ member.name }}</span>
-                  <span class="text-xs text-gray-500">{{ member.score }} Aktivitas</span>
+                  <span class="text-xs text-gray-500 font-bold text-[#3A5F50]">{{ member.score.toLocaleString('id-ID') }} Poin</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
+            <h3 class="text-lg font-semibold mb-4 text-gray-900">Sobat Paws Teraktif (Aktivitas)</h3>
+            
+            <div v-if="activeMembersByActivity.length === 0" class="text-sm text-gray-500 italic text-center py-2">
+                Belum ada data aktivitas.
+            </div>
+
+            <div v-for="(member, index) in activeMembersByActivity" :key="'activity-' + member.name" class="flex items-center gap-3 mb-3 last:mb-0">
+              <div class="relative">
+                  <img :src="resolveImageUrl(member.profilePic)" :alt="member.name" class="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                  <div v-if="index < 3" class="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] border border-white shadow-sm" 
+                       :class="index === 0 ? 'bg-yellow-400 text-white' : index === 1 ? 'bg-gray-300 text-gray-700' : 'bg-orange-300 text-white'">
+                      <i class="fas fa-medal"></i>
+                  </div>
+              </div>
+              <div class="flex-grow">
+                  <span class="font-bold text-sm block">{{ member.name }}</span>
+                  <span class="text-xs text-gray-500">{{ member.score.toLocaleString('id-ID') }} Aktivitas</span>
               </div>
             </div>
           </section>
@@ -316,7 +338,8 @@ const upcomingEvents = ref([]);
 const popularPosts = ref([]);
 const lostCatHighlights = ref([]); // <-- State Data Kucing Hilang
 const catFact = ref({ fact: "Memuat fakta...", image: "/img/logoFaktaKucing.png" });
-const activeMembers = ref([]);
+const activeMembersByActivity = ref([]); // <-- NEW STATE (Keaktifan)
+const activeMembersByPoints = ref([]);    // <-- NEW STATE (Poin)
 
 // --- STATE UNTUK MODAL POST ---
 const showCreateModal = ref(false);
@@ -350,7 +373,7 @@ async function fetchPosts() {
   }
 }
 
-// --- FETCH DATA SIDEBAR (Termasuk Missing Cats) ---
+// --- MODIFIKASI: FETCH SIDEBAR ---
 async function fetchSidebar() {
   try {
     const response = await apiClient.get('/community/sidebar');
@@ -358,16 +381,16 @@ async function fetchSidebar() {
     
     upcomingEvents.value = data.events;
     popularPosts.value = data.popular;
+    lostCatHighlights.value = data.missing;
     
-    // [UPDATE] Set data highlight kucing hilang
-    if (data.missing) {
-        lostCatHighlights.value = data.missing;
-    }
-
+    // AMBIL KEDUA LIST LEADERBOARD
+    activeMembersByActivity.value = data.activeMembersByActivity;
+    activeMembersByPoints.value = data.activeMembersByPoints;
+    
     if (data.fact) {
       catFact.value = data.fact;
     }
-    if (data.activeMembers) activeMembers.value = data.activeMembers;
+    // Hapus activeMembers karena sudah diganti dengan dua state spesifik
   } catch (error) {
     console.error("Gagal load sidebar:", error);
   }

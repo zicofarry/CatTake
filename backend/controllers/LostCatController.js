@@ -1,6 +1,7 @@
 // backend/controllers/LostCatController.js
 const LostCatService = require('../services/LostCatService');
 const CommunityService = require('../services/CommunityService');
+const GamificationService = require('../services/GamificationService');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
@@ -47,6 +48,10 @@ class LostCatController {
             };
 
             const newReport = await LostCatService.createLostCatReport(lostCatData);
+            
+            // --- NEW LOGIC: TRIGGER QUESTS ---
+            GamificationService.updateProgress(req.user.id, 'LOST_REPORT_COUNT', 1).catch(err => console.error("Quest Update Error:", err));
+            // ---------------------------------
             
             // [FITUR BARU] Auto Post ke Komunitas jika dicentang
             if (fields.share_to_community === 'true' || fields.share_to_community === 'on' || fields.share_to_community === true) {

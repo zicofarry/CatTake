@@ -7,6 +7,13 @@ class AuthController {
     static async register(request, reply) {
         try {
             const result = await AuthService.registerUser(request.body);
+            // Hitung selisih hari sejak register
+            const joinDate = new Date(user.created_at); // Pastikan tabel users ada created_at
+            const diffTime = Math.abs(new Date() - joinDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+
+            // Update progress hari
+            GamificationService.updateProgress(user.id, 'DAYS_JOINED', diffDays);
             return reply.code(201).send({ message: 'User registered successfully!', user: result });
         } catch (error) {
             if (error.message.includes('unique constraint')) {
