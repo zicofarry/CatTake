@@ -63,25 +63,25 @@
 
                 <form @submit.prevent="submitDonation" class="flex flex-col gap-6 max-w-2xl mx-auto">
                     
-                    <div 
-                    class="flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200"
-                    :class="form.is_anonymus ? 'border-[#558a74] bg-green-50' : 'border-gray-200 hover:border-gray-300 bg-gray-50'"
-                    @click="form.is_anonymus = !form.is_anonymus"
+                    <label 
+                        class="flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 select-none"
+                        :class="form.is_anonymus ? 'border-[#558a74] bg-green-50' : 'border-gray-200 hover:border-gray-300 bg-gray-50'"
                     >
-                    <div class="relative flex items-center">
-                        <input 
-                        id="anonim" 
-                        type="checkbox" 
-                        v-model="form.is_anonymus"
-                        class="peer h-6 w-6 cursor-pointer appearance-none rounded-md border border-gray-300 transition-all checked:border-[#558a74] checked:bg-[#558a74]"
-                        />
-                        <i class="fas fa-check absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 pointer-events-none text-xs"></i>
-                    </div>
-                    <label for="anonim" class="font-semibold text-gray-700 cursor-pointer select-none flex-1">
-                        <span class="block text-lg">Sembunyikan Nama Saya</span>
-                        <span class="text-sm text-gray-500 font-normal">Nama Anda tidak akan ditampilkan di daftar donatur publik (Anonim).</span>
+                        <div class="relative flex items-center">
+                            <input 
+                                type="checkbox" 
+                                v-model="form.is_anonymus"
+                                class="peer h-6 w-6 cursor-pointer appearance-none rounded-md border border-gray-300 transition-all checked:border-[#558a74] checked:bg-[#558a74]"
+                            />
+                            <i class="fas fa-check absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 pointer-events-none text-xs"></i>
+                        </div>
+
+                        <div class="flex-1">
+                            <span class="block text-lg font-semibold text-gray-700">Sembunyikan Nama Saya</span>
+                            <span class="text-sm text-gray-500 font-normal">Nama Anda tidak akan ditampilkan di daftar donatur publik (Anonim).</span>
+                        </div>
                     </label>
-                    </div>
+
 
                     <div>
                     <label for="shelter" class="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2 block">Shelter Tujuan</label>

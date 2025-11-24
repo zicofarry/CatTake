@@ -178,7 +178,12 @@ onMounted(() => {
         </div>
 
         <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4 leading-snug">{{ post.title }}</h1>
-        
+        <!-- <div class="h-42 flex-grow rounded-lg overflow-hidden relative group cursor-pointer" @click="previewImage(trackingData.laporan.foto)">
+                    <img :src="resolveImageUrl(trackingData.laporan.foto)" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute bottom-1 right-1 bg-white/90 rounded-full w-6 h-6 flex items-center justify-center shadow-md">
+                        <i class="fas fa-expand-alt text-xs"></i>
+                    </div>
+                 </div> -->
         <img 
             v-if="post.postImg" 
             :src="resolveImageUrl(post.postImg)" 

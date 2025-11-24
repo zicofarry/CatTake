@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict N2zHCfGo6h900Lmkr9TLtIycrdABt4ZHzXYLvH2EwWdCiNgnH5lH0BeiyfDA2kq
+\restrict 5dj5B8kwRz3DngSV8VYw7xiVpYqYyN67aK4n2gGACHJ80rGuniDoGpVAbuHHW7q
 
 -- Dumped from database version 18.0
 -- Dumped by pg_dump version 18.0
 
--- Started on 2025-11-24 14:44:01
+-- Started on 2025-11-24 19:33:21
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1043,6 +1043,7 @@ COPY public.comment (id, user_id, post_id, content, likes_count, created_at, upd
 15	4	2	siapa nihh yang suka gratis gratisan	0	2025-11-21 16:28:42.508147	2025-11-21 16:28:42.508147
 16	14	2	halo aku login dari google ternyata bisa lohh	0	2025-11-22 14:00:32.417209	2025-11-22 14:00:32.417209
 17	14	5	nooo	0	2025-11-22 15:20:32.971813	2025-11-22 15:20:32.971813
+19	5	1	Halo bro	0	2025-11-24 17:25:22.410048	2025-11-24 17:25:22.410048
 \.
 
 
@@ -1056,8 +1057,9 @@ COPY public.community_post (id, author_id, title, content, media_path, likes_cou
 4	6	3 Anak Kucing Butuh Rumah Baru	Halo Cat Lovers! Aku lagi foster 3 anak kucing manis yang ditemukan di depan rumah. Usianya sekitar 2 bulan, sudah bisa makan wet food dan pup di pasir. Semuanya sehat dan manja. Butuh rumah baru yang sayang sama mereka. Lokasi di Jakarta Selatan.	postingan2.png	1113	2025-11-20 18:46:30.358292	2025-11-21 12:46:30.358292
 5	7	Kucing Terlantar di Depan Minimarket	Teman-teman, tadi pagi aku lihat seekor kucing betina kurus banget di depan minimarket deket rumah. Kayaknya habis melahirkan dan kelaparan. Aku udah kasih makan, tapi kasian banget. Ada yang bisa bantu foster atau adopsi? Please bantu share ya.	postingan3.jpg	878	2025-11-21 09:46:30.38444	2025-11-21 12:46:30.38444
 2	10	Info Steril Gratis	Kami membuka kuota sterilisasi gratis bulan ini!	\N	2	2025-11-18 10:00:00	2025-11-18 10:00:00
+8	5	[DICARI] Mikey Hilang!	Halo teman-teman, kucing saya hilang.\n\nNama: Mikey\nCiri-ciri: Kucing nya mirip rubah\nLokasi Terakhir: Baleendah, Kabupaten Bandung, West Java, Java, 40288, Indonesia\n\nMohon bantuannya jika melihat. Bisa hubungi saya atau lapor di menu Kucing Hilang. Terima kasih.	lost-1763979016170.png	1	2025-11-24 17:10:16.475291	2025-11-24 17:10:16.475291
+3	5	Kenapa Sterilisasi itu Penting?	Halo semua, aku mau share pengalaman tentang sterilisasi kucing. Ternyata banyak banget manfaatnya, bukan cuma untuk mengontrol populasi, tapi juga bagus untuk kesehatan si kucing dalam jangka panjang. Kucingku jadi lebih tenang dan gak gampang stres.	postingan1.png	2160	2025-11-21 10:46:30.278576	2025-11-21 12:46:30.278576
 1	20	Tanya Dokter Hewan	Kucing saya Si Putih suka makan daun, apakah normal?	\N	2	2025-11-17 09:00:00	2025-11-17 09:00:00
-3	5	Kenapa Sterilisasi itu Penting?	Halo semua, aku mau share pengalaman tentang sterilisasi kucing. Ternyata banyak banget manfaatnya, bukan cuma untuk mengontrol populasi, tapi juga bagus untuk kesehatan si kucing dalam jangka panjang. Kucingku jadi lebih tenang dan gak gampang stres.	postingan1.png	2159	2025-11-21 10:46:30.278576	2025-11-21 12:46:30.278576
 \.
 
 
@@ -1074,13 +1076,13 @@ COPY public.detail_user_individu (id, full_name, birth_date, gender, profile_pic
 8	Anas Miftahul Falah	2006-01-29	male	profile-8-1763733550208.JPG	saya adalah manusia bekasi	085850603147	Bekasi	Mahasiswa	3232290120060008	ktp-8-1763697336713.jpg	f	f	0
 2	Michael 36	2006-06-30	male	profile-2-1763897297728.png			alamat belum diverifikasi	Pelajar	3273100101900005	\N	f	f	0
 13	Harri Supriadi	2006-07-31	male	profile-13-1763897083541.jpg	Jangan main main sama aku, nanti aku kamu hack!		\N	\N	\N	\N	f	f	0
-3	Muhammad 'Azmi Salam	2006-06-30	male	profile-3-1763789466019.jpg	saya adalah pencinta kucing dari umur 3 tahun, nama kucing tercinta saya sejak kecil adalah son goku.	085850603196	RA Ulul 'Azmi Kulalet, RT. 01/RW. 09, Kec. Baleendah, Kab. Bandung, Prov. Jawa Barat	Mahasiswa	3204323006060008	ktp-3-1763715415771.jpg	t	t	8
 7	Ajipati Alaga	2025-11-28	male	profile-7-1763736794424.JPG			\N	\N	\N	\N	f	f	0
 12	Najmi Alifah Hilmiya	2006-02-22	female	profile-12-1763737054294.JPG			\N	\N	\N	\N	f	f	0
 21	donatur-bambang	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	f	0
 14	MUHAMMAD 'AZMI SALAM	\N	\N	https://lh3.googleusercontent.com/a/ACg8ocI4jlNMYTBjIfhPbtnoE2jVuCq4bTJx6saVHC59qzipgGeK-w=s96-c	\N	\N	\N	\N	\N	\N	t	f	0
 15	CACICU	\N	\N	https://lh3.googleusercontent.com/a/ACg8ocLCis_yrjICEgKAUmE0oASbrAYVjrGzTsaZIyTr6ZfTWcHfMw=s96-c	\N	\N	\N	\N	\N	\N	t	f	0
 20	Andi Nurahman	2025-10-29	male	profile-20-1763954963714.png		\N	\N	\N	\N	\N	f	f	0
+3	Muhammad 'Azmi Salam	2006-06-30	male	profile-3-1763789466019.jpg	saya adalah pencinta kucing dari umur 3 tahun, nama kucing tercinta saya sejak kecil adalah son goku.	085850603196	RA Ulul 'Azmi Kulalet, RT. 01/RW. 09, Kec. Baleendah, Kab. Bandung, Prov. Jawa Barat	Mahasiswa	3204323006060008	ktp-3-1763715415771.jpg	t	t	9
 \.
 
 
@@ -1119,6 +1121,7 @@ COPY public.donations (id, donatur_id, shelter_id, amount, donation_date, is_ano
 1	21	10	50000.00	2025-11-16 22:54:52.863077	f	qris	proof-1763683763794.png
 2	20	10	100000.00	2025-11-16 05:44:54.237741	f	qris	proof-1763683673794.png
 3	21	11	20000.00	2025-11-17 14:43:32.562628	t	qris	proof-1763683673494.png
+15	3	10	500000.00	2025-11-24 19:24:50.285225	t	qris	proof-1763987090140.png
 \.
 
 
@@ -1469,8 +1472,8 @@ COPY public.drivers (id, user_id, shelter_id, is_available, license_info, full_n
 DRV-04-001	18	4	t	sim-1763873723959.JPG	Andi Santoso	085850603196	driver-1763897487222.png
 DRV-04-002	19	4	t	sim-1763874278197.png	Rahman Putra	085850603196	driver-1763897501968.png
 DRV-11-001	22	11	t	sim-1763882101861.png	Suherman	085850603196	driver-1763897556636.png
-DRV-10-001	30	10	t	SIM C-2027	Budi Kurniawan	+62 812-9502-0503	driver-1763897665572.png
-DRV-10-002	31	10	t	SIM C-2026	Mawar Putri	081234567890	driver-1763953806853.png
+DRV-10-002	31	10	t	sim-1763987355702.png	Mawar Putri	081234567890	driver-1763953806853.png
+DRV-10-001	30	10	t	sim-1763987428533.png	Budi Kurniawan	+62 812-9502-0503	driver-1763897665572.png
 \.
 
 
@@ -1562,6 +1565,8 @@ COPY public.lost_cats (id, owner_id, name, age, breed, color, description, last_
 8	9	Baram	23	Kucing Hitam	Hitam	Matanya hijau keemasan	Ny. Suharti, 171, Jalan Raden Adipati Aria Wiranatakusumah, Cipaganti, Coblong, Bandung City, West Java, Java, 40161, Indonesia	-6.88443723	107.60126495	lost-1763913530873.png	0.00	searching	2025-11-23 22:58:51.06906
 5	3	Garfield	24	Persia	Oren	Badan sangat gemuk, muka ceper, suara mengeong pelan. Suka takut sama orang asing.	Jl. Adopsi No. 5, Bandung	-6.91470000	107.60980000	lost-1763912332428.png	1000000.00	found	2025-11-19 16:36:51.416413
 1	3	Mochi	12	Domestik	Oren	Hilang pake kalung merah	Jl. Gegerkalong Girang	-6.87300000	107.59200000	lost-1763715576408.png	100000.00	returned	2025-11-21 15:59:36.591132
+9	3	Marwin	14	Domestik	Hitam	Ekor kucingnya panjang	Sarijadi, Sukajadi, Bandung City, West Java, Java, 40515, Indonesia	-6.87979080	107.57474450	lost-1763978553876.png	700000.00	searching	2025-11-24 17:02:34.805617
+10	5	Mikey	12	Persia	Oren	Kucing nya mirip rubah	Baleendah, Kabupaten Bandung, West Java, Java, 40288, Indonesia	-7.00141949	107.61645162	lost-1763979016170.png	120000.00	searching	2025-11-24 17:10:16.445961
 \.
 
 
@@ -1580,6 +1585,8 @@ COPY public.post_likes (user_id, post_id, created_at) FROM stdin;
 4	5	2025-11-21 16:28:05.601604
 4	2	2025-11-21 16:28:09.478152
 4	1	2025-11-21 16:28:11.646097
+5	3	2025-11-24 17:22:49.101162
+5	8	2025-11-24 17:45:33.743626
 \.
 
 
@@ -1592,6 +1599,7 @@ COPY public.post_likes (user_id, post_id, created_at) FROM stdin;
 COPY public.reply_comment (id, user_id, comment_id, parent_reply_id, content, likes_count, created_at, updated_at) FROM stdin;
 1	20	1	\N	Terima kasih sarannya Budi!	0	2025-11-17 10:30:00	2025-11-17 10:30:00
 2	3	6	\N	iyaa betul	0	2025-11-22 23:18:23.944596	2025-11-22 23:18:23.944596
+7	5	6	2	betul betul betul	0	2025-11-24 17:38:22.124357	2025-11-24 17:38:22.124357
 \.
 
 
@@ -1681,8 +1689,8 @@ COPY public.users (id, username, email, password_hash, role) FROM stdin;
 18	driver-andi	andi_drv@gmail.com	$2b$10$ttwEUQeteiAeUm0tjgUiee1ql2/s17pwYr6BkZSmdcffjapLSDPOO	driver
 19	driver-rahman	rahman_drv@gmail.com	$2b$10$inqXtItfpppc4ck6z5DGhOLZG3HSx2juvLcijQJA99IcKo5qMdYvC	driver
 22	driver-suher	suher_drv@gmail.com	$2b$10$tBo7qYz/bvqzfurHxEkCUuFTC1SLHRxf4NRLQam1LW1GjoeqGqQ/i	driver
-30	driver-budi	budi_drv@mail.com	$2a$12$5mH1ze4JchRj3UqwckKh5uyRS95.mGQwz1by74lIvMtQjsEvhkdZa	driver
 31	driver-mawar	mawar_drv@mail.com	$2a$12$4aY1NCJGJbpI743W94xPzOe1bIq9V8G5ktIErqaddHRcsbifNQp/u	driver
+30	driver-budi	budi_drv@mail.com	$2a$12$5mH1ze4JchRj3UqwckKh5uyRS95.mGQwz1by74lIvMtQjsEvhkdZa	driver
 \.
 
 
@@ -1740,7 +1748,7 @@ SELECT pg_catalog.setval('public.chat_messages_id_seq', 27, true);
 -- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.comment_id_seq', 17, true);
+SELECT pg_catalog.setval('public.comment_id_seq', 19, true);
 
 
 --
@@ -1758,7 +1766,7 @@ SELECT pg_catalog.setval('public.community_post_id_seq', 5, true);
 -- Name: community_post_id_seq1; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.community_post_id_seq1', 1, true);
+SELECT pg_catalog.setval('public.community_post_id_seq1', 8, true);
 
 
 --
@@ -1767,7 +1775,7 @@ SELECT pg_catalog.setval('public.community_post_id_seq1', 1, true);
 -- Name: donations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.donations_id_seq', 14, true);
+SELECT pg_catalog.setval('public.donations_id_seq', 15, true);
 
 
 --
@@ -1803,7 +1811,7 @@ SELECT pg_catalog.setval('public.global_quests_id_seq', 1, false);
 -- Name: lost_cats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.lost_cats_id_seq', 8, true);
+SELECT pg_catalog.setval('public.lost_cats_id_seq', 10, true);
 
 
 --
@@ -1812,7 +1820,7 @@ SELECT pg_catalog.setval('public.lost_cats_id_seq', 8, true);
 -- Name: reply_comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.reply_comment_id_seq', 6, true);
+SELECT pg_catalog.setval('public.reply_comment_id_seq', 7, true);
 
 
 --
@@ -1848,7 +1856,7 @@ SELECT pg_catalog.setval('public.user_progress_id_seq', 12, true);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 22, true);
+SELECT pg_catalog.setval('public.users_id_seq', 31, true);
 
 
 --
@@ -2203,12 +2211,12 @@ ALTER TABLE ONLY public.chat_messages
 
 
 --
--- TOC entry 5087 (class 2606 OID 19308)
+-- TOC entry 5087 (class 2606 OID 19975)
 -- Name: comment comment_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.comment
-    ADD CONSTRAINT comment_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.community_post(id);
+    ADD CONSTRAINT comment_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.community_post(id) ON DELETE CASCADE;
 
 
 --
@@ -2454,11 +2462,11 @@ ALTER TABLE ONLY public.verification_log
     ADD CONSTRAINT verification_log_verifier_id_fkey FOREIGN KEY (verifier_id) REFERENCES public.users(id);
 
 
--- Completed on 2025-11-24 14:44:01
+-- Completed on 2025-11-24 19:33:22
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict N2zHCfGo6h900Lmkr9TLtIycrdABt4ZHzXYLvH2EwWdCiNgnH5lH0BeiyfDA2kq
+\unrestrict 5dj5B8kwRz3DngSV8VYw7xiVpYqYyN67aK4n2gGACHJ80rGuniDoGpVAbuHHW7q
 
