@@ -36,7 +36,7 @@
                <span class="font-bold">Umur:</span><span>{{ cat.age }} Bulan</span>
              </div>
              <div class="grid grid-cols-[140px_1fr] gap-2 text-lg md:text-xl">
-               <span class="font-bold">Jenis Kelamin:</span><span>{{ cat.gender === 'male' ? 'Laki-laki' : 'Betina' }}</span>
+               <span class="font-bold">Jenis Kelamin:</span><span>{{ cat.gender === 'male' ? 'Jantan' : 'Betina' }}</span>
              </div>
              <div class="grid grid-cols-[140px_1fr] gap-2 text-lg md:text-xl">
                <span class="font-bold">Ras:</span><span>{{ cat.breed || 'Domestik' }}</span>
