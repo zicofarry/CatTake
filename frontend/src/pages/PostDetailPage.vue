@@ -28,19 +28,64 @@ const currentUserId = computed(() => {
     } catch (e) { return null; }
 });
 
+// [Master] Helper Image URL Lengkap
 function resolveImageUrl(path) {
-    if (!path || path === 'NULL.JPG') return '/img/NULL.JPG';
+    // 1. Handle Null/Undefined
+    if (!path || path === 'NULL' || path === 'NULL.JPG') return '/img/NULL.JPG';
+
+    // 2. Handle URL Eksternal (Google, dll)
     if (path.startsWith('http')) return path;
+
+    // 3. Handle Path Lengkap dari Backend (jika sudah ada /public/)
     if (path.startsWith('/public/')) return `http://localhost:3000${path}`;
-    return path;
+
+    // 4. Handle Berdasarkan Prefix Nama File
+    
+    // Foto Profil (User/Driver) -> Folder profile
+    if (path.startsWith('profile-') || path.startsWith('driver-')) {
+        return `http://localhost:3000/public/img/profile/${path}`;
+    }
+
+    // Foto Postingan -> Folder post
+    if (path.startsWith('post-')) {
+        return `http://localhost:3000/public/img/post/${path}`;
+    }
+
+    // Foto Kucing Hilang -> Folder lost_cat
+    if (path.startsWith('lost-')) {
+        return `http://localhost:3000/public/img/lost_cat/${path}`;
+    }
+    
+    // Foto Laporan Penemuan -> Folder report_cat
+    if (path.startsWith('report-')) {
+        return `http://localhost:3000/public/img/report_cat/${path}`;
+    }
+
+    // Foto Kucing Adopsi -> Folder cats
+    if (path.startsWith('cat-')) {
+        return `http://localhost:3000/public/img/cats/${path}`;
+    }
+
+    // 5. Default Fallback (Asumsi aset statis frontend di folder /img/)
+    // Misal: 'postingan1.png' -> '/img/postingan1.png'
+    return `/img/${path}`;
 }
 
 // [BARU] Ambil Foto Profil User Login
 async function fetchCurrentUser() {
-    if (!currentUserId.value) return;
+    const token = localStorage.getItem('userToken');
+    if (!token) return;
+
     try {
-        const response = await apiClient.get(`/users/profile/${currentUserId.value}`);
-        currentUserImg.value = response.data.profile_picture;
+        const decoded = jwtDecode(token);
+        const userId = decoded.id;
+        const userRole = decoded.role;
+
+        const response = await apiClient.get(`/users/profile/${userId}/${userRole}`);
+        
+        // [PERBAIKAN] Gunakan properti 'photo' sesuai respon backend
+        currentUserImg.value = response.data.photo; 
+        
     } catch (error) {
         console.error("Gagal ambil profil user:", error);
     }
