@@ -195,7 +195,7 @@ onMounted(() => {
         background-attachment: fixed;
     ">
     
-    <div class="text-center mb-8 -mt-2 space-y-6">
+    <div class="text-center mb-8 pt-10 md:pt-15 space-y-6">
         <h1 class="inline-block text-3xl md:text-4xl font-extrabold text-white drop-shadow-md py-3 px-8">
             Kelola Driver
         </h1>
