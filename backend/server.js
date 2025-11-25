@@ -1,4 +1,7 @@
-const fastify = require('fastify')({ logger: true });
+const fastify = require('fastify')({ 
+    logger: true,
+    trustProxy: true 
+});
 const cors = require('@fastify/cors');
 const multipart = require('@fastify/multipart');
 const path = require('path'); 
@@ -22,10 +25,12 @@ const authentication = require('./middlewares/authentication');
 const gamificationRoutes = require('./routes/gamificationRoutes');
 
 fastify.register(cors, {
-    origin: 'http://localhost:5173', 
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'], // Izinkan semua method yang diperlukan
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    origin: true, // Biarkan Fastify yang mengatur header dynamic (Reflect origin)
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true, // Izinkan cookies/token
+    preflight: true,   // Pastikan preflight OPTIONS ditangani
+    optionsSuccessStatus: 204 // Kembalikan 204 (No Content) untuk OPTIONS sukses
 });
 
 fastify.register(multipart, {
@@ -42,6 +47,10 @@ fastify.register(fastifyStatic, {
     limits: {
         fileSize: 10 * 1024 * 1024, // Batas: 10 MB
     }
+});
+
+fastify.get('/', async (request, reply) => {
+    return { status: 'OK', message: 'Server is running & CORS is active' };
 });
 
 // Daftarkan route
@@ -64,12 +73,24 @@ fastify.get('/api/v1/dashboard', {
 
 // Jalankan server
 const start = async () => {
-    await connectDB();
     try {
-        // Gunakan process.env.PORT
+        await connectDB();
+
+        // LOGIC PENYELAMAT:
+        // 1. Cek apakah Railway menyuntikkan PORT (biasanya ada).
+        // 2. Jika tidak ada, pakai 3000 (sesuai settingan Railway kamu).
         const port = process.env.PORT || 3000; 
-        await fastify.listen({ port: port, host: '0.0.0.0' }); // Host 0.0.0.0 wajib untuk Docker/Railway
-        console.log(`Server running on port ${port}`);
+        
+        // WAJIB 0.0.0.0 buat Railway
+        const host = '0.0.0.0'; 
+
+        // Jalankan server
+        await fastify.listen({ port: port, host: host });
+        
+        console.log(`✅ SERVER CONNECTED!`);
+        console.log(`   Listening on: http://${host}:${port}`);
+        console.log(`   Railway Setting Port: 3000 (Should match)`);
+
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);
