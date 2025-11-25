@@ -1,5 +1,3 @@
-// /backend/controllers/UserController.js
-
 const UserService = require('../services/UserService'); // <-- Memanggil service yang melakukan JOIN DB
 const fs = require('fs');
 const fsp = require('fs').promises;
@@ -141,6 +139,56 @@ class UserController {
         }
     }
     // Anda bisa menambahkan controller lain di sini, seperti updateProfile
+
+    // [TAMBAHAN BARU] Update Profil Shelter (Multipart)
+    static async updateShelter(req, reply) {
+        try {
+            const { userId } = req.params;
+            const parts = req.parts();
+            
+            let fields = {};
+            let qrFileName = null;
+            let legalFileName = null;
+
+            for await (const part of parts) {
+                if (part.file) {
+                    const ext = path.extname(part.filename);
+                    const timestamp = Date.now();
+
+                    if (part.fieldname === 'qr_img') {
+                        qrFileName = `qr-${userId}-${timestamp}${ext}`;
+                        const savePath = path.join(__dirname, '../public/img/qr_img', qrFileName);
+                        if (!fs.existsSync(path.dirname(savePath))) fs.mkdirSync(path.dirname(savePath), { recursive: true });
+                        await pump(part.file, fs.createWriteStream(savePath));
+                    
+                    } else if (part.fieldname === 'legal_certificate') {
+                        legalFileName = `legal-${userId}-${timestamp}${ext}`;
+                        const savePath = path.join(__dirname, '../public/docs/legal', legalFileName);
+                        if (!fs.existsSync(path.dirname(savePath))) fs.mkdirSync(path.dirname(savePath), { recursive: true });
+                        await pump(part.file, fs.createWriteStream(savePath));
+                    } else {
+                        part.file.resume();
+                    }
+                } else {
+                    fields[part.fieldname] = part.value;
+                }
+            }
+
+            if (qrFileName) fields.qr_img = qrFileName;
+            if (legalFileName) fields.legal_certificate = legalFileName;
+
+            const updatedData = await UserService.updateShelterDetails(userId, fields);
+
+            return reply.send({ 
+                message: 'Shelter profile updated successfully', 
+                data: updatedData 
+            });
+
+        } catch (error) {
+            console.error("Update Shelter Error:", error);
+            return reply.code(500).send({ error: error.message });
+        }
+    }
 }
 
 module.exports = UserController;

@@ -18,6 +18,7 @@ import TrackingPage from '../pages/TrackingPage.vue'
 import DriverPage from '../pages/DriverPage.vue'
 import ShelterDriverPage from '../pages/ShelterDriverPage.vue'
 import ShelterCatPage from '../pages/ShelterCatPage.vue';
+import ShelterProfilePage from '../pages/ShelterProfilePage.vue';
 
 const router = createRouter({
   history: createWebHistory(), 
@@ -35,6 +36,7 @@ const router = createRouter({
     { path: '/profile', name: 'Profile', component: DetailPage }, 
     { path: '/post/:id', name: 'Post', component: PostDetailPage }, 
     { path: '/fakta', name: 'Fakta', component: FaktaKucingPage }, 
+    { path: '/shelter/profile', name: 'ShelterProfile', component: ShelterProfilePage, meta: { requiresAuth: true, role: 'shelter' } },
     
     // [UPDATE] Gunakan komponen LostCatListPage
     { path: '/lost-cats', name: 'KucingHilang', component: LostCatListPage }, 

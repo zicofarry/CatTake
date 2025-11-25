@@ -34,7 +34,17 @@ class UserService {
                     u.email,
                     d.shelter_name AS name,
                     d.shelter_picture AS photo,
-                    d.contact_phone
+                    d.contact_phone,
+                    d.organization_type,
+                    d.established_date,
+                    d.bio,
+                    d.donation_account_number,
+                    d.pj_name,
+                    d.pj_nik,
+                    d.legal_certificate,
+                    d.qr_img,
+                    d.latitude,
+                    d.longitude
                 FROM users u
                 JOIN detail_user_shelter d ON u.id = d.id
                 WHERE u.id = $1
@@ -109,6 +119,39 @@ class UserService {
         return { ...profileData, role };
     }
 
+    // [TAMBAHAN BARU] Update Detail Shelter Lengkap
+    static async updateShelterDetails(userId, data) {
+        let updates = [];
+        let values = [];
+        let idx = 1;
+
+        const fields = [
+            'shelter_name', 'organization_type', 'established_date', 'bio', 
+            'contact_phone', 'donation_account_number', 'pj_name', 'pj_nik',
+            'legal_certificate', 'qr_img', 'latitude', 'longitude'
+        ];
+
+        fields.forEach(field => {
+            if (data[field] !== undefined && data[field] !== null && data[field] !== 'null') {
+                updates.push(`${field} = $${idx++}`);
+                values.push(data[field]);
+            }
+        });
+
+        if (updates.length === 0) return null;
+
+        values.push(userId);
+        const query = `
+            UPDATE detail_user_shelter 
+            SET ${updates.join(', ')} 
+            WHERE id = $${idx} 
+            RETURNING *
+        `;
+
+        const result = await db.query(query, values);
+        return result.rows[0];
+    }
+    
     static async updateProfile(userId, role, data) {
         if (role === 'guest') {
             throw new Error('Unauthorized.');

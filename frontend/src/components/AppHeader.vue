@@ -75,7 +75,14 @@
             </button>
             <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl p-4 z-40 text-left">
                 <p class="font-bold text-gray-800">{{ props.profileData ? props.profileData.name : 'Shelter Profil' }}</p>
-                <p class="text-sm text-gray-500 mb-4">{{ props.profileData ? props.profileData.email : 'email@cattake.com' }}</p>
+                <p class="text-sm text-gray-500 mb-4 truncate">{{ props.profileData ? props.profileData.email : 'email@cattake.com' }}</p>
+                <button 
+                    @click="$router.push('/shelter/profile'); isProfileDropdownOpen = false;" 
+                    class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 rounded-lg transition duration-200 mt-2"
+                >
+                    Edit Profile Shelter
+                </button>
+                
                 <button @click="handleSignOut" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition duration-200">Sign Out</button>
             </div>
         </div>
@@ -109,12 +116,12 @@
       <div class="flex items-center gap-4 md:hidden w-full">
           
           <button class="flex flex-col gap-1.5 cursor-pointer p-2" @click="toggleMobileMenu">
-              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm bg-white"></span>
-              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm bg-white"></span>
-              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm bg-white"></span>
+              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors" :class="isScrolled ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
+              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors" :class="isScrolled ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
+              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors" :class="isScrolled ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
           </button>
 
-            <span class="font-semibold text-xl transition-colors text-white">
+            <span class="font-semibold text-xl transition-colors" :class="isScrolled ? 'text-white' : 'text-gray-800'">
               {{ props.userRole === 'driver' ? 'Driver' : activePage }}
           </span>
           
@@ -228,7 +235,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'; 
 
 const router = useRouter(); 
-const userRole = ref(localStorage.getItem('role') || 'user'); 
+const userRole = ref(localStorage.getItem('userRole') || 'user'); 
 const isDriver = computed(() => userRole.value === 'driver');
 
 const props = defineProps({
@@ -241,7 +248,7 @@ const isScrolled = ref(false);
 
 const isAuthPage = computed(() => {
     // Update: Menambahkan 'KucingHilang' dan 'Fakta' agar navbar hilang
-    return ['Login', 'Signup', 'AdopsiDetail', 'Post', 'Track', 'Profile', 'KucingHilang', 'Fakta', 'DriverTrackingDetail'].includes(route.name);
+    return ['Login', 'Signup', 'AdopsiDetail', 'Post', 'Track', 'Profile', 'ShelterProfile', 'KucingHilang', 'Fakta', 'DriverTrackingDetail'].includes(route.name);
 });
 
 const handleScroll = () => {

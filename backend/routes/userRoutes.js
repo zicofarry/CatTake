@@ -10,5 +10,9 @@ async function userRoutes(fastify, options) {
     fastify.patch('/profile/:userId', UserController.updateProfile);
     fastify.get('/shelters', UserController.getShelters);
     fastify.post('/profile/:userId/photo', UserController.uploadPhoto);
+
+    // [BARU] Route khusus update shelter (Multipart)
+    fastify.put('/shelter/:userId', UserController.updateShelter);
 }
+
 module.exports = userRoutes;
