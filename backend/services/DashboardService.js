@@ -30,20 +30,31 @@ class DashboardService {
             WHERE shelter_id = $1
         `;
 
+        const verificationQuery = `
+            SELECT is_verified_shelter 
+            FROM detail_user_shelter 
+            WHERE id = $1
+        `;
+
         // Jalankan semua query secara paralel
-        const [incomingRes, adoptionRes, catRes] = await Promise.all([
+        const [incomingRes, adoptionRes, catRes, verificationRes] = await Promise.all([
             // Perhatikan bahwa query ini tidak menggunakan $1 untuk filter,
             // ini menghitung semua laporan yang belum terambil secara global.
             db.query(incomingReportsQuery), 
             db.query(adoptionQuery, [id]),
-            db.query(catQuery, [id])
+            db.query(catQuery, [id]),
+            db.query(verificationQuery, [id])
         ]);
 
+        const isVerified = verificationRes.rows.length > 0 ? verificationRes.rows[0].is_verified_shelter : false;
+        
+        // Kembalikan hasil dalam format yang diinginkan
         return {
             // Mengambil hasil dari query laporan yang belum terambil
             incoming_rescue: parseInt(incomingRes.rows[0].total_incoming_reports) || 0,
             pending_adoption: parseInt(adoptionRes.rows[0].total_adoption_pending) || 0,
-            managed_cats: parseInt(catRes.rows[0].total_cats) || 0
+            managed_cats: parseInt(catRes.rows[0].total_cats) || 0,
+            is_verified_shelter: isVerified
         };
     }
 }
