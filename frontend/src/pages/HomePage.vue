@@ -9,7 +9,7 @@
               border-bottom-left-radius: 50px;
               border-bottom-right-radius: 50px;
           ">
-    </div>
+        </div>
 
         <div class="relative z-10 max-w-6xl mx-auto px-6 pt-32">
             
@@ -84,8 +84,6 @@
             <h2 class="text-2xl font-bold text-gray-800 mb-6">Menu Cepat</h2>
 
               <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 place-items-stretch">
-
-              <!-- Rescue -->
               <router-link
                   to="/lapor"
                   class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-[#EBCD5E] flex flex-col items-center text-center justify-between min-h-[180px]"
@@ -103,7 +101,6 @@
                   </div>
               </router-link>
 
-              <!-- Adopter -->
               <router-link
                   to="/adopsi"
                   class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-blue-500 flex flex-col items-center text-center justify-between min-h-[180px]"
@@ -121,7 +118,6 @@
                   </div>
               </router-link>
 
-              <!-- Donasi -->
               <router-link
                   to="/donasi"
                   class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-purple-500 flex flex-col items-center text-center justify-between min-h-[180px]"
@@ -139,7 +135,6 @@
                   </div>
               </router-link>
 
-              <!-- Kucing -->
               <router-link
                   to="/shelter/cats"
                   class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-[#3A5F50] flex flex-col items-center text-center justify-between min-h-[180px]"
@@ -156,28 +151,7 @@
                       </p>
                   </div>
               </router-link>
-
-              <!-- Driver -->
-              <!-- <router-link
-                  to="/shelter/driver"
-                  class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:border-[#2563eb] flex flex-col items-center text-center justify-between min-h-[180px]"
-              >
-                  <div class="flex flex-col items-center">
-                      <div
-                          class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center text-[#2563eb] text-2xl mb-3 group-hover:scale-110 transition-transform"
-                      >
-                          <i class="fas fa-truck"></i>
-                      </div>
-                      <h3 class="font-bold text-gray-800">Driver Saya</h3>
-                      <p class="text-xs text-gray-500 mt-1">
-                          Tambah & edit data
-                      </p>
-                  </div>
-              </router-link> -->
-
           </div>
-
-
         </div>
     </div>
 
@@ -350,11 +324,11 @@
             >
               <div 
                 v-for="(cat, index) in visibleCats" 
-                :key="cat.name" 
+                :key="cat.id" 
                 class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-md transition-all w-full sm:w-[280px]"
               >
                 <div class="h-48 overflow-hidden relative">
-                  <img :src="cat.img" :alt="cat.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <img :src="resolveImageUrl(cat.img)" :alt="cat.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                   <div class="absolute top-2 right-2 bg-green-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm uppercase tracking-wide">
                     Adopted
                   </div>
@@ -392,8 +366,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import HeroSection from '../components/HeroSection.vue';
-import { jwtDecode } from 'jwt-decode'; // Import buat ambil nama shelter
-import apiClient from '@/api/http'; // Import apiClient
+import { jwtDecode } from 'jwt-decode';
+import apiClient from '@/api/http';
+import tigaKucingImg from '@/assets/img/tigakucing.png';
 
 const userRole = computed(() => localStorage.getItem('userRole') || 'guest');
 const shelterName = ref('Shelter');
@@ -404,6 +379,18 @@ const dashboardData = ref({
     pending_adoption: 0,
     managed_cats: 0
 });
+
+// Helper URL Image
+function resolveImageUrl(path) {
+    if (!path || path === 'NULL.JPG') return '/img/NULL.JPG';
+    if (path.startsWith('http')) return path;
+    if (path.startsWith('/public/')) {
+        const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+        const baseServerUrl = baseApiUrl.replace('/api/v1', '');
+        return `${baseServerUrl}${path}`;
+    }
+    return path;
+}
 
 // --- LOGIC SHELTER ---
 function getShelterName() {
@@ -418,11 +405,11 @@ function getShelterName() {
     }
 }
 
-// [BARU] Fungsi untuk mengambil data dashboard dari backend
+// Fungsi untuk mengambil data dashboard dari backend
 async function fetchDashboardData() {
     if (userRole.value !== 'shelter') return;
     try {
-        const response = await apiClient.get('/dashboard'); // Endpoint baru
+        const response = await apiClient.get('/dashboard');
         dashboardData.value = response.data.data;
     } catch (error) {
         console.error("Gagal mengambil data dashboard shelter:", error);
@@ -454,23 +441,37 @@ const heroContent = computed(() => {
   }
 });
 
-const adoptedCats = [
-  { name: 'Mimi', img: 'https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8?w=400', adopter: 'Azmi', breed: 'Domestik' }, 
-  { name: 'Popo', img: 'https://images.unsplash.com/photo-1519052537078-e6302a4968ef?w=400', adopter: 'Azmi', breed: 'Persia' }, 
-  { name: 'Lili', img: 'https://images.unsplash.com/photo-1501820488136-72669149e0d4?w=400', adopter: 'Azmi', breed: 'Anggora' }, 
-  { name: 'Gembul', img: 'https://images.unsplash.com/photo-1494256997604-0e105c51e295?w=400', adopter: 'Azmi', breed: 'British Short.' }, 
-  { name: 'Chiko', img: 'https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=400', adopter: 'Azmi', breed: 'Domestik' },
-];
+const adoptedCats = ref([]); // State kosong dulu
+
+// Fungsi Fetch Data Alumni
+async function fetchAdoptedCats() {
+    try {
+        const response = await apiClient.get('/cats/adopted');
+        
+        // Mapping data dari backend ke format yang dipakai di template
+        // Pastikan ambil ID agar tidak duplikat key
+        adoptedCats.value = response.data.data.map(cat => ({
+            id: cat.id, // [PENTING] Tambahkan ID
+            name: cat.name,
+            img: cat.photo, 
+            adopter: cat.adopter,
+            breed: cat.breed
+        }));
+    } catch (error) {
+        console.error("Gagal mengambil data alumni:", error);
+    }
+}
 
 const visibleCount = ref(3);
 
 const visibleCats = computed(() => {
-  return adoptedCats.slice(0, visibleCount.value);
+  // [FIX] Akses ref harus pakai .value
+  return adoptedCats.value.slice(0, visibleCount.value);
 });
 
 function toggleView() {
-  if (visibleCount.value < adoptedCats.length) {
-    visibleCount.value = adoptedCats.length;
+  if (visibleCount.value < adoptedCats.value.length) {
+    visibleCount.value = adoptedCats.value.length;
   } else {
     visibleCount.value = 3;
   }
@@ -479,7 +480,10 @@ function toggleView() {
 onMounted(() => {
     if(userRole.value === 'shelter') {
         getShelterName();
-        fetchDashboardData(); // Panggil fungsi fetch data baru
+        fetchDashboardData();
+    } else {
+        // Jika User/Guest, ambil data Hall of Fame
+        fetchAdoptedCats();
     }
 });
 </script>

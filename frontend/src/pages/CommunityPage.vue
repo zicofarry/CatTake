@@ -11,16 +11,44 @@
         </p>
       </div>
 
-      <div class="search-bar-mobile md:hidden mb-5">
+      <div class="search-bar-mobile md:hidden mb-5 relative z-30">
         <div class="bg-white rounded-full p-3 shadow-md flex items-center gap-2">
           <img src="../assets/img/Search.png" alt="Search" class="w-5 h-5 opacity-60 ml-2" />
           <input
             type="text"
-            placeholder="Cari di komunitas"
+            placeholder="Cari di komunitas..."
             v-model="searchQuery"
+            @focus="handleSearchFocus"
+            @blur="handleSearchBlur"
             class="border-none outline-none w-full bg-transparent font-sans text-sm text-gray-800 placeholder-gray-400"
           />
         </div>
+
+        <transition name="fade">
+            <div v-if="isSearchFocused && searchQuery" class="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                <ul v-if="searchSuggestions.length > 0">
+                    <li 
+                        v-for="post in searchSuggestions" 
+                        :key="post.id" 
+                        @click="goToPost(post.id)"
+                        class="p-3 px-4 hover:bg-gray-50 border-b border-gray-50 last:border-none cursor-pointer flex items-center gap-3 transition-colors"
+                    >
+                        <img 
+                            :src="resolveImageUrl(post.postImg)" 
+                            class="w-10 h-10 rounded-lg object-cover bg-gray-100 border border-gray-200 flex-shrink-0"
+                            @error="$event.target.src='/img/logoFaktaKucing.png'" 
+                        >
+                        <div class="flex-grow min-w-0">
+                            <p class="text-sm font-bold text-gray-800 line-clamp-1 text-left">{{ post.title }}</p>
+                            <p class="text-xs text-gray-500 text-left truncate">Oleh {{ post.author }}</p>
+                        </div>
+                    </li>
+                </ul>
+                <div v-else class="p-4 text-center text-gray-500 text-sm">
+                    Tidak ada hasil untuk "{{ searchQuery }}"
+                </div>
+            </div>
+        </transition>
       </div>
 
       <div class="flex md:hidden justify-center gap-6 border-b border-gray-700 mb-5">
@@ -54,7 +82,7 @@
               @refresh="fetchPosts" 
             />
             <div v-if="filteredPosts.length === 0" class="text-gray-400 text-center mt-10">
-              Belum ada postingan.
+              {{ searchQuery ? 'Tidak ada postingan yang cocok.' : 'Belum ada postingan.' }}
             </div>
           </div>
         </div>
@@ -63,16 +91,44 @@
           class="flex-col gap-6 md:w-1/3 md:flex"
           :class="activeTab === 'sorotan' ? 'flex' : 'hidden'"
         >
-          <div class="search-bar-desktop hidden md:flex">
+          <div class="search-bar-desktop hidden md:block relative z-30">
             <div class="bg-white rounded-full p-3 shadow-md flex items-center gap-2 w-full">
               <img src="../assets/img/Search.png" alt="Search" class="w-5 h-5 opacity-60 ml-2" />
               <input
                 type="text"
-                placeholder="Cari di komunitas"
+                placeholder="Cari topik atau diskusi..."
                 v-model="searchQuery"
+                @focus="handleSearchFocus"
+                @blur="handleSearchBlur"
                 class="border-none outline-none w-full bg-transparent font-sans text-sm text-gray-800 placeholder-gray-400"
               />
             </div>
+
+            <transition name="fade">
+                <div v-if="isSearchFocused && searchQuery" class="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                    <ul v-if="searchSuggestions.length > 0">
+                        <li 
+                            v-for="post in searchSuggestions" 
+                            :key="post.id" 
+                            @click="goToPost(post.id)"
+                            class="p-3 px-4 hover:bg-gray-50 border-b border-gray-50 last:border-none cursor-pointer flex items-center gap-3 transition-colors"
+                        >
+                            <img 
+                                :src="resolveImageUrl(post.postImg)" 
+                                class="w-10 h-10 rounded-lg object-cover bg-gray-100 border border-gray-200 flex-shrink-0"
+                                @error="$event.target.src='/img/logoFaktaKucing.png'" 
+                            >
+                            <div class="flex-grow min-w-0">
+                                <p class="text-sm font-bold text-gray-800 line-clamp-1 text-left">{{ post.title }}</p>
+                                <p class="text-xs text-gray-500 text-left truncate">Oleh {{ post.author }}</p>
+                            </div>
+                        </li>
+                    </ul>
+                    <div v-else class="p-4 text-center text-gray-500 text-sm">
+                        Tidak ada hasil untuk "{{ searchQuery }}"
+                    </div>
+                </div>
+            </transition>
           </div>
 
           <section class="bg-white text-gray-800 rounded-xl p-5 shadow-lg">
@@ -322,9 +378,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useRouter } from 'vue-router';
 import PostCard from "../components/PostCard.vue";
 import apiClient from "@/api/http";
 import { jwtDecode } from 'jwt-decode';
+
+const router = useRouter();
 
 // State Utama
 const allPostsData = ref([]);
@@ -333,13 +392,16 @@ const isLoading = ref(true);
 const activeTab = ref("untukAnda");
 const currentUserId = ref(null);
 
+// State Dropdown Pencarian
+const isSearchFocused = ref(false);
+
 // --- STATE SIDEBAR ---
 const upcomingEvents = ref([]);
 const popularPosts = ref([]);
-const lostCatHighlights = ref([]); // <-- State Data Kucing Hilang
+const lostCatHighlights = ref([]); // State Data Kucing Hilang
 const catFact = ref({ fact: "Memuat fakta...", image: "/img/logoFaktaKucing.png" });
-const activeMembersByActivity = ref([]); // <-- NEW STATE (Keaktifan)
-const activeMembersByPoints = ref([]);    // <-- NEW STATE (Poin)
+const activeMembersByActivity = ref([]); // Leaderboard Keaktifan
+const activeMembersByPoints = ref([]);    // Leaderboard Poin
 
 // --- STATE UNTUK MODAL POST ---
 const showCreateModal = ref(false);
@@ -360,6 +422,43 @@ function resolveImageUrl(path) {
     return path;
 }
 
+// --- LOGIK PENCARIAN BARU ---
+function handleSearchFocus() {
+    isSearchFocused.value = true;
+}
+
+function handleSearchBlur() {
+    // Delay agar klik pada item dropdown sempat tereksekusi
+    setTimeout(() => {
+        isSearchFocused.value = false;
+    }, 200);
+}
+
+function goToPost(id) {
+    router.push(`/post/${id}`);
+    searchQuery.value = ""; // Reset pencarian setelah klik
+    isSearchFocused.value = false;
+}
+
+// Filter pencarian untuk Dropdown & List
+const filteredPosts = computed(() => {
+  if (!allPostsData.value) return [];
+  if (!searchQuery.value) return allPostsData.value;
+
+  const query = searchQuery.value.toLowerCase().trim();
+  return allPostsData.value.filter((post) =>
+    [post.title, post.excerpt, post.community, post.author].some((field) =>
+      field && field.toLowerCase().includes(query)
+    )
+  );
+});
+
+// Data untuk dropdown autocomplete (misal ambil 5 teratas)
+const searchSuggestions = computed(() => {
+    if (!searchQuery.value) return [];
+    return filteredPosts.value.slice(0, 5);
+});
+
 // --- FUNGSI FETCH API ---
 async function fetchPosts() {
   try {
@@ -373,7 +472,7 @@ async function fetchPosts() {
   }
 }
 
-// --- MODIFIKASI: FETCH SIDEBAR ---
+// --- FETCH SIDEBAR ---
 async function fetchSidebar() {
   try {
     const response = await apiClient.get('/community/sidebar');
@@ -390,7 +489,6 @@ async function fetchSidebar() {
     if (data.fact) {
       catFact.value = data.fact;
     }
-    // Hapus activeMembers karena sudah diganti dengan dua state spesifik
   } catch (error) {
     console.error("Gagal load sidebar:", error);
   }
@@ -428,7 +526,6 @@ async function submitPost() {
     if (newPost.value.title) formData.append("title", newPost.value.title);
     if (newPost.value.file) formData.append("file", newPost.value.file);
 
-    // [PERBAIKAN UTAMA] 
     // Set Content-Type ke undefined agar browser otomatis mengatur boundary-nya
     await apiClient.post("/community/posts", formData, {
         headers: { "Content-Type": undefined } 
@@ -457,19 +554,6 @@ onMounted(() => {
   fetchPosts();
   fetchSidebar();
 });
-
-// Filter pencarian
-const filteredPosts = computed(() => {
-  if (!allPostsData.value) return [];
-  if (!searchQuery.value) return allPostsData.value;
-
-  const query = searchQuery.value.toLowerCase().trim();
-  return allPostsData.value.filter((post) =>
-    [post.title, post.excerpt, post.community, post.author].some((field) =>
-      field && field.toLowerCase().includes(query)
-    )
-  );
-});
 </script>
 
 <style scoped>
@@ -479,5 +563,16 @@ const filteredPosts = computed(() => {
 }
 .animate-fade-in-up {
   animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* Transisi Fade */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

@@ -214,6 +214,20 @@ class CatController {
             reply.status(500).send({ error: 'Failed to toggle favorite' });
         }
     }
+
+    // Handler baru untuk Hall of Fame
+    static async getAdopted(req, reply) {
+        try {
+            const cats = await CatService.getAdoptedCats();
+            reply.send({ 
+                status: 'success', 
+                data: cats 
+            });
+        } catch (error) {
+            console.error("Error Fetching Adopted Cats:", error);
+            reply.code(500).send({ error: 'Internal Server Error' });
+        }
+    }
 }
 
 module.exports = CatController;

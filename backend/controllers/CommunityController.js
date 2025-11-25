@@ -59,8 +59,12 @@ class CommunityController {
             const newPost = await CommunityService.createPost(userId, title, content, fileName);
             
             // TRIGGER QUEST: Tambah 1 ke counter postingan
-            // Tidak perlu await agar tidak memblokir response ke user (fire and forget)
-            GamificationService.updateProgress(userId, 'POST_COUNT', 1);
+            try {
+                GamificationService.updateProgress(userId, 'POST_COUNT', 1)
+                    .catch(err => console.error("Gamification Async Error:", err));
+            } catch (gamificationError) {
+                console.error("Gamification Error:", gamificationError);
+            }
             return reply.code(201).send({ message: 'Post created', data: newPost });
         } catch (error) {
             return reply.code(500).send({ error: error.message });

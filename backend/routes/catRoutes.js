@@ -34,6 +34,9 @@ async function catRoutes(fastify, options) {
     // Route: Detail Kucing
     fastify.get('/:id', CatController.getDetail);
 
+    // Route Public: Ambil Kucing yang Sudah Diadopsi (Hall of Fame)
+    fastify.get('/adopted', CatController.getAdopted);
+
     // Route: Get All Cats (Public/Optional Auth)
     fastify.get('/', { preHandler: [optionalAuthentication] }, CatController.getCats);
 }
