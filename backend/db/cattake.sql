@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict 1itlolmDDphHxCxoQfnPQ8Jr98bviXNi8WtwztlqSAZha5QRnKa4g10xuj0kpEe
+\restrict lPx9lH34swCoSXeYtIrO34oFDtsthB2eiCs2Pfv8U2peLa3zXdOgBCqAABSKWPT
 
 -- Dumped from database version 18.0
 -- Dumped by pg_dump version 18.0
 
--- Started on 2025-11-24 22:52:17
+-- Started on 2025-11-25 23:05:26
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -20,25 +20,6 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
-
---
--- TOC entry 4 (class 2615 OID 2200)
--- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
---
-
-CREATE SCHEMA public;
-
-
-ALTER SCHEMA public OWNER TO pg_database_owner;
-
---
--- TOC entry 5297 (class 0 OID 0)
--- Dependencies: 4
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
---
-
-COMMENT ON SCHEMA public IS 'standard public schema';
-
 
 --
 -- TOC entry 238 (class 1259 OID 17880)
@@ -249,7 +230,7 @@ CREATE SEQUENCE public.community_post_id_seq1
 ALTER SEQUENCE public.community_post_id_seq1 OWNER TO postgres;
 
 --
--- TOC entry 5298 (class 0 OID 0)
+-- TOC entry 5297 (class 0 OID 0)
 -- Dependencies: 244
 -- Name: community_post_id_seq1; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -346,7 +327,7 @@ CREATE SEQUENCE public.donations_id_seq
 ALTER SEQUENCE public.donations_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5299 (class 0 OID 0)
+-- TOC entry 5298 (class 0 OID 0)
 -- Dependencies: 239
 -- Name: donations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -388,7 +369,7 @@ CREATE SEQUENCE public.driver_locations_id_seq
 ALTER SEQUENCE public.driver_locations_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5300 (class 0 OID 0)
+-- TOC entry 5299 (class 0 OID 0)
 -- Dependencies: 235
 -- Name: driver_locations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -507,7 +488,7 @@ CREATE SEQUENCE public.lost_cats_id_seq
 ALTER SEQUENCE public.lost_cats_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5301 (class 0 OID 0)
+-- TOC entry 5300 (class 0 OID 0)
 -- Dependencies: 246
 -- Name: lost_cats_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -565,7 +546,7 @@ CREATE SEQUENCE public.quests_id_seq
 ALTER SEQUENCE public.quests_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5302 (class 0 OID 0)
+-- TOC entry 5301 (class 0 OID 0)
 -- Dependencies: 254
 -- Name: quests_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -649,7 +630,7 @@ CREATE SEQUENCE public.reports_id_seq
 ALTER SEQUENCE public.reports_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5303 (class 0 OID 0)
+-- TOC entry 5302 (class 0 OID 0)
 -- Dependencies: 248
 -- Name: reports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -697,7 +678,7 @@ CREATE SEQUENCE public.rescue_assignments_id_seq
 ALTER SEQUENCE public.rescue_assignments_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5304 (class 0 OID 0)
+-- TOC entry 5303 (class 0 OID 0)
 -- Dependencies: 251
 -- Name: rescue_assignments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -740,7 +721,7 @@ CREATE SEQUENCE public.user_quest_progress_id_seq
 ALTER SEQUENCE public.user_quest_progress_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5305 (class 0 OID 0)
+-- TOC entry 5304 (class 0 OID 0)
 -- Dependencies: 256
 -- Name: user_quest_progress_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -818,7 +799,7 @@ CREATE SEQUENCE public.verification_log_id_seq
 ALTER SEQUENCE public.verification_log_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5306 (class 0 OID 0)
+-- TOC entry 5305 (class 0 OID 0)
 -- Dependencies: 250
 -- Name: verification_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -911,7 +892,6 @@ COPY public.adoptions (id, cat_id, applicant_id, statement_letter_path, status, 
 5	9	3	/docs/stmt_lili.pdf	completed	2025-10-10 09:00:00	2025-10-12 13:00:00	2025-10-14 11:00:00
 6	10	3	/docs/stmt_gembul.pdf	completed	2025-10-15 14:00:00	2025-10-17 10:00:00	2025-10-20 15:00:00
 7	11	3	/docs/stmt_chiko.pdf	completed	2025-10-20 08:00:00	2025-10-21 11:00:00	2025-10-23 16:00:00
-9	1	3	identity-3-1763694328683.jpg	pending	2025-11-21 10:05:28.846627	\N	2025-11-21 10:05:28.846627
 13	3	3	stmt-3-1763696749954.jpg	pending	2025-11-21 10:45:50.067367	\N	2025-11-21 10:45:50.067367
 15	1	3	stmt-3-1763715415886.jpg	approved	2025-11-21 15:56:56.107382	2025-11-22 11:26:00.67123	2025-11-21 15:56:56.107382
 14	2	8	stmt-8-1763697336774.jpg	rejected	2025-11-21 10:55:36.921567	2025-11-22 11:27:22.732092	2025-11-21 10:55:36.921567
@@ -921,6 +901,8 @@ COPY public.adoptions (id, cat_id, applicant_id, statement_letter_path, status, 
 10	1	3	stmt-3-1763695099635.jpg	approved	2025-11-21 10:18:19.808177	2025-11-22 12:32:03.885964	2025-11-21 10:18:19.808177
 8	3	3	identity-3-1763694145368.jpg	pending	2025-11-21 10:02:28.366243	\N	2025-11-21 10:02:28.366243
 16	6	3	stmt-3-1763994257831.pdf	approved	2025-11-24 21:24:17.971332	2025-11-24 21:25:07.330696	2025-11-24 21:24:17.971332
+9	1	3	identity-3-1763694328683.jpg	approved	2025-11-21 10:05:28.846627	2025-11-25 17:26:14.454957	2025-11-21 10:05:28.846627
+17	17	37	stmt-37-1764063715221.pdf	approved	2025-11-25 16:41:55.372985	2025-11-25 17:26:21.465002	2025-11-25 16:41:55.372985
 \.
 
 
@@ -943,21 +925,22 @@ COPY public.cat_facts (id, fact_text, source, image_path, is_verified, created_a
 --
 
 COPY public.cats (id, shelter_id, name, age, gender, breed, description, health_status, adoption_status, photo) FROM stdin;
-8	4	Popo	24	male	Persia	Sangat manja dan suka disisir.	healthy	adopted	cat-1763915639523.png
-7	4	Mimi	12	female	Domestik	Kucing calico yang tenang.	vaccinated	adopted	cat-1763915653912.png
-15	4	Blewah	7	female	Domestik	Kucingnya lucu suka nge wlee	healthy	available	cat-1763915934180.png
-16	10	Marmut	12	male	Persia	Lucu kucingnya baik	healthy	available	cat-1763965390412.png
-17	10	Edwin	12	male	Domestik	Kucing sehat dan baik (sudah sehat banget)	healthy	available	cat-1763967521254.png
-6	4	Luna	12	female	Domestik	Sangat aktif dan suka bermain.	healthy	adopted	cat-1763915539063.png
-4	10	Mueza	8	female	Persia	Manis, lembut, dan suka tidur di pangkuan.	healthy	available	cat-1763899862115.png
-2	10	Abul	5	male	Domestik	Kucing pemalu tapi sangat manja jika sudah kenal.	healthy	available	cat-1763899939370.png
-1	10	Oyen	6	male	American Shorthair	Suka mencari keributan di komplek. Sering terlihat mencuri ikan asin tetangga.	vaccinated	adopted	cat-1763900718450.png
-3	11	Simba	23	male	Maine Coon	Gagah dan berani, cocok untuk menjaga rumah dari tikus.	vaccinated	available	cat-1763901553570.png
-5	11	Kitty	36	female	Anggora	Tenang dan penyayang, sudah diadopsi.	vaccinated	adopted	cat-1763901780059.png
-14	11	Milo	12	male	Sphynx	Kucingnya baik, suka bikin nyaman, gak berisik	healthy	available	cat-1763901999237.png
-11	4	Chiko	18	male	Domestik	Pandai berburu mainan tikus.	sick	adopted	cat-1763915573623.png
-10	4	Gembul	36	male	British Shorthair	Suka tidur seharian.	healthy	adopted	cat-1763915602307.png
-9	4	Lili	5	female	Anggora	Aktif bermain bola.	vaccinated	adopted	cat-1763915624932.png
+18	10	Rakha	24	male	Anggora	Kucing hitam eksotis dari barat	healthy	available	cat-1764085087825.jpeg
+17	10	Edwin	12	male	Domestik	Kucing sehat dan baik (sudah sehat banget)	healthy	adopted	cat-1764085135399.jpeg
+1	10	Oyen	6	male	American Shorthair	Suka mencari keributan di komplek. Sering terlihat mencuri ikan asin tetangga.	vaccinated	adopted	cat-1764085179829.jpeg
+16	10	Marmut	12	male	Persia	Lucu kucingnya baik	healthy	available	cat-1764085198121.jpeg
+4	10	Mueza	8	female	Persia	Manis, lembut, dan suka tidur di pangkuan.	healthy	available	cat-1764085217127.jpeg
+2	10	Abul	5	male	Domestik	Kucing pemalu tapi sangat manja jika sudah kenal.	healthy	available	cat-1764085231630.jpeg
+15	4	Blewah	7	female	Domestik	Kucingnya lucu suka nge wlee	healthy	available	cat-1764085444351.jpeg
+11	4	Chiko	18	male	Domestik	Pandai berburu mainan tikus.	sick	adopted	cat-1764085462283.jpeg
+10	4	Gembul	36	male	British Shorthair	Suka tidur seharian.	healthy	adopted	cat-1764085509345.jpeg
+9	4	Lili	5	female	Anggora	Aktif bermain bola.	vaccinated	adopted	cat-1764085531505.jpeg
+8	4	Popo	24	male	Persia	Sangat manja dan suka disisir.	healthy	adopted	cat-1764085549185.jpeg
+7	4	Mimi	12	female	Domestik	Kucing calico yang tenang.	vaccinated	adopted	cat-1764085573483.jpeg
+6	4	Luna	12	female	Domestik	Sangat aktif dan suka bermain.	healthy	adopted	cat-1764085587186.jpeg
+14	11	Milo	12	male	Sphynx	Kucingnya baik, suka bikin nyaman, gak berisik	healthy	available	cat-1764085620810.jpeg
+3	11	Simba	23	male	Maine Coon	Gagah dan berani, cocok untuk menjaga rumah dari tikus.	vaccinated	available	cat-1764085646445.jpeg
+5	11	Kitty	36	female	Anggora	Tenang dan penyayang, sudah diadopsi.	vaccinated	adopted	cat-1764085667822.jpeg
 \.
 
 
@@ -1034,7 +1017,9 @@ COPY public.community_post (id, author_id, title, content, media_path, likes_cou
 5	7	Kucing Terlantar di Depan Minimarket	Teman-teman, tadi pagi aku lihat seekor kucing betina kurus banget di depan minimarket deket rumah. Kayaknya habis melahirkan dan kelaparan. Aku udah kasih makan, tapi kasian banget. Ada yang bisa bantu foster atau adopsi? Please bantu share ya.	postingan3.jpg	878	2025-11-21 09:46:30.38444	2025-11-21 12:46:30.38444
 2	10	Info Steril Gratis	Kami membuka kuota sterilisasi gratis bulan ini!	\N	2	2025-11-18 10:00:00	2025-11-18 10:00:00
 8	5	[DICARI] Mikey Hilang!	Halo teman-teman, kucing saya hilang.\n\nNama: Mikey\nCiri-ciri: Kucing nya mirip rubah\nLokasi Terakhir: Baleendah, Kabupaten Bandung, West Java, Java, 40288, Indonesia\n\nMohon bantuannya jika melihat. Bisa hubungi saya atau lapor di menu Kucing Hilang. Terima kasih.	lost-1763979016170.png	1	2025-11-24 17:10:16.475291	2025-11-24 17:10:16.475291
+11	3	Aku punya kucing baru	jadi pas aku jalan jalan ke singapore aku liat kucing yang lucu banget, jadi pengen aku adopsi, makannya aku bilang ke mamah biar kucingnya aku adopsi dehh	post-1764074505143.png	2	2025-11-25 19:41:46.413998	2025-11-25 19:42:12.326013
 3	5	Kenapa Sterilisasi itu Penting?	Halo semua, aku mau share pengalaman tentang sterilisasi kucing. Ternyata banyak banget manfaatnya, bukan cuma untuk mengontrol populasi, tapi juga bagus untuk kesehatan si kucing dalam jangka panjang. Kucingku jadi lebih tenang dan gak gampang stres.	postingan1.png	2160	2025-11-21 10:46:30.278576	2025-11-21 12:46:30.278576
+9	37	[DICARI] Leonardo Hilang!	Halo teman-teman, kucing saya hilang.\n\nNama: Leonardo\nCiri-ciri: Kalungnya merah\nLokasi Terakhir: UPI NET, 229, Jalan Dokter Setiabudi, Isola, Sukajadi, Bandung City, West Java, Java, 40154, Indonesia\n\nMohon bantuannya jika melihat. Bisa hubungi saya atau lapor di menu Kucing Hilang. Terima kasih.	lost-1764063214235.png	2	2025-11-25 16:33:34.643052	2025-11-25 16:33:34.643052
 1	20	Tanya Dokter Hewan	Kucing saya Si Putih suka makan daun, apakah normal?	\N	2	2025-11-17 09:00:00	2025-11-17 09:00:00
 \.
 
@@ -1060,6 +1045,9 @@ COPY public.detail_user_individu (id, full_name, birth_date, gender, profile_pic
 20	Andi Nurahman	2025-10-29	male	profile-20-1763954963714.png		\N	\N	\N	\N	\N	f	f	0
 32	ELGNAIRT	\N	\N	https://lh3.googleusercontent.com/a/ACg8ocJBwWZqzbm8O4Rqdb6FQKqadVV1Z26mNzkBRidMPaqg8MR9hd8=s96-c	\N	\N	\N	\N	\N	\N	t	f	0
 3	Muhammad 'Azmi Salam	2006-06-30	male	profile-3-1763789466019.jpg	saya adalah pencinta kucing dari umur 3 tahun, nama kucing tercinta saya sejak kecil adalah son goku.	085850603196	RA Ulul 'Azmi Kulalet, RT. 01/RW. 09, Kec. Baleendah, Kab. Bandung, Prov. Jawa Barat	Mahasiswa	3204323006060008	ktp-3-1763994257801.jpg	t	t	9
+33	John Doe	\N	\N	\N	\N		\N	\N	\N	\N	f	f	0
+36	John Doe3	\N	\N	\N	\N		\N	\N	\N	\N	f	f	0
+37	Ahmad Saripudin	2025-11-05	female	\N		087877889963	Jl. Gerlong Girang No.24	PNS	32750900001223	ktp-37-1764063715183.jpg	f	f	2
 \.
 
 
@@ -1070,10 +1058,10 @@ COPY public.detail_user_individu (id, full_name, birth_date, gender, profile_pic
 --
 
 COPY public.detail_user_shelter (id, shelter_name, established_date, organization_type, shelter_picture, bio, contact_phone, legal_certificate, donation_account_number, pj_name, pj_nik, is_verified_shelter, cat_capacity, latitude, longitude, qr_img) FROM stdin;
-16	Muhammad 'Azmi	\N	Komunitas	https://lh3.googleusercontent.com/a/ACg8ocJoWXti03NhQHj4U8_eAkJBg5zPgdMVwH6wXCXISxkVlkU4fg=s96-c	\N	\N	\N	\N	Muhammad 'Azmi	\N	f	0	\N	\N	\N
-4	Shelter Gerlong	2024-12-21	Komunitas	\N	\N		\N	\N	Ahkam Ibadurrahman	3273PJ87252	f	0	\N	\N	qr1.jpg
-10	Rumah Kucing Bandung	2015-08-17	Komunitas	\N	\N	0227654321	\N	1234567890	Rina Anggraini	3273zzzzzzzzzzzz	t	50	-6.91750000	107.61910000	qr2.jpg
-11	Panti Cat Sejahtera	2010-02-28	Yayasan	\N	\N	0219876543	\N	0987654321	Joko Susilo	3174yyyyyyyyyyyy	t	100	-6.20880000	106.84560000	qr3.jpg
+16	Shelter Bekasi	2025-11-07	Yayasan	https://lh3.googleusercontent.com/a/ACg8ocJoWXti03NhQHj4U8_eAkJBg5zPgdMVwH6wXCXISxkVlkU4fg=s96-c	Menampung kucing kucing yang baik	085850603196	legal-16-1764061424798.pdf	32935395739222	Muhammad 'Azmi	3204323006060008	f	0	-6.91724895	107.60860348	qr-16-1764061424781.jpg
+10	Rumah Kucing Bandung	2015-08-17	Komunitas	\N	\N	0227654321	legal-4-1764078069167.pdf	1234567890	Rina Anggraini	3273zzzzzzzzzzzz	t	50	-6.91750000	107.61910000	qr2.jpg
+11	Panti Cat Sejahtera	2010-02-28	Yayasan	\N	\N	0219876543	legal-4-1764078069167.pdf	0987654321	Joko Susilo	3174yyyyyyyyyyyy	t	100	-6.20880000	106.84560000	qr3.jpg
+4	Shelter Gerlong	2024-12-20	Komunitas	\N	\N	085850603196	legal-4-1764078069167.pdf	32440558342	Ahkam Ibadurrahman	3273PJ87252	t	0	-6.87499896	107.59530991	qr-4-1764078069128.jpg
 \.
 
 
@@ -1099,6 +1087,8 @@ COPY public.donations (id, donatur_id, shelter_id, amount, donation_date, is_ano
 2	20	10	100000.00	2025-11-16 05:44:54.237741	f	qris	proof-1763683673794.png
 3	21	11	20000.00	2025-11-17 14:43:32.562628	t	qris	proof-1763683673494.png
 15	3	10	500000.00	2025-11-24 19:24:50.285225	t	qris	proof-1763987090140.png
+16	37	10	120000.00	2025-11-25 16:48:58.585179	t	bri	proof-1764064138415.jpg
+17	37	10	120000.00	2025-11-25 16:54:31.640192	f	bri	proof-1764064471491.jpg
 \.
 
 
@@ -1436,6 +1426,134 @@ COPY public.driver_locations (id, driver_id, assignment_id, latitude, longitude,
 325	DRV-10-001	4	-6.96975360	107.62321920	2025-11-24 14:11:58.787041+07
 326	DRV-10-001	4	-6.96975360	107.62321920	2025-11-24 14:12:03.782678+07
 327	DRV-10-001	4	-6.96975360	107.62321920	2025-11-24 14:12:08.857414+07
+328	DRV-10-001	9	19.07598400	72.87765600	2025-11-25 17:41:43.703939+07
+329	DRV-10-001	9	19.07598400	72.87765600	2025-11-25 17:41:48.679574+07
+330	DRV-10-001	9	19.07598400	72.87765600	2025-11-25 17:41:53.685953+07
+331	DRV-10-001	9	19.07598400	72.87765600	2025-11-25 17:41:58.675759+07
+332	DRV-10-001	9	19.07598400	72.87765600	2025-11-25 17:42:03.682894+07
+333	DRV-10-001	9	19.07598400	72.87765600	2025-11-25 17:42:08.69134+07
+334	DRV-10-001	9	19.07598400	72.87765600	2025-11-25 17:42:13.680136+07
+335	DRV-10-001	9	19.07598400	72.87765600	2025-11-25 17:42:18.677458+07
+336	DRV-10-001	9	19.07598400	72.87765600	2025-11-25 17:42:23.677028+07
+337	DRV-10-001	9	19.07598400	72.87765600	2025-11-25 17:42:28.679468+07
+338	DRV-10-001	9	19.07598400	72.87765600	2025-11-25 17:42:33.727675+07
+339	DRV-10-001	9	19.07598400	72.87765600	2025-11-25 17:42:38.676922+07
+340	DRV-10-001	9	19.07598400	72.87765600	2025-11-25 17:42:43.691391+07
+341	DRV-10-001	9	22.07598400	72.87765600	2025-11-25 17:42:48.680243+07
+342	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:42:53.681474+07
+343	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:42:58.674742+07
+344	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:43:03.682737+07
+345	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:43:08.687686+07
+346	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:43:13.675479+07
+347	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:43:18.682005+07
+348	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:43:23.679197+07
+349	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:43:28.686797+07
+350	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:43:33.684562+07
+351	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:43:38.681237+07
+352	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:43:43.687721+07
+353	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:43:48.68235+07
+354	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:43:53.685453+07
+355	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:43:58.680957+07
+356	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:44:03.698279+07
+357	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:44:08.816563+07
+358	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:44:13.731636+07
+359	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:44:18.692235+07
+360	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:44:23.698048+07
+361	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:44:28.74104+07
+362	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:44:33.678878+07
+363	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:44:38.678964+07
+364	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:44:43.688788+07
+365	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:44:48.679539+07
+366	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:44:53.695258+07
+367	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:44:58.675226+07
+368	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:45:03.685265+07
+369	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:45:08.67463+07
+370	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:45:13.677039+07
+371	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:45:18.685087+07
+372	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:45:23.678516+07
+373	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:45:28.708837+07
+374	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:45:33.681261+07
+375	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:45:38.686877+07
+376	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:45:43.679585+07
+377	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:45:48.692611+07
+378	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:45:53.687149+07
+379	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:45:58.680277+07
+380	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:46:03.680299+07
+381	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:46:08.684902+07
+382	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:46:13.696598+07
+383	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:46:18.67837+07
+384	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:46:23.679793+07
+385	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:46:28.842137+07
+386	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:46:33.856147+07
+387	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:46:38.840326+07
+388	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:46:43.841565+07
+389	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:46:48.858153+07
+390	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:46:53.843239+07
+391	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:46:58.858381+07
+392	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:47:03.871743+07
+393	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:47:08.845371+07
+394	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:47:13.853443+07
+395	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:47:18.850091+07
+396	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:47:23.846978+07
+397	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:47:28.839206+07
+398	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:47:33.860745+07
+399	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:47:38.839372+07
+400	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:47:43.840644+07
+401	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:47:48.843658+07
+402	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:47:53.846003+07
+403	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:47:58.884572+07
+404	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:48:03.992908+07
+405	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:48:08.856701+07
+406	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 17:49:04.970282+07
+407	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:53:15.883149+07
+408	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:53:20.849192+07
+409	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:53:26.023949+07
+410	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:53:29.953528+07
+411	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:53:34.959408+07
+412	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:53:39.952589+07
+413	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:53:45.854353+07
+414	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:53:49.96165+07
+415	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:53:54.965195+07
+416	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:53:59.958415+07
+417	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:54:04.969027+07
+418	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:54:10.853558+07
+419	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:54:15.842375+07
+420	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:54:19.96103+07
+421	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:54:24.96583+07
+422	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:54:29.951626+07
+423	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:54:34.969164+07
+424	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:54:40.000158+07
+425	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:54:44.957996+07
+426	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:54:49.95844+07
+427	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:54:55.860211+07
+428	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:55:00.849163+07
+429	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:55:05.844862+07
+430	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:55:16.844187+07
+431	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:55:26.852912+07
+432	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:55:31.85681+07
+433	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:55:37.390344+07
+434	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:55:44.854869+07
+435	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:55:49.846709+07
+436	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:55:54.861025+07
+437	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:55:59.855369+07
+438	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:56:04.857186+07
+439	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:56:09.849285+07
+440	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:56:14.847983+07
+441	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:57:00.460623+07
+442	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:57:03.976539+07
+443	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:57:08.981024+07
+444	DRV-10-001	9	23.07598400	72.87765600	2025-11-25 18:57:13.973657+07
+445	DRV-10-001	9	24.07598400	72.87765600	2025-11-25 18:57:18.976757+07
+446	DRV-10-001	9	24.07598400	72.87765600	2025-11-25 18:57:23.965452+07
+447	DRV-10-001	9	-6.96975360	107.62321920	2025-11-25 18:57:29.27643+07
+448	DRV-10-001	9	-6.96975360	107.62321920	2025-11-25 18:57:33.977545+07
+449	DRV-10-001	9	-6.96975360	107.62321920	2025-11-25 18:57:38.98094+07
+450	DRV-10-001	9	35.68948700	139.69170600	2025-11-25 18:57:48.994321+07
+451	DRV-10-001	9	35.68948700	139.69170600	2025-11-25 18:57:53.979803+07
+452	DRV-10-001	9	35.68948700	139.69170600	2025-11-25 18:57:58.981579+07
+453	DRV-10-001	9	35.68948700	139.69170600	2025-11-25 18:58:03.987935+07
+454	DRV-10-001	9	35.68948700	139.69170600	2025-11-25 18:58:08.981419+07
+455	DRV-10-001	9	35.68948700	139.69170600	2025-11-25 18:58:13.972273+07
 \.
 
 
@@ -1449,8 +1567,8 @@ COPY public.drivers (id, user_id, shelter_id, is_available, license_info, full_n
 DRV-04-001	18	4	t	sim-1763873723959.JPG	Andi Santoso	085850603196	driver-1763897487222.png
 DRV-04-002	19	4	t	sim-1763874278197.png	Rahman Putra	085850603196	driver-1763897501968.png
 DRV-11-001	22	11	t	sim-1763882101861.png	Suherman	085850603196	driver-1763897556636.png
-DRV-10-002	31	10	t	sim-1763987355702.png	Mawar Putri	081234567890	driver-1763953806853.png
-DRV-10-001	30	10	t	sim-1763987428533.png	Budi Kurniawan	+62 812-9502-0503	driver-1763897665572.png
+DRV-10-002	31	10	t	sim-1764085356035.jpeg	Mawar Putri	081234567890	driver-1764085286371.jpeg
+DRV-10-001	30	10	t	sim-1764085365220.jpeg	Budi Kurniawan	+62 812-9502-0503	driver-1764085330006.jpeg
 \.
 
 
@@ -1498,6 +1616,7 @@ COPY public.favorite_cats (user_id, cat_id, created_at) FROM stdin;
 3	15	2025-11-23 23:40:11.40842
 3	2	2025-11-24 00:17:17.881446
 3	17	2025-11-24 22:02:12.349551
+37	17	2025-11-25 16:35:54.042795
 \.
 
 
@@ -1516,8 +1635,9 @@ COPY public.lost_cats (id, owner_id, name, age, breed, color, description, last_
 8	9	Baram	23	Kucing Hitam	Hitam	Matanya hijau keemasan	Ny. Suharti, 171, Jalan Raden Adipati Aria Wiranatakusumah, Cipaganti, Coblong, Bandung City, West Java, Java, 40161, Indonesia	-6.88443723	107.60126495	lost-1763913530873.png	0.00	searching	2025-11-23 22:58:51.06906
 5	3	Garfield	24	Persia	Oren	Badan sangat gemuk, muka ceper, suara mengeong pelan. Suka takut sama orang asing.	Jl. Adopsi No. 5, Bandung	-6.91470000	107.60980000	lost-1763912332428.png	1000000.00	found	2025-11-19 16:36:51.416413
 1	3	Mochi	12	Domestik	Oren	Hilang pake kalung merah	Jl. Gegerkalong Girang	-6.87300000	107.59200000	lost-1763715576408.png	100000.00	returned	2025-11-21 15:59:36.591132
-9	3	Marwin	14	Domestik	Hitam	Ekor kucingnya panjang	Sarijadi, Sukajadi, Bandung City, West Java, Java, 40515, Indonesia	-6.87979080	107.57474450	lost-1763978553876.png	700000.00	searching	2025-11-24 17:02:34.805617
 10	5	Mikey	12	Persia	Oren	Kucing nya mirip rubah	Baleendah, Kabupaten Bandung, West Java, Java, 40288, Indonesia	-7.00141949	107.61645162	lost-1763979016170.png	120000.00	searching	2025-11-24 17:10:16.445961
+9	3	Marwin	14	Domestik	Hitam	Ekor kucingnya panjang	Sarijadi, Sukajadi, Bandung City, West Java, Java, 40515, Indonesia	-6.87979080	107.57474450	lost-1763978553876.png	700000.00	found	2025-11-24 17:02:34.805617
+11	37	Leonardo	12	Persia	Oren	Kalungnya merah	UPI NET, 229, Jalan Dokter Setiabudi, Isola, Sukajadi, Bandung City, West Java, Java, 40154, Indonesia	-6.86122717	107.59170771	lost-1764063214235.png	500000.00	searching	2025-11-25 16:33:34.49317
 \.
 
 
@@ -1538,6 +1658,10 @@ COPY public.post_likes (user_id, post_id, created_at) FROM stdin;
 4	1	2025-11-21 16:28:11.646097
 5	3	2025-11-24 17:22:49.101162
 5	8	2025-11-24 17:45:33.743626
+37	9	2025-11-25 16:55:58.906734
+3	11	2025-11-25 19:41:49.598629
+1	11	2025-11-25 20:42:57.871343
+1	9	2025-11-25 20:43:16.187106
 \.
 
 
@@ -1594,6 +1718,9 @@ COPY public.reply_comment (id, user_id, comment_id, parent_reply_id, content, li
 COPY public.reports (id, reporter_id, report_type, lost_cat_id, shelter_assigned_id, location, latitude, longitude, description, photo, report_date, created_at, is_converted) FROM stdin;
 3	3	stray	\N	10	Jl. Gegerkalong Girang	-6.87300000	107.59200000	Kucing oren pincang di pinggir jalan	report-1763716333850.png	2025-11-21	2025-11-21 16:12:14.755683	f
 4	3	stray	\N	10	Indonesia University of Education, 229, Gang Bapak Arsadi, Ledeng, Cidadap, Bandung City, West Java, 40154, Indonesia	-6.85834240	107.59045120	Saya menemukan kucing liar yang kayaknya lagi sakit	report-1763716897731.png	2025-11-21	2025-11-21 16:21:37.881511	t
+13	37	stray	\N	\N	Indonesia University of Education, 229, Jalan Cilimus, Pondok Hijau, Isola, Sukajadi, Bandung City, West Java, Java, 40154, Indonesia	-6.85873152	107.59055972	Saya nemu kucing liar di upi	report-1764063001316.png	2025-11-25	2025-11-25 16:30:01.747813	f
+14	37	missing	9	10	Indonesia University of Education, 229, Jalan Cilimus, Pondok Hijau, Isola, Sukajadi, Bandung City, West Java, Java, 40154, Indonesia	-6.86192710	107.59073820	aku nemu si marwin di sini bang	report-1764063072160.png	2025-11-25	2025-11-25 16:31:12.519115	f
+15	3	stray	\N	\N	Kawasan Industri Dayeuhkolot, Pasawahan, Dayeuhkolot, Kabupaten Bandung, West Java, Java, 40257, Indonesia	-6.96975360	107.62321920	Saya nemu kucing liar di dayeuhkolot	report-1764084094701.jpeg	2025-11-25	2025-11-25 22:21:35.001849	f
 12	13	stray	\N	4	Pasteur, Sukasari, Bandung City, West Java, Java, 40161, Indonesia	-6.88455680	107.60028160	Nemu kucing liar di pasteur eyy	report-1763910613606.png	2025-11-23	2025-11-23 22:10:13.851051	f
 9	3	stray	\N	11	Pasteur, Sukasari, Bandung City, West Java 40161, Indonesia	-6.88455680	107.60028160	saya liat kucing liar	report-1763881918827.png	2025-11-23	2025-11-23 14:11:58.96954	f
 11	3	stray	\N	4	Pasteur, Sukasari, Bandung City, West Java 40161, Indonesia	-6.88455680	107.60028160	saya nemu kucing liar lagi di gerlong	report-1763882675590.png	2025-11-23	2025-11-23 14:24:35.735636	f
@@ -1618,6 +1745,7 @@ COPY public.rescue_assignments (id, tracking_id, report_id, driver_id, shelter_i
 7	RES-BDG-0007	11	DRV-04-002	4	completed	2025-11-23 14:50:34.763009	2025-11-23 16:12:48.451475	2025-11-23 16:13:15.11699	rescue-1763889168403.png	rescue-1763889195074.png	\N
 8	RES-BDG-0008	12	DRV-04-002	4	assigned	2025-11-23 22:19:43.856501	\N	\N	\N	\N	\N
 4	RES-BDG-0004	3	DRV-10-001	10	completed	2025-11-22 21:15:36.467418	2025-11-24 14:12:01.93649	2025-11-24 14:12:08.540317	rescue-1763968321886.png	rescue-1763968328533.png	\N
+9	RES-BDG-0009	14	DRV-10-001	10	assigned	2025-11-25 17:21:34.582935	\N	\N	\N	\N	\N
 \.
 
 
@@ -1644,8 +1772,6 @@ COPY public.user_quest_progress (id, user_id, quest_id, current_value, is_claime
 17	5	4	220000.00	f	\N	2025-11-24 21:52:07.901192
 18	20	4	100000.00	f	\N	2025-11-24 21:52:07.901192
 19	3	5	4.00	f	2025-11-24 21:55:26.429848	2025-11-24 21:55:26.429848
-20	3	6	4.00	f	\N	2025-11-24 21:55:26.429848
-21	3	7	4.00	f	\N	2025-11-24 21:55:26.429848
 22	13	5	1.00	f	2025-11-24 21:55:26.429848	2025-11-24 21:55:26.429848
 23	13	6	1.00	f	\N	2025-11-24 21:55:26.429848
 24	13	7	1.00	f	\N	2025-11-24 21:55:26.429848
@@ -1668,7 +1794,7 @@ COPY public.user_quest_progress (id, user_id, quest_id, current_value, is_claime
 41	5	11	2.00	f	\N	2025-11-24 21:55:36.306
 42	8	11	1.00	f	\N	2025-11-24 21:55:36.306
 16	3	4	2400000.00	t	2025-11-24 21:52:07.901192	2025-11-24 22:42:31.829529
-2	3	15	9.00	f	2025-11-24 21:55:40.728582	2025-11-24 21:55:40.728582
+20	3	6	5.00	f	2025-11-25 22:21:35.056	2025-11-25 22:21:35.044073
 45	10	16	1.00	f	2025-11-24 21:55:44.971643	2025-11-24 21:55:44.971643
 46	6	16	1.00	f	2025-11-24 21:55:44.971643	2025-11-24 21:55:44.971643
 47	7	16	1.00	f	2025-11-24 21:55:44.971643	2025-11-24 21:55:44.971643
@@ -1762,6 +1888,21 @@ COPY public.user_quest_progress (id, user_id, quest_id, current_value, is_claime
 79	5	18	3.00	t	2025-11-24 22:11:45.076728	2025-11-24 22:51:11.264948
 59	5	12	2161.00	t	2025-11-24 21:55:49.081278	2025-11-24 22:51:14.666659
 64	5	13	2161.00	t	2025-11-24 21:55:49.081278	2025-11-24 22:51:17.830747
+2	3	15	9.00	t	2025-11-24 21:55:40.728582	2025-11-25 19:34:20.582862
+138	37	6	1.00	f	\N	2025-11-25 16:30:01.873978
+139	37	7	1.00	f	\N	2025-11-25 16:30:01.873978
+141	37	9	1.00	f	\N	2025-11-25 16:31:12.544907
+143	37	11	1.00	f	\N	2025-11-25 16:33:34.523753
+142	37	10	1.00	t	2025-11-25 16:33:34.532	2025-11-25 17:02:31.298349
+140	37	8	1.00	t	2025-11-25 16:31:12.552	2025-11-25 17:06:49.456045
+137	37	5	1.00	t	2025-11-25 16:30:01.907	2025-11-25 17:06:56.266493
+147	37	15	1.00	f	\N	2025-11-25 17:26:21.483595
+146	37	14	1.00	t	2025-11-25 17:26:21.502	2025-11-25 19:35:03.771008
+148	3	12	2.00	f	\N	2025-11-25 20:42:57.92511
+149	3	13	2.00	f	\N	2025-11-25 20:42:57.92511
+144	37	12	2.00	f	\N	2025-11-25 20:43:16.202373
+145	37	13	2.00	f	\N	2025-11-25 20:43:16.202373
+21	3	7	5.00	f	\N	2025-11-25 22:21:35.044073
 \.
 
 
@@ -1772,7 +1913,13 @@ COPY public.user_quest_progress (id, user_id, quest_id, current_value, is_claime
 --
 
 COPY public.users (id, username, email, password_hash, role, created_at, total_points) FROM stdin;
+33	user-demo36	user-demo36@gmai.com	$2b$10$2S9sq6NuSD5tScLLlLkvbOfhLhK7MkuCYpSFkq7bIqsWn.6GFriFS	individu	2025-11-25 16:07:42.274035	0.00
+36	user-demo3	user-demo3@gmai.com	$2b$10$BJ0Re3PuBjCMxOrQ23WqZO7ePbS4ByvHOv.yU/0S31y2htzUWRegu	individu	2025-11-25 16:09:30.164166	0.00
 11	shelter-jakarta	shelter_jkt@mail.com	$2a$12$EyaNgDWLl4uXeK5luSp6NeNg3rnl3v3wJ8MZhnQIMCmYCK2/MYxBy	shelter	2025-11-24 22:09:06.686097	0.00
+3	zicofarry	mhmmdzmslm36@gmail.com	$2b$10$S/.SrKBrNC0Lt7QTIauaDe4KiQZJ4w3QxTa5Y4OnT.c07yIEMzd6S	individu	2025-11-21 03:34:41.42546	152.00
+37	user-demo1	user-demo1@gmail.com	$2b$10$crPsHR3nuxCdwqjs8J99AeMZ.jFNmGgUD98iyIaiJQX/Li38Q/u2G	individu	2025-11-25 16:22:17.450019	50.00
+31	driver-mawar	mawar_drv@mail.com	$2a$12$4aY1NCJGJbpI743W94xPzOe1bIq9V8G5ktIErqaddHRcsbifNQp/u	driver	2025-11-24 22:09:06.686097	0.00
+30	driver-budi	budi_drv@mail.com	$2a$12$5mH1ze4JchRj3UqwckKh5uyRS95.mGQwz1by74lIvMtQjsEvhkdZa	driver	2025-11-24 22:09:06.686097	0.00
 4	shelter-gerlong	sheltergerlong@gmail.com	$2a$12$0c7TwUaK9VKllvejqx9kbOzwggL9YfrA43s3VYY/.h.RDY6.PiRve	shelter	2025-11-24 22:09:06.686097	0.00
 12	najmi	najmi@gmail.com	$2b$10$pwLd7JgiL5VisgFiLvIc2e4JI8.HCT5e3VfuqeUNJXgw.gpsoa9Qu	individu	2025-11-24 22:09:06.686097	0.00
 14	muhammad'azmisalam4233	muhammadazmi36@upi.edu	$2a$12$KnzjrkMrv0Va/83HJIp7p.XjFP8HSJy2lzp9URK1pDx7lMJHxnMTK	individu	2025-11-24 22:09:06.686097	0.00
@@ -1783,7 +1930,6 @@ COPY public.users (id, username, email, password_hash, role, created_at, total_p
 18	driver-andi	andi_drv@gmail.com	$2b$10$ttwEUQeteiAeUm0tjgUiee1ql2/s17pwYr6BkZSmdcffjapLSDPOO	driver	2025-11-24 22:09:06.686097	0.00
 19	driver-rahman	rahman_drv@gmail.com	$2b$10$inqXtItfpppc4ck6z5DGhOLZG3HSx2juvLcijQJA99IcKo5qMdYvC	driver	2025-11-24 22:09:06.686097	0.00
 22	driver-suher	suher_drv@gmail.com	$2b$10$tBo7qYz/bvqzfurHxEkCUuFTC1SLHRxf4NRLQam1LW1GjoeqGqQ/i	driver	2025-11-24 22:09:06.686097	0.00
-31	driver-mawar	mawar_drv@mail.com	$2a$12$4aY1NCJGJbpI743W94xPzOe1bIq9V8G5ktIErqaddHRcsbifNQp/u	driver	2025-11-24 22:09:06.686097	0.00
 21	donatur-bambang	bambang@mail.com	$2a$12$IIc7LrjwQSWZVXTqwBUsF.Xn2nCgZ4dbhufObIFDb.UxqYSUIlQUe	individu	2025-11-16 22:54:52.863077	0.00
 20	adopter-andi	andi@mail.com	$2a$12$V7sBJmn.UZFfo2Hn9kda4OkXC6PoN/H3I7zczoH0vCFjRZbcve5NG	individu	2025-11-16 05:44:54.237741	0.00
 13	harri	harri@gmail.com	$2b$10$SGHoHSetwMJnFjDrMdwK0eFrpilgPcZPmLGXkMPVbFLFrOUoCRdZy	individu	2025-11-23 22:10:13.851051	0.00
@@ -1792,9 +1938,7 @@ COPY public.users (id, username, email, password_hash, role, created_at, total_p
 8	anas	anasmifta@gmail.com	$2b$10$JDKS8/kOsH3voDP3fwHFdeJfC5tgyJr7GwbsBtSNLfJ7w3gxyWpFW	individu	2025-11-21 11:36:51.416413	0.00
 10	shelter-bandung	shelter_bdg@mail.com	$2a$12$QYCFZ1l2CA56uhoWCg9HKugM5c9kPn8Hib1/G06mfTAukH/wk3QyG	shelter	2025-11-18 10:00:00	0.00
 6	salman	salman@gmail.com	$2b$10$AeaVKPcAQVhjtauAtlPGY.qAeU.HdcnnxvMOfFh.7ks2VHXH5KRjy	individu	2025-11-20 18:46:30.358292	0.00
-30	driver-budi	budi_drv@mail.com	$2a$12$5mH1ze4JchRj3UqwckKh5uyRS95.mGQwz1by74lIvMtQjsEvhkdZa	driver	2025-11-24 22:09:06.686097	0.00
 32	elgnairt8405	okisenahelvin3006@gmail.com	$2b$10$0MWh0tV3bxk.hnfGQrfaiuSDzH1PgBAf77NR6YjtYHWHeKLHtQy0S	individu	2025-11-24 22:09:06.686097	0.00
-3	zicofarry	mhmmdzmslm36@gmail.com	$2b$10$S/.SrKBrNC0Lt7QTIauaDe4KiQZJ4w3QxTa5Y4OnT.c07yIEMzd6S	individu	2025-11-21 03:34:41.42546	77.00
 5	repa	repapit@gmail.com	$2b$10$Nh4VBkWfDYoC9k9AAjwOUuPJ6Lq6ytPzSi2Eek2FCFri214Knkb6.	individu	2025-11-21 01:41:00.813271	142.00
 \.
 
@@ -1818,29 +1962,32 @@ COPY public.verification_log (id, user_id, verifier_id, verification_type, statu
 12	20	4	Adoption_Application	rejected	Permintaan adopsi telah di-rejected oleh shelter.	2025-11-22 12:04:03.386386
 13	3	10	Adoption_Application	approved	Permintaan adopsi telah di-approved oleh shelter.	2025-11-22 12:32:03.885964
 14	3	4	Adoption_Application	approved	Permintaan adopsi telah di-approved oleh shelter.	2025-11-24 21:25:07.330696
+15	3	10	Adoption_Application	approved	Permintaan adopsi telah di-approved oleh shelter.	2025-11-25 17:26:14.454957
+16	37	10	Adoption_Application	approved	Permintaan adopsi telah di-approved oleh shelter.	2025-11-25 17:26:21.465002
+17	4	1	Initial_Data_Check	approved	Dokumen valid	2025-11-25 20:52:13.162971
 \.
 
 
 --
--- TOC entry 5307 (class 0 OID 0)
+-- TOC entry 5306 (class 0 OID 0)
 -- Dependencies: 238
 -- Name: adoptions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.adoptions_id_seq', 16, true);
+SELECT pg_catalog.setval('public.adoptions_id_seq', 17, true);
 
 
 --
--- TOC entry 5308 (class 0 OID 0)
+-- TOC entry 5307 (class 0 OID 0)
 -- Dependencies: 237
 -- Name: cats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.cats_id_seq', 17, true);
+SELECT pg_catalog.setval('public.cats_id_seq', 18, true);
 
 
 --
--- TOC entry 5309 (class 0 OID 0)
+-- TOC entry 5308 (class 0 OID 0)
 -- Dependencies: 253
 -- Name: chat_messages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1849,16 +1996,16 @@ SELECT pg_catalog.setval('public.chat_messages_id_seq', 28, true);
 
 
 --
--- TOC entry 5310 (class 0 OID 0)
+-- TOC entry 5309 (class 0 OID 0)
 -- Dependencies: 240
 -- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.comment_id_seq', 20, true);
+SELECT pg_catalog.setval('public.comment_id_seq', 21, true);
 
 
 --
--- TOC entry 5311 (class 0 OID 0)
+-- TOC entry 5310 (class 0 OID 0)
 -- Dependencies: 242
 -- Name: community_post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1867,43 +2014,43 @@ SELECT pg_catalog.setval('public.community_post_id_seq', 5, true);
 
 
 --
--- TOC entry 5312 (class 0 OID 0)
+-- TOC entry 5311 (class 0 OID 0)
 -- Dependencies: 244
 -- Name: community_post_id_seq1; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.community_post_id_seq1', 8, true);
+SELECT pg_catalog.setval('public.community_post_id_seq1', 11, true);
 
 
 --
--- TOC entry 5313 (class 0 OID 0)
+-- TOC entry 5312 (class 0 OID 0)
 -- Dependencies: 239
 -- Name: donations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.donations_id_seq', 15, true);
+SELECT pg_catalog.setval('public.donations_id_seq', 17, true);
 
 
 --
--- TOC entry 5314 (class 0 OID 0)
+-- TOC entry 5313 (class 0 OID 0)
 -- Dependencies: 235
 -- Name: driver_locations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.driver_locations_id_seq', 327, true);
+SELECT pg_catalog.setval('public.driver_locations_id_seq', 455, true);
 
 
 --
--- TOC entry 5315 (class 0 OID 0)
+-- TOC entry 5314 (class 0 OID 0)
 -- Dependencies: 246
 -- Name: lost_cats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.lost_cats_id_seq', 10, true);
+SELECT pg_catalog.setval('public.lost_cats_id_seq', 11, true);
 
 
 --
--- TOC entry 5316 (class 0 OID 0)
+-- TOC entry 5315 (class 0 OID 0)
 -- Dependencies: 254
 -- Name: quests_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1912,57 +2059,57 @@ SELECT pg_catalog.setval('public.quests_id_seq', 20, true);
 
 
 --
--- TOC entry 5317 (class 0 OID 0)
+-- TOC entry 5316 (class 0 OID 0)
 -- Dependencies: 241
 -- Name: reply_comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.reply_comment_id_seq', 8, true);
+SELECT pg_catalog.setval('public.reply_comment_id_seq', 9, true);
 
 
 --
--- TOC entry 5318 (class 0 OID 0)
+-- TOC entry 5317 (class 0 OID 0)
 -- Dependencies: 248
 -- Name: reports_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.reports_id_seq', 12, true);
+SELECT pg_catalog.setval('public.reports_id_seq', 15, true);
 
 
 --
--- TOC entry 5319 (class 0 OID 0)
+-- TOC entry 5318 (class 0 OID 0)
 -- Dependencies: 251
 -- Name: rescue_assignments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.rescue_assignments_id_seq', 8, true);
+SELECT pg_catalog.setval('public.rescue_assignments_id_seq', 9, true);
 
 
 --
--- TOC entry 5320 (class 0 OID 0)
+-- TOC entry 5319 (class 0 OID 0)
 -- Dependencies: 256
 -- Name: user_quest_progress_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_quest_progress_id_seq', 136, true);
+SELECT pg_catalog.setval('public.user_quest_progress_id_seq', 149, true);
 
 
 --
--- TOC entry 5321 (class 0 OID 0)
+-- TOC entry 5320 (class 0 OID 0)
 -- Dependencies: 234
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 32, true);
+SELECT pg_catalog.setval('public.users_id_seq', 37, true);
 
 
 --
--- TOC entry 5322 (class 0 OID 0)
+-- TOC entry 5321 (class 0 OID 0)
 -- Dependencies: 250
 -- Name: verification_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.verification_log_id_seq', 14, true);
+SELECT pg_catalog.setval('public.verification_log_id_seq', 17, true);
 
 
 --
@@ -2559,11 +2706,11 @@ ALTER TABLE ONLY public.verification_log
     ADD CONSTRAINT verification_log_verifier_id_fkey FOREIGN KEY (verifier_id) REFERENCES public.users(id);
 
 
--- Completed on 2025-11-24 22:52:18
+-- Completed on 2025-11-25 23:05:27
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 1itlolmDDphHxCxoQfnPQ8Jr98bviXNi8WtwztlqSAZha5QRnKa4g10xuj0kpEe
+\unrestrict lPx9lH34swCoSXeYtIrO34oFDtsthB2eiCs2Pfv8U2peLa3zXdOgBCqAABSKWPT
 
