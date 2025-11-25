@@ -1,4 +1,7 @@
-const fastify = require('fastify')({ logger: true });
+const fastify = require('fastify')({ 
+    logger: true,
+    trustProxy: true 
+});
 const cors = require('@fastify/cors');
 const multipart = require('@fastify/multipart');
 const path = require('path'); 
@@ -22,15 +25,12 @@ const authentication = require('./middlewares/authentication');
 const gamificationRoutes = require('./routes/gamificationRoutes');
 
 fastify.register(cors, {
-    origin: [
-        'http://localhost:5173',                          // Localhost Vite
-        'http://127.0.0.1:5173',                          // Localhost IP
-        'https://cattake-frontend-production.up.railway.app', // Domain Frontend Railway (Hapus slash di akhir!)
-        'https://zicofarry.my.id'                         // Custom domain (jika ada)
-    ],
+    origin: true, // Biarkan Fastify yang mengatur header dynamic (Reflect origin)
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    credentials: true // Wajib true
+    credentials: true, // Izinkan cookies/token
+    preflight: true,   // Pastikan preflight OPTIONS ditangani
+    optionsSuccessStatus: 204 // Kembalikan 204 (No Content) untuk OPTIONS sukses
 });
 
 fastify.register(multipart, {
@@ -47,6 +47,10 @@ fastify.register(fastifyStatic, {
     limits: {
         fileSize: 10 * 1024 * 1024, // Batas: 10 MB
     }
+});
+
+fastify.get('/', async (request, reply) => {
+    return { status: 'OK', message: 'Server is running & CORS is active' };
 });
 
 // Daftarkan route
