@@ -23,7 +23,7 @@ const gamificationRoutes = require('./routes/gamificationRoutes');
 
 fastify.register(cors, {
     // origin: [
-    //     'http://localhost:5173', // Buat di laptop
+    //     'http://localhost:5173', // domain lokal
     //     'https://cattake-frontend-production.up.railway.app', // domain railway
     //     'https://zicofarry.my.id' // domain sendiri
     // ], 
