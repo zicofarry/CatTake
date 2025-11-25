@@ -110,12 +110,12 @@
       <div class="flex items-center gap-4 md:hidden w-full">
           
           <button class="flex flex-col gap-1.5 cursor-pointer p-2" @click="toggleMobileMenu">
-              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors" :class="isScrolled ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
-              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors" :class="isScrolled ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
-              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm transition-colors" :class="isScrolled ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
+              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm bg-white"></span>
+              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm bg-white"></span>
+              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm bg-white"></span>
           </button>
 
-            <span class="font-semibold text-xl transition-colors" :class="isScrolled ? 'text-white' : 'text-gray-800'">
+            <span class="font-semibold text-xl text-white">
               {{ props.userRole === 'driver' ? 'Driver' : activePage }}
           </span>
           

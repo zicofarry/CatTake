@@ -4,20 +4,29 @@ const AuthService = require('../services/AuthService');
 // const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 class AuthController {
-    static async register(request, reply) {
+static async register(request, reply) {
         try {
+            // 1. Panggil Service (Data masuk ke DB di sini)
             const result = await AuthService.registerUser(request.body);
-            // Hitung selisih hari sejak register
-            const joinDate = new Date(user.created_at); // Pastikan tabel users ada created_at
-            const diffTime = Math.abs(new Date() - joinDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
 
-            // Update progress hari
-            GamificationService.updateProgress(user.id, 'DAYS_JOINED', diffDays);
-            return reply.code(201).send({ message: 'User registered successfully!', user: result });
+            
+            // Logika Gamifikasi: Karena baru daftar, set DAYS_JOINED = 1
+            if (result && result.id) {
+                try {
+                    await GamificationService.updateProgress(result.id, 'DAYS_JOINED', 1);
+                } catch (err) {
+                    console.error("Gagal update gamifikasi saat register:", err);
+                }
+            }
+
+            return reply.code(201).send({ 
+                message: 'User registered successfully!', 
+                user: result 
+            });
+
         } catch (error) {
             if (error.message.includes('unique constraint')) {
-                return reply.code(409).send({ error: 'Email or NIK already exists.' });
+                return reply.code(409).send({ error: 'Email or username already exists.' });
             }
             if (error.message.includes('violates check constraint')) {
                 // Menangani error ENUM/CHECK constraint
