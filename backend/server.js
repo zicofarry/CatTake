@@ -66,7 +66,10 @@ fastify.get('/api/v1/dashboard', {
 const start = async () => {
     await connectDB();
     try {
-        await fastify.listen({ port: 3000, host: '0.0.0.0' });
+        // Gunakan process.env.PORT
+        const port = process.env.PORT || 3000; 
+        await fastify.listen({ port: port, host: '0.0.0.0' }); // Host 0.0.0.0 wajib untuk Docker/Railway
+        console.log(`Server running on port ${port}`);
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);
