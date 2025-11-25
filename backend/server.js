@@ -75,25 +75,26 @@ fastify.get('/api/v1/dashboard', {
 const start = async () => {
     try {
         await connectDB();
+        
+        // --- DEBUGGING BLOCK ---
+        console.log("--> CHECKING ENV VARIABLES:");
+        console.log(`--> RAILWAY PORT ENV: ${process.env.PORT}`);
+        
+        // Railway biasanya inject port, kalau tidak ada kita paksa 8080 (default Railway)
+        const port = process.env.PORT ? parseInt(process.env.PORT) : 8080;
+        const host = '0.0.0.0'; // HARUS STRING '0.0.0.0'
 
-        // 1. Pastikan PORT dibaca sebagai ANGKA (Integer)
-        // Railway memberi port dalam bentuk string, kita ubah jadi number
-        const port = parseInt(process.env.PORT) || 3000; 
+        console.log(`--> ATTEMPTING TO LISTEN ON: ${host}:${port}`);
 
-        // 2. LOG DULU SEBELUM JALAN (Biar tau mau jalan di mana)
-        console.log(`Attempting to start server on 0.0.0.0:${port}...`);
-
-        // 3. LISTEN DENGAN FORMAT OBJEK YANG BENAR
-        // Host '0.0.0.0' ADALAH KUNCI UTAMA AGAR TIDAK 502
-        await fastify.listen({ 
-            port: port, 
-            host: '0.0.0.0' 
-        });
-
-        // Log sukses (Fastify biasanya otomatis log juga, tapi kita tambah manual)
-        console.log(`✅ SERVER SUCCESS: Running on http://0.0.0.0:${port}`);
+        await fastify.listen({ port: port, host: host });
+        
+        // Kita ambil address resmi dari Fastify setelah berhasil listen
+        console.log(`--> SERVER SUCCESS! Address: ${fastify.server.address().address}`);
+        console.log(`--> SERVER SUCCESS! Port: ${fastify.server.address().port}`);
+        // -----------------------
 
     } catch (err) {
+        console.error("--> FATAL ERROR SAAT STARTUP:");
         fastify.log.error(err);
         process.exit(1);
     }
