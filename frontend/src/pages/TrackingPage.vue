@@ -217,7 +217,7 @@
     </teleport>
 
     <teleport to="body">
-        <div v-if="showChatModal" class="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
+                <div v-if="showChatModal" class="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4" @click.self="showChatModal = false">
             <div class="bg-white w-full max-w-md h-[600px] rounded-[30px] flex flex-col overflow-hidden shadow-2xl animate-up relative">
                 
                 <div class="bg-[#3A5F50] p-4 px-6 flex items-center gap-4 text-white shadow-md z-10">
