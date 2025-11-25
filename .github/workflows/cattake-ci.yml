@@ -1,0 +1,78 @@
+name: CatTake CI Pipeline
+
+on:
+  push:
+    branches: ["main", "master"] # Trigger saat push ke main atau master
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    # 1. SETUP SERVICE DATABASE (PostgreSQL)
+    # Sesuai dengan backend/config/db.js kamu
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 3636 # Password dummy untuk testing
+          POSTGRES_DB: cattake
+        ports:
+          - 5432:5432
+        # Health check untuk memastikan DB siap sebelum backend jalan
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # === BAGIAN BACKEND ===
+      - name: Setup Node.js (Backend)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: "./backend/package-lock.json"
+
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          npm ci
+
+      # Langkah ini opsional: Hanya jalankan jika kamu sudah memperbaiki script test di package.json
+      # - name: Run Backend Tests
+      #   env:
+      #     DB_USER: postgres
+      #     DB_HOST: localhost
+      #     DB_PASSWORD: password
+      #     DB_DATABASE: cattake
+      #     DB_PORT: 5432
+      #     JWT_SECRET: rahasia_testing
+      #   run: |
+      #     cd backend
+      #     npm test
+
+      # === BAGIAN FRONTEND ===
+      - name: Setup Node.js (Frontend)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: "./frontend/package-lock.json"
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build Frontend
+        # Ini memastikan tidak ada error sintaks di Vue/Vite kamu
+        run: |
+          cd frontend
+          npm run build
