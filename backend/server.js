@@ -73,12 +73,26 @@ fastify.get('/api/v1/dashboard', {
 
 // Jalankan server
 const start = async () => {
-    await connectDB();
     try {
-        // Gunakan process.env.PORT
-        const port = process.env.PORT || 3000; 
-        await fastify.listen({ port: port, host: '0.0.0.0' }); // Host 0.0.0.0 wajib untuk Docker/Railway
-        console.log(`Server running on port ${port}`);
+        await connectDB();
+
+        // 1. Pastikan PORT dibaca sebagai ANGKA (Integer)
+        // Railway memberi port dalam bentuk string, kita ubah jadi number
+        const port = parseInt(process.env.PORT) || 3000; 
+
+        // 2. LOG DULU SEBELUM JALAN (Biar tau mau jalan di mana)
+        console.log(`Attempting to start server on 0.0.0.0:${port}...`);
+
+        // 3. LISTEN DENGAN FORMAT OBJEK YANG BENAR
+        // Host '0.0.0.0' ADALAH KUNCI UTAMA AGAR TIDAK 502
+        await fastify.listen({ 
+            port: port, 
+            host: '0.0.0.0' 
+        });
+
+        // Log sukses (Fastify biasanya otomatis log juga, tapi kita tambah manual)
+        console.log(`✅ SERVER SUCCESS: Running on http://0.0.0.0:${port}`);
+
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);
