@@ -60,6 +60,7 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue';
 import axios from 'axios';
+import apiClient from '@/api/http';
 
 const props = defineProps({
   cat: { type: Object, required: true }
@@ -163,15 +164,9 @@ async function toggleFavorite() {
   try {
     // 4. Panggil API Backend
     // Sesuaikan URL dengan backendmu
-    const url = `http://localhost:3000/api/v1/cats/${props.cat.id}/favorite`;
-    console.log("3. Mengirim request ke:", url);
-    const response = await axios.post(url, {}, {
-      headers: {
-        // 3. Format Header harus pas: "Bearer <spasi> token"
-        Authorization: `Bearer ${token}` 
-      }
-    });
-    console.log("4. Sukses!", response.data);
+    const response = await apiClient.post(`/cats/${props.cat.id}/favorite`);
+    
+    console.log("Sukses Like/Unlike:", response.data);
     // 5. Sinkronisasi akhir (Opsional, untuk memastikan data sama persis dengan DB)
     // Backend harus return { isFavorited: true/false }
     if (response.data.isFavorited !== undefined) {
