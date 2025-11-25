@@ -1,7 +1,7 @@
 
 # 🐾 CatTake - Platform Penyelamatan & Adopsi Kucing
 
-![CatTake Logo](frontend/public/cattake.svg)
+![CatTake Logo](frontend/src/assets/img/cattake.png)
 
 **CatTake** adalah platform berbasis web yang menghubungkan masyarakat (pecinta kucing), shelter, dan driver untuk menciptakan ekosistem penyelamatan kucing yang terintegrasi. Aplikasi ini memfasilitasi pelaporan kucing terlantar, proses adopsi yang terverifikasi, donasi transparan, serta sistem gamifikasi untuk meningkatkan partisipasi komunitas.
 
