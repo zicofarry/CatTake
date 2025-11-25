@@ -41,6 +41,7 @@
         
         <div v-if="props.userRole === 'driver'" class="relative">
              <div v-if="isProfileDropdownOpen" @click="toggleProfileDropdown" class="fixed inset-0 z-30"></div>
+             
              <button 
                 @click="toggleProfileDropdown"
                 class="flex items-center gap-2 bg-[#FF862F] text-white py-1.5 pr-6 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-[#e07528] transition duration-200 relative z-40"
@@ -60,6 +61,7 @@
 
         <div v-else-if="props.userRole === 'shelter'" class="relative">
              <div v-if="isProfileDropdownOpen" @click="toggleProfileDropdown" class="fixed inset-0 z-30"></div>
+            
              <button 
                 @click="toggleProfileDropdown"
                 class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-6 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200 relative z-40"
@@ -80,6 +82,7 @@
 
         <div v-else-if="props.userRole === 'individu'" class="relative">
             <div v-if="isProfileDropdownOpen" @click="toggleProfileDropdown" class="fixed inset-0 z-30"></div>
+            
             <button 
                 @click="toggleProfileDropdown"
                 class="flex items-center gap-2 bg-[#578d76] text-white py-1.5 pr-8 pl-2 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-green-800 transition duration-200 relative z-40"
@@ -102,15 +105,16 @@
         </router-link>
       </div>
 
+
       <div class="flex items-center gap-4 md:hidden w-full">
           
           <button class="flex flex-col gap-1.5 cursor-pointer p-2" @click="toggleMobileMenu">
-              <span class="block w-6 h-0.5 rounded-sm transition-colors" :class="isTextWhite ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
-              <span class="block w-6 h-0.5 rounded-sm transition-colors" :class="isTextWhite ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
-              <span class="block w-6 h-0.5 rounded-sm transition-colors" :class="isTextWhite ? 'bg-white' : 'bg-gray-800 md:bg-white'"></span>
+              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm bg-white"></span>
+              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm bg-white"></span>
+              <span class="block w-6 h-0.5 bg-gray-800 rounded-sm bg-white"></span>
           </button>
 
-          <span class="font-semibold text-xl transition-colors" :class="isTextWhite ? 'text-white' : 'text-gray-800'">
+            <span class="font-semibold text-xl transition-colors text-white">
               {{ props.userRole === 'driver' ? 'Driver' : activePage }}
           </span>
           
@@ -236,7 +240,8 @@ const props = defineProps({
 const isScrolled = ref(false);
 
 const isAuthPage = computed(() => {
-    return ['Login', 'Signup', 'AdopsiDetail', 'Post', 'Track', 'Profile', 'KucingHilang', 'Fakta'].includes(route.name);
+    // Update: Menambahkan 'KucingHilang' dan 'Fakta' agar navbar hilang
+    return ['Login', 'Signup', 'AdopsiDetail', 'Post', 'Track', 'Profile', 'KucingHilang', 'Fakta', 'DriverTrackingDetail'].includes(route.name);
 });
 
 const handleScroll = () => {
@@ -250,22 +255,14 @@ const headerClass = computed(() => {
     return 'backdrop-blur-md bg-[#1d3b31]/80 shadow-lg';
   }
 
-  // 2. Jika di Homepage ('/') DAN User adalah 'individu' ATAU 'guest' (Belum Login), gunakan Hijau Solid
+  // 2. Jika di Homepage ('/') DAN User adalah 'individu', gunakan Hijau Solid
+  // (Ini akan aktif hanya saat TIDAK di-scroll, karena kondisi scroll di atas return duluan)
   if (route.path === '/' && (props.userRole === 'individu' || props.userRole === 'guest')) {
     return 'bg-[#3A5F50]'; 
   }
 
   // 3. Default: Transparan (untuk halaman lain atau user lain saat di top)
   return 'bg-transparent';
-});
-
-// --- LOGIKA WARNA TEKS & ICON ---
-// Properti ini menentukan kapan teks/hamburger harus berwarna PUTIH
-const isTextWhite = computed(() => {
-    // Teks putih jika:
-    // 1. Sedang di-scroll (karena background jadi gelap)
-    // 2. ATAU Halaman Home & Role Individu/Guest (karena background jadi Hijau)
-    return isScrolled.value || (route.path === '/' && (props.userRole === 'individu' || props.userRole === 'guest'));
 });
 
 onMounted(() => {
