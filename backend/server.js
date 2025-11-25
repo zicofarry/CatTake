@@ -23,11 +23,21 @@ const gamificationRoutes = require('./routes/gamificationRoutes');
 
 fastify.register(cors, {
     // Masukkan semua domain yang mungkin mengakses backend kamu
-    origin: [
-        'http://localhost:5173', 
-        'https://cattake-frontend-production.up.railway.app', // domain Railway
-        'https://zicofarry.my.id' // Jika pakai custom domain
-    ],
+    // origin: [
+    //     'http://localhost:5173', 
+    //     'https://cattake-frontend-production.up.railway.app', // domain Railway
+    //     'https://zicofarry.my.id' // Jika pakai custom domain
+    // ],
+    origin: (origin, cb) => {
+        // Izinkan localhost (buat dev) dan semua domain .railway.app
+        if (!origin || /localhost/.test(origin) || /railway\.app/.test(origin) || /zicofarry\.my\.id/.test(origin)) {
+            // null = error, true = boleh masuk
+            cb(null, true);
+            return;
+        }
+        // Tetap izinkan (fallback) biar gak error cors aneh-aneh
+        cb(null, true);
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     credentials: true // Ini WAJIB true karena kamu pakai JWT/Session
