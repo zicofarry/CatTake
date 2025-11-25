@@ -7,8 +7,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
       
       <div class="hidden md:flex items-center font-bold text-xl">
-        <router-link :to="props.userRole === 'driver' ? '/driver/tasks' : '/'">
-            <img 
+        <router-link :to="props.userRole === 'driver' ? '/driver/tasks' : (props.userRole === 'admin' ? '/admin/dashboard' : '/')">            
+          <img 
               src="../assets/img/cattake.png" 
               alt="CatTake Logo" 
               class="h-10 md:h-[70px] object-contain drop-shadow-md transition-all duration-300" 
@@ -39,7 +39,28 @@
       
       <div class="hidden md:block">
         
-        <div v-if="props.userRole === 'driver'" class="relative">
+        <div v-if="props.userRole === 'admin'" class="relative">
+             <div v-if="isProfileDropdownOpen" @click="toggleProfileDropdown" class="fixed inset-0 z-30"></div>
+             
+             <button 
+                @click="toggleProfileDropdown"
+                class="flex items-center gap-2 bg-gray-800 border border-gray-700 text-white py-1.5 pr-6 pl-3 rounded-full font-semibold cursor-pointer shadow-lg hover:bg-gray-700 transition duration-200 relative z-40"
+            >
+                <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-xs">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <span>Administrator</span>            
+            </button>
+             <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl p-4 z-40 text-left border border-gray-100">
+                <p class="font-bold text-gray-800">Admin Panel</p>
+                <div class="h-px bg-gray-100 my-2"></div>
+                <button @click="handleSignOut" class="w-full bg-gray-800 hover:bg-black text-white font-semibold py-2 rounded-lg transition duration-200">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                </button>
+            </div>
+        </div>
+
+        <div v-else-if="props.userRole === 'driver'" class="relative">
              <div v-if="isProfileDropdownOpen" @click="toggleProfileDropdown" class="fixed inset-0 z-30"></div>
              
              <button 
@@ -116,10 +137,13 @@
           </button>
 
             <span class="font-semibold text-xl text-white">
-              {{ props.userRole === 'driver' ? 'Driver' : activePage }}
+              {{ props.userRole === 'driver' ? 'Driver' : (props.userRole === 'admin' ? 'Admin Panel': activePage) }}
           </span>
           
-          <router-link v-if="props.userRole === 'individu'" to="/profile" class="ml-auto flex items-center gap-2 bg-[#578d76] text-white py-1 pr-2 pl-1 rounded-full font-semibold">
+          <div v-if="props.userRole === 'admin'" class="ml-auto flex items-center gap-2 bg-gray-700 text-white py-1.5 px-3 rounded-full font-semibold text-sm border border-gray-600">
+              <i class="fas fa-user-shield"></i>
+          </div>
+          <router-link v-else-if="props.userRole === 'individu'" to="/profile" class="ml-auto flex items-center gap-2 bg-[#578d76] text-white py-1 pr-2 pl-1 rounded-full font-semibold">
             <img :src="resolveImageUrl(props.profileData && props.profileData.photo ? props.profileData.photo : '/img/NULL.JPG')" alt="Avatar" class="h-8 w-8 rounded-full object-cover">
             <span class="text-sm">{{ props.profileData ? props.profileData.name.split(' ')[0] : 'User' }}</span>
           </router-link>
@@ -155,7 +179,10 @@
       </div>
       
       <div class="px-4 mb-8">
-        <div v-if="props.userRole === 'driver'" class="flex items-center gap-3 bg-[#FF862F] text-white py-3 px-4 rounded-xl font-semibold shadow-lg">
+        <div v-if="props.userRole === 'admin'" class="flex items-center gap-3 bg-gray-800 border border-gray-600 text-white py-3 px-4 rounded-xl font-semibold shadow-lg">
+             <i class="fas fa-shield-alt text-red-500"></i> <span>Administrator</span>
+        </div>
+        <div v-else-if="props.userRole === 'driver'" class="flex items-center gap-3 bg-[#FF862F] text-white py-3 px-4 rounded-xl font-semibold shadow-lg">
              <i class="fas fa-shipping-fast"></i> <span>Driver Panel</span>
         </div>
         
@@ -187,6 +214,21 @@
                 </router-link>
              </li>
              </template>
+
+          <template v-else-if="props.userRole === 'admin'">
+             <li v-for="link in navLinks" :key="link.name">
+                <router-link 
+                  :to="link.path" 
+                  @click="toggleMobileMenu"
+                  class="flex items-center gap-4 text-white/80 text-lg font-medium py-3 px-5 rounded-full transition-all duration-300 hover:text-white hover:bg-white/10"
+                  active-class="bg-red-600 text-white font-bold shadow-lg"
+                >
+                  <i v-if="link.name === 'Dashboard'" class="fas fa-tachometer-alt w-5 text-center"></i>
+                  <i v-else class="fas fa-external-link-alt w-5 text-center"></i>
+                  {{ link.name }}
+                </router-link>
+             </li>
+          </template>
 
           <template v-else>
             <li v-for="link in navLinks" :key="link.name">
@@ -251,6 +293,10 @@ const handleScroll = () => {
 
 // --- LOGIKA BARU: Header Class ---
 const headerClass = computed(() => {
+  // 1. Admin selalu warna Gelap/Hitam agar terlihat beda (Control Panel Vibe)
+  if (props.userRole === 'admin') {
+      return 'bg-gray-900 border-b border-gray-800 shadow-md';
+  }
   // 1. Jika sedang di-scroll, TETAP gunakan style blur (sesuai permintaan jangan diubah)
   if (isScrolled.value) {
     return 'backdrop-blur-md bg-[#1d3b31]/80 shadow-lg';
@@ -302,6 +348,13 @@ const navLinks = computed(() => {
         return [];
     }
 
+    if (props.userRole === 'admin') {
+        return [
+            { name: 'Dashboard', path: '/admin/dashboard' },
+            { name: 'Lihat Web', path: '/' } // Pintu keluar ke halaman user biasa
+        ];
+    }
+
     const links = [
         { name: 'Beranda', path: '/' },
         { name: 'Lapor', path: '/lapor' },
@@ -331,6 +384,10 @@ watch(() => props.userRole, (newValue, oldValue) => {}, { immediate: true });
 
 const activePage = computed(() => {
   if (props.userRole === 'driver') return 'Driver';
+   if (props.userRole === 'admin') {
+      if(route.path.includes('/admin')) return 'Dashboard';
+      return 'Lihat Web';
+  }
   const currentLink = navLinks.value.find(link => link.path === route.path);
   return currentLink ? currentLink.name : 'Beranda';
 });

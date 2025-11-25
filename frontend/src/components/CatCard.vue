@@ -22,6 +22,10 @@
           <div class="text-lg">
             <span class="font-bold">Jenis Kelamin:</span> {{ cat.gender === 'male' ? 'Jantan' : 'Betina' }}
           </div>
+          <p class="text-sm text-gray-500">
+            <i class="fas fa-home"></i> {{ cat.shelter }}
+            <i v-if="cat.is_verified_shelter" class="fas fa-check-circle text-blue-500 ml-1"></i>
+        </p>
         </div>
 
         <button 

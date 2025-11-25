@@ -30,8 +30,9 @@
                     <div class="text-right">
                         <p class="text-xs text-gray-200 uppercase font-bold">Status Akun</p>
                         <p class="font-bold text-[#EBCD5E] flex items-center gap-1 justify-end">
-                            <i class="fas fa-check-circle"></i> Terverifikasi
-                        </p>
+                          <i class="fas" :class="isVerified ? 'fa-check-circle' : 'fa-clock'"></i> 
+                          {{ isVerified ? 'Terverifikasi' : 'Menunggu Verifikasi' }}
+                      </p>
                     </div>
                     <img src="/img/cathelo.png" class="w-12 h-12 rounded-full bg-white border-2 border-[#EBCD5E]">
                 </div>
@@ -393,6 +394,14 @@ function resolveImageUrl(path) {
 }
 
 // --- LOGIC SHELTER ---
+const isVerified = ref(false);
+
+async function fetchShelterStatus() {
+    if (profileData.is_verified_shelter) {
+        isVerified.value = true;
+    }
+}
+
 function getShelterName() {
     const token = localStorage.getItem('userToken');
     if (token) {

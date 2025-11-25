@@ -13,6 +13,7 @@ class CatService {
                 c.photo AS image,
                 c.description,
                 c.adoption_status,
+                d.is_verified_shelter,
                 d.shelter_name AS shelter,
                 
                 -- LOGIKA BARU: Cek apakah user ini sudah me-like kucing ini?

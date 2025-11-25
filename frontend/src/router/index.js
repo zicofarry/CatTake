@@ -19,6 +19,7 @@ import DriverPage from '../pages/DriverPage.vue'
 import ShelterDriverPage from '../pages/ShelterDriverPage.vue'
 import ShelterCatPage from '../pages/ShelterCatPage.vue';
 import ShelterProfilePage from '../pages/ShelterProfilePage.vue';
+import AdminDashboard from '../pages/AdminDashboard.vue'
 
 const router = createRouter({
   history: createWebHistory(), 
@@ -47,6 +48,11 @@ const router = createRouter({
     { path: '/shelter/driver', name: 'ShelterDriver', component: ShelterDriverPage },
     { path: '/shelter/cats', name: 'ShelterCats', component: ShelterCatPage, meta: { requiresAuth: true, role: 'shelter' } },
     { path: '/driver', redirect: '/driver/tasks' },
+    {
+        path: '/admin/dashboard',
+        component: AdminDashboard,
+        meta: { requiresAuth: true, role: 'admin' } // Tandai butuh role admin
+    },
   ],
 
   scrollBehavior(to, from, savedPosition) {

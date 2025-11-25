@@ -22,11 +22,21 @@ class CommunityService {
 
     // --- 1. POSTINGAN UTAMA (LIST) ---
     static async getAllPosts(currentUserId) {
+        // [FIX] Menambahkan kolom is_verified untuk fitur centang biru
         const query = `
             SELECT 
                 p.id, p.author_id, p.title, p.content, p.media_path, p.likes_count, 
-                p.created_at, p.updated_at, -- Ambil updated_at
-                u.username, d.full_name, ds.shelter_name, d.profile_picture,
+                p.created_at, p.updated_at,
+                u.username, 
+                
+                -- Info User Biasa
+                d.full_name, 
+                d.profile_picture, 
+                d.is_verified,          -- Ambil status user biasa
+
+                -- Info Shelter
+                ds.shelter_name, 
+                ds.is_verified_shelter, -- Ambil status shelter
                 
                 -- Hitung Total Komentar + Reply
                 (
@@ -56,11 +66,13 @@ class CommunityService {
             if (!profilePath || profilePath === 'NULL.JPG') profilePath = '/img/NULL.JPG';
             else if (!profilePath.startsWith('http') && !profilePath.startsWith('/img/')) profilePath = `/public/img/profile/${profilePath}`;
 
-            // Format Foto Postingan (Cek apakah dari Lost Cat atau Post biasa)
+            // Format Foto Postingan
             let postPath = row.media_path;
             if (postPath) {
                 if (postPath.startsWith('lost-')) {
                     postPath = `/public/img/lost_cat/${postPath}`;
+                } else if (postPath.startsWith('http')) {
+                    postPath = postPath;
                 } else {
                     postPath = `/public/img/post/${postPath}`;
                 }
@@ -69,14 +81,17 @@ class CommunityService {
             return {
                 id: row.id,
                 authorId: row.author_id,
-                // community: 'CatLover Umum',
                 author: row.full_name || row.shelter_name || row.username,
                 username: row.username,
-                // [FITUR BARU] Tampilkan waktu dengan status update
-                time: this.formatTime(row.created_at, row.updated_at),
                 
-                title: row.title || (row.content.substring(0, 30) + '...'),
-                excerpt: row.content.substring(0, 60) + '...',
+                // [FIX] Menggunakan Class Name untuk memanggil static method
+                time: CommunityService.formatTime(row.created_at, row.updated_at),
+                
+                // [FIX] Logika Verified (User Biasa Verified ATAU Shelter Verified)
+                isVerified: (row.is_verified === true) || (row.is_verified_shelter === true),
+
+                title: row.title || (row.content ? row.content.substring(0, 30) + '...' : 'Tanpa Judul'),
+                excerpt: row.content ? row.content.substring(0, 60) + '...' : '',
                 description: row.content,
                 profileImg: profilePath,
                 postImg: postPath,

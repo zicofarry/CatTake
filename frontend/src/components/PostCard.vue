@@ -102,7 +102,7 @@ async function saveEdit() {
       <div class="flex items-center gap-3 relative z-20">
           <img :src="resolveImageUrl(postData.profileImg)" class="w-11 h-11 rounded-full object-cover border border-gray-100" @error="$event.target.src = '/img/NULL.JPG'" />
           <div class="flex-grow">
-              <strong class="block text-base">{{ postData.author }}</strong>
+              <strong class="block text-base">{{ postData.author }} <i v-if="postData.isVerified" class="fas fa-check-circle text-blue-500 text-xs" title="Verified Account"></i></strong>
               <span class="text-sm text-gray-500">@{{ postData.username }} · {{ postData.time }}</span>
           </div>
           

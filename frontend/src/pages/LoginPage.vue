@@ -135,11 +135,14 @@ async function handleLogin() {
       localStorage.setItem('username', username);
       
       emit('user-logged-in', role); 
-      if (role === 'driver') {
-          // Jika Driver, arahkan ke halaman khusus Driver
+      if (role === 'admin') {
+          // Jika Admin -> Ke Dashboard Admin
+          router.push('/admin/dashboard'); 
+      } else if (role === 'driver') {
+          // Jika Driver -> Ke Halaman Tugas
           router.push('/driver/tasks'); 
       } else {
-          // Jika User Biasa / Shelter, arahkan ke Home
+          // Jika User Biasa / Shelter -> Ke Home
           router.push('/'); 
       }
       
@@ -181,7 +184,13 @@ async function sendTokenToBackend(token) {
         localStorage.setItem('userRole', role);
         
         emit('user-logged-in', role); 
-        router.push('/'); 
+        if (role === 'admin') {
+            router.push('/admin/dashboard');
+        } else if (role === 'driver') {
+            router.push('/driver/tasks');
+        } else {
+            router.push('/'); 
+        }
 
     } catch (error) {
         console.error("Backend Verify Error:", error);

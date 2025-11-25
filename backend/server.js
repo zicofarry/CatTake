@@ -23,6 +23,7 @@ const rescueRoutes = require('./routes/rescueRoutes');
 const driverRoutes = require('./routes/driverRoutes');
 const authentication = require('./middlewares/authentication');
 const gamificationRoutes = require('./routes/gamificationRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 fastify.register(cors, {
     origin: true, // Biarkan Fastify yang mengatur header dynamic (Reflect origin)
@@ -66,6 +67,7 @@ fastify.register(lostCatRoutes, { prefix: '/api/v1/lost-cats' });
 fastify.register(rescueRoutes, { prefix: '/api/v1/rescue' });
 fastify.register(driverRoutes, { prefix: '/api/v1/drivers' });
 fastify.register(gamificationRoutes, { prefix: '/api/v1/gamification' });
+fastify.register(adminRoutes, { prefix: '/api/v1/admin' });
 
 fastify.get('/api/v1/dashboard', {
     preHandler: [authentication] 
