@@ -22,7 +22,11 @@ const authentication = require('./middlewares/authentication');
 const gamificationRoutes = require('./routes/gamificationRoutes');
 
 fastify.register(cors, {
-    origin: 'http://localhost:5173', 
+    origin: [
+        'http://localhost:5173', // Buat di laptop
+        'https://cattake-frontend-production.up.railway.app', // domain railway
+        'https://zicofarry.my.id' // domain sendiri
+    ], 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'], // Izinkan semua method yang diperlukan
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
