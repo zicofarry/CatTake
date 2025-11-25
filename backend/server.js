@@ -76,27 +76,30 @@ const start = async () => {
     try {
         await connectDB();
         
-        // --- DEBUGGING BLOCK ---
-        console.log("--> CHECKING ENV VARIABLES:");
-        console.log(`--> RAILWAY PORT ENV: ${process.env.PORT}`);
-        
-        // Railway biasanya inject port, kalau tidak ada kita paksa 8080 (default Railway)
+        // Ambil port dari ENV Railway
         const port = process.env.PORT ? parseInt(process.env.PORT) : 8080;
-        const host = '0.0.0.0'; // HARUS STRING '0.0.0.0'
+        
+        // RAHASIA FIX 502 RAILWAY:
+        // Gunakan '::' agar listen di IPv6 DAN IPv4 sekaligus.
+        // Jika error di localhost windows, gunakan fallback ke '0.0.0.0'
+        const host = '::'; 
 
         console.log(`--> ATTEMPTING TO LISTEN ON: ${host}:${port}`);
 
         await fastify.listen({ port: port, host: host });
         
-        // Kita ambil address resmi dari Fastify setelah berhasil listen
         console.log(`--> SERVER SUCCESS! Address: ${fastify.server.address().address}`);
         console.log(`--> SERVER SUCCESS! Port: ${fastify.server.address().port}`);
-        // -----------------------
 
     } catch (err) {
-        console.error("--> FATAL ERROR SAAT STARTUP:");
-        fastify.log.error(err);
-        process.exit(1);
+        // Fallback: Jika '::' gagal (misal di Windows lokal tertentu), coba 0.0.0.0
+        if (err.code === 'EADDRNOTAVAIL') {
+            console.log('--> IPv6 failed, falling back to IPv4 (0.0.0.0)');
+            await fastify.listen({ port: process.env.PORT || 8080, host: '0.0.0.0' });
+        } else {
+            fastify.log.error(err);
+            process.exit(1);
+        }
     }
 };
 
