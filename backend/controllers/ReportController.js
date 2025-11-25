@@ -5,6 +5,7 @@ const path = require('path');
 const util = require('util');
 const { pipeline } = require('stream');
 const pump = util.promisify(pipeline);
+const sharp = require('sharp');
 
 class ReportController {
     static async create(req, reply) {
@@ -15,10 +16,21 @@ class ReportController {
 
             for await (const part of parts) {
                 if (part.file) {
-                    const fileExtension = path.extname(part.filename);
-                    fileName = `report-${Date.now()}${fileExtension}`;
+                    const fileExtension = path.extname(part.filename).toLowerCase(); // .jpg, .png
+                    // Ubah ekstensi jadi .jpeg atau .webp agar konsisten dan kecil
+                    fileName = `report-${Date.now()}.jpeg`;
                     const savePath = path.join(__dirname, '../public/img/report_cat', fileName);
-                    await pump(part.file, fs.createWriteStream(savePath));
+                    
+                    
+                    // --- LOGIKA BARU: KOMPRESI ---
+                    // 1. Ubah file stream menjadi Buffer dulu
+                    const buffer = await part.toBuffer();
+
+                    // 2. Proses dengan Sharp (Resize & Compress)
+                    await sharp(buffer)
+                        .resize(800) // Resize lebar max 800px (tinggi otomatis), cukup buat web
+                        .jpeg({ quality: 80 }) // Kompres JPEG kualitas 80%
+                        .toFile(savePath); // Simpan ke disk
                 } else {
                     fields[part.fieldname] = part.value;
                 }

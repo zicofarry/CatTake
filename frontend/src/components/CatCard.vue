@@ -65,12 +65,81 @@ const props = defineProps({
   cat: { type: Object, required: true }
 });
 
-function resolveImageUrl(imageName) {
-    if (!imageName) return '/img/NULL.JPG'; // Gambar default local jika null
-    if (imageName.startsWith('http')) return imageName; // Jika URL external
+function resolveImageUrl(path) {
+    // 1. Handle Null/Undefined atau string kosong
+    if (!path || path === 'NULL' || path === 'NULL.JPG' || path === 'null') {
+        return '/img/NULL.JPG'; // Pastikan file placeholder ini ada di frontend
+    }
+
+    // 2. Handle URL Eksternal (misal dari Google Login atau link luar)
+    if (path.startsWith('http')) {
+        return path;
+    }
+
+    // --- BAGIAN PENTING: Ambil URL Server Dinamis ---
+    // Ambil dari .env (contoh: "http://localhost:3000/api/v1")
+    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    // Hapus '/api/v1' karena file statis ada di root, bukan di dalam route API
+    const serverUrl = apiBase.replace('/api/v1', ''); 
+
+    // 3. Handle Path Lengkap dari Backend (misal: /public/img/...)
+    if (path.startsWith('/public/')) {
+        return `${serverUrl}${path}`;
+    }
+
+    // 4. Handle Berdasarkan Prefix Nama File (Manual Mapping)
+    // Ini berguna jika di database cuma tersimpan nama file "profile-123.jpg"
     
-    // Arahkan ke folder backend public/img/cats
-    return `http://localhost:3000/public/img/cats/${imageName}`;
+    // Foto Profil (User/Driver/Shelter)
+    if (path.startsWith('profile-') || path.startsWith('driver-')) {
+        return `${serverUrl}/public/img/profile/${path}`;
+    }
+
+    // Foto Kucing Hilang
+    if (path.startsWith('lost-')) {
+        return `${serverUrl}/public/img/lost_cat/${path}`;
+    }
+    
+    // Foto Laporan Penemuan (Rescue)
+    if (path.startsWith('report-')) {
+        return `${serverUrl}/public/img/report_cat/${path}`;
+    }
+
+    // Foto Kucing Adopsi (Cat) - Tambahan dari analisa file CatController.js
+    if (path.startsWith('cat-')) {
+        return `${serverUrl}/public/img/cats/${path}`;
+    }
+
+    // Foto Bukti Transfer - Tambahan dari DonationController.js
+    if (path.startsWith('proof-')) {
+        return `${serverUrl}/public/img/proof_payment/${path}`;
+    }
+
+    // Foto QRIS Shelter - Tambahan dari ShelterProfilePage
+    if (path.startsWith('qr-')) {
+        return `${serverUrl}/public/img/qr_img/${path}`;
+    }
+
+    // Foto Dokumen Legalitas & KTP - Tambahan untuk dokumen
+    if (path.startsWith('ktp-')) {
+        return `${serverUrl}/public/img/identity/${path}`;
+    }
+    
+    if (path.startsWith('rescue-')) {
+        return `${serverUrl}/public/img/rescue_proof/${path}`;
+    }
+
+    if (path.startsWith('sim-')) {
+        return `${serverUrl}/public/img/licence/${path}`;
+    }
+
+    if (path.startsWith('post-')) {
+        return `${serverUrl}/public/img/post/${path}`;
+    }
+
+    // 5. Default Fallback (Asumsi aset statis lokal di folder public Frontend)
+    // Jika tidak cocok dengan pola di atas, anggap file ada di frontend/public/img/
+    return `/img/${path}`;
 }
 
 async function toggleFavorite() {

@@ -7,6 +7,7 @@ const path = require('path');
 const util = require('util');
 const { pipeline } = require('stream');
 const pump = util.promisify(pipeline);
+const sharp = require('sharp');
 
 class LostCatController {
 
@@ -18,10 +19,14 @@ class LostCatController {
 
             for await (const part of parts) {
                 if (part.file) {
-                    const fileExtension = path.extname(part.filename);
-                    fileName = `lost-${Date.now()}${fileExtension}`;
+                    fileName = `lost-${Date.now()}.jpeg`;
                     const savePath = path.join(__dirname, '../public/img/lost_cat', fileName);
-                    await pump(part.file, fs.createWriteStream(savePath));
+                    
+                    const buffer = await part.toBuffer();
+                    await sharp(buffer)
+                        .resize(800, null, { withoutEnlargement: true })
+                        .jpeg({ quality: 80 })
+                        .toFile(savePath);
                 } else {
                     fields[part.fieldname] = part.value;
                 }

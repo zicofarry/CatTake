@@ -5,6 +5,7 @@ const path = require('path');
 const util = require('util');
 const { pipeline } = require('stream');
 const pump = util.promisify(pipeline);
+const sharp = require('sharp');
 
 class DonationController {
 
@@ -19,18 +20,17 @@ class DonationController {
 
             for await (const part of parts) {
                 if (part.file) {
-                    const fileExtension = path.extname(part.filename);
-                    fileName = `proof-${Date.now()}${fileExtension}`;
-                    
-                    // Pastikan folder ada
+                    fileName = `proof-${Date.now()}.jpeg`;
                     const uploadDir = path.join(__dirname, '../public/img/proof_payment');
-                    if (!fs.existsSync(uploadDir)) {
-                        fs.mkdirSync(uploadDir, { recursive: true });
-                    }
+                    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
                     const savePath = path.join(uploadDir, fileName);
                     
-                    await pump(part.file, fs.createWriteStream(savePath));
+                    const buffer = await part.toBuffer();
+                    await sharp(buffer)
+                        .resize(800, null, { withoutEnlargement: true })
+                        .jpeg({ quality: 80 })
+                        .toFile(savePath);
                 } else {
                     fields[part.fieldname] = part.value;
                 }

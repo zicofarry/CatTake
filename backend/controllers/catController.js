@@ -5,6 +5,7 @@ const path = require('path');
 const util = require('util');
 const { pipeline } = require('stream');
 const pump = util.promisify(pipeline);
+const sharp = require('sharp');
 
 class CatController {
     // --- FITUR AMBIL KUCING SHELTER ---
@@ -50,9 +51,14 @@ class CatController {
                     const uploadDir = path.join(__dirname, '../public/img/cats');
                     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-                    const ext = path.extname(part.filename);
-                    filename = `cat-${Date.now()}${ext}`;
-                    await pump(part.file, fs.createWriteStream(path.join(uploadDir, filename)));
+                    filename = `cat-${Date.now()}.jpeg`; // Ubah ke jpeg
+                    
+                    // [BARU] Kompresi
+                    const buffer = await part.toBuffer();
+                    await sharp(buffer)
+                        .resize(800, null, { withoutEnlargement: true })
+                        .jpeg({ quality: 80 })
+                        .toFile(path.join(uploadDir, filename));
                 } else {
                     fields[part.fieldname] = part.value;
                 }
@@ -93,9 +99,14 @@ class CatController {
                     const uploadDir = path.join(__dirname, '../public/img/cats');
                     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
                     
-                    const ext = path.extname(part.filename);
-                    newFilename = `cat-${Date.now()}${ext}`;
-                    await pump(part.file, fs.createWriteStream(path.join(uploadDir, newFilename)));
+                    newFilename = `cat-${Date.now()}.jpeg`;
+                    
+                    // [BARU] Kompresi
+                    const buffer = await part.toBuffer();
+                    await sharp(buffer)
+                        .resize(800, null, { withoutEnlargement: true })
+                        .jpeg({ quality: 80 })
+                        .toFile(path.join(uploadDir, newFilename));
                 } else {
                     fields[part.fieldname] = part.value;
                 }

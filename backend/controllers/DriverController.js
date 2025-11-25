@@ -4,6 +4,7 @@ const path = require('path');
 const util = require('util');
 const { pipeline } = require('stream');
 const pump = util.promisify(pipeline);
+const sharp = require('sharp');
 const bcrypt = require('bcrypt'); 
 
 class DriverController {
@@ -47,17 +48,23 @@ class DriverController {
 
                     if (part.fieldname === 'sim') {
                         uploadDir = path.join(__dirname, '../public/img/license');
-                        filename = `sim-${Date.now()}${ext}`;
+                        filename = `sim-${Date.now()}.jpeg`; // .jpeg
                         simFilename = filename;
                     } else if (part.fieldname === 'photo') {
                         uploadDir = path.join(__dirname, '../public/img/profile');
-                        filename = `driver-${Date.now()}${ext}`;
+                        filename = `driver-${Date.now()}.jpeg`; // .jpeg
                         photoFilename = filename;
                     }
 
                     if (uploadDir) {
                         if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-                        await pump(part.file, fs.createWriteStream(path.join(uploadDir, filename)));
+                        
+                        // [BARU] Kompresi
+                        const buffer = await part.toBuffer();
+                        await sharp(buffer)
+                            .resize(800, null, { withoutEnlargement: true }) // Resize wajar
+                            .jpeg({ quality: 80 })
+                            .toFile(path.join(uploadDir, filename));
                     } else {
                         part.file.resume(); // Skip unknown file
                     }
@@ -118,17 +125,18 @@ class DriverController {
 
                     if (part.fieldname === 'sim') {
                         uploadDir = path.join(__dirname, '../public/img/license');
-                        filename = `sim-${Date.now()}${ext}`;
+                        filename = `sim-${Date.now()}.jpeg`;
                         newSim = filename;
                     } else if (part.fieldname === 'photo') {
                         uploadDir = path.join(__dirname, '../public/img/profile');
-                        filename = `driver-${Date.now()}${ext}`;
+                        filename = `driver-${Date.now()}.jpeg`;
                         newPhoto = filename;
                     }
 
                     if (uploadDir) {
                         if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-                        await pump(part.file, fs.createWriteStream(path.join(uploadDir, filename)));
+                        const buffer = await part.toBuffer();
+                        await sharp(buffer).resize(800).jpeg({ quality: 80 }).toFile(path.join(uploadDir, filename));
                     }
                 } else {
                     fields[part.fieldname] = part.value;

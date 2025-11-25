@@ -5,6 +5,7 @@ const path = require('path');
 const util = require('util');
 const { pipeline } = require('stream');
 const pump = util.promisify(pipeline);
+const sharp = require('sharp');
 
 const ensureDir = async (dirPath) => {
     try {
@@ -55,23 +56,27 @@ class AdoptionController {
                     const timestamp = Date.now();
                     
                     if (part.fieldname === 'identity_photo') {
-                        // Simpan KTP (Image)
-                        identityFileName = `ktp-${req.user.id}-${timestamp}${fileExt}`;
+                        // Simpan KTP (Image) -> COMPRESS
+                        identityFileName = `ktp-${req.user.id}-${timestamp}.jpeg`;
                         const savePath = path.join(identityDir, identityFileName);
-                        await pump(part.file, fs.createWriteStream(savePath));
+                        
+                        const buffer = await part.toBuffer();
+                        await sharp(buffer).resize(800).jpeg({ quality: 80 }).toFile(savePath);
                     
                     } else if (part.fieldname === 'statement_letter') {
-                        // VALIDASI PDF
-                        if (fileExt !== '.pdf') {
-                            // Konsumsi stream biar tidak hang, lalu throw error
-                            part.file.resume(); 
-                            return reply.code(400).send({ error: 'Surat Pernyataan harus berformat PDF (.pdf)' });
+                        // Surat Pernyataan -> Cek tipe file
+                        if (fileExt === '.pdf') {
+                            // PDF -> Save Normal
+                            statementFileName = `stmt-${req.user.id}-${timestamp}.pdf`;
+                            const savePath = path.join(statementDir, statementFileName);
+                            await pump(part.file, fs.createWriteStream(savePath));
+                        } else {
+                            // Image -> Compress
+                            statementFileName = `stmt-${req.user.id}-${timestamp}.jpeg`;
+                            const savePath = path.join(statementDir, statementFileName);
+                            const buffer = await part.toBuffer();
+                            await sharp(buffer).resize(1024).jpeg({ quality: 80 }).toFile(savePath);
                         }
-
-                        // Simpan Surat Pernyataan (PDF)
-                        statementFileName = `stmt-${req.user.id}-${timestamp}${fileExt}`;
-                        const savePath = path.join(statementDir, statementFileName);
-                        await pump(part.file, fs.createWriteStream(savePath));
                     } else {
                         part.file.resume();
                     }

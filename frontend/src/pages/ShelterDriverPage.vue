@@ -25,16 +25,28 @@ const simPreview = ref(null);
 const photoPreview = ref(null);
 
 // --- HELPERS ---
-// URL SIM di folder license
+const baseApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const serverUrl = baseApiUrl.replace('/api/v1', ''); 
+
+// --- FUNGSI RESOLVER ---
+
 function resolveSimUrl(filename) {
     if (!filename) return null;
-    return `http://localhost:3000/public/img/license/${filename}`;
+    
+    // Jaga-jaga jika filename sudah berupa URL lengkap (misal dari external)
+    if (filename.startsWith('http')) return filename;
+
+    // Gunakan serverUrl dinamis
+    return `${serverUrl}/public/img/license/${filename}`;
 }
 
-// URL Foto Profil di folder profile
 function resolvePhotoUrl(filename) {
-    if (!filename) return null; // Bisa return default avatar path local
-    return `http://localhost:3000/public/img/profile/${filename}`;
+    if (!filename) return null; // Atau return '/img/NULL.JPG' sebagai default
+    
+    if (filename.startsWith('http')) return filename;
+
+    // Gunakan serverUrl dinamis
+    return `${serverUrl}/public/img/profile/${filename}`;
 }
 
 function getAvatarColor(index) {

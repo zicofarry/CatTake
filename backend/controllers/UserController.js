@@ -5,6 +5,7 @@ const path = require('path');
 const util = require('util');
 const { pipeline } = require('stream');
 const pump = util.promisify(pipeline);
+const sharp = require('sharp');
 
 async function deleteOldFile(fileName) {
     // Abaikan penghapusan jika tidak ada nama file atau itu adalah nama default/null
@@ -92,12 +93,15 @@ class UserController {
             // Loop untuk memproses file dan field lainnya (seperti role)
             for await (const part of parts) {
                 if (part.file) {
-                    const fileExtension = path.extname(part.filename);
-                    fileName = `profile-${userId}-${Date.now()}${fileExtension}`;
+                    fileName = `profile-${userId}-${Date.now()}.jpeg`; // .jpeg
                     const savePath = path.join(__dirname, '../public/img/profile', fileName);
                     
-                    // Simpan file ke folder public/img
-                    await pump(part.file, fs.createWriteStream(savePath));
+                    // [BARU] Kompresi Profil (Kecilkan lebih lanjut)
+                    const buffer = await part.toBuffer();
+                    await sharp(buffer)
+                        .resize(400, 400, { fit: 'cover' }) // Square Crop 400x400
+                        .jpeg({ quality: 80 })
+                        .toFile(savePath);
                 } else {
                     // Ambil field 'role' jika dikirim dari frontend
                     if (part.fieldname === 'role') {
@@ -156,16 +160,30 @@ class UserController {
                     const timestamp = Date.now();
 
                     if (part.fieldname === 'qr_img') {
-                        qrFileName = `qr-${userId}-${timestamp}${ext}`;
+                       qrFileName = `qr-${userId}-${timestamp}.jpeg`;
                         const savePath = path.join(__dirname, '../public/img/qr_img', qrFileName);
                         if (!fs.existsSync(path.dirname(savePath))) fs.mkdirSync(path.dirname(savePath), { recursive: true });
                         await pump(part.file, fs.createWriteStream(savePath));
                     
                     } else if (part.fieldname === 'legal_certificate') {
-                        legalFileName = `legal-${userId}-${timestamp}${ext}`;
-                        const savePath = path.join(__dirname, '../public/docs/legal', legalFileName);
-                        if (!fs.existsSync(path.dirname(savePath))) fs.mkdirSync(path.dirname(savePath), { recursive: true });
-                        await pump(part.file, fs.createWriteStream(savePath));
+                        if (ext.toLowerCase() === '.pdf') {
+                            // PDF -> Jangan pakai Sharp
+                            legalFileName = `legal-${userId}-${timestamp}.pdf`;
+                            const savePath = path.join(__dirname, '../public/docs/legal', legalFileName);
+                            if (!fs.existsSync(path.dirname(savePath))) fs.mkdirSync(path.dirname(savePath), { recursive: true });
+                            const util = require('util');
+                            const { pipeline } = require('stream');
+                            const pump = util.promisify(pipeline);
+                            await pump(part.file, fs.createWriteStream(savePath));
+                        } else {
+                            // Image -> Pakai Sharp
+                            legalFileName = `legal-${userId}-${timestamp}.jpeg`;
+                            const savePath = path.join(__dirname, '../public/docs/legal', legalFileName);
+                            if (!fs.existsSync(path.dirname(savePath))) fs.mkdirSync(path.dirname(savePath), { recursive: true });
+                            
+                            const buffer = await part.toBuffer();
+                            await sharp(buffer).resize(1024).jpeg({ quality: 80 }).toFile(savePath);
+                        }
                     } else {
                         part.file.resume();
                     }

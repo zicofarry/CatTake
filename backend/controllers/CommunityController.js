@@ -4,6 +4,7 @@ const path = require('path');
 const util = require('util');
 const { pipeline } = require('stream');
 const pump = util.promisify(pipeline);
+const sharp = require('sharp');
 
 class CommunityController {
     
@@ -36,19 +37,20 @@ class CommunityController {
 
             for await (const part of parts) {
                 if (part.file) {
-                    const fileExtension = path.extname(part.filename);
-                    fileName = `post-${Date.now()}${fileExtension}`;
-                    
-                    // [PERBAIKAN] Simpan ke folder public/img/post
+                    fileName = `post-${Date.now()}.jpeg`;
                     const uploadDir = path.join(__dirname, '../public/img/post');
-                    
-                    // Buat folder jika belum ada
                     if (!fs.existsSync(uploadDir)) {
                         fs.mkdirSync(uploadDir, { recursive: true });
                     }
 
                     const savePath = path.join(uploadDir, fileName);
-                    await pump(part.file, fs.createWriteStream(savePath));
+                    
+                    // Kompresi
+                    const buffer = await part.toBuffer();
+                    await sharp(buffer)
+                        .resize(800, null, { withoutEnlargement: true })
+                        .jpeg({ quality: 80 })
+                        .toFile(savePath);
                 } else {
                     if (part.fieldname === 'content') content = part.value;
                     else if (part.fieldname === 'title') title = part.value; 

@@ -55,36 +55,79 @@ const healthOptions = [
 
 // --- HELPERS ---
 function resolveImageUrl(path) {
-    // 1. Handle Null/Undefined
-    if (!path || path === 'NULL' || path === 'null') return '/img/NULL.JPG';
+    // 1. Handle Null/Undefined atau string kosong
+    if (!path || path === 'NULL' || path === 'NULL.JPG' || path === 'null') {
+        return '/img/NULL.JPG'; // Pastikan file placeholder ini ada di frontend
+    }
 
-    // 2. Handle URL Eksternal (misal dari Google)
-    if (path.startsWith('http')) return path;
+    // 2. Handle URL Eksternal (misal dari Google Login atau link luar)
+    if (path.startsWith('http')) {
+        return path;
+    }
 
-    // 3. Handle Path Lengkap dari Backend (Biasanya dari RescueService)
-    // Contoh: "/public/img/report_cat/report-123.jpg"
+    // --- BAGIAN PENTING: Ambil URL Server Dinamis ---
+    // Ambil dari .env (contoh: "http://localhost:3000/api/v1")
+    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    // Hapus '/api/v1' karena file statis ada di root, bukan di dalam route API
+    const serverUrl = apiBase.replace('/api/v1', ''); 
+
+    // 3. Handle Path Lengkap dari Backend (misal: /public/img/...)
     if (path.startsWith('/public/')) {
-        return `http://localhost:3000${path}`;
+        return `${serverUrl}${path}`;
     }
 
-    // 4. Handle Filename Only (Biasanya dari tabel Cats/Raw DB)
+    // 4. Handle Berdasarkan Prefix Nama File (Manual Mapping)
+    // Ini berguna jika di database cuma tersimpan nama file "profile-123.jpg"
     
-    // Kucing Adopsi (cat-...) -> Folder cats
-    if (path.startsWith('cat-')) {
-        return `http://localhost:3000/public/img/cats/${path}`;
+    // Foto Profil (User/Driver/Shelter)
+    if (path.startsWith('profile-') || path.startsWith('driver-')) {
+        return `${serverUrl}/public/img/profile/${path}`;
     }
 
-    // Kucing Laporan (report-...) -> Folder report_cat
-    if (path.startsWith('report-')) {
-        return `http://localhost:3000/public/img/report_cat/${path}`;
-    }
-
-    // Kucing Hilang (lost-...) -> Folder lost_cat
+    // Foto Kucing Hilang
     if (path.startsWith('lost-')) {
-        return `http://localhost:3000/public/img/lost_cat/${path}`;
+        return `${serverUrl}/public/img/lost_cat/${path}`;
+    }
+    
+    // Foto Laporan Penemuan (Rescue)
+    if (path.startsWith('report-')) {
+        return `${serverUrl}/public/img/report_cat/${path}`;
     }
 
-    // Default Fallback (Asset Frontend)
+    // Foto Kucing Adopsi (Cat) - Tambahan dari analisa file CatController.js
+    if (path.startsWith('cat-')) {
+        return `${serverUrl}/public/img/cats/${path}`;
+    }
+
+    // Foto Bukti Transfer - Tambahan dari DonationController.js
+    if (path.startsWith('proof-')) {
+        return `${serverUrl}/public/img/proof_payment/${path}`;
+    }
+
+    // Foto QRIS Shelter - Tambahan dari ShelterProfilePage
+    if (path.startsWith('qr-')) {
+        return `${serverUrl}/public/img/qr_img/${path}`;
+    }
+
+    // Foto Dokumen Legalitas & KTP - Tambahan untuk dokumen
+    if (path.startsWith('ktp-')) {
+        return `${serverUrl}/public/img/identity/${path}`;
+    }
+    
+    if (path.startsWith('rescue-')) {
+        return `${serverUrl}/public/img/rescue_proof/${path}`;
+    }
+
+    if (path.startsWith('sim-')) {
+        return `${serverUrl}/public/img/licence/${path}`;
+    }
+
+    if (path.startsWith('post-')) {
+        return `${serverUrl}/public/img/post/${path}`;
+    }
+
+    // 5. Default Fallback (Asumsi aset statis lokal di folder public Frontend)
+    // Jika tidak cocok dengan pola di atas, anggap file ada di frontend/public/img/
     return `/img/${path}`;
 }
 
