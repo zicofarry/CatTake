@@ -1,7 +1,7 @@
 <template>
     <div 
-        class="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
-        :class="{ 'ring-2 ring-[#EBCD5E]': isOpen }"
+        class="bg-white border-2 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
+        :class="isOpen ? 'border-[#EBCD5E]' : 'border-gray-200'"
     >
         <div 
             @click="toggleDetails"
