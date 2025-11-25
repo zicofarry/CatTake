@@ -246,7 +246,7 @@ async function handleSignup() {
     
   } catch (error) {
     if (error.response?.status === 409) {
-        alert('Gagal: Email/Username/NIK sudah terdaftar.');
+        alert('Gagal: Email/Username sudah terdaftar.');
     } else {
         const errorMessage = error.response?.data?.error || 'Pendaftaran gagal. Server error.';
         alert(errorMessage);
