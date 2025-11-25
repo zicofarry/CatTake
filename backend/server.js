@@ -22,15 +22,15 @@ const authentication = require('./middlewares/authentication');
 const gamificationRoutes = require('./routes/gamificationRoutes');
 
 fastify.register(cors, {
-    // origin: [
-    //     'http://localhost:5173', // domain lokal
-    //     'https://cattake-frontend-production.up.railway.app', // domain railway
-    //     'https://zicofarry.my.id' // domain sendiri
-    // ], 
-    origin: true, // Izinkan semua origin 
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'], // Izinkan semua method yang diperlukan
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    // Masukkan semua domain yang mungkin mengakses backend kamu
+    origin: [
+        'http://localhost:5173', 
+        'https://cattake-frontend-production.up.railway.app', // domain Railway
+        'https://zicofarry.my.id' // Jika pakai custom domain
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true // Ini WAJIB true karena kamu pakai JWT/Session
 });
 
 fastify.register(multipart, {
