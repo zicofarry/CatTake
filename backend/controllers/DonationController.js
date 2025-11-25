@@ -21,7 +21,14 @@ class DonationController {
                 if (part.file) {
                     const fileExtension = path.extname(part.filename);
                     fileName = `proof-${Date.now()}${fileExtension}`;
-                    const savePath = path.join(__dirname, '../public/img/proof_payment', fileName);
+                    
+                    // Pastikan folder ada
+                    const uploadDir = path.join(__dirname, '../public/img/proof_payment');
+                    if (!fs.existsSync(uploadDir)) {
+                        fs.mkdirSync(uploadDir, { recursive: true });
+                    }
+
+                    const savePath = path.join(uploadDir, fileName);
                     
                     await pump(part.file, fs.createWriteStream(savePath));
                 } else {
@@ -29,7 +36,7 @@ class DonationController {
                 }
             }
 
-            // 2. Validasi User Login (Dari Middleware JWT)
+            // 2. Validasi User Login
             const userId = req.user.id; 
 
             // 3. Susun data untuk Service
@@ -37,18 +44,26 @@ class DonationController {
                 donatur_id: userId,
                 shelter_id: fields.shelter_id, 
                 amount: fields.amount,
-                
-                // [FIX LOGIKA ANONIM]: Menangani berbagai format input (string 'true', '1', atau boolean)
                 is_anonymus: fields.is_anonymus === 'true' || fields.is_anonymus === '1' || fields.is_anonymus === true,
-                
                 payment_method: fields.payment_method,
                 proof_file: fileName
             };
 
             // 4. Simpan ke DB
             const result = await DonationService.createDonation(donationData);
-            // TRIGGER QUEST: Tambah nominal donasi ke progress
-            GamificationService.updateProgress(userId, 'DONATION_AMOUNT', parseFloat(fields.amount));
+            
+            // [2] PERBAIKAN LOGIKA GAMIFIKASI (Bungkus try-catch)
+            // Agar jika sistem poin error, donasi tetap dianggap sukses
+            try {
+                // TRIGGER QUEST: Tambah nominal donasi ke progress
+                if (fields.amount) {
+                    GamificationService.updateProgress(userId, 'DONATION_AMOUNT', parseFloat(fields.amount))
+                        .catch(err => console.error("Gamification Error (Async):", err));
+                }
+            } catch (gameErr) {
+                console.error("Gamification Error (Sync):", gameErr);
+            }
+
             return reply.code(201).send({ 
                 status: 'success', 
                 message: 'Donasi berhasil dikirim', 
@@ -56,7 +71,7 @@ class DonationController {
             });
 
         } catch (error) {
-            console.error(error);
+            console.error("Error Donation Create:", error);
             return reply.code(500).send({ error: 'Gagal memproses donasi' });
         }
     }

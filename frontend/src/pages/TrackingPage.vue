@@ -499,9 +499,11 @@ function updateMapMarkers() {
 // --- REALTIME ---
 function startSendingLocation() {
     if (!navigator.geolocation) return;
+    console.log("Mulai mengirim lokasi...");
     locationInterval = setInterval(() => {
         navigator.geolocation.getCurrentPosition(async (position) => {
             const { latitude, longitude } = position.coords;
+            console.log(`Mengirim lokasi: ${latitude}, ${longitude}`);
             if (courierMarker) courierMarker.setLatLng([latitude, longitude]);
             try {
                 await apiClient.post('/rescue/location', { assignmentId: trackingData.value.db_id, lat: latitude, long: longitude });
@@ -509,14 +511,31 @@ function startSendingLocation() {
         }, () => {}, { enableHighAccuracy: true });
     }, 5000);
 }
+
 function startTrackingDriver() {
+    console.log("Memulai pemantauan lokasi driver...");
     trackingInterval = setInterval(async () => {
         try {
+            // console.log(`[TRACKING-USER] Mengambil lokasi dari ID: ${trackingData.value.db_id}`);
             const res = await apiClient.get(`/rescue/location/${trackingData.value.db_id}`);
+            
+            // console.log("[TRACKING-USER] Response Backend:", res.data);
             if (res.data.status === 'success' && courierMarker) {
-                courierMarker.setLatLng([res.data.data.lat, res.data.data.long]);
+                const { lat, long } = res.data.data;
+                
+                // 3. Log koordinat yang diterima valid
+                console.log(`Koordinat Diterima: Lat ${lat}, Long ${long}`);
+                // console.log(`[TRACKING-USER] Mengupdate posisi marker di peta...`);
+                
+                // Update posisi marker di peta
+                courierMarker.setLatLng([lat, long]);
+            } else {
+                // Log jika data belum ada atau status waiting
+                console.warn("[TRACKING-USER] Menunggu update lokasi dari driver...", res.data);
             }
-        } catch (e) {}
+        } catch (e) {
+            console.error("[TRACKING-USER] Error saat fetch lokasi:", e);
+        }
     }, 5000);
 }
 

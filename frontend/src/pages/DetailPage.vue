@@ -150,7 +150,7 @@
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">Achievement</h2>
             
-            <div v-if="profileData.total_points !== undefined" class="flex items-center text-xl font-extrabold text-[#EBCD5E]">
+            <div v-if="profileData && profileData.total_points !== undefined" class="flex items-center text-xl font-extrabold text-[#EBCD5E]">
                 {{ Math.floor(profileData.total_points).toLocaleString('id-ID') }}
                 <i class="fas fa-trophy ml-2 text-2xl"></i>
                 <span class="text-sm font-semibold text-gray-600 ml-1">Poin</span>
