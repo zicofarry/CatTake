@@ -73,16 +73,10 @@
                 >
                 <span>{{ props.profileData ? props.profileData.name : 'Memuat...' }}</span>
             </button>
-            <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl p-4 z-40 text-left">
+            <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl p-4 z-40">
                 <p class="font-bold text-gray-800">{{ props.profileData ? props.profileData.name : 'Shelter Profil' }}</p>
                 <p class="text-sm text-gray-500 mb-4 truncate">{{ props.profileData ? props.profileData.email : 'email@cattake.com' }}</p>
-                <button 
-                    @click="$router.push('/shelter/profile'); isProfileDropdownOpen = false;" 
-                    class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 rounded-lg transition duration-200 mt-2"
-                >
-                    Edit Profile Shelter
-                </button>
-                
+                <button @click="handleEditProfileShelterClick" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 rounded-lg transition duration-200 mb-2">Edit Profile Shelter</button>
                 <button @click="handleSignOut" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition duration-200">Sign Out</button>
             </div>
         </div>
@@ -343,6 +337,11 @@ function toggleProfileDropdown() {
 function handleEditProfileClick() {
     isProfileDropdownOpen.value = false; 
     router.push('/profile');             
+}
+
+function handleEditProfileShelterClick() {
+    isProfileDropdownOpen.value = false; 
+    router.push('/shelter/profile');             
 }
 
 function handleSignOut() {
