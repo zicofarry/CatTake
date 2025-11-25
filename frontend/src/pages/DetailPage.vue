@@ -112,77 +112,87 @@
 
             <div class="mt-12 flex flex-col md:flex-row gap-8">
     
-                <section class="bg-white p-6 rounded-2xl shadow-xl md:w-1/2">
-                    <h2 class="text-2xl font-bold mb-6 text-gray-800">Quest</h2>
-                    
-                    <div v-if="quests.length > 0">
-                        <div v-for="(quest, index) in quests" :key="index" class="mb-4">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-semibold">{{ quest.name }}</span>
-                                <span class="text-gray-500 text-sm ml-2">
-                                    {{ parseFloat(quest.progress).toLocaleString('id-ID') }} / {{ parseFloat(quest.target).toLocaleString('id-ID') }}
-                                </span>
-                                <span class="text-yellow-500 flex items-center">
-                                    {{ quest.points }} <i class="fas fa-star ml-1 text-sm"></i>
-                                </span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                <div 
-                                    class="bg-green-700 h-2.5 rounded-full" 
-                                    :style="{ width: `${(quest.progress / quest.target) * 100}%` }"
-                                ></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div v-else class="text-center py-4 text-gray-500 italic">
-                        Semua Quest telah diselesaikan atau belum ada misi yang tersedia.
-                    </div>
-                </section>
-                <section class="bg-white p-6 rounded-2xl shadow-xl md:w-1/2">
-                    
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">Achievement</h2>
+    <section class="bg-white p-6 rounded-2xl shadow-xl md:w-1/2">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Quest</h2>
+        
+        <div class="max-h-[350px] overflow-y-auto custom-scrollbar pr-3">
+            <div v-if="quests.length > 0">
+                <div v-for="(quest, index) in quests" :key="index" class="mb-4">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-semibold">{{ quest.name }}</span>
                         
-                        <div v-if="profileData.total_points !== undefined" class="flex items-center text-xl font-extrabold text-[#EBCD5E]">
-                            {{ Math.floor(profileData.total_points).toLocaleString('id-ID') }}                            <i class="fas fa-trophy ml-2 text-2xl"></i>
-                            <span class="text-sm font-semibold text-gray-600 ml-1">Poin</span>
-                        </div>
-                        </div>
-                    <div v-if="achievements.length === 0" class="text-center py-4 text-gray-500 italic">
-                        Belum ada achievement yang didapatkan.
-                    </div>
-                    
-                    <div v-else v-for="(achievement, index) in achievements" :key="index" class="mb-4 p-3 rounded-xl border"
-                        :class="achievement.isClaimed ? 'bg-green-100 border-green-200' : 'bg-yellow-50 border-yellow-200'">
-                        
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="font-semibold text-gray-800 flex items-center gap-2"
-                                :class="achievement.isClaimed ? 'text-green-800' : 'text-orange-600'">
-                                <i class="fas fa-medal text-xl text-amber-500"></i>
-                                {{ achievement.name }}
+                        <div class="flex items-center text-sm ml-2 gap-3">
+                            <span class="text-gray-500 text-sm w-24 text-right">
+                                {{ parseFloat(quest.progress).toLocaleString('id-ID') }} / {{ parseFloat(quest.target).toLocaleString('id-ID') }}
                             </span>
-                            <span class="text-amber-500 flex items-center font-bold">
-                                {{ achievement.points }} <i class="fas fa-trophy ml-1 text-sm"></i>
+                            <span class="text-yellow-500 flex items-center font-bold">
+                                {{ quest.points }} <i class="fas fa-star ml-1 text-sm"></i>
                             </span>
                         </div>
-                        
-                        <p class="text-sm text-gray-600 mt-1 mb-3">{{ achievement.description }}</p>
-                        
-                        <button 
-                            v-if="!achievement.isClaimed"
-                            @click="claimReward(achievement.id)"
-                            :disabled="isLoading"
-                            class="w-full bg-[#EBCD5E] hover:bg-[#dcb945] text-gray-900 py-2 rounded-lg text-sm font-bold shadow-md transition disabled:opacity-50"
-                        >
-                            {{ isLoading ? 'Memproses...' : 'Klaim Poin!' }}
-                        </button>
-                        <div v-else class="text-green-700 text-sm font-bold text-center py-1">
-                            <i class="fas fa-check"></i> Poin Sudah Diklaim
-                        </div>
                     </div>
-                </section>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div 
+                            class="bg-green-700 h-2.5 rounded-full" 
+                            :style="{ width: `${(quest.progress / quest.target) * 100}%` }"
+                        ></div>
+                    </div>
+                </div>
             </div>
+            
+            <div v-else class="text-center py-4 text-gray-500 italic">
+                Semua Quest telah diselesaikan atau belum ada misi yang tersedia.
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-white p-6 rounded-2xl shadow-xl md:w-1/2">
+        
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Achievement</h2>
+            
+            <div v-if="profileData.total_points !== undefined" class="flex items-center text-xl font-extrabold text-[#EBCD5E]">
+                {{ Math.floor(profileData.total_points).toLocaleString('id-ID') }}
+                <i class="fas fa-trophy ml-2 text-2xl"></i>
+                <span class="text-sm font-semibold text-gray-600 ml-1">Poin</span>
+            </div>
+        </div>
+        
+        <div class="max-h-[350px] overflow-y-auto custom-scrollbar pr-3">
+            <div v-if="achievements.length === 0" class="text-center py-4 text-gray-500 italic">
+                Belum ada achievement yang didapatkan.
+            </div>
+            
+            <div v-else v-for="(achievement, index) in achievements" :key="index" class="mb-4 p-3 rounded-xl border"
+                :class="achievement.isClaimed ? 'bg-green-100 border-green-200' : 'bg-yellow-50 border-yellow-200'">
+                
+                <div class="flex justify-between items-start mb-2">
+                    <span class="font-semibold text-gray-800 flex items-center gap-2"
+                        :class="achievement.isClaimed ? 'text-green-800' : 'text-orange-600'">
+                        <i class="fas fa-medal text-xl text-amber-500"></i>
+                        {{ achievement.name }}
+                    </span>
+                    <span class="text-amber-500 flex items-center font-bold">
+                        {{ achievement.points }} <i class="fas fa-trophy ml-1 text-sm"></i>
+                    </span>
+                </div>
+                
+                <p class="text-sm text-gray-600 mt-1 mb-3">{{ achievement.description }}</p>
+                
+                <button 
+                    v-if="!achievement.isClaimed"
+                    @click="claimReward(achievement.id)"
+                    :disabled="isLoading"
+                    class="w-full bg-[#EBCD5E] hover:bg-[#dcb945] text-gray-900 py-2 rounded-lg text-sm font-bold shadow-md transition disabled:opacity-50"
+                >
+                    {{ isLoading ? 'Memproses...' : 'Klaim Poin!' }}
+                </button>
+                <div v-else class="text-green-700 text-sm font-bold text-center py-1">
+                    <i class="fas fa-check"></i> Poin Sudah Diklaim
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
         </div>
     </main>
 
@@ -481,4 +491,16 @@ function handleSignOut() {
 </script>
 
 <style scoped>
+/* Custom Scrollbar Styling */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
 </style>
