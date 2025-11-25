@@ -265,8 +265,17 @@ const headerClass = computed(() => {
   return 'bg-transparent';
 });
 
+// --- LOGIC FIX: Tutup Menu Mobile saat Resize ke Desktop ---
+const checkWindowSize = () => {
+  // 768px adalah breakpoint 'md' di Tailwind
+  if (window.innerWidth >= 768) {
+    isMobileMenuOpen.value = false;
+  }
+};
+
 onMounted(() => {
   window.addEventListener('scroll', handleScroll);
+  window.addEventListener('resize', checkWindowSize);
 });
 
 onUnmounted(() => {
