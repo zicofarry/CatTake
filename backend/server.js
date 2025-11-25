@@ -75,31 +75,25 @@ fastify.get('/api/v1/dashboard', {
 const start = async () => {
     try {
         await connectDB();
-        
-        // Ambil port dari ENV Railway
-        const port = process.env.PORT ? parseInt(process.env.PORT) : 8080;
-        
-        // RAHASIA FIX 502 RAILWAY:
-        // Gunakan '::' agar listen di IPv6 DAN IPv4 sekaligus.
-        // Jika error di localhost windows, gunakan fallback ke '0.0.0.0'
-        const host = '::'; 
 
-        console.log(`--> ATTEMPTING TO LISTEN ON: ${host}:${port}`);
+        // LOGIC PENYELAMAT:
+        // 1. Cek apakah Railway menyuntikkan PORT (biasanya ada).
+        // 2. Jika tidak ada, pakai 3000 (sesuai settingan Railway kamu).
+        const port = process.env.PORT || 3000; 
+        
+        // WAJIB 0.0.0.0 buat Railway
+        const host = '0.0.0.0'; 
 
+        // Jalankan server
         await fastify.listen({ port: port, host: host });
         
-        console.log(`--> SERVER SUCCESS! Address: ${fastify.server.address().address}`);
-        console.log(`--> SERVER SUCCESS! Port: ${fastify.server.address().port}`);
+        console.log(`✅ SERVER CONNECTED!`);
+        console.log(`   Listening on: http://${host}:${port}`);
+        console.log(`   Railway Setting Port: 3000 (Should match)`);
 
     } catch (err) {
-        // Fallback: Jika '::' gagal (misal di Windows lokal tertentu), coba 0.0.0.0
-        if (err.code === 'EADDRNOTAVAIL') {
-            console.log('--> IPv6 failed, falling back to IPv4 (0.0.0.0)');
-            await fastify.listen({ port: process.env.PORT || 8080, host: '0.0.0.0' });
-        } else {
-            fastify.log.error(err);
-            process.exit(1);
-        }
+        fastify.log.error(err);
+        process.exit(1);
     }
 };
 
