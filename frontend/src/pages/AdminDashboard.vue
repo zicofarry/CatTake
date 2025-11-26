@@ -22,7 +22,7 @@
                     
                     <div class="mt-4">
                         <p class="text-xs font-bold text-gray-400 uppercase mb-1">Dokumen Legalitas</p>
-                        <a v-if="shelter.legal_certificate" :href="resolveUrl(shelter.legal_certificate)" target="_blank" class="text-blue-600 hover:underline text-sm flex items-center gap-1">
+                        <a v-if="shelter.legal_certificate" :href="resolveImageUrl(shelter.legal_certificate)" target="_blank" class="text-blue-600 hover:underline text-sm flex items-center gap-1">
                             <i class="fas fa-file-pdf"></i> Lihat Dokumen
                         </a>
                         <span v-else class="text-red-500 text-sm italic">Belum upload dokumen</span>

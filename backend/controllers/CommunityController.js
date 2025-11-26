@@ -1,4 +1,5 @@
 const CommunityService = require('../services/CommunityService');
+const GamificationService = require('../services/GamificationService');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');

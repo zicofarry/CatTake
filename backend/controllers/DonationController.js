@@ -1,5 +1,6 @@
 // backend/controllers/DonationController.js
 const DonationService = require('../services/DonationService');
+const GamificationService = require('../services/GamificationService');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
