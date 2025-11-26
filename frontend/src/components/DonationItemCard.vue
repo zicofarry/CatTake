@@ -194,7 +194,9 @@ function resolveProofUrl(filename) {
     if (!filename) return '';
     // Asumsi file disimpan di folder public/img di backend
     // Sesuaikan port jika berbeda
-    return `http://localhost:3000/public/img/proof_payment/${filename}`;
+    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    const serverUrl = apiBase.replace('/api/v1', '');
+    return `${serverUrl}/public/img/proof_payment/${filename}`;
 }
 
 // Fallback Image
