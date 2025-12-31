@@ -7,6 +7,8 @@ const multipart = require('@fastify/multipart');
 const path = require('path'); 
 const fastifyStatic = require('@fastify/static'); 
 const { connectDB } = require('./config/db');
+const fastifySwagger = require('@fastify/swagger');
+const fastifySwaggerUi = require('@fastify/swagger-ui');
 
 // Import route
 const DashboardController = require('./controllers/DashboardController');
@@ -48,6 +50,20 @@ fastify.register(fastifyStatic, {
     limits: {
         fileSize: 10 * 1024 * 1024, // Batas: 10 MB
     }
+});
+
+fastify.register(fastifySwagger, {
+    openapi: {
+        info: {
+            title: 'CatTake API Documentation',
+            description: 'Daftar endpoint otomatis untuk CatTake',
+            version: '1.0.0'
+        },
+    }
+});
+
+fastify.register(fastifySwaggerUi, {
+    routePrefix: '/docs',
 });
 
 fastify.get('/', async (request, reply) => {
