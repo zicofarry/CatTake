@@ -109,6 +109,8 @@ class CatModel {
                 c.name,
                 c.age,
                 c.gender,
+                c.breed,
+                c.adoption_status,
                 c.photo AS image,
                 c.shelter_id,
                 
@@ -122,8 +124,8 @@ class CatModel {
             -- Join ke tabel favorite_cats TAPI khusus untuk user yang sedang login ($1)
             LEFT JOIN favorite_cats f ON c.id = f.cat_id AND f.user_id = $1
             
-            WHERE c.is_adopted = false
-            ORDER BY c.created_at DESC
+            WHERE c.adoption_status = 'available'
+            ORDER BY f.created_at DESC
         `;
 
         // Jika user tidak login (currentUserId null), query tetap jalan tapi isFavorited false semua
