@@ -4,7 +4,7 @@ import { useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 
-// IP Address Backend (Sesuai IP Hotspot kamu yang terakhir)
+// IP Address Backend
 const API_URL = 'http://10.173.4.177:3000';
 
 const { width } = Dimensions.get('window');
@@ -14,7 +14,6 @@ export default function HomeScreen() {
   const [alumniCats, setAlumniCats] = useState<any[]>([]);
   const [loadingAlumni, setLoadingAlumni] = useState(true);
 
-  // Ambil data alumni (Hall of Fame)
   useEffect(() => {
     fetchAlumni();
   }, []);
@@ -23,8 +22,6 @@ export default function HomeScreen() {
     try {
       const response = await fetch(`${API_URL}/api/v1/cats/adopted`);
       const data = await response.json();
-      
-      // Ambil 3 data pertama saja jika ada
       if (data.data && Array.isArray(data.data)) {
         setAlumniCats(data.data.slice(0, 3));
       }
@@ -35,12 +32,10 @@ export default function HomeScreen() {
     }
   };
 
-  // Helper untuk URL Gambar
   const getImageUrl = (filename: string) => {
     if (!filename || filename === 'NULL') {
       return 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=400'; 
     }
-    // Jika nama file dimulai dengan 'cat-', berarti dari server lokal
     if (filename.startsWith('cat-')) {
       return `${API_URL}/public/img/cats/${filename}`;
     }
@@ -65,10 +60,63 @@ export default function HomeScreen() {
               Menciptakan Dunia Lebih Baik Bagi <Text style={styles.textPrimary}>Bangsa Kucing</Text>
             </Text>
             
-            {/* PERBAIKAN: Tag penutup sekarang benar menggunakan </Text> */}
             <Text style={styles.heroSubtitle}>
               Setiap kucing berhak mendapatkan tempat yang hangat. CatTake hadir untuk memastikan tidak ada lagi anabul yang terlantar.
             </Text>
+
+            {/* --- QUICK ACTION MENU (UPDATED) --- */}
+            <View style={styles.quickMenuWrapper}>
+              <Text style={styles.quickMenuTitle}>Menu Cepat</Text>
+              <View style={styles.quickMenuContainer}>
+                
+                {/* 1. Adopsi */}
+                <TouchableOpacity 
+                  style={styles.quickMenuItem} 
+                  onPress={() => router.push('/(tabs)/adopt' as any)}
+                >
+                  <View style={[styles.quickMenuIconBg, { backgroundColor: '#FFF7ED' }]}>
+                    <Ionicons name="paw" size={24} color={Colors.primary} />
+                  </View>
+                  <Text style={styles.quickMenuLabel}>Adopsi</Text>
+                </TouchableOpacity>
+
+                {/* 2. RIWAYAT (DULUNYA RESCUE) */}
+                <TouchableOpacity 
+                  style={styles.quickMenuItem} 
+                  // Arahkan ke halaman report/history (sesuaikan jika punya halaman history khusus)
+                  onPress={() => router.push('/(tabs)/report' as any)}
+                >
+                  <View style={[styles.quickMenuIconBg, { backgroundColor: '#F3E8FF' }]}>
+                    {/* Ganti icon jadi jam (time) dan warna ungu */}
+                    <Ionicons name="time" size={24} color="#9333EA" />
+                  </View>
+                  <Text style={styles.quickMenuLabel}>Riwayat</Text>
+                </TouchableOpacity>
+
+                {/* 3. Donasi */}
+                <TouchableOpacity 
+                  style={styles.quickMenuItem} 
+                  onPress={() => router.push('/(tabs)/donation' as any)}
+                >
+                  <View style={[styles.quickMenuIconBg, { backgroundColor: '#EFF6FF' }]}>
+                    <Ionicons name="heart" size={24} color="#3B82F6" />
+                  </View>
+                  <Text style={styles.quickMenuLabel}>Donasi</Text>
+                </TouchableOpacity>
+
+                {/* 4. FAQ */}
+                <TouchableOpacity 
+                  style={styles.quickMenuItem} 
+                  onPress={() => router.push('/faq' as any)}
+                >
+                  <View style={[styles.quickMenuIconBg, { backgroundColor: '#F0FDF4' }]}>
+                    <Ionicons name="help-circle" size={24} color="#16A34A" />
+                  </View>
+                  <Text style={styles.quickMenuLabel}>FAQ</Text>
+                </TouchableOpacity>
+
+              </View>
+            </View>
 
             {/* Statistik */}
             <View style={styles.statsContainer}>
@@ -93,7 +141,6 @@ export default function HomeScreen() {
               source={{ uri: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }} 
               style={styles.heroImage} 
             />
-            {/* Floating Card */}
             <View style={styles.floatingCard}>
               <View style={styles.floatingIconBg}>
                 <Ionicons name="happy" size={24} color={Colors.primary} />
@@ -106,7 +153,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* --- MARQUEE (Running Text Dummy) --- */}
+        {/* --- MARQUEE --- */}
         <View style={styles.marqueeContainer}>
           <Text style={styles.marqueeText}>
             RESCUE • MEOW • SAVE LIVES • ADOPT • RESCUE • MEOW • SAVE LIVES
@@ -120,7 +167,7 @@ export default function HomeScreen() {
             <Text style={styles.sectionTitleWhite}>Bantu Anabul Dengan Cara Kamu</Text>
           </View>
 
-          {/* Card 1: Lapor */}
+          {/* Card 1: Lapor (Tetap ke Report/Rescue) */}
           <TouchableOpacity style={styles.serviceCard} onPress={() => router.push('/(tabs)/report' as any)}>
             <View style={styles.serviceIconBg}>
               <Ionicons name="camera" size={32} color={Colors.primary} />
@@ -196,8 +243,6 @@ export default function HomeScreen() {
           <Text style={styles.alumniSubHeader}>Mereka yang telah menemukan rumah barunya.</Text>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.alumniScroll}>
-            
-            {/* Loading Dummy */}
             {loadingAlumni && [1,2,3].map(i => (
               <View key={i} style={[styles.alumniCard, { opacity: 0.5 }]}>
                 <View style={[styles.alumniImage, { backgroundColor: '#e5e7eb' }]} />
@@ -208,14 +253,12 @@ export default function HomeScreen() {
               </View>
             ))}
 
-            {/* Pesan jika kosong */}
             {!loadingAlumni && alumniCats.length === 0 && (
               <View style={{ padding: 20 }}>
                 <Text style={{ color: '#9ca3af' }}>Belum ada alumni saat ini.</Text>
               </View>
             )}
 
-            {/* Data Alumni */}
             {!loadingAlumni && alumniCats.map((cat: any) => (
               <View key={cat.id} style={styles.alumniCard}>
                 <Image 
@@ -234,7 +277,6 @@ export default function HomeScreen() {
                 </View>
               </View>
             ))}
-
           </ScrollView>
         </View>
 
@@ -255,8 +297,9 @@ const styles = StyleSheet.create({
   badgeLine: { width: 30, height: 4, backgroundColor: Colors.primary, marginRight: 8, borderRadius: 2 },
   badgeText: { fontSize: 12, fontWeight: 'bold', color: '#3A5F50', letterSpacing: 1 },
   heroTitle: { fontSize: 36, fontWeight: '800', color: '#1f2937', lineHeight: 44, marginBottom: 16 },
-  heroSubtitle: { fontSize: 16, color: '#6b7280', lineHeight: 24, marginBottom: 24 },
-  statsContainer: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderColor: '#f3f4f6', paddingTop: 20 },
+  heroSubtitle: { fontSize: 16, color: '#6b7280', lineHeight: 24, marginBottom: 20 },
+  
+  statsContainer: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderColor: '#f3f4f6', paddingTop: 20, marginTop: 10 },
   statNumber: { fontSize: 24, fontWeight: 'bold', color: '#3A5F50' },
   statLabel: { fontSize: 12, color: '#9ca3af' },
   
@@ -272,8 +315,16 @@ const styles = StyleSheet.create({
   floatingTitle: { fontSize: 10, color: '#9ca3af' },
   floatingSubtitle: { fontSize: 14, fontWeight: 'bold', color: '#1f2937' },
 
+  // --- QUICK ACTION MENU ---
+  quickMenuWrapper: { marginBottom: 20 },
+  quickMenuTitle: { fontSize: 12, fontWeight: 'bold', color: '#000000ff', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
+  quickMenuContainer: { flexDirection: 'row', justifyContent: 'space-between' },
+  quickMenuItem: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', paddingVertical: 12, borderRadius: 12, width: '23%', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 2, borderWidth: 1, borderColor: '#f3f4f6' },
+  quickMenuIconBg: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
+  quickMenuLabel: { fontSize: 10, fontWeight: '700', color: '#374151', textAlign: 'center' },
+
   // --- MARQUEE ---
-  marqueeContainer: { backgroundColor: '#1F352C', paddingVertical: 12, marginTop: 40 },
+  marqueeContainer: { backgroundColor: '#1F352C', paddingVertical: 12, marginTop: 10 },
   marqueeText: { color: '#fff', fontSize: 12, fontWeight: 'bold', letterSpacing: 2, textAlign: 'center' },
 
   // --- SERVICE ---
@@ -281,15 +332,8 @@ const styles = StyleSheet.create({
   sectionHeaderCenter: { alignItems: 'center', marginBottom: 30 },
   sectionBadge: { color: Colors.primary, fontSize: 12, fontWeight: 'bold', letterSpacing: 1, marginBottom: 8 },
   sectionTitleWhite: { color: '#fff', fontSize: 28, fontWeight: 'bold', textAlign: 'center' },
-  
-  serviceCard: { 
-    backgroundColor: '#2C4A3E', borderRadius: 24, padding: 24, marginBottom: 16, 
-    borderWidth: 1, borderColor: '#3A5F50' 
-  },
-  serviceIconBg: { 
-    width: 50, height: 50, backgroundColor: '#3A5F50', borderRadius: 16, 
-    justifyContent: 'center', alignItems: 'center', marginBottom: 16 
-  },
+  serviceCard: { backgroundColor: '#2C4A3E', borderRadius: 24, padding: 24, marginBottom: 16, borderWidth: 1, borderColor: '#3A5F50' },
+  serviceIconBg: { width: 50, height: 50, backgroundColor: '#3A5F50', borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
   serviceTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff', marginBottom: 8 },
   serviceDesc: { fontSize: 14, color: '#d1d5db', lineHeight: 22, marginBottom: 20 },
   serviceLink: { fontSize: 14, fontWeight: 'bold', color: Colors.primary },
@@ -297,10 +341,7 @@ const styles = StyleSheet.create({
   // --- STEPS ---
   stepsSection: { padding: 24, backgroundColor: '#F9FAFB' },
   stepsHeader: { fontSize: 28, fontWeight: 'bold', color: '#1f2937', marginBottom: 24 },
-  stepCard: { 
-    backgroundColor: '#fff', borderRadius: 24, padding: 24, marginBottom: 16, 
-    borderWidth: 1, borderColor: '#e5e7eb', position: 'relative', overflow: 'hidden' 
-  },
+  stepCard: { backgroundColor: '#fff', borderRadius: 24, padding: 24, marginBottom: 16, borderWidth: 1, borderColor: '#e5e7eb', position: 'relative', overflow: 'hidden' },
   stepNumber: { position: 'absolute', right: -10, bottom: -15, fontSize: 80, fontWeight: 'bold', color: '#f3f4f6' },
   stepIconBg: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#ecfdf5', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
   stepTitle: { fontSize: 18, fontWeight: 'bold', color: '#1f2937', marginBottom: 4 },
@@ -312,10 +353,7 @@ const styles = StyleSheet.create({
   alumniHeader: { fontSize: 28, fontWeight: 'bold', color: '#3A5F50', textAlign: 'center', marginTop: 8 },
   alumniSubHeader: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 24 },
   alumniScroll: { paddingHorizontal: 24, paddingBottom: 20 },
-  alumniCard: { 
-    width: 200, backgroundColor: '#fff', borderRadius: 16, marginRight: 16, 
-    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, elevation: 2, borderWidth: 1, borderColor: '#f3f4f6'
-  },
+  alumniCard: { width: 200, backgroundColor: '#fff', borderRadius: 16, marginRight: 16, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, elevation: 2, borderWidth: 1, borderColor: '#f3f4f6' },
   alumniImage: { width: '100%', height: 140, borderTopLeftRadius: 16, borderTopRightRadius: 16, backgroundColor: '#f3f4f6' },
   alumniContent: { padding: 12 },
   alumniName: { fontSize: 16, fontWeight: 'bold', color: '#1f2937' },

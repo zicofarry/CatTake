@@ -7,17 +7,17 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors.primary, // Orange saat aktif
-        tabBarInactiveTintColor: '#9ca3af', // Abu-abu saat tidak aktif
-        headerShown: false, // Header diatur di masing-masing halaman
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: '#9ca3af',
+        headerShown: false,
         tabBarStyle: {
-          height: 70, // Sedikit lebih tinggi biar tombol tengah muat
-          paddingBottom: 10,
+          height: 80, 
+          paddingBottom: 15, 
           paddingTop: 10,
-          borderTopLeftRadius: 20, // Opsional: Sudut melengkung di atas
+          borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
           backgroundColor: '#ffffff',
-          position: 'absolute', // Biar background di belakangnya tembus (opsional)
+          position: 'absolute',
           borderTopWidth: 0,
           elevation: 10,
           shadowColor: '#000',
@@ -28,70 +28,70 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',
+          marginBottom: 5, 
         }
       }}
     >
-      {/* 1. HOME */}
+      {/* 1. BERANDA (Home) */}
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Beranda',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "home" : "home-outline"} size={24} color={color} />
           ),
         }}
       />
 
-      {/* 2. ADOPT (List Kucing) */}
-      <Tabs.Screen
-        name="adopt"
-        options={{
-          title: 'Adopt',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "paw" : "paw-outline"} size={24} color={color} />
-          ),
-        }}
-      />
-
-      {/* 3. LAPOR (TOMBOL TENGAH SPESIAL) */}
-      <Tabs.Screen
-        name="report"
-        options={{
-          title: '', // Kosongkan label
-          tabBarLabel: () => null, // Benar-benar hapus labelnya
-          tabBarIcon: ({ focused }) => (
-            <View style={styles.middleButton}>
-              <Ionicons name="camera" size={32} color="white" />
-            </View>
-          ),
-        }}
-      />
-
-      {/* 4. KOMUNITAS */}
+      {/* 2. KOMUNITAS (Pindah ke Posisi 2) */}
       <Tabs.Screen
         name="community"
         options={{
-          title: 'Komunitas',
+          title: 'Komunitas', 
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "people" : "people-outline"} size={24} color={color} />
           ),
         }}
       />
 
-      {/* 5. PROFILE */}
+      {/* 3. RESCUE (TOMBOL TENGAH - Dulu file report.tsx) */}
+      <Tabs.Screen
+        name="report"
+        options={{
+          title: '', // Judul kosong untuk tombol floating
+          tabBarLabel: () => null, 
+          tabBarIcon: ({ focused }) => (
+            <View style={styles.middleButton}>
+              {/* Ikon Medkit / Rescue */}
+              <Ionicons name="medkit" size={30} color="white" />
+            </View>
+          ),
+        }}
+      />
+
+      {/* 4. CHAT (Adopt) */}
+      <Tabs.Screen
+        name="adopt"
+        options={{
+          title: 'Chat',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "chatbubble" : "chatbubble-outline"} size={24} color={color} />
+          ),
+        }}
+      />
+
+      {/* 5. PROFIL */}
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Akun',
+          title: 'Profil',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "person" : "person-outline"} size={24} color={color} />
           ),
         }}
       />
 
-      {/* -- HALAMAN TERSEMBUNYI (Hidden Tabs) -- */}
-      
-      {/* Donasi (Diakses dari Home) */}
+      {/* -- HALAMAN TERSEMBUNYI -- */}
       <Tabs.Screen
         name="donation"
         options={{ href: null }} 
@@ -102,20 +102,19 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   middleButton: {
-    top: -20, // Naik ke atas
+    top: -30, 
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primary, // Atau warna merah '#EF4444' untuk indikasi Rescue
     justifyContent: 'center',
     alignItems: 'center',
-    // Shadow supaya terlihat melayang
     elevation: 5, 
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 6,
     borderWidth: 4,
-    borderColor: '#f3f4f6', // Warna border nyatu sama background app
+    borderColor: '#f3f4f6', 
   }
 });
