@@ -26,6 +26,7 @@ const driverRoutes = require('./routes/driverRoutes');
 const authentication = require('./middlewares/authentication');
 const gamificationRoutes = require('./routes/gamificationRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 fastify.register(cors, {
     origin: true, // Biarkan Fastify yang mengatur header dynamic (Reflect origin)
@@ -88,6 +89,8 @@ fastify.register(adminRoutes, { prefix: '/api/v1/admin' });
 fastify.get('/api/v1/dashboard', {
     preHandler: [authentication] 
 }, DashboardController.getSummary);
+
+fastify.register(chatRoutes, { prefix: '/api/chat' });
 
 // Jalankan server
 const start = async () => {
