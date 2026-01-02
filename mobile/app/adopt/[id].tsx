@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 // IP ADDRESS (Sesuaikan lagi kalau berubah)
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
-const serverUrl = API_BASE_URL.replace('/api/v1', ''); 
+const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
 
 export default function CatDetail() {
   const { id } = useLocalSearchParams(); // Mengambil ID dari URL

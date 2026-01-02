@@ -11,7 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // --- KONFIGURASI API & GAMBAR ---
 // Ganti dengan IP Laptop kamu
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
-const serverUrl = API_BASE_URL.replace('/api/v1', ''); 
+const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
 
 const resolveImageUrl = (path: string | null) => {
   if (!path) return null;

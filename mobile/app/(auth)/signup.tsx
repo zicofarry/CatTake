@@ -16,7 +16,9 @@ import Svg, { Path } from 'react-native-svg';
 import { FontAwesome } from '@expo/vector-icons';
 import axios from 'axios';
 
-const API_URL = 'http://10.0.2.2:5000/api'; 
+import apiClient, { API_BASE_URL } from '../../api/apiClient';
+const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
+ 
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -74,7 +76,7 @@ export default function SignupScreen() {
     }
 
     try {
-      await axios.post(`${API_URL}/auth/register`, data);
+      await axios.post(`${API_BASE_URL}/auth/register`, data);
       Alert.alert(
         'Sukses', 
         `Pendaftaran ${selectedRole} berhasil! Silakan Login.`,

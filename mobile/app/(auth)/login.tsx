@@ -18,7 +18,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const API_URL = 'http://10.0.2.2:5000/api'; 
+import apiClient, { API_BASE_URL } from '../../api/apiClient';
+const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function LoginScreen() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, {
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         identifier,
         password,
       });

@@ -6,7 +6,7 @@ import { Colors } from '../../constants/Colors';
 
 // IP Address Backend
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
-const serverUrl = API_BASE_URL.replace('/api/v1', ''); 
+const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
 
 const { width } = Dimensions.get('window');
 
