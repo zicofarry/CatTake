@@ -21,9 +21,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 import CatCard from '../../components/CatCard'; 
 
-const { width } = Dimensions.get('window');
-
-// SETUP URL GAMBAR DINAMIS
+// SETUP URL GAMBAR DINAMIS (Sesuai file [id].tsx kamu)
 const serverUrl = API_BASE_URL 
   ? API_BASE_URL.replace('/api/v1', '') 
   : 'http://localhost:3000'; 
@@ -47,7 +45,11 @@ export default function ShelterProfileScreen() {
         apiClient.get(`/cats/shelter/${id}`)
       ]);
 
-      setShelter(profileRes.data.data || profileRes.data);
+      // Handle Data Profil
+      const shelterData = profileRes.data.data || profileRes.data;
+      setShelter(shelterData);
+
+      // Handle Data Kucing
       const catsData = catsRes.data.data || catsRes.data;
       setCats(Array.isArray(catsData) ? catsData : []);
 
@@ -70,24 +72,31 @@ export default function ShelterProfileScreen() {
   useEffect(() => { if (id) fetchData(); }, [id]);
   const onRefresh = () => { setRefreshing(true); fetchData(); };
 
-  const openWhatsApp = (phone: string) => {
-    if (!phone) return Alert.alert("Info", "Nomor WhatsApp tidak tersedia.");
-    let formatted = phone.replace(/\D/g, '');
-    if (formatted.startsWith('0')) formatted = '62' + formatted.slice(1);
-    Linking.openURL(`https://wa.me/${formatted}`);
-  };
-
-  // Fungsi Buka Maps dengan Koordinat
+  // --- FUNGSI NAVIGASI ---
+  
+  // 1. Buka Maps (Google Maps / Apple Maps)
   const openMaps = (lat: any, long: any) => {
     if (!lat || !long) return;
     const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
     const latLng = `${lat},${long}`;
-    const label = shelter?.name || 'Shelter Location';
+    const label = shelter?.name || 'Lokasi Shelter';
     const url = Platform.select({
       ios: `${scheme}${label}@${latLng}`,
       android: `${scheme}${latLng}(${label})`
     });
     if (url) Linking.openURL(url);
+  };
+
+  // 2. Chat Internal (Masuk ke Room Chat Aplikasi)
+  const handleChat = () => {
+    if (!shelter) return;
+    router.push({
+        pathname: `/chat/${shelter.id}`, 
+        params: { 
+            name: shelter.name,
+            avatar: shelter.photo ? `${serverUrl}/public/img/profile/${shelter.photo}` : '' 
+        } 
+    });
   };
 
   // --- HEADER TAMPILAN BARU ---
@@ -98,7 +107,11 @@ export default function ShelterProfileScreen() {
       ? { uri: `${serverUrl}/public/img/profile/${shelter.photo}` }
       : require('../../assets/images/profileKomunitas1.png'); 
 
+    // Ambil kalimat pertama dari bio untuk tagline singkat
     const tagline = shelter.bio ? shelter.bio.split('.')[0] : 'Menyelamatkan dan mencarikan rumah bagi kucing jalanan.';
+    
+    // Cek Status Verified
+    const isVerified = Boolean(shelter.verified);
 
     return (
       <View style={styles.headerContainer}>
@@ -115,7 +128,9 @@ export default function ShelterProfileScreen() {
             {/* Foto Profil di Tengah */}
             <View style={styles.profileImageWrapper}>
                 <Image source={profileImg} style={styles.profileImage} />
-                {shelter.verified && (
+                
+                {/* Badge Verified di Foto Profil */}
+                {isVerified && (
                     <View style={styles.verifiedBadgeLarge}>
                         <MaterialIcons name="verified" size={24} color="#3A5F50" />
                     </View>
@@ -127,7 +142,8 @@ export default function ShelterProfileScreen() {
         <View style={styles.shelterInfoCard}>
             <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 6}}>
                 <Text style={styles.shelterName}>{shelter.name}</Text>
-                {shelter.verified && (
+                {/* Badge Verified di Sebelah Nama */}
+                {isVerified && (
                     <MaterialIcons name="verified" size={20} color="#3B82F6" style={{marginLeft: 4, marginTop: 2}} />
                 )}
             </View>
@@ -141,7 +157,7 @@ export default function ShelterProfileScreen() {
                 "{tagline}."
             </Text>
 
-            {/* --- UPDATE: MENAMPILKAN LATITUDE & LONGITUDE --- */}
+            {/* Lokasi (Klik untuk Buka Maps) */}
             <TouchableOpacity 
                 style={styles.locationRow} 
                 onPress={() => openMaps(shelter.latitude, shelter.longitude)}
@@ -153,8 +169,8 @@ export default function ShelterProfileScreen() {
                     ? `${shelter.latitude}, ${shelter.longitude}` 
                     : 'Lokasi belum diatur'}
                 </Text>
+                {shelter.latitude && <Ionicons name="open-outline" size={14} color="#3A5F50" style={{marginLeft: 4}} />}
             </TouchableOpacity>
-            {/* ----------------------------------------------- */}
 
             {/* Statistik Ringkas */}
             <View style={styles.statsContainer}>
@@ -173,11 +189,11 @@ export default function ShelterProfileScreen() {
             <View style={styles.actionButtonContainer}>
                 <TouchableOpacity 
                   style={[styles.actionButton, styles.chatButton]} 
-                  onPress={() => openWhatsApp(shelter.contact_phone)}
+                  onPress={handleChat}
                   activeOpacity={0.8}
                 >
-                  <FontAwesome name="whatsapp" size={20} color="white" />
-                  <Text style={styles.actionButtonTextWhite}>Hubungi Kami</Text>
+                  <Ionicons name="chatbubble-ellipses" size={20} color="white" /> 
+                  <Text style={styles.actionButtonTextWhite}>Chat</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
@@ -300,7 +316,7 @@ export default function ShelterProfileScreen() {
             } else {
                 return (
                     <View style={styles.emptyContainer}>
-                         <Image source={require('../../assets/images/tigakucing.png')} style={{width: 120, height: 120, opacity:0.5, marginBottom: 16}} resizeMode="contain" />
+                         <Image source={require('../../assets/images/kucingtidur.png')} style={{width: 120, height: 120, opacity:0.5, marginBottom: 16}} resizeMode="contain" />
                         <Text style={styles.emptyTitle}>Belum Ada Kucing</Text>
                         <Text style={styles.emptyText}>Shelter ini belum menambahkan daftar kucing yang siap diadopsi.</Text>
                     </View>
@@ -316,10 +332,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA' }, 
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
   
+  // Back Button
   backButton: {
     width: 40, height: 40, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginLeft: 10,
   },
 
+  // Header & Banner
   headerContainer: { backgroundColor: '#F8F9FA', marginBottom: 10 },
   heroWrapper: { position: 'relative', alignItems: 'center' },
   bannerImage: { height: 180, width: '100%', borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
@@ -335,6 +353,7 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 0, right: 0, backgroundColor: '#fff', borderRadius: 15, padding: 4, shadowColor: '#000', shadowOffset: {width:0, height:2}, shadowOpacity:0.2, shadowRadius:4, elevation:4
   },
 
+  // Shelter Info
   shelterInfoCard: {
     marginTop: 60, marginHorizontal: 20, alignItems: 'center', paddingBottom: 20,
   },
