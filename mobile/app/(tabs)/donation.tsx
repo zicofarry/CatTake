@@ -1,88 +1,90 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, 
   Image, ImageBackground, Dimensions, StatusBar, Alert, Modal, 
-  ActivityIndicator, RefreshControl, SafeAreaView
+  ActivityIndicator, SafeAreaView, Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// --- KONFIGURASI API & GAMBAR ---
-// Ganti dengan IP Laptop kamu
+import { jwtDecode } from "jwt-decode";
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
-const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
-
-const resolveImageUrl = (path: string | null) => {
-  if (!path) return null;
-  // Jika path cuma nama file (misal "qr1.jpg"), tambahkan prefix
-  if (!path.startsWith('http')) {
-    return `${serverUrl}/public/img/qr_img/${path}`;
-  }
-  return path;
-};
-
-// --- MOCK DATA SHELTER (Simulasi Database) ---
-// Data ini nanti diambil dari endpoint /users/shelters
-const MOCK_SHELTERS = [
-  { 
-    id: 1, 
-    shelter_name: "Shelter Depok Bersatu", 
-    donation_account_number: "1234-5678-9012-3456", 
-    qr_img: "qr1.jpg" 
-  },
-  { 
-    id: 2, 
-    shelter_name: "Rumah Kucing Bu Ani", 
-    donation_account_number: "8888-7777-6666-5555", 
-    qr_img: "qr2.jpg" 
-  },
-  { 
-    id: 3, 
-    shelter_name: "CatTake Center Pusat", 
-    donation_account_number: "1111-2222-3333-4444", 
-    qr_img: "qr3.jpg" 
-  }
-];
 
 const { width } = Dimensions.get('window');
+const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
 
 export default function DonationScreen() {
-  // Form State
+  // --- Data State ---
+  const [userRole, setUserRole] = useState<string>('guest');
+  const [userId, setUserId] = useState<number | null>(null);
+  const [shelters, setShelters] = useState<any[]>([]);
+  const [receivedDonations, setReceivedDonations] = useState<any[]>([]);
+  
+  // --- Form State ---
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [selectedShelterId, setSelectedShelterId] = useState<number | null>(null);
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'bri' | 'qris' | ''>('');
-  const [proofImage, setProofImage] = useState<string | null>(null);
+  const [proofImage, setProofImage] = useState<any>(null);
   
-  // Data State
-  const [shelters, setShelters] = useState<any[]>([]);
+  // --- UI State ---
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // UI State (Dropdown Modal)
+  const [isLoading, setIsLoading] = useState(true);
   const [shelterModalVisible, setShelterModalVisible] = useState(false);
 
-  // --- Computed Data ---
   const selectedShelter = shelters.find(s => s.id === selectedShelterId);
 
-  // --- Methods ---
-  
-  // 1. Fetch Shelter List
-  const fetchShelters = () => {
-    // Simulasi Fetch API
-    setIsLoading(true);
-    setTimeout(() => {
-      setShelters(MOCK_SHELTERS);
-      setIsLoading(false);
-    }, 500);
-  };
-
+  // 1. Inisialisasi & Cek Role
   useEffect(() => {
-    fetchShelters();
+    const init = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        const role = await AsyncStorage.getItem('userRole') || 'guest';
+        setUserRole(role);
+
+        if (token) {
+          const decoded: any = jwtDecode(token);
+          setUserId(decoded.id);
+          
+          if (role === 'shelter') {
+            fetchReceivedDonations(decoded.id);
+          } else {
+            fetchShelters();
+          }
+        } else {
+          fetchShelters();
+        }
+      } catch (e) {
+        console.error(e);
+        fetchShelters();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    init();
   }, []);
 
-  // 2. Pick Image
+  // 2. Fetch List Shelter (Untuk Donor)
+  const fetchShelters = async () => {
+    try {
+      const response = await apiClient.get('/users/shelters');
+      setShelters(response.data);
+    } catch (error) {
+      console.error("Gagal ambil shelter:", error);
+    }
+  };
+
+  // 3. Fetch Donasi Masuk (Untuk Shelter)
+  const fetchReceivedDonations = async (id: number) => {
+    try {
+      const response = await apiClient.get(`/donations/shelter/${id}`);
+      setReceivedDonations(response.data);
+    } catch (error) {
+      console.error("Gagal ambil donasi masuk:", error);
+    }
+  };
+
+  // 4. Pilih Gambar
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -91,14 +93,19 @@ export default function DonationScreen() {
     });
 
     if (!result.canceled) {
-      setProofImage(result.assets[0].uri);
+      const asset = result.assets[0];
+      setProofImage({
+        uri: asset.uri,
+        name: asset.fileName || `proof_${Date.now()}.jpg`,
+        type: asset.mimeType || 'image/jpeg',
+      });
     }
   };
 
-  // 3. Submit Donation
+  // 5. Kirim Donasi
   const submitDonation = async () => {
     if (!selectedShelterId || !amount || !paymentMethod || !proofImage) {
-      Alert.alert("Form Belum Lengkap", "Mohon lengkapi semua kolom formulir.");
+      Alert.alert("Error", "Mohon lengkapi semua data formulir.");
       return;
     }
 
@@ -108,229 +115,206 @@ export default function DonationScreen() {
     }
 
     setIsSubmitting(true);
+    const formData = new FormData();
+    formData.append('shelter_id', selectedShelterId.toString());
+    formData.append('payment_method', paymentMethod);
+    formData.append('amount', amount);
+    formData.append('is_anonymus', isAnonymous ? '1' : '0');
     
-    // Simulasi Proses Upload ke Backend
-    setTimeout(() => {
-      setIsSubmitting(false);
-      Alert.alert("Terima Kasih!", "Donasi Anda berhasil dikirim dan menunggu verifikasi admin.");
+    // Format file untuk React Native FormData
+    formData.append('proof', {
+      uri: proofImage.uri,
+      name: proofImage.name,
+      type: proofImage.type,
+    } as any);
+
+    try {
+      await apiClient.post('/donations', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       
+      Alert.alert("Sukses!", "Donasi berhasil dikirim, tim kami akan segera melakukan verifikasi.");
       // Reset Form
       setSelectedShelterId(null);
       setAmount('');
       setPaymentMethod('');
       setProofImage(null);
       setIsAnonymous(false);
-    }, 2000);
+    } catch (error: any) {
+      Alert.alert("Gagal", error.response?.data?.message || "Terjadi kesalahan saat mengirim donasi.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
+  // --- RENDER VIEW: SHELTER ---
+  if (userRole === 'shelter') {
+    return (
+      <ImageBackground source={require('../../assets/images/bg-texture.png')} style={styles.container}>
+        <SafeAreaView style={{flex: 1}}>
+          <View style={styles.headerShelter}>
+            <Text style={styles.heroTitle}>Laporan Donasi</Text>
+          </View>
+          <ScrollView contentContainerStyle={{ padding: 16 }}>
+            {receivedDonations.length === 0 ? (
+              <View style={styles.emptyBox}>
+                <Ionicons name="gift-outline" size={60} color="#cbd5e1" />
+                <Text style={{color: '#94a3b8', marginTop: 10}}>Belum ada donasi masuk.</Text>
+              </View>
+            ) : (
+              receivedDonations.map((item) => (
+                <View key={item.id} style={styles.donationCard}>
+                   <View style={styles.donationRow}>
+                      <View>
+                        <Text style={styles.donorName}>{item.is_anonymus ? 'Hamba Allah (Anonim)' : item.User?.full_name}</Text>
+                        <Text style={styles.donationDate}>{new Date(item.createdAt).toLocaleDateString('id-ID')}</Text>
+                      </View>
+                      <Text style={styles.donationAmount}>+ Rp {item.amount.toLocaleString()}</Text>
+                   </View>
+                   <View style={[styles.statusBadge, { backgroundColor: item.status === 'verified' ? '#ecfdf5' : '#fff7ed' }]}>
+                      <Text style={{ fontSize: 10, color: item.status === 'verified' ? '#059669' : '#d97706' }}>
+                        {item.status.toUpperCase()}
+                      </Text>
+                   </View>
+                </View>
+              ))
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </ImageBackground>
+    );
+  }
+
+  // --- RENDER VIEW: DONOR ---
   return (
-    <ImageBackground 
-      source={require('../../assets/images/bg-texture.png')} 
-      style={styles.container}
-      resizeMode="cover"
-    >
+    <ImageBackground source={require('../../assets/images/bg-texture.png')} style={styles.container} resizeMode="cover">
       <StatusBar barStyle="light-content" />
       <View style={styles.overlay}>
         <SafeAreaView style={{flex: 1}}>
-          <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-            
-            {/* HERO SECTION (Sesuai Frontend) */}
-            <View style={styles.heroSection}>
-              <Image 
-                source={require('../../assets/images/donasi.png')} 
-                style={styles.heroImage} 
-                resizeMode="contain"
-              />
-              <Text style={styles.heroTitle}>Satu Donasi, Seribu Harapan.</Text>
-              <Text style={styles.heroSubtitle}>
-                Bersama mendukung langkah kecil mereka, dari jalanan penuh bahaya menuju tempat yang aman, sehat, dan dicintai.
-              </Text>
-            </View>
-
-            {/* FORM CARD */}
-            <View style={styles.formCard}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>Formulir Donasi</Text>
-                <Text style={styles.cardSubtitle}>Lengkapi data di bawah untuk menyalurkan kebaikanmu</Text>
+          {isLoading ? (
+             <ActivityIndicator size="large" color="#fff" style={{marginTop: 50}} />
+          ) : (
+            <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+              {/* HERO SECTION */}
+              <View style={styles.heroSection}>
+                <Image source={require('../../assets/images/donasi.png')} style={styles.heroImage} resizeMode="contain" />
+                <Text style={styles.heroTitle}>Satu Donasi, Seribu Harapan.</Text>
+                <Text style={styles.heroSubtitle}>Bersama mendukung langkah kecil mereka agar sehat dan dicintai.</Text>
               </View>
 
-              {/* 1. Checkbox Anonim */}
-              <TouchableOpacity 
-                style={[styles.anonBox, isAnonymous && styles.anonBoxActive]}
-                onPress={() => setIsAnonymous(!isAnonymous)}
-                activeOpacity={0.8}
-              >
-                <View style={[styles.checkbox, isAnonymous && styles.checkboxActive]}>
-                  {isAnonymous && <Ionicons name="checkmark" size={16} color="white" />}
+              {/* FORM CARD */}
+              <View style={styles.formCard}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.cardTitle}>Formulir Donasi</Text>
                 </View>
-                <View style={{flex: 1}}>
-                  <Text style={styles.anonTitle}>Sembunyikan Nama Saya</Text>
-                  <Text style={styles.anonDesc}>Nama Anda tidak akan ditampilkan di daftar donatur publik (Anonim).</Text>
-                </View>
-              </TouchableOpacity>
 
-              {/* 2. Pilih Shelter */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>SHELTER TUJUAN</Text>
+                {/* 1. Anonim */}
                 <TouchableOpacity 
-                  style={styles.inputDropdown} 
-                  onPress={() => setShelterModalVisible(true)}
+                  style={[styles.anonBox, isAnonymous && styles.anonBoxActive]}
+                  onPress={() => setIsAnonymous(!isAnonymous)}
                 >
-                  <Text style={[styles.inputText, !selectedShelter && {color: '#9ca3af'}]}>
-                    {selectedShelter ? selectedShelter.shelter_name : '-- Pilih Shelter Penerima --'}
-                  </Text>
-                  <Ionicons name="chevron-down" size={20} color="#6b7280" />
+                  <View style={[styles.checkbox, isAnonymous && styles.checkboxActive]}>
+                    {isAnonymous && <Ionicons name="checkmark" size={16} color="white" />}
+                  </View>
+                  <View style={{flex: 1}}>
+                    <Text style={styles.anonTitle}>Donatur Anonim</Text>
+                    <Text style={styles.anonDesc}>Sembunyikan nama Anda dari daftar publik.</Text>
+                  </View>
                 </TouchableOpacity>
-              </View>
 
-              {/* 3. Jumlah Donasi */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>JUMLAH DONASI</Text>
-                <View style={styles.inputWrapper}>
-                  <Text style={styles.prefix}>Rp</Text>
-                  <TextInput
-                    style={[styles.inputField, { paddingLeft: 40 }]}
-                    keyboardType="numeric"
-                    placeholder="0"
-                    placeholderTextColor="#9ca3af"
-                    value={amount}
-                    onChangeText={setAmount}
-                  />
-                </View>
-                <Text style={styles.helperText}>*Minimal donasi Rp 10.000</Text>
-              </View>
-
-              {/* 4. Metode Pembayaran */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>METODE PEMBAYARAN</Text>
-                <View style={styles.radioGroup}>
-                  <TouchableOpacity 
-                    style={[styles.radioBtn, paymentMethod === 'qris' && styles.radioBtnActive]}
-                    onPress={() => setPaymentMethod('qris')}
-                  >
-                    <Ionicons name="qr-code-outline" size={20} color={paymentMethod === 'qris' ? '#3A5F50' : '#6b7280'} />
-                    <Text style={[styles.radioText, paymentMethod === 'qris' && styles.radioTextActive]}>QRIS (Scan)</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={[styles.radioBtn, paymentMethod === 'bri' && styles.radioBtnActive]}
-                    onPress={() => setPaymentMethod('bri')}
-                  >
-                    <Ionicons name="card-outline" size={20} color={paymentMethod === 'bri' ? '#3A5F50' : '#6b7280'} />
-                    <Text style={[styles.radioText, paymentMethod === 'bri' && styles.radioTextActive]}>Transfer BRI</Text>
+                {/* 2. Shelter */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>SHELTER TUJUAN</Text>
+                  <TouchableOpacity style={styles.inputDropdown} onPress={() => setShelterModalVisible(true)}>
+                    <Text style={[styles.inputText, !selectedShelter && {color: '#9ca3af'}]}>
+                      {selectedShelter ? selectedShelter.shelter_name : '-- Pilih Shelter --'}
+                    </Text>
+                    <Ionicons name="chevron-down" size={20} color="#6b7280" />
                   </TouchableOpacity>
                 </View>
 
-                {/* Info Pembayaran Dinamis */}
-                {paymentMethod === 'bri' && (
-                  <View style={styles.infoBoxBlue}>
-                    <Ionicons name="information-circle" size={24} color="#1e40af" />
-                    <View>
-                      <Text style={styles.infoTitle}>Bank BRI</Text>
-                      <Text style={styles.infoValue}>
-                        {selectedShelter ? selectedShelter.donation_account_number : 'Pilih shelter dulu...'}
-                      </Text>
-                      <Text style={styles.infoSub}>a/n {selectedShelter ? selectedShelter.shelter_name : '...'}</Text>
-                    </View>
+                {/* 3. Amount */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>JUMLAH DONASI</Text>
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.prefix}>Rp</Text>
+                    <TextInput
+                      style={[styles.inputField, { paddingLeft: 40 }]}
+                      keyboardType="numeric"
+                      placeholder="Min. 10.000"
+                      value={amount}
+                      onChangeText={setAmount}
+                    />
                   </View>
-                )}
+                </View>
 
-                {paymentMethod === 'qris' && (
-                  <View style={styles.infoBoxGray}>
-                    <Text style={styles.scanText}>Scan QRIS di bawah ini:</Text>
-                    {selectedShelter && selectedShelter.qr_img ? (
-                      <View style={styles.qrContainer}>
-                        <Image 
-                          source={{ uri: resolveImageUrl(selectedShelter.qr_img) || undefined }} 
-                          style={styles.qrImage}
-                          resizeMode="contain"
-                        />
-                        <Text style={styles.infoSub}>{selectedShelter.shelter_name}</Text>
-                      </View>
-                    ) : (
-                      <View style={styles.qrPlaceholder}>
-                        <Ionicons name="qr-code" size={40} color="#d1d5db" />
-                        <Text style={{color:'#9ca3af', marginTop:5}}>
-                          {selectedShelterId ? 'QR Code tidak tersedia' : 'Pilih shelter terlebih dahulu'}
-                        </Text>
-                      </View>
-                    )}
+                {/* 4. Payment Method */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>METODE PEMBAYARAN</Text>
+                  <View style={styles.radioGroup}>
+                    <TouchableOpacity style={[styles.radioBtn, paymentMethod === 'qris' && styles.radioBtnActive]} onPress={() => setPaymentMethod('qris')}>
+                      <Text style={[styles.radioText, paymentMethod === 'qris' && styles.radioTextActive]}>QRIS</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.radioBtn, paymentMethod === 'bri' && styles.radioBtnActive]} onPress={() => setPaymentMethod('bri')}>
+                      <Text style={[styles.radioText, paymentMethod === 'bri' && styles.radioTextActive]}>BRI</Text>
+                    </TouchableOpacity>
                   </View>
-                )}
-              </View>
 
-              {/* 5. Upload Bukti */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>BUKTI TRANSFER</Text>
-                <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
-                  {proofImage ? (
-                    <View style={{width: '100%', height: '100%'}}>
-                      <Image source={{ uri: proofImage }} style={styles.previewImage} />
-                      <View style={styles.reuploadBadge}><Text style={{color:'white', fontSize:10}}>Ganti Foto</Text></View>
+                  {paymentMethod === 'bri' && (
+                    <View style={styles.infoBoxBlue}>
+                      <Text style={styles.infoValue}>{selectedShelter?.donation_account_number || '...'}</Text>
+                      <Text style={styles.infoSub}>a/n {selectedShelter?.shelter_name || 'CatTake'}</Text>
                     </View>
-                  ) : (
-                    <>
-                      <Ionicons name="cloud-upload-outline" size={40} color="#9ca3af" />
-                      <Text style={styles.uploadText}>Klik untuk upload bukti</Text>
-                      <Text style={styles.uploadSubText}>Format: JPG, PNG (Max 10MB)</Text>
-                    </>
                   )}
+
+                  {paymentMethod === 'qris' && selectedShelter?.qr_img && (
+                    <View style={styles.infoBoxGray}>
+                      <Image 
+                        source={{ uri: `${serverUrl}/public/img/qr_img/${selectedShelter.qr_img}` }} 
+                        style={styles.qrImage} 
+                        resizeMode="contain" 
+                      />
+                    </View>
+                  )}
+                </View>
+
+                {/* 5. Upload Proof */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>BUKTI TRANSFER</Text>
+                  <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
+                    {proofImage ? (
+                      <Image source={{ uri: proofImage.uri }} style={styles.previewImage} />
+                    ) : (
+                      <Text style={{color: '#9ca3af'}}>Klik untuk upload bukti</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity style={styles.submitButton} onPress={submitDonation} disabled={isSubmitting}>
+                  {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitText}>Donasi Sekarang</Text>}
                 </TouchableOpacity>
               </View>
+            </ScrollView>
+          )}
 
-              {/* Submit Button */}
-              <TouchableOpacity 
-                style={[styles.submitButton, isSubmitting && {opacity: 0.7}]}
-                onPress={submitDonation}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <ActivityIndicator color="#1f2937" />
-                ) : (
-                  <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
-                    <Text style={styles.submitText}>Selesaikan Donasi</Text>
-                    <Ionicons name="arrow-forward" size={20} color="#1f2937" />
-                  </View>
-                )}
-              </TouchableOpacity>
-
-            </View>
-          </ScrollView>
-
-          {/* Modal Pilih Shelter */}
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={shelterModalVisible}
-            onRequestClose={() => setShelterModalVisible(false)}
-          >
+          {/* Modal Dropdown Shelter */}
+          <Modal visible={shelterModalVisible} animationType="slide" transparent>
             <View style={styles.modalOverlay}>
               <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>Pilih Shelter</Text>
-                  <TouchableOpacity onPress={() => setShelterModalVisible(false)}>
-                    <Ionicons name="close" size={24} color="#374151" />
-                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setShelterModalVisible(false)}><Ionicons name="close" size={24} /></TouchableOpacity>
                 </View>
                 <ScrollView>
-                  {shelters.map((item) => (
-                    <TouchableOpacity 
-                      key={item.id} 
-                      style={styles.modalItem}
-                      onPress={() => {
-                        setSelectedShelterId(item.id);
-                        setShelterModalVisible(false);
-                      }}
-                    >
-                      <Text style={styles.modalItemText}>{item.shelter_name}</Text>
-                      {selectedShelterId === item.id && <Ionicons name="checkmark" size={20} color="#3A5F50" />}
+                  {shelters.map((s) => (
+                    <TouchableOpacity key={s.id} style={styles.modalItem} onPress={() => { setSelectedShelterId(s.id); setShelterModalVisible(false); }}>
+                      <Text>{s.shelter_name}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
               </View>
             </View>
           </Modal>
-
         </SafeAreaView>
       </View>
     </ImageBackground>
@@ -339,89 +323,48 @@ export default function DonationScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#2c473c' },
-  overlay: { flex: 1, backgroundColor: 'rgba(44, 71, 60, 0.5)' }, // Overlay dikurangi opacity-nya biar tekstur kelihatan
-
-  // Hero Section
-  heroSection: { alignItems: 'center', padding: 24, paddingTop: 40, paddingBottom: 60 },
-  heroImage: { width: 180, height: 180, marginBottom: 20 },
-  heroTitle: { fontSize: 28, fontWeight: 'bold', color: 'white', textAlign: 'center', marginBottom: 10, textShadowColor:'rgba(0,0,0,0.3)', textShadowRadius: 4 },
-  heroSubtitle: { fontSize: 14, color: '#e5e7eb', textAlign: 'center', lineHeight: 22, maxWidth: 300 },
-
-  // Form Card
-  formCard: { 
-    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-    marginHorizontal: 16, 
-    borderRadius: 24, 
-    padding: 24, 
-    marginTop: -30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.5)'
-  },
-  cardHeader: { marginBottom: 24, alignItems: 'center' },
-  cardTitle: { fontSize: 24, fontWeight: 'bold', color: '#1f2937', marginBottom: 4 },
-  cardSubtitle: { fontSize: 13, color: '#6b7280', textAlign: 'center' },
-
-  // Inputs
-  inputGroup: { marginBottom: 20 },
-  label: { fontSize: 12, fontWeight: 'bold', color: '#4b5563', marginBottom: 8, letterSpacing: 0.5 },
-  
-  // Anon Checkbox
-  anonBox: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 12, borderWidth: 2, borderColor: '#e5e7eb', backgroundColor: '#f9fafb', marginBottom: 24 },
-  anonBoxActive: { borderColor: '#558a74', backgroundColor: '#ecfdf5' },
-  checkbox: { width: 24, height: 24, borderRadius: 6, borderWidth: 2, borderColor: '#d1d5db', marginRight: 12, alignItems: 'center', justifyContent: 'center' },
-  checkboxActive: { backgroundColor: '#558a74', borderColor: '#558a74' },
-  anonTitle: { fontSize: 16, fontWeight: '600', color: '#374151' },
-  anonDesc: { fontSize: 12, color: '#6b7280', marginTop: 2 },
-
-  // Dropdown
-  inputDropdown: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#d1d5db', borderRadius: 12, padding: 16 },
-  inputText: { fontSize: 16, color: '#1f2937' },
-
-  // Amount Input
+  overlay: { flex: 1, backgroundColor: 'rgba(44, 71, 60, 0.3)' },
+  heroSection: { alignItems: 'center', padding: 24, paddingTop: 30 },
+  heroImage: { width: 140, height: 140, marginBottom: 15 },
+  heroTitle: { fontSize: 24, fontWeight: 'bold', color: 'white', textAlign: 'center' },
+  heroSubtitle: { fontSize: 13, color: '#e5e7eb', textAlign: 'center', marginTop: 8 },
+  formCard: { backgroundColor: 'white', marginHorizontal: 16, borderRadius: 20, padding: 20, marginTop: 10 },
+  cardHeader: { marginBottom: 20, alignItems: 'center' },
+  cardTitle: { fontSize: 20, fontWeight: 'bold', color: '#1f2937' },
+  inputGroup: { marginBottom: 15 },
+  label: { fontSize: 11, fontWeight: 'bold', color: '#4b5563', marginBottom: 5 },
+  inputDropdown: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, padding: 12 },
+  inputText: { fontSize: 14 },
   inputWrapper: { position: 'relative', justifyContent: 'center' },
-  prefix: { position: 'absolute', left: 16, fontSize: 16, fontWeight: 'bold', color: '#6b7280', zIndex: 1 },
-  inputField: { backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#d1d5db', borderRadius: 12, padding: 16, fontSize: 18, fontWeight: '600', color: '#1f2937' },
-  helperText: { fontSize: 11, color: '#6b7280', marginTop: 4, marginLeft: 4 },
-
-  // Payment Method
+  prefix: { position: 'absolute', left: 12, fontWeight: 'bold', color: '#6b7280' },
+  inputField: { backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, padding: 12, fontSize: 14 },
   radioGroup: { flexDirection: 'row', gap: 10 },
-  radioBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#d1d5db', backgroundColor: '#f9fafb' },
-  radioBtnActive: { borderColor: '#558a74', backgroundColor: '#ecfdf5' },
-  radioText: { fontSize: 14, fontWeight: '600', color: '#6b7280' },
-  radioTextActive: { color: '#3A5F50' },
-
-  // Info Box
-  infoBoxBlue: { marginTop: 12, padding: 16, backgroundColor: '#eff6ff', borderColor: '#dbeafe', borderWidth: 1, borderRadius: 12, flexDirection: 'row', gap: 12 },
-  infoBoxGray: { marginTop: 12, padding: 16, backgroundColor: '#f9fafb', borderColor: '#e5e7eb', borderWidth: 1, borderRadius: 12, alignItems: 'center' },
-  infoTitle: { fontWeight: 'bold', color: '#1e40af', fontSize: 14 },
-  infoValue: { fontSize: 18, fontWeight: 'bold', color: '#1e3a8a', marginVertical: 4, fontFamily: 'monospace' },
-  infoSub: { fontSize: 12, color: '#4b5563' },
-  scanText: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 12 },
-  qrContainer: { padding: 8, backgroundColor: 'white', borderRadius: 8, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2, alignItems: 'center' },
-  qrImage: { width: 180, height: 180 },
-  qrPlaceholder: { padding: 20, alignItems: 'center', justifyContent: 'center' },
-
-  // Upload
-  uploadBox: { height: 140, borderWidth: 2, borderColor: '#d1d5db', borderStyle: 'dashed', borderRadius: 12, backgroundColor: '#f9fafb', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  uploadText: { fontSize: 14, fontWeight: '600', color: '#4b5563', marginTop: 8 },
-  uploadSubText: { fontSize: 11, color: '#9ca3af', marginTop: 2 },
-  previewImage: { width: '100%', height: '100%' },
-  reuploadBadge: { position: 'absolute', bottom: 8, backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
-
-  // Button
-  submitButton: { backgroundColor: '#E8C32A', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 10, shadowColor: '#E8C32A', shadowOpacity: 0.4, shadowOffset: {width: 0, height: 4}, elevation: 5 },
-  submitText: { fontSize: 18, fontWeight: 'bold', color: '#1f2937' },
-
-  // Modal
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 },
-  modalContent: { backgroundColor: 'white', borderRadius: 16, padding: 20, maxHeight: '60%' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', paddingBottom: 10 },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#1f2937' },
-  modalItem: { paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  modalItemText: { fontSize: 16, color: '#374151' },
+  radioBtn: { flex: 1, padding: 10, borderRadius: 8, borderWidth: 1, borderColor: '#d1d5db', alignItems: 'center' },
+  radioBtnActive: { borderColor: '#3A5F50', backgroundColor: '#ecfdf5' },
+  radioText: { color: '#6b7280', fontSize: 12 },
+  radioTextActive: { color: '#3A5F50', fontWeight: 'bold' },
+  infoBoxBlue: { marginTop: 10, padding: 12, backgroundColor: '#eff6ff', borderRadius: 8, alignItems: 'center' },
+  infoValue: { fontSize: 16, fontWeight: 'bold', color: '#1e3a8a' },
+  infoSub: { fontSize: 11, color: '#4b5563' },
+  infoBoxGray: { marginTop: 10, alignItems: 'center' },
+  qrImage: { width: 150, height: 150 },
+  uploadBox: { height: 100, borderStyle: 'dashed', borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  previewImage: { width: '100%', height: '100%', borderRadius: 10 },
+  submitButton: { backgroundColor: '#E8C32A', padding: 15, borderRadius: 10, alignItems: 'center', marginTop: 10 },
+  submitText: { fontWeight: 'bold', color: '#1f2937' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '50%' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },
+  modalTitle: { fontWeight: 'bold', fontSize: 16 },
+  modalItem: { paddingVertical: 15, borderBottomWidth: 0.5, borderBottomColor: '#eee' },
+  
+  // Styles for Shelter
+  headerShelter: { padding: 24, alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' },
+  emptyBox: { alignItems: 'center', marginTop: 100 },
+  donationCard: { backgroundColor: 'white', padding: 16, borderRadius: 12, marginBottom: 10, elevation: 2 },
+  donationRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  donorName: { fontWeight: 'bold', color: '#1f2937' },
+  donationDate: { fontSize: 12, color: '#6b7280' },
+  donationAmount: { color: '#059669', fontWeight: 'bold' },
+  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, marginTop: 8 }
 });
