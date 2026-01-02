@@ -1,5 +1,5 @@
 const ShelterChatController = require('../controllers/ShelterChatController');
-const { authentication } = require('../middlewares/authentication'); 
+const authentication = require('../middlewares/authentication'); 
 
 async function chatRoutes(fastify, options) {
     

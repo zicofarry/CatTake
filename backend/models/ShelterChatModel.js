@@ -43,7 +43,7 @@ class ShelterChatModel {
             SELECT DISTINCT ON (partner_id)
                 u.id as partner_id,
                 u.username as name,
-                up.profile_photo, -- Sesuaikan dengan tabel user profile kamu
+                up.profile_picture, -- Sesuaikan dengan tabel user profile kamu
                 c.message as last_message,
                 c.created_at as time,
                 (SELECT COUNT(*) FROM shelter_chats 
@@ -55,7 +55,7 @@ class ShelterChatModel {
                     ELSE c.sender_id 
                 END = u.id
             )
-            LEFT JOIN user_profiles up ON u.id = up.user_id 
+            LEFT JOIN detail_user_individu up ON u.id = up.id 
             
             WHERE c.sender_id = $1 OR c.receiver_id = $1
             ORDER BY partner_id, c.created_at DESC

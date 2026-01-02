@@ -69,9 +69,9 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 4. CHAT (Adopt) */}
+      {/* 4. CHAT */}
       <Tabs.Screen
-        name="adopt"
+        name="chat"
         options={{
           title: 'Chat',
           tabBarIcon: ({ color, focused }) => (
@@ -98,6 +98,10 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="faq"
+        options={{ href: null }} 
+      />
+      <Tabs.Screen
+        name="adopt"
         options={{ href: null }} 
       />
     </Tabs>

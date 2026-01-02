@@ -85,12 +85,12 @@ fastify.register(rescueRoutes, { prefix: '/api/v1/rescue' });
 fastify.register(driverRoutes, { prefix: '/api/v1/drivers' });
 fastify.register(gamificationRoutes, { prefix: '/api/v1/gamification' });
 fastify.register(adminRoutes, { prefix: '/api/v1/admin' });
+fastify.register(chatRoutes, { prefix: '/api/v1/chat' });
 
 fastify.get('/api/v1/dashboard', {
     preHandler: [authentication] 
 }, DashboardController.getSummary);
 
-fastify.register(chatRoutes, { prefix: '/api/chat' });
 
 // Jalankan server
 const start = async () => {

@@ -116,6 +116,17 @@ export default function HomeScreen() {
                   <Text style={styles.quickMenuLabel}>FAQ</Text>
                 </TouchableOpacity>
 
+                {/* 5. Shelter */}
+                {/* <TouchableOpacity 
+                  style={styles.quickMenuItem} 
+                  onPress={() => router.push('/shelter/' as any)}
+                >
+                  <View style={[styles.quickMenuIconBg, { backgroundColor: '#F0FDF4' }]}>
+                    <Ionicons name="help-circle" size={24} color="#16A34A" />
+                  </View>
+                  <Text style={styles.quickMenuLabel}>Shelter</Text>
+                </TouchableOpacity> */}
+
               </View>
             </View>
 
