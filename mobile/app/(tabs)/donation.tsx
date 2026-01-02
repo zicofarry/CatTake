@@ -10,13 +10,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // --- KONFIGURASI API & GAMBAR ---
 // Ganti dengan IP Laptop kamu
-const API_URL = 'http://10.0.2.2:3000';
+import apiClient, { API_BASE_URL } from '../../api/apiClient';
+const serverUrl = API_BASE_URL.replace('/api/v1', ''); 
 
 const resolveImageUrl = (path: string | null) => {
   if (!path) return null;
   // Jika path cuma nama file (misal "qr1.jpg"), tambahkan prefix
   if (!path.startsWith('http')) {
-    return `${API_URL}/public/img/qr_img/${path}`;
+    return `${serverUrl}/public/img/qr_img/${path}`;
   }
   return path;
 };

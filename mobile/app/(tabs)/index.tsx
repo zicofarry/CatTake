@@ -5,7 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 
 // IP Address Backend
-const API_URL = 'http://10.173.4.177:3000';
+import apiClient, { API_BASE_URL } from '../../api/apiClient';
+const serverUrl = API_BASE_URL.replace('/api/v1', ''); 
 
 const { width } = Dimensions.get('window');
 
@@ -20,8 +21,8 @@ export default function HomeScreen() {
 
   const fetchAlumni = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/v1/cats/adopted`);
-      const data = await response.json();
+      const response = await apiClient.get(`/cats/adopted`);
+      const data = response.data;
       if (data.data && Array.isArray(data.data)) {
         setAlumniCats(data.data.slice(0, 3));
       }
@@ -37,7 +38,7 @@ export default function HomeScreen() {
       return 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=400'; 
     }
     if (filename.startsWith('cat-')) {
-      return `${API_URL}/public/img/cats/${filename}`;
+      return `${serverUrl}/public/img/cats/${filename}`;
     }
     return filename;
   };

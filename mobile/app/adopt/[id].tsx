@@ -5,7 +5,8 @@ import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 
 // IP ADDRESS (Sesuaikan lagi kalau berubah)
-const API_URL = 'http://192.168.1.5:3000'; 
+import apiClient, { API_BASE_URL } from '../../api/apiClient';
+const serverUrl = API_BASE_URL.replace('/api/v1', ''); 
 
 export default function CatDetail() {
   const { id } = useLocalSearchParams(); // Mengambil ID dari URL
@@ -19,9 +20,8 @@ export default function CatDetail() {
 
   const fetchDetail = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/v1/cats/${id}`);
-      const data = await response.json();
-      setCat(data.data || data); // Handle kalau response dibungkus data atau tidak
+      const response = await apiClient.get(`/cats/${id}`);
+      setCat(response.data.data || response.data); // Handle kalau response dibungkus data atau tidak
     } catch (error) {
       console.error("Error fetch detail:", error);
     } finally {
@@ -68,7 +68,7 @@ export default function CatDetail() {
         {/* Gambar Full Besar */}
         <View style={styles.imageContainer}>
           <Image 
-            source={{ uri: `${API_URL}/uploads/${cat.image}` }} 
+            source={{ uri: `${serverUrl}/public/img/cats/${cat.image}` }} 
             style={styles.image} 
             resizeMode="cover"
           />
