@@ -15,6 +15,10 @@ async function adoptRoutes(fastify, options) {
 
     // Verifikasi adopsi oleh shelter
     fastify.patch('/verify/:id', { preHandler: [authentication] }, AdoptionController.verifyAdoption);
+
+    fastify.get('/my-adoptions', { preHandler: [authentication] }, AdoptionController.getMyAdoptions);
+    fastify.delete('/cancel/:id', { preHandler: [authentication] }, AdoptionController.cancelAdoption);
+    fastify.get('/my-adoptions/:id', { preHandler: [authentication] }, AdoptionController.getMyAdoptionDetail);
 }
 
 module.exports = adoptRoutes;

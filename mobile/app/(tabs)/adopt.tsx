@@ -1,248 +1,257 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, 
-  ActivityIndicator, Dimensions, Alert, Platform, StatusBar 
+  View, Text, StyleSheet, TouchableOpacity, Image, ImageBackground, 
+  Alert, ActivityIndicator, RefreshControl, SafeAreaView, 
+  StatusBar, FlatList, ScrollView // PERBAIKAN: Import ScrollView
 } from 'react-native';
-import { useRouter, Stack } from 'expo-router'; 
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
-import CatCard from '../../components/CatCard';
+import { useRouter } from 'expo-router';
+import apiClient, { API_BASE_URL } from '@/api/apiClient';
+import CatCard from '@/components/CatCard'; 
 
-import apiClient, { API_BASE_URL } from '../../api/apiClient';
-const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
-
-const { width } = Dimensions.get('window');
+// Membersihkan URL dari /api/v1 untuk akses file statis
+const BASE_SERVER_URL = API_BASE_URL?.replace('/api/v1', '') || 'http://localhost:3000';
 
 export default function AdoptScreen() {
-  const router = useRouter(); 
-  const insets = useSafeAreaInsets();
-  
-  const [cats, setCats] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const [activeUserTab, setActiveUserTab] = useState<'browse' | 'history'>('browse');
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const [activeFilter, setActiveFilter] = useState('all'); 
-  const [genderFilter, setGenderFilter] = useState('all'); 
+  // States Data
+  const [cats, setCats] = useState<any[]>([]);
+  const [myAdoptions, setMyAdoptions] = useState([]);
+  
+  // State Filter (Sinkron dengan Vue)
+  const [activeFilter, setActiveFilter] = useState('all');
 
-  const fetchCats = async () => {
+  const loadData = async () => {
+    setLoading(true);
     try {
-      const response = await apiClient.get(`/cats`);
-      const data = response.data;
-      const responseArray = data.data || data;
-      setCats(Array.isArray(responseArray) ? responseArray : []);
-    } catch (error) {
-      console.error("Gagal ambil data:", error);
-      setCats([]); 
+      const endpoint = activeUserTab === 'browse' ? '/adopt/cats' : '/adopt/my-adoptions';
+      const res = await apiClient.get(endpoint);
+      
+      if (activeUserTab === 'browse') {
+        // PERBAIKAN: Jangan tulis ulang isFavorited: false
+        // Gunakan data langsung dari backend karena backend sudah menghitung isFavorited
+        setCats(res.data); 
+      } else {
+        setMyAdoptions(res.data);
+      }
+    } catch (e) {
+      console.error("Load Error:", e);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  useEffect(() => {
-    fetchCats();
-  }, []);
+
+  useEffect(() => { loadData(); }, [activeUserTab]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchCats();
-  }, []);
+    loadData();
+  }, [activeUserTab]);
 
-  const handleGenderFilter = () => {
-    Alert.alert(
-      "Pilih Gender",
-      "Tampilkan kucing berdasarkan jenis kelamin:",
-      [
-        { text: "Semua", onPress: () => { setActiveFilter('all'); setGenderFilter('all'); } },
-        { text: "Jantan (Male)", onPress: () => { setActiveFilter('gender'); setGenderFilter('male'); } },
-        { text: "Betina (Female)", onPress: () => { setActiveFilter('gender'); setGenderFilter('female'); } },
-        { text: "Batal", style: "cancel" }
-      ]
-    );
-  };
-
-  const safeCats = Array.isArray(cats) ? cats : [];
-  const filteredCats = safeCats.filter(cat => {
-    if (!cat) return false;
-    if (activeFilter === 'favorite') return cat.isFavorited; 
-    if (activeFilter === 'gender' && genderFilter !== 'all') return cat.gender?.toLowerCase() === genderFilter.toLowerCase();
-    return true; 
+  // Logika Filter (Sinkron dengan Vue)
+  const filteredCats = cats.filter(cat => {
+    if (activeFilter === 'favorite') return cat.isFavorited;
+    if (activeFilter === 'male') return cat.gender === 'male';
+    if (activeFilter === 'female') return cat.gender === 'female';
+    return true;
   });
 
-  return (
-    <View style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
+  const handleToggleFavorite = async (id: number) => {
+    try {
+      // 1. Panggil API backend
+      await apiClient.post(`/cats/${id}/favorite`);
+
+      // 2. Update state lokal agar UI langsung berubah (Optimistic Update)
+      setCats(prev => prev.map(c => 
+        c.id === id ? { ...c, isFavorited: !c.isFavorited } : c
+      ));
       
-      {/* --- TOMBOL KEMBALI STICKY (Di luar ScrollView) --- */}
-      <View style={[styles.stickyHeader, { top: insets.top + 10 }]}>
-        <TouchableOpacity 
-          onPress={() => router.replace('/(tabs)')} 
-          style={styles.backBtnGreen}
-        >
-          <Ionicons name="arrow-back" size={20} color="#fff" />
-          <Text style={styles.backTextWhite}>Kembali</Text>
-        </TouchableOpacity>
-      </View>
+      // Opsional: Jika sedang di tab favorit, kita mungkin ingin refresh data
+      if (activeFilter === 'favorite') {
+        // loadData(); // Aktifkan jika ingin item langsung hilang saat un-favorite
+      }
+    } catch (e: any) {
+      console.error("Gagal toggle favorite:", e);
+      Alert.alert("Gagal", e.response?.data?.error || "Terjadi kesalahan saat menyukai kucing.");
+    }
+  };
 
-      <ScrollView 
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
-      >
-        {/* Tambahkan padding top extra agar konten tidak ketutup tombol sticky */}
-        <View style={[styles.heroSection, { paddingTop: insets.top + 60 }]}>
+
+  const handleCancel = (id: number) => {
+    Alert.alert("Batalkan", "Yakin ingin membatalkan pengajuan adopsi ini?", [
+      { text: "Tidak", style: "cancel" },
+      { text: "Ya, Batalkan", style: "destructive", onPress: async () => {
+          try {
+            await apiClient.delete(`/adopt/cancel/${id}`);
+            loadData();
+          } catch (e) { Alert.alert("Error", "Gagal membatalkan pengajuan"); }
+        }
+      }
+    ]);
+  };
+
+  return (
+    <ImageBackground 
+      source={require('../../assets/images/background.png')} 
+      style={styles.container}
+      resizeMode="repeat"
+      imageStyle={{ width: 150, height: 150, opacity: 0.15 }}
+    >
+      <SafeAreaView style={{flex: 1}}>
+        <StatusBar barStyle="light-content" />
+        
+        {/* HERO SECTION */}
+        <View style={styles.hero}>
+          <Image source={require('../../assets/images/cathelo.png')} style={styles.heroImg} resizeMode="contain" />
+          <Text style={styles.heroTitle}>Adopsi & Cinta</Text>
           
-          <Image 
-            source={require('../../assets/images/cathelo.png')} 
-            style={styles.heroImage}
-            resizeMode="contain"
-          />
-
-          <View style={styles.heroTextContainer}>
-            <Text style={styles.heroTitle}>Berikan Rumah, Dapatkan Cinta.</Text>
-            <Text style={styles.heroSubtitle}>
-              Mari bersama menciptakan cerita baru bagi mereka, dari kesepian menuju rumah yang hangat.
-            </Text>
+          <View style={styles.tabContainer}>
+            <TouchableOpacity 
+              style={[styles.tabBtn, activeUserTab === 'browse' && styles.tabActive]} 
+              onPress={() => setActiveUserTab('browse')}
+            >
+              <Text style={[styles.tabText, activeUserTab === 'browse' && {color: '#3A5F50'}]}>Cari Kucing</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.tabBtn, activeUserTab === 'history' && styles.tabActive]} 
+              onPress={() => setActiveUserTab('history')}
+            >
+              <Text style={[styles.tabText, activeUserTab === 'history' && {color: '#3A5F50'}]}>Riwayat Saya</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* --- FILTER FLOATING --- */}
-        <View style={styles.filterContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
-            <TouchableOpacity 
-              style={[styles.filterButton, activeFilter === 'all' && styles.filterActive]} 
-              onPress={() => setActiveFilter('all')}
-            >
-              <Text style={[styles.filterText, activeFilter === 'all' && styles.filterTextActive]}>Semua</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.filterButton, activeFilter === 'gender' && styles.filterActive]} 
-              onPress={handleGenderFilter}
-            >
-              <Text style={[styles.filterText, activeFilter === 'gender' && styles.filterTextActive]}>
-                {activeFilter === 'gender' 
-                  ? (genderFilter === 'male' ? 'Jantan' : 'Betina') 
-                  : 'Gender'}
-              </Text>
-              <Ionicons name="caret-down" size={14} color={activeFilter === 'gender' ? '#fff' : '#333'} style={{marginLeft: 4}}/>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.filterButton, activeFilter === 'favorite' && styles.filterActive]} 
-              onPress={() => setActiveFilter('favorite')}
-            >
-              <Text style={[styles.filterText, activeFilter === 'favorite' && styles.filterTextActive]}>Favorit</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-
-        {/* --- LIST CONTAINER (HIJAU) --- */}
-        <View style={styles.listSection}>
-          <View style={styles.listHeaderSpace} /> 
-          {loading ? (
-            <ActivityIndicator size="large" color="#fff" style={{marginTop: 50}} />
-          ) : (
-            <View style={styles.gridContainer}>
-              {filteredCats.length === 0 ? (
-                <View style={styles.emptyState}>
-                  <Ionicons name="paw" size={60} color="rgba(255,255,255,0.5)" />
-                  <Text style={styles.emptyText}>Tidak ada kucing ditemukan.</Text>
-                  <TouchableOpacity onPress={() => {setActiveFilter('all'); setGenderFilter('all');}} style={styles.resetButton}>
-                    <Text style={styles.resetText}>Reset Filter</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                filteredCats.map((item) => (
-                  <View key={item.id} style={styles.gridItem}>
-                    <CatCard 
-                      name={item.name}
-                      breed={item.breed}
-                      age={item.age}
-                      gender={item.gender}
-                      status={item.status}
-                      imageUrl={item.image ? `${serverUrl}/public/img/cats/${item.image}` : null}
-                      onPress={() => router.push(`/adopt/${item.id}` as any)} 
-                    />
-                  </View>
-                ))
-              )}
+        {activeUserTab === 'browse' ? (
+          <View style={{flex: 1}}>
+            {/* FILTER HORIZONTAL */}
+            <View style={styles.filterBar}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{paddingHorizontal: 20}}>
+                <FilterBtn label="Semua" active={activeFilter === 'all'} onPress={() => setActiveFilter('all')} />
+                <FilterBtn label="Jantan" active={activeFilter === 'male'} onPress={() => setActiveFilter('male')} />
+                <FilterBtn label="Betina" active={activeFilter === 'female'} onPress={() => setActiveFilter('female')} />
+                <FilterBtn 
+                  label={`Favorit (${cats.filter(c => c.isFavorited).length})`} 
+                  active={activeFilter === 'favorite'} 
+                  onPress={() => setActiveFilter('favorite')} 
+                />
+              </ScrollView>
             </View>
-          )}
-          <View style={{height: 100}} /> 
-        </View>
-      </ScrollView>
-    </View>
+
+            {loading && !refreshing ? (
+              <ActivityIndicator color="#fff" style={{marginTop: 50}} />
+            ) : (
+              <FlatList
+                data={filteredCats}
+                numColumns={2}
+                keyExtractor={(item) => item.id.toString()}
+                columnWrapperStyle={styles.columnWrapper}
+                contentContainerStyle={styles.listContent}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />}
+                renderItem={({ item }) => (
+                  <CatCard 
+                    cat={item} 
+                    serverUrl={BASE_SERVER_URL} 
+                    onPress={() => router.push(`/adopt/${item.id}`)}
+                    onFavoritePress={() => handleToggleFavorite(item.id)}
+                  />
+                )}
+                ListEmptyComponent={
+                  <View style={styles.emptyBox}>
+                    <Ionicons name="search-outline" size={50} color="rgba(255,255,255,0.4)" />
+                    <Text style={styles.emptyText}>Tidak ada kucing ditemukan</Text>
+                  </View>
+                }
+              />
+            )}
+          </View>
+        ) : (
+          /* RIWAYAT VIEW */
+          <FlatList
+            data={myAdoptions}
+            keyExtractor={(item: any) => item.id.toString()}
+            contentContainerStyle={{padding: 20, paddingBottom: 100}}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />}
+            renderItem={({ item }: any) => (
+              <TouchableOpacity 
+                style={styles.historyCard}
+                onPress={() => router.push(`/adopt/history/${item.id}`)}
+              >
+                <Image 
+                  source={{ uri: `${BASE_SERVER_URL}/public/img/cats/${item.catImage}` }} 
+                  style={styles.histImg} 
+                />
+                <View style={{flex: 1}}>
+                  <View style={{flexDirection:'row', justifyContent:'space-between', alignItems: 'center'}}>
+                    <Text style={styles.catNameText}>{item.catName}</Text>
+                    <View style={[styles.badge, getStatusBg(item.status)]}>
+                      <Text style={styles.badgeText}>{item.status.toUpperCase()}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.shelterText}>{item.shelterName}</Text>
+                  <Text style={styles.dateText}>{item.appliedDate}</Text>
+                </View>
+                {item.status === 'pending' && (
+                  <TouchableOpacity onPress={() => handleCancel(item.id)} style={styles.cancelBtn}>
+                    <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                  </TouchableOpacity>
+                )}
+              </TouchableOpacity>
+            )}
+            ListEmptyComponent={
+                <View style={styles.emptyBox}>
+                  <Ionicons name="document-text-outline" size={50} color="rgba(255,255,255,0.4)" />
+                  <Text style={styles.emptyText}>Belum ada riwayat pengajuan</Text>
+                </View>
+            }
+          />
+        )}
+      </SafeAreaView>
+    </ImageBackground>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6' },
-  
-  // --- STYLE STICKY BUTTON ---
-  stickyHeader: {
-    position: 'absolute',
-    left: 20,
-    zIndex: 100,
-    paddingTop: 10 // Pastikan di atas layer lain
-  },
-  backBtnGreen: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#3A5F50', // Warna Hijau
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    // Shadow agar tombol terlihat mengambang
-    elevation: 3, 
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  backTextWhite: {
-    marginLeft: 8,
-    fontWeight: '700',
-    color: '#fff',
-    fontSize: 14
-  },
-  // ---------------------------
+const FilterBtn = ({ label, active, onPress }: any) => (
+  <TouchableOpacity style={[styles.fBtn, active && styles.fBtnActive]} onPress={onPress}>
+    <Text style={[styles.fText, active && styles.fTextActive]}>{label}</Text>
+  </TouchableOpacity>
+);
 
-  heroSection: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-    alignItems: 'center',
-  },
-  heroImage: { width: 120, height: 120, marginBottom: 20 },
-  heroTextContainer: { alignItems: 'center' },
-  heroTitle: {
-    fontSize: 28, fontWeight: '800', color: '#1f2937',
-    textAlign: 'center', marginBottom: 10, lineHeight: 34,
-  },
-  heroSubtitle: {
-    fontSize: 14, color: '#6b7280', textAlign: 'center',
-    lineHeight: 22, maxWidth: '90%',
-  },
-  filterContainer: { position: 'relative', zIndex: 10, marginBottom: -25 },
-  filterScroll: { paddingHorizontal: 24, gap: 12, paddingBottom: 10 },
-  filterButton: {
-    backgroundColor: '#fff', paddingHorizontal: 20, paddingVertical: 12,
-    borderRadius: 30, flexDirection: 'row', alignItems: 'center',
-    elevation: 6, shadowColor: '#3A5F50', shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15, shadowRadius: 10,
-  },
-  filterActive: { backgroundColor: '#EBCD5E', transform: [{translateY: -2}] },
-  filterText: { fontWeight: 'bold', color: '#374151', fontSize: 14 },
-  filterTextActive: { color: '#fff' },
-  listSection: {
-    backgroundColor: '#3A5F50', minHeight: Dimensions.get('window').height,
-    borderTopLeftRadius: 50, borderTopRightRadius: 50, paddingHorizontal: 20,
-  },
-  listHeaderSpace: { height: 50 },
-  gridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  gridItem: { width: '47%', marginBottom: 16 },
-  emptyState: { width: '100%', alignItems: 'center', marginTop: 60 },
-  emptyText: { color: 'rgba(255,255,255,0.8)', fontSize: 18, fontWeight: 'bold', marginTop: 10 },
-  resetButton: { marginTop: 20, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
-  resetText: { color: '#fff', fontWeight: 'bold' },
+const getStatusBg = (status: string) => {
+  if (status === 'pending') return { backgroundColor: '#fef3c7' };
+  if (status === 'approved' || status === 'completed') return { backgroundColor: '#d1fae5' };
+  return { backgroundColor: '#fee2e2' };
+};
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#2c473c' },
+  hero: { padding: 24, alignItems: 'center', paddingTop: 20 },
+  heroImg: { width: 100, height: 70, marginBottom: 5 },
+  heroTitle: { fontSize: 28, fontWeight: 'bold', color: '#fff' },
+  tabContainer: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 30, padding: 4, marginTop: 15 },
+  tabBtn: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 25 },
+  tabActive: { backgroundColor: '#fff' },
+  tabText: { fontWeight: 'bold', color: '#fff', fontSize: 12 },
+  filterBar: { marginVertical: 10 },
+  fBtn: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', marginRight: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
+  fBtnActive: { backgroundColor: '#EBCD5E', borderColor: '#EBCD5E' },
+  fText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  fTextActive: { color: '#fff' },
+  listContent: { paddingHorizontal: 20, paddingBottom: 100 },
+  columnWrapper: { justifyContent: 'space-between' },
+  historyCard: { backgroundColor: '#fff', borderRadius: 20, padding: 15, flexDirection: 'row', gap: 12, marginBottom: 12, alignItems: 'center' },
+  histImg: { width: 65, height: 65, borderRadius: 12 },
+  catNameText: { fontWeight: 'bold', fontSize: 16, color: '#1e293b' },
+  shelterText: { fontSize: 12, color: '#64748b' },
+  dateText: { fontSize: 10, color: '#94a3b8', marginTop: 4 },
+  badge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 5 },
+  badgeText: { fontSize: 8, fontWeight: 'bold', color: '#1e293b' },
+  cancelBtn: { padding: 10, backgroundColor: '#fee2e2', borderRadius: 12 },
+  emptyBox: { alignItems: 'center', marginTop: 60 },
+  emptyText: { color: 'rgba(255,255,255,0.6)', marginTop: 10, fontSize: 14 }
 });
