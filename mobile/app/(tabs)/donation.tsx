@@ -8,6 +8,7 @@ import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from "jwt-decode";
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 
 // Helper agar URL gambar dari backend bisa tampil di HP
@@ -149,7 +150,7 @@ export default function DonationScreen() {
       uri: proofImage.uri,
       name: proofImage.name,
       type: proofImage.type,
-    } as any);
+    });
 
     try {
       // POST ke /api/v1/donations

@@ -2,13 +2,14 @@ import React, { useState, useCallback } from 'react';
 import { 
   View, Text, StyleSheet, Image, TouchableOpacity, TextInput, 
   ScrollView, Alert, ActivityIndicator, RefreshControl, Keyboard, 
-  Platform, KeyboardAvoidingView, SafeAreaView, StatusBar
+  Platform, KeyboardAvoidingView, StatusBar
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient'; // Tambahkan: npx expo install expo-linear-gradient
+import { LinearGradient } from 'expo-linear-gradient'; 
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // [1] Import Insets
 
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 import { Colors } from '../../constants/Colors';
@@ -17,8 +18,8 @@ const SERVER_URL = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets(); // [2] Gunakan Insets
   
-  // --- STATE ---
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -39,7 +40,6 @@ export default function ProfileScreen() {
     }, [])
   );
 
-  // --- 1. FETCH PROFILE (Sesuai Logic Vue) ---
   const fetchProfile = async () => {
     try {
       const userId = await AsyncStorage.getItem('userId');
@@ -50,8 +50,6 @@ export default function ProfileScreen() {
       const data = response.data;
       setUserData(data);
 
-      // FIX: Ambil tanggal mentah (YYYY-MM-DD)
-      // Jika dari backend "2000-01-30T00:00:00.000Z", ambil "2000-01-30"
       let rawDate = '';
       if (data.birth_date) {
         rawDate = data.birth_date.split('T')[0];
@@ -61,10 +59,10 @@ export default function ProfileScreen() {
         name: data.full_name || data.username || data.name || '',
         bio: data.bio || '',
         gender: data.gender || 'male',
-        birthDate: rawDate, // Simpan format YYYY-MM-DD agar aman
+        birthDate: rawDate,
       });
 
-      if (data.points) setGameData(prev => ({ ...prev, totalPoints: data.points }));
+      if (data.points) { /* Logic poin jika diperlukan */ }
     } catch (error) {
       console.error("Fetch Error:", error);
     } finally {
@@ -73,7 +71,6 @@ export default function ProfileScreen() {
     }
   };
 
-  // --- 2. UPDATE PROFILE (Sesuai Logic Vue: PATCH) ---
   const handleSaveChanges = async () => {
     Keyboard.dismiss();
     setIsSubmitting(true);
@@ -81,16 +78,14 @@ export default function ProfileScreen() {
       const userId = await AsyncStorage.getItem('userId');
       const role = await AsyncStorage.getItem('userRole');
 
-      // Pastikan payload sama persis dengan yang diminta backend (seperti di Vue)
       const payload = {
         full_name: formData.name,
         bio: formData.bio,
         gender: formData.gender,
-        birth_date: formData.birthDate, // Kirim langsung YYYY-MM-DD
+        birth_date: formData.birthDate,
         role: role
       };
 
-      // Gunakan PATCH sesuai versi Vue
       await apiClient.patch(`/users/profile/${userId}`, payload);
 
       Alert.alert('Sukses', 'Profil berhasil diperbarui!');
@@ -103,7 +98,6 @@ export default function ProfileScreen() {
     }
   };
 
-  // --- 3. UPLOAD PHOTO (Fix FormData) ---
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -145,12 +139,11 @@ export default function ProfileScreen() {
     }
   };
 
-  // --- 4. CLAIM ACHIEVEMENT (Logic Vue) ---
   const handleClaimAchievement = async (id: number) => {
     try {
       setLoading(true);
-      const response = await apiClient.post(`/gamification/claim/${id}`);
-      Alert.alert("Hore! 🎉", `Kamu mendapatkan poin!`);
+      await apiClient.post(`/gamification/claim/${id}`);
+      Alert.alert("Hore! 🏆", `Kamu mendapatkan poin!`);
       fetchProfile();
     } catch (error: any) {
       Alert.alert("Info", error.response?.data?.error || "Gagal klaim hadiah");
@@ -167,155 +160,159 @@ export default function ProfileScreen() {
   if (loading && !refreshing) return <View style={styles.center}><ActivityIndicator size="large" color={Colors.primary} /></View>;
 
   return (
-    <SafeAreaView style={{flex: 1}}>
-      <StatusBar barStyle="dark-content" />
+    // [3] Ganti SafeAreaView dengan View flex:1
+    <View style={{flex: 1}}>
+      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
       <LinearGradient colors={['#E8EAE3', '#A9C2B7']} style={styles.mainContainer}>
         
-        {/* HEADER */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.replace('/(tabs)')} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#374151" />
-            <Text style={styles.backText}>Kembali</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profil</Text>
-          <TouchableOpacity 
-            onPress={isEditing ? handleSaveChanges : () => setIsEditing(true)}
-            style={[styles.editBtn, isEditing && {backgroundColor: Colors.primary}]}
+        {/* Container Konten dengan Padding Insets */}
+        <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+          
+          {/* HEADER */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.replace('/(tabs)')} style={styles.backBtn}>
+              <Ionicons name="arrow-back" size={24} color="#374151" />
+              <Text style={styles.backText}>Kembali</Text>
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Profil</Text>
+            <TouchableOpacity 
+              onPress={isEditing ? handleSaveChanges : () => setIsEditing(true)}
+              style={[styles.editBtn, isEditing && {backgroundColor: Colors.primary}]}
+            >
+              {isSubmitting ? <ActivityIndicator size="small" color="#fff" /> : 
+                <Text style={[styles.editBtnText, isEditing && {color: '#fff'}]}>{isEditing ? 'Simpan' : 'Edit'}</Text>
+              }
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
+            // FIX: Ubah paddingBottom jadi 150 agar tidak ketutup navbar
+            contentContainerStyle={{ paddingBottom: 150 }}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {setRefreshing(true); fetchProfile()}} />}
           >
-            {isSubmitting ? <ActivityIndicator size="small" color="#fff" /> : 
-              <Text style={[styles.editBtnText, isEditing && {color: '#fff'}]}>{isEditing ? 'Simpan' : 'Edit'}</Text>
-            }
-          </TouchableOpacity>
-        </View>
+            {/* PROFILE CARD */}
+            <View style={styles.profileSection}>
+              <View style={styles.avatarContainer}>
+                <Image 
+                  source={userData?.profile_pic && userData.profile_pic !== 'NULL.JPG' 
+                    ? { uri: `${SERVER_URL}/public/img/profile/${userData.profile_pic}` }
+                    : require('../../assets/images/Ellipse.png')} 
+                  style={styles.avatar} 
+                />
+                <TouchableOpacity style={styles.cameraIcon} onPress={pickImage}>
+                  <FontAwesome name="camera" size={16} color="white" />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.userName}>{formData.name || 'User'}</Text>
+              <View style={styles.xpBadge}>
+                <MaterialCommunityIcons name="trophy" size={16} color="#B45309" />
+                <Text style={styles.xpText}>{userData?.total_points || 0} Poin</Text>
+              </View>
+            </View>
 
-        <ScrollView 
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {setRefreshing(true); fetchProfile()}} />}
-        >
-          {/* PROFILE CARD */}
-          <View style={styles.profileSection}>
-            <View style={styles.avatarContainer}>
-              <Image 
-                source={userData?.profile_pic && userData.profile_pic !== 'NULL.JPG' 
-                  ? { uri: `${SERVER_URL}/public/img/profile/${userData.profile_pic}` }
-                  : require('../../assets/images/Ellipse.png')} 
-                style={styles.avatar} 
+            {/* FORM INPUTS */}
+            <View style={styles.formCard}>
+              <Text style={styles.sectionLabel}>📝 Informasi Pribadi</Text>
+              
+              <ProfileInput 
+                label="Nama Lengkap" 
+                value={formData.name} 
+                editable={isEditing} 
+                onChange={(v: string) => setFormData({...formData, name: v})} 
               />
-              <TouchableOpacity style={styles.cameraIcon} onPress={pickImage}>
-                <FontAwesome name="camera" size={16} color="white" />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.userName}>{formData.name || 'User'}</Text>
-            <View style={styles.xpBadge}>
-              <MaterialCommunityIcons name="trophy" size={16} color="#B45309" />
-              <Text style={styles.xpText}>{userData?.total_points || 0} Poin</Text>
-            </View>
-          </View>
+              <ProfileInput 
+                label="Tanggal Lahir" 
+                value={formData.birthDate} 
+                editable={isEditing} 
+                placeholder="YYYY-MM-DD (Contoh: 2000-01-30)" 
+                keyboardType="numeric" 
+                onChange={(v: string) => setFormData({...formData, birthDate: v})} 
+              />
 
-          {/* FORM INPUTS */}
-          <View style={styles.formCard}>
-            <Text style={styles.sectionLabel}>📝 Informasi Pribadi</Text>
-            
-            <ProfileInput 
-              label="Nama Lengkap" 
-              value={formData.name} 
-              editable={isEditing} 
-              onChange={(v) => setFormData({...formData, name: v})} 
-            />
-            {/* Tanggal Lahir */}
-            <ProfileInput 
-              label="Tanggal Lahir" 
-              value={formData.birthDate} 
-              editable={isEditing} 
-              placeholder="YYYY-MM-DD (Contoh: 2000-01-30)" 
-              keyboardType="numeric" // Biar muncul angka di keyboard
-              onChange={(v) => setFormData({...formData, birthDate: v})} 
-            />
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Jenis Kelamin</Text>
+                {isEditing ? (
+                  <View style={styles.radioGroup}>
+                    {['male', 'female'].map((g) => (
+                      <TouchableOpacity 
+                        key={g} 
+                        style={[styles.radioBtn, formData.gender === g && styles.radioActive]}
+                        onPress={() => setFormData({...formData, gender: g})}
+                      >
+                        <Text style={[styles.radioText, formData.gender === g && {color: '#fff'}]}>
+                          {g === 'male' ? 'Laki-laki' : 'Perempuan'}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                ) : (
+                  <Text style={styles.valueText}>{formData.gender === 'female' ? 'Perempuan' : 'Laki-laki'}</Text>
+                )}
+              </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Jenis Kelamin</Text>
-              {isEditing ? (
-                <View style={styles.radioGroup}>
-                  {['male', 'female'].map((g) => (
-                    <TouchableOpacity 
-                      key={g} 
-                      style={[styles.radioBtn, formData.gender === g && styles.radioActive]}
-                      onPress={() => setFormData({...formData, gender: g})}
-                    >
-                      <Text style={[styles.radioText, formData.gender === g && {color: '#fff'}]}>
-                        {g === 'male' ? 'Laki-laki' : 'Perempuan'}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              ) : (
-                <Text style={styles.valueText}>{formData.gender === 'female' ? 'Perempuan' : 'Laki-laki'}</Text>
-              )}
+              <ProfileInput 
+                label="Bio" 
+                value={formData.bio} 
+                editable={isEditing} 
+                multiline 
+                onChange={(v: string) => setFormData({...formData, bio: v})} 
+              />
             </View>
 
-            <ProfileInput 
-              label="Bio" 
-              value={formData.bio} 
-              editable={isEditing} 
-              multiline 
-              onChange={(v) => setFormData({...formData, bio: v})} 
-            />
-          </View>
-
-          {/* QUESTS (Mirip Vue) */}
-          <View style={styles.formCard}>
-            <Text style={styles.sectionLabel}>🎯 Quest Tersedia</Text>
-            {quests.length === 0 ? <Text style={styles.emptyText}>Belum ada quest.</Text> : 
-              quests.map((q: any, i) => (
-                <View key={i} style={styles.questItem}>
-                  <View style={styles.questInfo}>
-                    <Text style={styles.questName}>{q.name}</Text>
-                    <Text style={styles.questPoints}>{q.points} XP</Text>
+            {/* QUESTS */}
+            <View style={styles.formCard}>
+              <Text style={styles.sectionLabel}>📜 Quest Tersedia</Text>
+              {quests.length === 0 ? <Text style={styles.emptyText}>Belum ada quest.</Text> : 
+                quests.map((q: any, i) => (
+                  <View key={i} style={styles.questItem}>
+                    <View style={styles.questInfo}>
+                      <Text style={styles.questName}>{q.name}</Text>
+                      <Text style={styles.questPoints}>{q.points} XP</Text>
+                    </View>
+                    <View style={styles.progressBg}>
+                      <View style={[styles.progressFill, {width: `${(q.progress / q.target) * 100}%`}]} />
+                    </View>
+                    <Text style={styles.progressText}>{q.progress} / {q.target}</Text>
                   </View>
-                  <View style={styles.progressBg}>
-                    <View style={[styles.progressFill, {width: `${(q.progress / q.target) * 100}%`}]} />
+                ))
+              }
+            </View>
+
+            {/* ACHIEVEMENTS */}
+            <View style={styles.formCard}>
+              <Text style={styles.sectionLabel}>🏅 Achievements</Text>
+              {achievements.length === 0 ? <Text style={styles.emptyText}>Belum ada achievement.</Text> :
+                achievements.map((a: any, i) => (
+                  <View key={i} style={[styles.achievementBox, a.isClaimed && {backgroundColor: '#f0fdf4'}]}>
+                    <View style={{flex: 1}}>
+                      <Text style={styles.achievementName}>{a.name}</Text>
+                      <Text style={styles.achievementDesc}>{a.description}</Text>
+                    </View>
+                    {!a.isClaimed ? (
+                      <TouchableOpacity style={styles.claimBtn} onPress={() => handleClaimAchievement(a.id)}>
+                        <Text style={styles.claimBtnText}>Klaim</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
+                    )}
                   </View>
-                  <Text style={styles.progressText}>{q.progress} / {q.target}</Text>
-                </View>
-              ))
-            }
-          </View>
+                ))
+              }
+            </View>
 
-          {/* ACHIEVEMENTS */}
-          <View style={styles.formCard}>
-            <Text style={styles.sectionLabel}>🏅 Achievements</Text>
-            {achievements.length === 0 ? <Text style={styles.emptyText}>Belum ada achievement.</Text> :
-              achievements.map((a: any, i) => (
-                <View key={i} style={[styles.achievementBox, a.isClaimed && {backgroundColor: '#f0fdf4'}]}>
-                  <View style={{flex: 1}}>
-                    <Text style={styles.achievementName}>{a.name}</Text>
-                    <Text style={styles.achievementDesc}>{a.description}</Text>
-                  </View>
-                  {!a.isClaimed ? (
-                    <TouchableOpacity style={styles.claimBtn} onPress={() => handleClaimAchievement(a.id)}>
-                      <Text style={styles.claimBtnText}>Klaim</Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
-                  )}
-                </View>
-              ))
-            }
-          </View>
+            <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+              <Text style={styles.logoutText}>Sign Out</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-            <Text style={styles.logoutText}>Sign Out</Text>
-          </TouchableOpacity>
-
-        </ScrollView>
+          </ScrollView>
+        </View>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 }
 
-// Sub-komponen Input
-const ProfileInput = ({ label, value, editable, onChange, multiline }: any) => (
+const ProfileInput = ({ label, value, editable, onChange, multiline, keyboardType, placeholder }: any) => (
   <View style={styles.inputGroup}>
     <Text style={styles.label}>{label}</Text>
     {editable ? (
@@ -324,6 +321,8 @@ const ProfileInput = ({ label, value, editable, onChange, multiline }: any) => (
         value={value} 
         onChangeText={onChange}
         multiline={multiline}
+        keyboardType={keyboardType}
+        placeholder={placeholder}
       />
     ) : (
       <Text style={styles.valueText}>{value || '-'}</Text>
@@ -340,14 +339,14 @@ const styles = StyleSheet.create({
   },
   backBtn: { flexDirection: 'row', alignItems: 'center' },
   backText: { marginLeft: 5, fontWeight: '600' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold' },
+  headerTitle: { fontSize: 18, fontWeight: 'bold', marginRight: 35},
   editBtn: { paddingHorizontal: 15, paddingVertical: 6, borderRadius: 10, backgroundColor: '#fff', borderWidth: 1, borderColor: '#ddd' },
   editBtnText: { fontWeight: 'bold', color: '#374151' },
 
   profileSection: { alignItems: 'center', marginVertical: 30 },
   avatarContainer: { position: 'relative' },
-  avatar: { width: 120, height: 120, borderRadius: 60, borderSize: 4, borderColor: '#fff' },
-  cameraIcon: { position: 'absolute', bottom: 5, right: 5, backgroundColor: Colors.primary, p: 8, borderRadius: 20, borderWidth: 3, borderColor: '#fff', padding: 8 },
+  avatar: { width: 120, height: 120, borderRadius: 60, borderWidth: 4, borderColor: '#fff' },
+  cameraIcon: { position: 'absolute', bottom: 5, right: 5, backgroundColor: Colors.primary, borderRadius: 20, borderWidth: 3, borderColor: '#fff', padding: 8 },
   userName: { fontSize: 22, fontWeight: 'bold', marginTop: 10, color: '#1f2937' },
   xpBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF3C7', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, marginTop: 8 },
   xpText: { marginLeft: 5, color: '#B45309', fontWeight: 'bold' },

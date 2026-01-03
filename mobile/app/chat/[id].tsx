@@ -16,17 +16,16 @@ import { Ionicons } from '@expo/vector-icons';
 import apiClient from '@/api/apiClient';
 
 export default function ChatRoomScreen() {
-  const { id, name } = useLocalSearchParams(); // 'id' di sini adalah partner_id lawan bicara
-  const [messages, setMessages] = useState([]);
+  const { id, name } = useLocalSearchParams(); 
+  const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
   const flatListRef = useRef<FlatList>(null);
 
-  // Ambil riwayat chat dari backend
   const fetchHistory = async () => {
     try {
       const response = await apiClient.get(`/chat/history/${id}`);
-      setMessages(response.data.data); // Data dari ShelterChatController.getHistory
+      setMessages(response.data.data); 
     } catch (error) {
       console.error("Gagal memuat chat:", error);
     } finally {
@@ -36,7 +35,6 @@ export default function ChatRoomScreen() {
 
   useEffect(() => {
     fetchHistory();
-    // Polling sederhana untuk mendapatkan pesan baru setiap 4 detik
     const interval = setInterval(fetchHistory, 4000);
     return () => clearInterval(interval);
   }, [id]);
@@ -45,7 +43,7 @@ export default function ChatRoomScreen() {
     if (!inputText.trim()) return;
 
     const messageToSend = inputText;
-    setInputText('');
+    setInputText(''); // Clear input segera agar responsif
 
     try {
       const response = await apiClient.post('/chat/send', {
@@ -53,9 +51,15 @@ export default function ChatRoomScreen() {
         message: messageToSend
       });
 
-      // Tambahkan pesan ke UI secara langsung
-      setMessages(prev => [...prev, response.data.data]);
-      setTimeout(() => flatListRef.current?.scrollToEnd(), 100);
+      // FIX: Memaksa properti 'position' menjadi 'me' agar bubble langsung di kanan
+      // Ini memperbaiki bug bubble muncul di kiri (delay)
+      const newMessage = {
+        ...response.data.data,
+        position: 'me' 
+      };
+
+      setMessages(prev => [...prev, newMessage]);
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (error) {
       console.error("Gagal mengirim pesan:", error);
       setInputText(messageToSend); // Kembalikan teks jika gagal
@@ -69,7 +73,13 @@ export default function ChatRoomScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ headerTitle: (name as string) || 'Chat' }} />
+      <Stack.Screen 
+        options={{ 
+          headerTitle: (name as string) || 'Chat',
+          headerStyle: { backgroundColor: '#3A5F50' }, // Samakan warna header
+          headerTintColor: '#fff',
+        }} 
+      />
 
       {loading ? (
         <ActivityIndicator size="large" color="#3A5F50" style={{ flex: 1 }} />
@@ -77,33 +87,35 @@ export default function ChatRoomScreen() {
         <FlatList
           ref={flatListRef}
           data={messages}
-          keyExtractor={item => item.id.toString()}
+          keyExtractor={item => item.id ? item.id.toString() : Math.random().toString()}
           renderItem={({ item }) => (
             <View style={[styles.bubbleWrapper, item.position === 'me' ? styles.right : styles.left]}>
               <View style={[styles.bubble, item.position === 'me' ? styles.bubbleRight : styles.bubbleLeft]}>
                 <Text style={[styles.text, item.position === 'me' ? styles.textRight : styles.textLeft]}>
                   {item.message}
                 </Text>
-                <Text style={[styles.time, item.position === 'me' ? {color: '#eee'} : {color: '#999'}]}>
+                <Text style={[styles.time, item.position === 'me' ? {color: 'rgba(255,255,255,0.7)'} : {color: '#999'}]}>
                   {formatTime(item.created_at)}
                 </Text>
               </View>
             </View>
           )}
           contentContainerStyle={styles.listContent}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd()}
+          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          ListEmptyComponent={<Text style={{textAlign:'center', marginTop: 20, color:'#999'}}>Mulai percakapan...</Text>}
         />
       )}
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={90}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={ Platform.OS === "ios" ? 90 : 0}>
         <View style={styles.inputBar}>
           <TextInput
             style={styles.input}
             value={inputText}
             onChangeText={setInputText}
             placeholder="Tulis pesan..."
+            placeholderTextColor="#999"
           />
-          <TouchableOpacity onPress={sendMessage} style={styles.sendBtn}>
+          <TouchableOpacity onPress={sendMessage} style={styles.sendBtn} disabled={!inputText.trim()}>
             <Ionicons name="send" size={20} color="white" />
           </TouchableOpacity>
         </View>
@@ -112,21 +124,43 @@ export default function ChatRoomScreen() {
   );
 }
 
-// ... Styles tetap sama seperti kode asli kamu ...
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f2f2f2' },
-  listContent: { padding: 16 },
+  listContent: { padding: 16, paddingBottom: 20 },
   bubbleWrapper: { width: '100%', marginBottom: 10 },
   left: { alignItems: 'flex-start' },
   right: { alignItems: 'flex-end' },
-  bubble: { maxWidth: '75%', padding: 12, borderRadius: 16 },
+  bubble: { maxWidth: '75%', padding: 12, borderRadius: 16, elevation: 1 },
   bubbleLeft: { backgroundColor: 'white', borderBottomLeftRadius: 4 },
   bubbleRight: { backgroundColor: '#3A5F50', borderBottomRightRadius: 4 },
   text: { fontSize: 15 },
   textLeft: { color: '#333' },
   textRight: { color: 'white' },
   time: { fontSize: 10, marginTop: 4, alignSelf: 'flex-end' },
-  inputBar: { flexDirection: 'row', padding: 10, backgroundColor: 'white', alignItems: 'center' },
-  input: { flex: 1, backgroundColor: '#f5f5f5', borderRadius: 20, padding: 10, paddingHorizontal: 16 },
-  sendBtn: { marginLeft: 10, backgroundColor: '#3A5F50', padding: 10, borderRadius: 20 },
+  inputBar: { 
+    flexDirection: 'row', 
+    padding: 10, 
+    backgroundColor: 'white', 
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#eee'
+  },
+  input: { 
+    flex: 1, 
+    backgroundColor: '#f5f5f5', 
+    borderRadius: 20, 
+    padding: 10, 
+    paddingHorizontal: 16,
+    maxHeight: 100
+  },
+  sendBtn: { 
+    marginLeft: 10, 
+    backgroundColor: '#3A5F50', 
+    padding: 10, 
+    borderRadius: 20,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
 });

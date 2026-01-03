@@ -1,27 +1,25 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { 
   View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, 
-  Dimensions, ActivityIndicator 
+  ActivityIndicator, StatusBar 
 } from 'react-native';
 import { useRouter, Stack, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Colors } from '../../constants/Colors';
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
-
-// Import Component Shelter Home
-// Pastikan kamu sudah membuat file ini di: mobile/components/ShelterHomeScreen.tsx
 import ShelterHomeScreen from '../../components/ShelterHomeScreen'; 
 
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
-const { width } = Dimensions.get('window');
+const THEME_COLOR = '#3A5F50';
 
 // ==================================================
-// 1. KOMPONEN TAMPILAN USER BIASA (Kode Lama Kamu)
+// 1. KOMPONEN TAMPILAN USER BIASA
 // ==================================================
 function UserHomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [alumniCats, setAlumniCats] = useState<any[]>([]);
   const [loadingAlumni, setLoadingAlumni] = useState(true);
 
@@ -44,374 +42,216 @@ function UserHomeScreen() {
   };
 
   const getImageUrl = (filename: string) => {
-    if (!filename || filename === 'NULL') {
-      return 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=400'; 
-    }
-    if (filename.startsWith('cat-')) {
-      return `${serverUrl}/public/img/cats/${filename}`;
-    }
+    if (!filename || filename === 'NULL') return 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=400'; 
+    if (filename.startsWith('cat-')) return `${serverUrl}/public/img/cats/${filename}`;
     return filename;
   };
 
   return (
-    <>
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
+      <StatusBar barStyle="light-content" backgroundColor={THEME_COLOR} />
       
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         
         {/* --- HERO SECTION --- */}
-        <View style={styles.heroSection}>
-          <View style={styles.heroContent}>
-            <View style={styles.badgeContainer}>
-              <View style={styles.badgeLine} />
-              <Text style={styles.badgeText}>TENTANG KAMI</Text>
+        <View style={[styles.heroSection, { paddingTop: insets.top + 20 }]}>
+          <View style={styles.heroHeaderRow}>
+            <View>
+              <Text style={styles.heroGreeting}>Hai, Cat Lovers!</Text>
+              <Text style={styles.heroTitle}>Mau tolong anabul siapa hari ini?</Text>
             </View>
-            
-            <Text style={styles.heroTitle}>
-              Menciptakan Dunia Lebih Baik Bagi <Text style={styles.textPrimary}>Bangsa Kucing</Text>
-            </Text>
-            
-            <Text style={styles.heroSubtitle}>
-              Setiap kucing berhak mendapatkan tempat yang hangat. CatTake hadir untuk memastikan tidak ada lagi anabul yang terlantar.
-            </Text>
-
-            {/* --- QUICK ACTION MENU --- */}
-            <View style={styles.quickMenuWrapper}>
-              <Text style={styles.quickMenuTitle}>Menu Cepat</Text>
-              <View style={styles.quickMenuContainer}>
-                
-                {/* 1. Adopsi */}
-                <TouchableOpacity 
-                  style={styles.quickMenuItem} 
-                  onPress={() => router.push('/(tabs)/adopt' as any)}
-                >
-                  <View style={[styles.quickMenuIconBg, { backgroundColor: '#FFF7ED' }]}>
-                    <Ionicons name="paw" size={24} color={Colors.primary} />
-                  </View>
-                  <Text style={styles.quickMenuLabel}>Adopsi</Text>
-                </TouchableOpacity>
-
-                {/* 2. RIWAYAT */}
-                <TouchableOpacity 
-                  style={styles.quickMenuItem} 
-                  onPress={() => router.push('/(tabs)/report' as any)}
-                >
-                  <View style={[styles.quickMenuIconBg, { backgroundColor: '#F3E8FF' }]}>
-                    <Ionicons name="time" size={24} color="#9333EA" />
-                  </View>
-                  <Text style={styles.quickMenuLabel}>Riwayat</Text>
-                </TouchableOpacity>
-
-                {/* 3. Donasi */}
-                <TouchableOpacity 
-                  style={styles.quickMenuItem} 
-                  onPress={() => router.push('/(tabs)/donation' as any)}
-                >
-                  <View style={[styles.quickMenuIconBg, { backgroundColor: '#EFF6FF' }]}>
-                    <Ionicons name="heart" size={24} color="#3B82F6" />
-                  </View>
-                  <Text style={styles.quickMenuLabel}>Donasi</Text>
-                </TouchableOpacity>
-
-                {/* 4. FAQ */}
-                <TouchableOpacity 
-                  style={styles.quickMenuItem} 
-                  onPress={() => router.push('/faq' as any)}
-                >
-                  <View style={[styles.quickMenuIconBg, { backgroundColor: '#F0FDF4' }]}>
-                    <Ionicons name="help-circle" size={24} color="#16A34A" />
-                  </View>
-                  <Text style={styles.quickMenuLabel}>FAQ</Text>
-                </TouchableOpacity>
-
-              </View>
-            </View>
-
-            {/* Statistik */}
-            <View style={styles.statsContainer}>
-              <View>
-                <Text style={styles.statNumber}>150+</Text>
-                <Text style={styles.statLabel}>Nyawa Selamat</Text>
-              </View>
-              <View>
-                <Text style={styles.statNumber}>80+</Text>
-                <Text style={styles.statLabel}>Rumah Baru</Text>
-              </View>
-              <View>
-                <Text style={styles.statNumber}>1k+</Text>
-                <Text style={styles.statLabel}>Teman Meow</Text>
-              </View>
-            </View>
+            {/* <TouchableOpacity style={styles.notifBtn}>
+              <Ionicons name="notifications" size={20} color="#fff" />
+            </TouchableOpacity> */}
           </View>
 
-          {/* Gambar Hero */}
-          <View style={styles.heroImageContainer}>
+          {/* Quick Stats / Banner */}
+          <View style={styles.bannerCard}>
+            <View style={{flex: 1}}>
+              <Text style={styles.bannerTitle}>150+ Nyawa</Text>
+              <Text style={styles.bannerSub}>Telah diselamatkan bulan ini.</Text>
+              <TouchableOpacity style={styles.bannerBtn} onPress={() => router.push('/(tabs)/adopt' as any)}>
+                <Text style={styles.bannerBtnText}>Adopsi Sekarang</Text>
+              </TouchableOpacity>
+            </View>
             <Image 
-              source={{ uri: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }} 
-              style={styles.heroImage} 
+              source={require('../../assets/images/cathelo.png')} 
+              style={styles.bannerImage} 
+              resizeMode="contain"
             />
-            <View style={styles.floatingCard}>
-              <View style={styles.floatingIconBg}>
-                <Ionicons name="happy" size={24} color={Colors.primary} />
-              </View>
-              <View>
-                <Text style={styles.floatingTitle}>Status Misi</Text>
-                <Text style={styles.floatingSubtitle}>Banyak Kucing Bahagia</Text>
-              </View>
-            </View>
           </View>
         </View>
 
-        {/* --- MARQUEE --- */}
-        <View style={styles.marqueeContainer}>
-          <Text style={styles.marqueeText}>
-            RESCUE • MEOW • SAVE LIVES • ADOPT • RESCUE • MEOW • SAVE LIVES
-          </Text>
-        </View>
-
-        {/* --- LAYANAN KAMI --- */}
-        <View style={styles.serviceSection}>
-          <View style={styles.sectionHeaderCenter}>
-            <Text style={styles.sectionBadge}>LAYANAN KAMI</Text>
-            <Text style={styles.sectionTitleWhite}>Bantu Anabul Dengan Cara Kamu</Text>
-          </View>
-
-          {/* Card 1: Lapor */}
-          <TouchableOpacity style={styles.serviceCard} onPress={() => router.push('/(tabs)/report' as any)}>
-            <View style={styles.serviceIconBg}>
-              <Ionicons name="camera" size={32} color={Colors.primary} />
-            </View>
-            <Text style={styles.serviceTitle}>Lapor Penemuan</Text>
-            <Text style={styles.serviceDesc}>
-              Lihat kucing terlantar? Foto dan laporkan lokasinya agar bisa segera kami selamatkan.
-            </Text>
-            <Text style={styles.serviceLink}>Buat Laporan &rarr;</Text>
-          </TouchableOpacity>
-
-          {/* Card 2: Adopsi */}
-          <TouchableOpacity style={styles.serviceCard} onPress={() => router.push('/(tabs)/adopt' as any)}>
-            <View style={[styles.serviceIconBg, { backgroundColor: '#EBCD5E' }]}>
-               <Ionicons name="paw" size={32} color="#1F352C" />
-            </View>
-            <Text style={styles.serviceTitle}>Adopsi Anabul</Text>
-            <Text style={styles.serviceDesc}>
-              Temukan kucing impianmu yang siap untuk diadopsi hari ini dari shelter terpercaya.
-            </Text>
-            <Text style={[styles.serviceLink, { color: '#EBCD5E' }]}>Cari Kucing &rarr;</Text>
-          </TouchableOpacity>
-
-          {/* Card 3: Komunitas */}
-          <TouchableOpacity style={styles.serviceCard} onPress={() => router.push('/(tabs)/community' as any)}>
-            <View style={styles.serviceIconBg}>
-              <Ionicons name="people" size={32} color={Colors.primary} />
-            </View>
-            <Text style={styles.serviceTitle}>Komunitas Pecinta</Text>
-            <Text style={styles.serviceDesc}>
-              Gabung dengan pecinta kucing lainnya. Berbagi tips, cerita lucu, dan dukung shelter.
-            </Text>
-            <Text style={styles.serviceLink}>Gabung Sekarang &rarr;</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* --- CARA KERJA --- */}
-        <View style={styles.stepsSection}>
-          <Text style={styles.stepsHeader}>Langkah Mudah Menyelamatkan <Text style={{color: Colors.primary}}>Nyawa</Text></Text>
-          
-          <View style={styles.stepCard}>
-            <Text style={styles.stepNumber}>01</Text>
-            <View style={styles.stepIconBg}>
-              <Ionicons name="search" size={24} color="#3A5F50" />
-            </View>
-            <Text style={styles.stepTitle}>Snap & Lapor</Text>
-            <Text style={styles.stepDesc}>Ambil foto kucing yang butuh bantuan dan pastikan lokasinya akurat.</Text>
-          </View>
-
-          <View style={styles.stepCard}>
-            <Text style={styles.stepNumber}>02</Text>
-            <View style={styles.stepIconBg}>
-              <Ionicons name="checkmark-circle" size={24} color="#d97706" />
-            </View>
-            <Text style={styles.stepTitle}>Verifikasi</Text>
-            <Text style={styles.stepDesc}>Laporan akan diverifikasi oleh shelter terdekat untuk memastikan kondisi.</Text>
-          </View>
-
-          <View style={styles.stepCard}>
-            <Text style={styles.stepNumber}>03</Text>
-            <View style={styles.stepIconBg}>
-              <Ionicons name="heart" size={24} color="#f97316" />
-            </View>
-            <Text style={styles.stepTitle}>Rescue & Adopsi</Text>
-            <Text style={styles.stepDesc}>Kucing diselamatkan, dirawat, dan siap dicarikan rumah baru.</Text>
+        {/* --- MENU CEPAT (UPDATED) --- */}
+        <View style={styles.menuContainer}>
+          <View style={styles.quickMenuGrid}>
+             {[
+               { icon: 'paw', label: 'Adopsi', route: '/(tabs)/adopt', color: '#f97316' }, // Orange
+               { icon: 'heart', label: 'Donasi', route: '/(tabs)/donation', color: '#ef4444' }, // Merah
+               { icon: 'time', label: 'Riwayat', route: '/(tabs)/report', color: '#3b82f6' }, // Biru (Link ke Report/History)
+               { icon: 'help-circle', label: 'FAQ', route: '/(tabs)/faq', color: '#10b981' }, // Hijau
+             ].map((menu, index) => (
+               <TouchableOpacity key={index} style={styles.menuItem} onPress={() => router.push(menu.route as any)}>
+                 <View style={[styles.menuIconBox, { backgroundColor: menu.color + '20' }]}>
+                   <Ionicons name={menu.icon as any} size={24} color={menu.color} />
+                 </View>
+                 <Text style={styles.menuLabel}>{menu.label}</Text>
+               </TouchableOpacity>
+             ))}
           </View>
         </View>
+
+        {/* --- LAYANAN KAMI (Display Only) --- */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Layanan Kami</Text>
+        </View>
+
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={{ flexGrow: 0 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10 }}
+          clipToPadding={false} 
+        >
+          <View style={styles.serviceCard}>
+            <View style={[styles.iconCircle, {backgroundColor: '#fee2e2'}]}>
+              <Ionicons name="alert-circle" size={24} color="#ef4444" />
+            </View>
+            <Text style={styles.serviceCardTitle}>Darurat</Text>
+            <Text style={styles.serviceCardDesc}>Lapor kucing sakit atau terlantar.</Text>
+          </View>
+
+          <View style={styles.serviceCard}>
+            <View style={[styles.iconCircle, {backgroundColor: '#ffedd5'}]}>
+              <Ionicons name="home" size={24} color="#f97316" />
+            </View>
+            <Text style={styles.serviceCardTitle}>Cari Rumah</Text>
+            <Text style={styles.serviceCardDesc}>Berikan rumah untuk mereka.</Text>
+          </View>
+
+          <View style={styles.serviceCard}>
+            <View style={[styles.iconCircle, {backgroundColor: '#dcfce7'}]}>
+              <Ionicons name="chatbubbles" size={24} color="#16a34a" />
+            </View>
+            <Text style={styles.serviceCardTitle}>Tanya Kami</Text>
+            <Text style={styles.serviceCardDesc}>FAQ dan bantuan seputar kucing.</Text>
+          </View>
+        </ScrollView>
 
         {/* --- ALUMNI (Hall of Fame) --- */}
-        <View style={styles.alumniSection}>
-          <Text style={styles.sectionBadgeCenter}>HALL OF FAME</Text>
-          <Text style={styles.alumniHeader}>Alumni CatTake</Text>
-          <Text style={styles.alumniSubHeader}>Mereka yang telah menemukan rumah barunya.</Text>
-
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.alumniScroll}>
-            {loadingAlumni && [1,2,3].map(i => (
-              <View key={i} style={[styles.alumniCard, { opacity: 0.5 }]}>
-                <View style={[styles.alumniImage, { backgroundColor: '#e5e7eb' }]} />
-                <View style={styles.alumniContent}>
-                  <View style={{width: 80, height: 16, backgroundColor: '#e5e7eb', marginBottom: 8}} />
-                  <View style={{width: 100, height: 12, backgroundColor: '#e5e7eb'}} />
-                </View>
-              </View>
-            ))}
-
-            {!loadingAlumni && alumniCats.length === 0 && (
-              <View style={{ padding: 20 }}>
-                <Text style={{ color: '#9ca3af' }}>Belum ada alumni saat ini.</Text>
-              </View>
-            )}
-
-            {!loadingAlumni && alumniCats.map((cat: any) => (
-              <View key={cat.id} style={styles.alumniCard}>
-                <Image 
-                  source={{ uri: getImageUrl(cat.photo) }} 
-                  style={styles.alumniImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.alumniContent}>
-                  <Text style={styles.alumniName} numberOfLines={1}>{cat.name}</Text>
-                  <Text style={styles.alumniInfo} numberOfLines={1}>
-                    Adopter: {cat.adopter || 'Anonim'}
-                  </Text>
-                  <View style={styles.adoptedBadge}>
-                    <Text style={styles.adoptedText}>ADOPTED</Text>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
+        <View style={styles.sectionContainer}>
+          <View style={[styles.sectionHeaderRow, { paddingRight: 20 }]}>
+             <Text style={styles.sectionTitle}>Hall of Fame</Text>
+             <TouchableOpacity><Text style={styles.seeAll}>Lihat Semua</Text></TouchableOpacity>
+          </View>
         </View>
+          
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10 }}
+          clipToPadding={false}
+        >
+          {loadingAlumni ? (
+             <ActivityIndicator color={THEME_COLOR} /> 
+          ) : alumniCats.length === 0 ? (
+             <Text style={{color:'#999', fontStyle:'italic'}}>Belum ada data alumni.</Text>
+          ) : (
+            alumniCats.map((cat: any) => (
+              <View key={cat.id} style={styles.alumniCard}>
+                <Image source={{ uri: getImageUrl(cat.photo) }} style={styles.alumniImage} />
+                <View style={styles.alumniInfo}>
+                  <Text style={styles.alumniName}>{cat.name}</Text>
+                  <Text style={styles.alumniAdopter}>diadopsi oleh {cat.adopter || 'Seseorang'}</Text>
+                </View>
+              </View>
+            ))
+          )}
+        </ScrollView>
 
-        <View style={{height: 50}} /> 
       </ScrollView>
-    </>
+    </View>
   );
 }
 
 // ==================================================
-// 2. KOMPONEN UTAMA (Switcher Role)
+// 2. MAIN SWITCHER
 // ==================================================
 export default function HomeScreen() {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useFocusEffect(
-    useCallback(() => {
-      checkRole();
-    }, [])
-  );
+  useFocusEffect(useCallback(() => { checkRole(); }, []));
 
   const checkRole = async () => {
     try {
       const role = await AsyncStorage.getItem('userRole');
       setUserRole(role);
-    } catch (e) {
-      console.error("Error checking role:", e);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
-  // Tampilkan Loading saat cek role
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F3F4F6' }}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </View>
-    );
-  }
-
-  // JIKA SHELTER -> Tampilkan Dashboard Shelter
-  if (userRole === 'shelter') {
-    return <ShelterHomeScreen />;
-  }
-
-  // JIKA BUKAN -> Tampilkan User Home (Kode Lama)
+  if (loading) return <View style={{flex:1, backgroundColor:'#F3F4F6'}} />;
+  if (userRole === 'shelter') return <ShelterHomeScreen />;
   return <UserHomeScreen />;
 }
 
-// ==================================================
-// 3. STYLES
-// ==================================================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  textPrimary: { color: '#3A5F50' },
-
-  // --- HERO ---
-  heroSection: { padding: 24, paddingTop: 60, backgroundColor: '#fff' },
-  heroContent: { marginBottom: 20 },
-  badgeContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  badgeLine: { width: 30, height: 4, backgroundColor: Colors.primary, marginRight: 8, borderRadius: 2 },
-  badgeText: { fontSize: 12, fontWeight: 'bold', color: '#3A5F50', letterSpacing: 1 },
-  heroTitle: { fontSize: 36, fontWeight: '800', color: '#1f2937', lineHeight: 44, marginBottom: 16 },
-  heroSubtitle: { fontSize: 16, color: '#6b7280', lineHeight: 24, marginBottom: 20 },
+  container: { flex: 1, backgroundColor: '#F3F4F6' },
   
-  statsContainer: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderColor: '#f3f4f6', paddingTop: 20, marginTop: 10 },
-  statNumber: { fontSize: 24, fontWeight: 'bold', color: '#3A5F50' },
-  statLabel: { fontSize: 12, color: '#9ca3af' },
-  
-  heroImageContainer: { marginTop: 30, position: 'relative' },
-  heroImage: { width: '100%', height: 300, borderRadius: 30 },
-  floatingCard: { 
-    position: 'absolute', bottom: -20, left: 20, 
-    backgroundColor: '#fff', flexDirection: 'row', alignItems: 'center', 
-    padding: 12, borderRadius: 16, 
-    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 
+  heroSection: { 
+    backgroundColor: THEME_COLOR, 
+    paddingHorizontal: 20, 
+    paddingBottom: 40,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
-  floatingIconBg: { backgroundColor: '#ffedd5', padding: 8, borderRadius: 20, marginRight: 12 },
-  floatingTitle: { fontSize: 10, color: '#9ca3af' },
-  floatingSubtitle: { fontSize: 14, fontWeight: 'bold', color: '#1f2937' },
+  heroHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
+  heroGreeting: { color: '#fbbf24', fontWeight: 'bold', fontSize: 14, marginBottom: 4 },
+  heroTitle: { color: '#fff', fontSize: 21, fontWeight: 'bold', maxWidth: '80%' },
+  notifBtn: { backgroundColor: 'rgba(255,255,255,0.2)', padding: 8, borderRadius: 50 },
 
-  // --- QUICK ACTION MENU ---
-  quickMenuWrapper: { marginBottom: 20 },
-  quickMenuTitle: { fontSize: 12, fontWeight: 'bold', color: '#000000ff', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
-  quickMenuContainer: { flexDirection: 'row', justifyContent: 'space-between' },
-  quickMenuItem: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', paddingVertical: 12, borderRadius: 12, width: '23%', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 2, borderWidth: 1, borderColor: '#f3f4f6' },
-  quickMenuIconBg: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
-  quickMenuLabel: { fontSize: 10, fontWeight: '700', color: '#374151', textAlign: 'center' },
+  bannerCard: { 
+    backgroundColor: '#2C4A3E', borderRadius: 20, padding: 20, 
+    flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' 
+  },
+  bannerTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  bannerSub: { color: '#d1d5db', fontSize: 12, marginBottom: 12 },
+  bannerBtn: { backgroundColor: '#EBCD5E', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, alignSelf: 'flex-start' },
+  bannerBtnText: { color: '#1f2937', fontWeight: 'bold', fontSize: 12 },
+  bannerImage: { width: 80, height: 80 },
 
-  // --- MARQUEE ---
-  marqueeContainer: { backgroundColor: '#1F352C', paddingVertical: 12, marginTop: 10 },
-  marqueeText: { color: '#fff', fontSize: 12, fontWeight: 'bold', letterSpacing: 2, textAlign: 'center' },
+  menuContainer: { paddingHorizontal: 20, marginTop: -25 },
+  quickMenuGrid: { 
+    flexDirection: 'row', justifyContent: 'space-between', 
+    backgroundColor: '#fff', borderRadius: 20, padding: 20,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 5, elevation: 5
+  },
+  menuItem: { alignItems: 'center', width: '22%' },
+  menuIconBox: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+  menuLabel: { fontSize: 11, fontWeight: '600', color: '#4b5563' },
 
-  // --- SERVICE ---
-  serviceSection: { backgroundColor: '#1F352C', padding: 24, paddingBottom: 40 },
-  sectionHeaderCenter: { alignItems: 'center', marginBottom: 30 },
-  sectionBadge: { color: Colors.primary, fontSize: 12, fontWeight: 'bold', letterSpacing: 1, marginBottom: 8 },
-  sectionTitleWhite: { color: '#fff', fontSize: 28, fontWeight: 'bold', textAlign: 'center' },
-  serviceCard: { backgroundColor: '#2C4A3E', borderRadius: 24, padding: 24, marginBottom: 16, borderWidth: 1, borderColor: '#3A5F50' },
-  serviceIconBg: { width: 50, height: 50, backgroundColor: '#3A5F50', borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  serviceTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff', marginBottom: 8 },
-  serviceDesc: { fontSize: 14, color: '#d1d5db', lineHeight: 22, marginBottom: 20 },
-  serviceLink: { fontSize: 14, fontWeight: 'bold', color: Colors.primary },
+  sectionContainer: { paddingLeft: 20, marginTop: 20 },
+  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1f2937' },
+  seeAll: { fontSize: 12, color: THEME_COLOR, fontWeight: 'bold' },
 
-  // --- STEPS ---
-  stepsSection: { padding: 24, backgroundColor: '#F9FAFB' },
-  stepsHeader: { fontSize: 28, fontWeight: 'bold', color: '#1f2937', marginBottom: 24 },
-  stepCard: { backgroundColor: '#fff', borderRadius: 24, padding: 24, marginBottom: 16, borderWidth: 1, borderColor: '#e5e7eb', position: 'relative', overflow: 'hidden' },
-  stepNumber: { position: 'absolute', right: -10, bottom: -15, fontSize: 80, fontWeight: 'bold', color: '#f3f4f6' },
-  stepIconBg: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#ecfdf5', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  stepTitle: { fontSize: 18, fontWeight: 'bold', color: '#1f2937', marginBottom: 4 },
-  stepDesc: { fontSize: 14, color: '#6b7280' },
+  serviceCard: { 
+    backgroundColor: '#fff', width: 140, height: 160, borderRadius: 16, padding: 16, marginRight: 12,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.1, shadowRadius: 5, elevation: 4,
+    justifyContent: 'center', alignItems: 'center'
+  },
+  iconCircle: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  serviceCardTitle: { fontWeight: 'bold', color: '#1f2937', marginBottom: 4 },
+  serviceCardDesc: { fontSize: 10, color: '#9ca3af', textAlign: 'center' },
 
-  // --- ALUMNI ---
-  alumniSection: { paddingVertical: 40, backgroundColor: '#fff' },
-  sectionBadgeCenter: { textAlign: 'center', color: Colors.primary, fontSize: 12, fontWeight: 'bold', letterSpacing: 1 },
-  alumniHeader: { fontSize: 28, fontWeight: 'bold', color: '#3A5F50', textAlign: 'center', marginTop: 8 },
-  alumniSubHeader: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 24 },
-  alumniScroll: { paddingHorizontal: 24, paddingBottom: 20 },
-  alumniCard: { width: 200, backgroundColor: '#fff', borderRadius: 16, marginRight: 16, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, elevation: 2, borderWidth: 1, borderColor: '#f3f4f6' },
-  alumniImage: { width: '100%', height: 140, borderTopLeftRadius: 16, borderTopRightRadius: 16, backgroundColor: '#f3f4f6' },
-  alumniContent: { padding: 12 },
-  alumniName: { fontSize: 16, fontWeight: 'bold', color: '#1f2937' },
-  alumniInfo: { fontSize: 12, color: '#6b7280', marginTop: 2 },
-  adoptedBadge: { marginTop: 8, backgroundColor: '#10b981', alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
-  adoptedText: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
+  alumniCard: { 
+    width: 200, backgroundColor: '#fff', borderRadius: 16, marginRight: 16,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.1, shadowRadius: 5, elevation: 4,
+    overflow: 'hidden'
+  },
+  alumniImage: { width: '100%', height: 120 },
+  alumniInfo: { padding: 12 },
+  alumniName: { fontWeight: 'bold', color: '#1f2937', fontSize: 14 },
+  alumniAdopter: { fontSize: 11, color: '#6b7280', marginTop: 2 }
 });
