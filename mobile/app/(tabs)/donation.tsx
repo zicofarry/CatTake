@@ -2,18 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { 
   View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, 
   Image, ImageBackground, Dimensions, StatusBar, Alert, Modal, 
-  ActivityIndicator, SafeAreaView, Platform
+  ActivityIndicator, Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router'; // Import Router
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from "jwt-decode";
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 
 const { width } = Dimensions.get('window');
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
 
 export default function DonationScreen() {
+  const router = useRouter(); // Init Router
+  const insets = useSafeAreaInsets();
+
   // --- Data State ---
   const [userRole, setUserRole] = useState<string>('guest');
   const [userId, setUserId] = useState<number | null>(null);
@@ -34,7 +39,6 @@ export default function DonationScreen() {
 
   const selectedShelter = shelters.find(s => s.id === selectedShelterId);
 
-  // 1. Inisialisasi & Cek Role
   useEffect(() => {
     const init = async () => {
       try {
@@ -64,7 +68,6 @@ export default function DonationScreen() {
     init();
   }, []);
 
-  // 2. Fetch List Shelter (Untuk Donor)
   const fetchShelters = async () => {
     try {
       const response = await apiClient.get('/users/shelters');
@@ -74,7 +77,6 @@ export default function DonationScreen() {
     }
   };
 
-  // 3. Fetch Donasi Masuk (Untuk Shelter)
   const fetchReceivedDonations = async (id: number) => {
     try {
       const response = await apiClient.get(`/donations/shelter/${id}`);
@@ -84,7 +86,6 @@ export default function DonationScreen() {
     }
   };
 
-  // 4. Pilih Gambar
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -102,7 +103,6 @@ export default function DonationScreen() {
     }
   };
 
-  // 5. Kirim Donasi
   const submitDonation = async () => {
     if (!selectedShelterId || !amount || !paymentMethod || !proofImage) {
       Alert.alert("Error", "Mohon lengkapi semua data formulir.");
@@ -121,12 +121,12 @@ export default function DonationScreen() {
     formData.append('amount', amount);
     formData.append('is_anonymus', isAnonymous ? '1' : '0');
     
-    // Format file untuk React Native FormData
+    // @ts-ignore
     formData.append('proof', {
       uri: proofImage.uri,
       name: proofImage.name,
       type: proofImage.type,
-    } as any);
+    });
 
     try {
       await apiClient.post('/donations', formData, {
@@ -134,7 +134,6 @@ export default function DonationScreen() {
       });
       
       Alert.alert("Sukses!", "Donasi berhasil dikirim, tim kami akan segera melakukan verifikasi.");
-      // Reset Form
       setSelectedShelterId(null);
       setAmount('');
       setPaymentMethod('');
@@ -147,15 +146,28 @@ export default function DonationScreen() {
     }
   };
 
+  // --- COMPONENT: Sticky Back Button ---
+  const StickyBackButton = () => (
+    <View style={[styles.stickyHeader, { top: insets.top + (Platform.OS === 'android' ? 10 : 0) }]}>
+      <TouchableOpacity onPress={() => router.replace('/(tabs)')} style={styles.backBtn}>
+        <Ionicons name="arrow-back" size={24} color="#374151" />
+        <Text style={styles.backText}>Kembali</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   // --- RENDER VIEW: SHELTER ---
   if (userRole === 'shelter') {
     return (
       <ImageBackground source={require('../../assets/images/bg-texture.png')} style={styles.container}>
-        <SafeAreaView style={{flex: 1}}>
-          <View style={styles.headerShelter}>
-            <Text style={styles.heroTitle}>Laporan Donasi</Text>
-          </View>
-          <ScrollView contentContainerStyle={{ padding: 16 }}>
+        <View style={{flex: 1}}>
+          <StickyBackButton />
+          
+          <ScrollView contentContainerStyle={{ padding: 16, paddingTop: insets.top + 60, paddingBottom: insets.bottom + 20 }}>
+            <View style={styles.headerShelter}>
+              <Text style={styles.heroTitle}>Laporan Donasi</Text>
+            </View>
+            
             {receivedDonations.length === 0 ? (
               <View style={styles.emptyBox}>
                 <Ionicons name="gift-outline" size={60} color="#cbd5e1" />
@@ -180,7 +192,7 @@ export default function DonationScreen() {
               ))
             )}
           </ScrollView>
-        </SafeAreaView>
+        </View>
       </ImageBackground>
     );
   }
@@ -188,13 +200,17 @@ export default function DonationScreen() {
   // --- RENDER VIEW: DONOR ---
   return (
     <ImageBackground source={require('../../assets/images/bg-texture.png')} style={styles.container} resizeMode="cover">
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       <View style={styles.overlay}>
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
+          
+          {/* TOMBOL KEMBALI STICKY */}
+          <StickyBackButton />
+
           {isLoading ? (
-             <ActivityIndicator size="large" color="#fff" style={{marginTop: 50}} />
+             <ActivityIndicator size="large" color="#fff" style={{marginTop: 100}} />
           ) : (
-            <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+            <ScrollView contentContainerStyle={{ paddingBottom: 100, paddingTop: insets.top + 60 }}>
               {/* HERO SECTION */}
               <View style={styles.heroSection}>
                 <Image source={require('../../assets/images/donasi.png')} style={styles.heroImage} resizeMode="contain" />
@@ -315,7 +331,7 @@ export default function DonationScreen() {
               </View>
             </View>
           </Modal>
-        </SafeAreaView>
+        </View>
       </View>
     </ImageBackground>
   );
@@ -324,7 +340,36 @@ export default function DonationScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#2c473c' },
   overlay: { flex: 1, backgroundColor: 'rgba(44, 71, 60, 0.3)' },
-  heroSection: { alignItems: 'center', padding: 24, paddingTop: 30 },
+  
+  // --- STICKY BUTTON STYLE ---
+  stickyHeader: {
+    position: 'absolute',
+    left: 20,
+    zIndex: 100,
+    paddingTop: 10 // Di atas scrollview
+  },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.9)', // Putih transparan agar kontras dengan background gelap
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  backText: {
+    marginLeft: 8,
+    fontWeight: '700',
+    color: '#374151',
+    fontSize: 14
+  },
+  // ---------------------------
+
+  heroSection: { alignItems: 'center', padding: 24, paddingTop: 10 },
   heroImage: { width: 140, height: 140, marginBottom: 15 },
   heroTitle: { fontSize: 24, fontWeight: 'bold', color: 'white', textAlign: 'center' },
   heroSubtitle: { fontSize: 13, color: '#e5e7eb', textAlign: 'center', marginTop: 8 },
@@ -366,5 +411,11 @@ const styles = StyleSheet.create({
   donorName: { fontWeight: 'bold', color: '#1f2937' },
   donationDate: { fontSize: 12, color: '#6b7280' },
   donationAmount: { color: '#059669', fontWeight: 'bold' },
-  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, marginTop: 8 }
+  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, marginTop: 8 },
+  anonBox: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderWidth: 1, borderColor: '#eee', borderRadius: 10, marginBottom: 15 },
+  anonBoxActive: { borderColor: '#3A5F50', backgroundColor: '#f0fdf4' },
+  checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 1, borderColor: '#ccc', justifyContent: 'center', alignItems: 'center' },
+  checkboxActive: { backgroundColor: '#3A5F50', borderColor: '#3A5F50' },
+  anonTitle: { fontWeight: 'bold', color: '#333' },
+  anonDesc: { fontSize: 10, color: '#666' }
 });

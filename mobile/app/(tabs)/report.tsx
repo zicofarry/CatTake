@@ -2,18 +2,21 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, 
   Image, ImageBackground, Alert, Modal, ActivityIndicator, 
-  RefreshControl, SafeAreaView, Dimensions, StatusBar 
+  RefreshControl, Dimensions, StatusBar 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WebView } from 'react-native-webview';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // [1] Import Insets
 import apiClient, { API_BASE_URL } from '@/api/apiClient';
 
 const { width, height } = Dimensions.get('window');
 const BASE_SERVER_URL = API_BASE_URL?.replace('/api/v1', '');
 
 export default function ReportScreen() {
+  const insets = useSafeAreaInsets(); // [2] Panggil Hooks Insets
+
   // --- STATES UTAMA ---
   const [userRole, setUserRole] = useState('guest');
   const [activeUserTab, setActiveUserTab] = useState<'create' | 'history'>('create');
@@ -201,13 +204,14 @@ export default function ReportScreen() {
       resizeMode="repeat"
       imageStyle={{ width: 150, height: 150, opacity: 0.15 }}
     >
-      <SafeAreaView style={{flex: 1}}>
-        <StatusBar barStyle="light-content" />
+      {/* [3] Ganti SafeAreaView dengan View + Padding dari Insets */}
+      <View style={{flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
         <ScrollView 
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />}
           contentContainerStyle={{paddingBottom: 100}}
         >
-          {/* Header Hero (Sama kayak Vue) */}
+          {/* Header Hero */}
           <View style={styles.hero}>
             <Image source={require('../../assets/images/tigakucing.png')} style={styles.heroImg} resizeMode="contain" />
             <Text style={styles.heroTitle}>Lapor & Temukan</Text>
@@ -228,7 +232,7 @@ export default function ReportScreen() {
               <View style={styles.typeRow}>
                 {(['stray', 'missing', 'my_lost'] as const).map(t => (
                   <TouchableOpacity key={t} onPress={() => setActiveReportType(t)} style={[styles.typeBtn, activeReportType === t && (t==='my_lost'?styles.btnRed:styles.btnYellow)]}>
-                    <Text style={[styles.typeText, activeReportType === t && {color:'#fff'}]}>{t==='stray'?'Nemu Liar':t==='missing'?'Nemu Hilang':'Saya Hilang'}</Text>
+                    <Text style={[styles.typeText, activeReportType === t && {color:'#fff'}]}>{t==='stray'?'Nemu Liar':t==='missing'?'Nemu Hilang':'Kucing Saya Hilang!'}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -312,15 +316,16 @@ export default function ReportScreen() {
 
         {/* MODAL PETA */}
         <Modal visible={mapModalVisible} animationType="slide">
-          <SafeAreaView style={{flex: 1}}>
+          {/* [4] Fix Padding Modal dengan Insets juga */}
+          <View style={{flex: 1, backgroundColor: '#fff', paddingTop: insets.top, paddingBottom: insets.bottom }}>
             <View style={styles.modalHeader}>
               <Text style={{fontWeight:'bold', fontSize: 18}}>Pilih Lokasi</Text>
               <TouchableOpacity onPress={() => setMapModalVisible(false)}><Ionicons name="close" size={28} /></TouchableOpacity>
             </View>
             <LeafletMap />
-          </SafeAreaView>
+          </View>
         </Modal>
-      </SafeAreaView>
+      </View>
     </ImageBackground>
   );
 }

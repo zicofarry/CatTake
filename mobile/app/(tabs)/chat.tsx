@@ -1,35 +1,31 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { 
-  View, 
-  Text, 
-  FlatList, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet,
-  TextInput,
-  StatusBar,
-  SafeAreaView,
-  ActivityIndicator,
-  RefreshControl
+  View, Text, FlatList, TouchableOpacity, Image, StyleSheet,
+  TextInput, ActivityIndicator, RefreshControl
 } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useRouter, Stack, useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // [1] Import
 import apiClient, { API_BASE_URL } from '@/api/apiClient';
+import { Colors } from '@/constants/Colors'; 
 
 const BASE_SERVER_URL = API_BASE_URL?.replace('/api/v1', '');
+const THEME_COLOR = '#3A5F50'; 
 
 export default function ChatListScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets(); // [2] Ambil insets
+  
   const [searchText, setSearchText] = useState('');
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Ambil data inbox dari backend
   const fetchInbox = async () => {
     try {
+      if (!refreshing) setLoading(true); 
       const response = await apiClient.get('/chat/inbox');
-      setChats(response.data.data); // Data dari ShelterChatController.getInbox
+      setChats(response.data.data); 
     } catch (error) {
       console.error("Gagal memuat inbox:", error);
     } finally {
@@ -38,16 +34,13 @@ export default function ChatListScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchInbox();
-  }, []);
+  useFocusEffect(useCallback(() => { fetchInbox(); }, []));
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchInbox();
   }, []);
 
-  // Filter data berdasarkan teks pencarian
   const filteredChats = chats.filter((item: any) => 
     item.name.toLowerCase().includes(searchText.toLowerCase())
   );
@@ -59,38 +52,35 @@ export default function ChatListScreen() {
 
   const renderItem = ({ item }: { item: any }) => (
     <TouchableOpacity 
-      style={styles.chatItem} 
-      activeOpacity={0.7}
+      style={styles.chatCard}
+      activeOpacity={0.9}
       onPress={() => router.push({
-        pathname: `/chat/${item.partner_id}`, // Navigasi ke ID lawan bicara
+        pathname: `/chat/${item.partner_id}`,
         params: { name: item.name, avatar: resolveImg(item.profile_photo) }
       })}
     >
       <View style={styles.avatarContainer}>
         <Image source={{ uri: resolveImg(item.profile_photo) }} style={styles.avatar} />
-        {item.is_official && ( // Sesuaikan jika ada field official di DB
+        {item.is_official && (
            <View style={styles.officialBadge}>
-             <Text style={styles.officialText}>Mall</Text>
+             <Ionicons name="checkmark-circle" size={12} color="white" />
            </View>
         )}
       </View>
-      
       <View style={styles.chatContent}>
         <View style={styles.chatHeader}>
-          <View style={styles.nameRow}>
-             <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
-             <MaterialIcons name="chevron-right" size={16} color="#ccc" />
-          </View>
+          <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
           <Text style={[styles.time, item.unread > 0 && styles.timeActive]}>
-            {new Date(item.time).toLocaleDateString()}
+            {new Date(item.time).toLocaleDateString([], { hour: '2-digit', minute: '2-digit' })}
           </Text>
         </View>
-        
         <View style={styles.messageRow}>
-          <Text style={[styles.message, item.unread > 0 && styles.messageUnread]} numberOfLines={1}>
+          <Text 
+            style={[styles.message, item.unread > 0 ? styles.messageUnread : styles.messageRead]} 
+            numberOfLines={1}
+          >
             {item.last_message}
           </Text>
-          
           {item.unread > 0 && (
             <View style={styles.unreadBadge}>
               <Text style={styles.unreadText}>{item.unread}</Text>
@@ -102,14 +92,16 @@ export default function ChatListScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ headerTitle: 'Chat' }} />
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={styles.searchContainer}>
+      {/* [3] Terapkan padding dinamis di sini */}
+      <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
+        <Text style={styles.headerTitleText}>Pesan</Text>
         <View style={styles.searchBox}>
           <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
           <TextInput 
-            placeholder="Cari Kontak, Penjual, & Pesan"
+            placeholder="Cari teman diskusi..."
             placeholderTextColor="#999"
             style={styles.searchInput}
             value={searchText}
@@ -118,46 +110,80 @@ export default function ChatListScreen() {
         </View>
       </View>
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#3A5F50" style={{ marginTop: 20 }} />
-      ) : (
-        <FlatList
-          data={filteredChats}
-          keyExtractor={item => item.partner_id.toString()}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContainer}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20, color: '#999' }}>Belum ada pesan.</Text>}
-        />
-      )}
-    </SafeAreaView>
+      <View style={styles.contentContainer}>
+        {loading && !refreshing ? (
+          <ActivityIndicator size="large" color={THEME_COLOR} style={{ marginTop: 40 }} />
+        ) : (
+          <FlatList
+            data={filteredChats}
+            keyExtractor={item => item.partner_id.toString()}
+            renderItem={renderItem}
+            contentContainerStyle={styles.listPadding}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={THEME_COLOR} colors={[THEME_COLOR]} />
+            }
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Ionicons name="chatbubbles-outline" size={60} color="#ccc" style={{marginBottom: 10}} />
+                <Text style={styles.emptyText}>Belum ada obrolan.</Text>
+              </View>
+            }
+          />
+        )}
+      </View>
+    </View>
   );
 }
 
-// ... Styles tetap sama seperti kode asli kamu ...
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  searchContainer: { paddingHorizontal: 16, paddingBottom: 10, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  searchBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F5F5F5', borderRadius: 6, paddingHorizontal: 10, height: 40 },
-  searchIcon: { marginRight: 8 },
+  container: { flex: 1, backgroundColor: '#F3F4F6' },
+  headerContainer: { 
+    backgroundColor: THEME_COLOR,
+    paddingHorizontal: 20, 
+    paddingBottom: 25,
+    // Hapus paddingTop statis dari sini
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
+    zIndex: 10
+  },
+  headerTitleText: {
+    color: '#fff', fontSize: 24, fontWeight: 'bold',
+    marginBottom: 15, marginLeft: 5
+  },
+  searchBox: { 
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', 
+    borderRadius: 25, paddingHorizontal: 15, height: 45,
+    elevation: 2,
+  },
+  searchIcon: { marginRight: 10 },
   searchInput: { flex: 1, fontSize: 14, color: '#333', height: '100%' },
-  listContainer: { paddingBottom: 20 },
-  chatItem: { flexDirection: 'row', padding: 16, alignItems: 'flex-start', backgroundColor: '#fff' },
-  avatarContainer: { position: 'relative', marginRight: 12 },
-  avatar: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#eee', borderWidth: 1, borderColor: '#f0f0f0' },
-  officialBadge: { position: 'absolute', bottom: -4, left: 0, right: 0, backgroundColor: '#D0011B', borderRadius: 4, paddingVertical: 1, alignItems: 'center', justifyContent: 'center' },
-  officialText: { color: 'white', fontSize: 8, fontWeight: 'bold' },
+  contentContainer: { flex: 1 },
+  listPadding: { paddingHorizontal: 20, paddingBottom: 20, paddingTop: 5 },
+  chatCard: { 
+    flexDirection: 'row', padding: 16, alignItems: 'center', backgroundColor: '#fff',
+    marginBottom: 12, borderRadius: 16, elevation: 3,
+  },
+  avatarContainer: { position: 'relative', marginRight: 15 },
+  avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#eee', borderWidth: 2, borderColor: '#f0f0f0' },
+  officialBadge: { position: 'absolute', bottom: 0, right: 0, backgroundColor: Colors.primary || '#f97316', borderRadius: 10, width: 18, height: 18, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#fff' },
   chatContent: { flex: 1, justifyContent: 'center' },
-  chatHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4, alignItems: 'center' },
-  nameRow: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  name: { fontSize: 16, fontWeight: '500', color: '#333', marginRight: 4 },
-  time: { fontSize: 12, color: '#999' },
-  timeActive: { color: '#ff5722' },
+  chatHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6, alignItems: 'center' },
+  name: { fontSize: 16, fontWeight: '700', color: '#1f2937', flex: 1, marginRight: 8 },
+  time: { fontSize: 11, color: '#9ca3af' },
+  timeActive: { color: THEME_COLOR, fontWeight: '600' },
   messageRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  message: { fontSize: 14, color: '#888', flex: 1, marginRight: 10 },
-  messageUnread: { color: '#333', fontWeight: '400' },
-  unreadBadge: { backgroundColor: '#ff5722', minWidth: 18, height: 18, borderRadius: 9, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 5 },
+  message: { fontSize: 14, flex: 1, marginRight: 10 },
+  messageRead: { color: '#6b7280' },
+  messageUnread: { color: '#1f2937', fontWeight: '600' },
+  unreadBadge: { backgroundColor: Colors.primary || '#f97316', minWidth: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 6 },
   unreadText: { fontSize: 10, fontWeight: 'bold', color: '#fff' },
-  separator: { height: 1, backgroundColor: '#f5f5f5', marginLeft: 78 },
+  emptyContainer: { alignItems: 'center', marginTop: 60 },
+  emptyText: { color: '#999', fontSize: 14 }
 });

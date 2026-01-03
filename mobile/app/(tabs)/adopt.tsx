@@ -3,42 +3,36 @@ import {
   View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, 
   ActivityIndicator, Dimensions, Alert, Platform, StatusBar 
 } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter, Stack } from 'expo-router'; 
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
 import CatCard from '../../components/CatCard';
 
-// Gunakan API_URL  dari Config pusat
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
 
 const { width } = Dimensions.get('window');
 
 export default function AdoptScreen() {
-  const router = useRouter();
+  const router = useRouter(); 
+  const insets = useSafeAreaInsets();
   
-  // Data State - Pastikan defaultnya array []
   const [cats, setCats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Filter State
   const [activeFilter, setActiveFilter] = useState('all'); 
   const [genderFilter, setGenderFilter] = useState('all'); 
 
-  // Fetch Data
   const fetchCats = async () => {
     try {
       const response = await apiClient.get(`/cats`);
       const data = response.data;
-      
-      // FIX: Cek apakah data.data ada, jika tidak cek apakah data itu sendiri adalah array
-      // Jika keduanya bukan array, set ke array kosong [] agar .filter tidak crash
       const responseArray = data.data || data;
       setCats(Array.isArray(responseArray) ? responseArray : []);
-      
     } catch (error) {
       console.error("Gagal ambil data:", error);
-      setCats([]); // Jika error, pastikan tetap array kosong
+      setCats([]); 
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -67,33 +61,37 @@ export default function AdoptScreen() {
     );
   };
 
-  // FIX: Pastikan cats adalah array sebelum memanggil .filter
   const safeCats = Array.isArray(cats) ? cats : [];
-
   const filteredCats = safeCats.filter(cat => {
     if (!cat) return false;
-
-    if (activeFilter === 'favorite') {
-      return cat.isFavorited; 
-    }
-    if (activeFilter === 'gender' && genderFilter !== 'all') {
-      // Gunakan optional chaining ?. agar tidak error jika gender null
-      return cat.gender?.toLowerCase() === genderFilter.toLowerCase();
-    }
+    if (activeFilter === 'favorite') return cat.isFavorited; 
+    if (activeFilter === 'gender' && genderFilter !== 'all') return cat.gender?.toLowerCase() === genderFilter.toLowerCase();
     return true; 
   });
 
   return (
-    <>
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
+      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
       
+      {/* --- TOMBOL KEMBALI STICKY (Di luar ScrollView) --- */}
+      <View style={[styles.stickyHeader, { top: insets.top + 10 }]}>
+        <TouchableOpacity 
+          onPress={() => router.replace('/(tabs)')} 
+          style={styles.backBtnGreen}
+        >
+          <Ionicons name="arrow-back" size={20} color="#fff" />
+          <Text style={styles.backTextWhite}>Kembali</Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView 
-        style={styles.container} 
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
       >
-        
-        {/* --- HERO SECTION --- */}
-        <View style={styles.heroSection}>
+        {/* Tambahkan padding top extra agar konten tidak ketutup tombol sticky */}
+        <View style={[styles.heroSection, { paddingTop: insets.top + 60 }]}>
+          
           <Image 
             source={require('../../assets/images/cathelo.png')} 
             style={styles.heroImage}
@@ -111,7 +109,6 @@ export default function AdoptScreen() {
         {/* --- FILTER FLOATING --- */}
         <View style={styles.filterContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
-            
             <TouchableOpacity 
               style={[styles.filterButton, activeFilter === 'all' && styles.filterActive]} 
               onPress={() => setActiveFilter('all')}
@@ -137,14 +134,12 @@ export default function AdoptScreen() {
             >
               <Text style={[styles.filterText, activeFilter === 'favorite' && styles.filterTextActive]}>Favorit</Text>
             </TouchableOpacity>
-
           </ScrollView>
         </View>
 
         {/* --- LIST CONTAINER (HIJAU) --- */}
         <View style={styles.listSection}>
           <View style={styles.listHeaderSpace} /> 
-
           {loading ? (
             <ActivityIndicator size="large" color="#fff" style={{marginTop: 50}} />
           ) : (
@@ -166,7 +161,6 @@ export default function AdoptScreen() {
                       age={item.age}
                       gender={item.gender}
                       status={item.status}
-                      // Path gambar di server kamu adalah /public/img/cats/
                       imageUrl={item.image ? `${serverUrl}/public/img/cats/${item.image}` : null}
                       onPress={() => router.push(`/adopt/${item.id}` as any)} 
                     />
@@ -175,19 +169,46 @@ export default function AdoptScreen() {
               )}
             </View>
           )}
-          
           <View style={{height: 100}} /> 
         </View>
-
       </ScrollView>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F3F4F6' },
+  
+  // --- STYLE STICKY BUTTON ---
+  stickyHeader: {
+    position: 'absolute',
+    left: 20,
+    zIndex: 100,
+    paddingTop: 10 // Pastikan di atas layer lain
+  },
+  backBtnGreen: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3A5F50', // Warna Hijau
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    // Shadow agar tombol terlihat mengambang
+    elevation: 3, 
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  backTextWhite: {
+    marginLeft: 8,
+    fontWeight: '700',
+    color: '#fff',
+    fontSize: 14
+  },
+  // ---------------------------
+
   heroSection: {
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 20 : 60,
     paddingHorizontal: 24,
     paddingBottom: 40,
     alignItems: 'center',
