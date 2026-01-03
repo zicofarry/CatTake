@@ -148,6 +148,27 @@ class AdoptionController {
             return reply.code(500).send({ error: error.message });
         }
     }
+
+    static async getMyAdoptions(req, reply) {
+        try {
+            const userId = req.user.id;
+            const history = await AdoptionService.getUserAdoptions(userId);
+            return reply.send(history);
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    static async cancelAdoption(req, reply) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+            const result = await AdoptionService.cancelAdoption(id, userId);
+            return reply.send(result);
+        } catch (error) {
+            return reply.code(400).send({ error: error.message });
+        }
+    }
 }
 
 module.exports = AdoptionController;

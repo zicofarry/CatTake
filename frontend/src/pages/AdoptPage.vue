@@ -68,75 +68,100 @@
     </div>
 
     <div v-else>
-        <HeroSection 
-          title="Berikan Rumah, Dapatkan Cinta."
-          subtitle="Mari bersama menciptakan cerita baru bagi mereka, dari kesepian menuju rumah yang hangat dan penuh cinta."
-          buttonText="Adopsi Sekarang"
-          buttonLink="#listkucing"
-          ellipseImg="/img/Ellipse.png"
-          ellipseAlt="ellipse"
-          mainImg="/img/cathelo.png"
-          mainAlt="kucinghalo"
-        />
+        <div class="md:pt-15">
+            <HeroSection 
+                mainImg="/img/cathelo.png" 
+                mainAlt="Cat Hero"
+                mainMaxWidth="500px"
+                titleClass="text-5xl md:text-7xl font-bold text-white drop-shadow-lg leading-tight font-sans"
+                subtitleClass="text-white mt-4 text-lg drop-shadow-md font-medium leading-relaxed"
+            >
+                <template #title>
+                    Adopsi &<br>Berbagi Cinta
+                </template>
+                
+                <template #subtitle>
+                    Berikan rumah yang layak bagi mereka yang membutuhkan, dan temukan sahabat sejati dalam hidupmu.
+                </template>
+                
+                <template #actions>
+                    <div class="bg-white/20 backdrop-blur-md p-1.5 rounded-full flex mt-8 shadow-lg border border-white/30 inline-flex justify-center md:justify-start">
+                        <button 
+                            @click="activeUserTab = 'browse'"
+                            class="px-6 py-3 rounded-full font-bold transition-all text-sm md:text-base flex items-center gap-2"
+                            :class="activeUserTab === 'browse' ? 'bg-white text-[#3A5F50] shadow-lg' : 'text-white hover:bg-white/10'"
+                        >
+                            <i class="fas fa-search"></i> Cari Kucing
+                        </button>
+                        <button 
+                            @click="activeUserTab = 'history'"
+                            class="px-6 py-3 rounded-full font-bold transition-all text-sm md:text-base flex items-center gap-2"
+                            :class="activeUserTab === 'history' ? 'bg-white text-[#3A5F50] shadow-lg' : 'text-white hover:bg-white/10'"
+                        >
+                            <i class="fas fa-history"></i> Riwayat Saya
+                        </button>
+                    </div>
+                </template>
+            </HeroSection>
+        </div>
 
         <div class="relative mt-10 z-10">
-            
-            <div class="absolute left-0 right-0 -top-8 z-30 px-4 pointer-events-none">
-                <div class="max-w-3xl mx-auto flex flex-wrap justify-center items-center gap-4 p-4 pointer-events-auto">
-                
-                <button 
-                    class="flex-1 min-w-[120px] py-3 px-6 bg-white text-gray-800 font-bold text-base rounded-full transition-all duration-300 hover:-translate-y-1"
-                    :class="activeFilter === 'all' && genderFilter === 'all' ? '!bg-[#EBCD5E] !text-white shadow-[0_15px_30px_-5px_rgba(235,205,94,0.6)]' : 'shadow-[0_15px_35px_-10px_rgba(58,95,80,0.5)]'"
-                    @click="setActiveFilter('all')"
-                >
-                    Semua
-                </button>
-
-                <div class="flex-1 min-w-[140px] relative group">
-                    <select 
-                        class="w-full appearance-none py-3 pl-6 pr-10 bg-white text-gray-800 font-bold text-base rounded-full cursor-pointer focus:outline-none transition-all duration-300 hover:-translate-y-1 text-left"
-                        :class="activeFilter === 'gender' ? '!bg-[#EBCD5E] !text-white shadow-[0_15px_30px_-5px_rgba(235,205,94,0.6)]' : 'shadow-[0_15px_35px_-10px_rgba(58,95,80,0.5)]'"
-                        :value="genderFilter"
-                        @change="setGenderFilter($event.target.value)"
-                    >
-                        <option value="all" class="text-gray-800 bg-white py-2">Filter</option>
-                        <option value="male" class="text-gray-800 bg-white py-2">Jantan</option>
-                        <option value="female" class="text-gray-800 bg-white py-2">Betina</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center" :class="activeFilter === 'gender' ? 'text-white' : 'text-gray-800'">
-                    <i class="fas fa-caret-down"></i>
+            <div v-if="activeUserTab === 'browse'">
+                <div class="absolute left-0 right-0 -top-8 z-30 px-4 pointer-events-none">
+                    <div class="max-w-3xl mx-auto flex flex-wrap justify-center items-center gap-4 p-4 pointer-events-auto">
+                        <button class="flex-1 min-w-[120px] py-3 px-6 bg-white text-gray-800 font-bold text-base rounded-full transition-all duration-300 hover:-translate-y-1" :class="activeFilter === 'all' && genderFilter === 'all' ? '!bg-[#EBCD5E] !text-white shadow-lg' : 'shadow-md'" @click="setActiveFilter('all')">Semua</button>
+                        <div class="flex-1 min-w-[140px] relative group">
+                            <select class="w-full appearance-none py-3 pl-6 pr-10 bg-white text-gray-800 font-bold text-base rounded-full cursor-pointer transition-all duration-300 hover:-translate-y-1" :class="activeFilter === 'gender' ? '!bg-[#EBCD5E] !text-white' : ''" :value="genderFilter" @change="setGenderFilter($event.target.value)">
+                                <option value="all">Filter</option>
+                                <option value="male">Jantan</option>
+                                <option value="female">Betina</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center" :class="activeFilter === 'gender' ? 'text-white' : 'text-gray-800'"><i class="fas fa-caret-down"></i></div>
+                        </div>
+                        <button class="flex-1 min-w-[120px] py-3 px-6 bg-white text-gray-800 font-bold text-base rounded-full transition-all duration-300 hover:-translate-y-1" :class="activeFilter === 'favorite' ? '!bg-[#EBCD5E] !text-white' : ''" @click="setActiveFilter('favorite')">Favorit ({{ favoriteCatsCount }})</button>
                     </div>
                 </div>
 
-                <button 
-                    class="flex-1 min-w-[120px] py-3 px-6 bg-white text-gray-800 font-bold text-base rounded-full transition-all duration-300 hover:-translate-y-1"
-                    :class="activeFilter === 'favorite' ? '!bg-[#EBCD5E] !text-white shadow-[0_15px_30px_-5px_rgba(235,205,94,0.6)]' : 'shadow-[0_15px_35px_-10px_rgba(58,95,80,0.5)]'"
-                    @click="setActiveFilter('favorite')"
-                >
-                    Favorit 
-                    <span v-if="favoriteCatsCount > 0" class="ml-1">({{ favoriteCatsCount }})</span>
-                </button>
-
-                </div>
-            </div>
-
-            <div id="listkucing" class="bg-[#3A5F50] pt-36 pb-40 px-6 rounded-t-[50px] md:rounded-t-[80px] min-h-screen -mb-32">
-                <LoginOverlay v-if="userRole === 'guest'" message="Silakan login dulu untuk mengadopsi kucing." buttonText="Login Sekarang" loginRoute="/login"/>
-                
-                <div class="max-w-6xl mx-auto">
-                    <transition name="fade" mode="out-in">
+                <div id="listkucing" class="bg-[#3A5F50] pt-36 pb-40 px-6 rounded-t-[50px] md:rounded-t-[80px] min-h-screen -mb-32">
+                    <LoginOverlay v-if="userRole === 'guest'" message="Silakan login dulu untuk mengadopsi kucing." buttonText="Login Sekarang" loginRoute="/login"/>
+                    <div class="max-w-6xl mx-auto">
                         <div v-if="filteredCats.length === 0" class="flex flex-col items-center justify-center py-32 text-white/80 text-center">
                             <i class="fas fa-cat text-7xl mb-4 opacity-60"></i>
                             <h3 class="text-2xl font-bold">Tidak ditemukan</h3>
                             <button @click="setActiveFilter('all')" class="mt-4 px-6 py-2 bg-white/10 rounded-full hover:bg-white/20 transition">Reset Filter</button>
                         </div>
-                    
                         <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
-                            <div v-for="cat in filteredCats" :key="cat.id" class="h-full">
-                                <CatCard :cat="cat" @toggle-favorite="handleToggleFavorite" />
+                            <CatCard v-for="cat in filteredCats" :key="cat.id" :cat="cat" @toggle-favorite="handleToggleFavorite" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else class="max-w-4xl mx-auto px-4 pb-20 animate-fade-in mt-10">
+                <div v-if="myAdoptions.length === 0" class="text-center py-20 text-white">
+                    <i class="fas fa-history text-5xl mb-4 opacity-50"></i>
+                    <p class="text-xl">Kamu belum pernah mengajukan adopsi.</p>
+                </div>
+                <div v-else class="grid gap-4">
+                    <div v-for="item in myAdoptions" :key="item.id" class="bg-white rounded-3xl p-5 flex items-center shadow-lg transition-all hover:scale-[1.02]">
+                        <img :src="`${SERVER_URL}/public/img/cats/${item.catImage}`" class="w-20 h-20 rounded-2xl object-cover mr-4" />
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">{{ item.catName }}</h3>
+                            <p class="text-sm text-gray-500">{{ item.shelterName }}</p>
+                            <div class="mt-2">
+                                <span :class="{
+                                    'bg-yellow-100 text-yellow-600': item.status === 'pending',
+                                    'bg-green-100 text-green-600': item.status === 'approved' || item.status === 'completed',
+                                    'bg-red-100 text-red-600': item.status === 'rejected'
+                                }" class="text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider">
+                                    {{ item.status }}
+                                </span>
                             </div>
                         </div>
-                    </transition>
+                        <button v-if="item.status === 'pending'" @click="cancelAdoption(item.id)" class="bg-red-50 text-red-500 p-3 rounded-full hover:bg-red-500 hover:text-white transition shadow-sm">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -145,18 +170,44 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import apiClient from '@/api/http'; // Import axios instance
 import CatCard from '../components/CatCard.vue';
 import HeroSection from '../components/HeroSection.vue';
 import LoginOverlay from '../components/LoginOverlay.vue';
 import AdoptionReportCard from '../components/AdoptionReportCard.vue'; // Komponen baru
+const SERVER_URL = import.meta.env.VITE_API_BASE_URL.replace('/api/v1', '');
 
 // Mengambil userRole dari localStorage
 const userRole = computed(() => localStorage.getItem('userRole') || 'guest');
 const adoptionReports = ref([]); // Data laporan untuk shelter
 const catData = ref([]); // Data kucing untuk user/guest
 const activeTab = ref('pending'); // Default tab
+const activeUserTab = ref('browse'); // Tab User
+const myAdoptions = ref([]);
+
+// Fetch data riwayat
+async function fetchUserHistory() {
+    try {
+        const res = await apiClient.get('/adopt/my-adoptions');
+        myAdoptions.value = res.data;
+    } catch (err) { console.error(err); }
+}
+
+// Fungsi cancel
+async function cancelAdoption(id) {
+    if (!confirm('Batalkan pengajuan ini?')) return;
+    try {
+        await apiClient.delete(`/adopt/cancel/${id}`);
+        fetchUserHistory();
+        alert('Pengajuan dibatalkan.');
+    } catch (err) { alert(err.response.data.error); }
+}
+
+// Menggunakan activeUserTab (bukan viewMode)
+watch(activeUserTab, (newVal) => {
+    if (newVal === 'history') fetchUserHistory();
+});
 
 // --- LOGIKA FILTERING ---
 const pendingReports = computed(() => {
