@@ -236,6 +236,24 @@ class AdoptionService {
         await db.query('DELETE FROM adoptions WHERE id = $1', [adoptionId]);
         return { message: 'Pengajuan adopsi berhasil dibatalkan.' };
     }
+
+    static async getAdoptionDetail(adoptionId, userId) {
+        const query = `
+            SELECT 
+                a.*, 
+                to_char(a.applied_at, 'DD Mon YYYY, HH24:MI') AS "appliedDate",
+                c.name AS "catName", c.photo AS "catImage", c.breed, c.gender,
+                s.shelter_name AS "shelterName", s.address AS "shelterAddress",
+                dui.full_name AS "applicantName", dui.address AS "applicantAddress"
+            FROM adoptions a
+            JOIN cats c ON a.cat_id = c.id
+            JOIN detail_user_shelter s ON c.shelter_id = s.id
+            JOIN detail_user_individu dui ON a.applicant_id = dui.id
+            WHERE a.id = $1 AND a.applicant_id = $2
+        `;
+        const result = await db.query(query, [adoptionId, userId]);
+        return result.rows[0];
+    }
 }
 
 module.exports = AdoptionService;

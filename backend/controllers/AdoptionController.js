@@ -169,6 +169,18 @@ class AdoptionController {
             return reply.code(400).send({ error: error.message });
         }
     }
+
+    static async getMyAdoptionDetail(req, reply) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+            const detail = await AdoptionService.getAdoptionDetail(id, userId);
+            if (!detail) return reply.code(404).send({ error: 'Data tidak ditemukan' });
+            return reply.send(detail);
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
 }
 
 module.exports = AdoptionController;
