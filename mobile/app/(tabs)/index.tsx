@@ -1,16 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
+import React, { useEffect, useState, useCallback } from 'react';
+import { 
+  View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, 
+  Dimensions, ActivityIndicator 
+} from 'react-native';
+import { useRouter, Stack, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { Colors } from '../../constants/Colors';
-
-// IP Address Backend
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
-const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
 
+// Import Component Shelter Home
+// Pastikan kamu sudah membuat file ini di: mobile/components/ShelterHomeScreen.tsx
+import ShelterHomeScreen from '../../components/ShelterHomeScreen'; 
+
+const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
 const { width } = Dimensions.get('window');
 
-export default function HomeScreen() {
+// ==================================================
+// 1. KOMPONEN TAMPILAN USER BIASA (Kode Lama Kamu)
+// ==================================================
+function UserHomeScreen() {
   const router = useRouter();
   const [alumniCats, setAlumniCats] = useState<any[]>([]);
   const [loadingAlumni, setLoadingAlumni] = useState(true);
@@ -65,7 +75,7 @@ export default function HomeScreen() {
               Setiap kucing berhak mendapatkan tempat yang hangat. CatTake hadir untuk memastikan tidak ada lagi anabul yang terlantar.
             </Text>
 
-            {/* --- QUICK ACTION MENU (UPDATED) --- */}
+            {/* --- QUICK ACTION MENU --- */}
             <View style={styles.quickMenuWrapper}>
               <Text style={styles.quickMenuTitle}>Menu Cepat</Text>
               <View style={styles.quickMenuContainer}>
@@ -81,14 +91,12 @@ export default function HomeScreen() {
                   <Text style={styles.quickMenuLabel}>Adopsi</Text>
                 </TouchableOpacity>
 
-                {/* 2. RIWAYAT (DULUNYA RESCUE) */}
+                {/* 2. RIWAYAT */}
                 <TouchableOpacity 
                   style={styles.quickMenuItem} 
-                  // Arahkan ke halaman report/history (sesuaikan jika punya halaman history khusus)
                   onPress={() => router.push('/(tabs)/report' as any)}
                 >
                   <View style={[styles.quickMenuIconBg, { backgroundColor: '#F3E8FF' }]}>
-                    {/* Ganti icon jadi jam (time) dan warna ungu */}
                     <Ionicons name="time" size={24} color="#9333EA" />
                   </View>
                   <Text style={styles.quickMenuLabel}>Riwayat</Text>
@@ -115,17 +123,6 @@ export default function HomeScreen() {
                   </View>
                   <Text style={styles.quickMenuLabel}>FAQ</Text>
                 </TouchableOpacity>
-
-                {/* 5. Shelter */}
-                {/* <TouchableOpacity 
-                  style={styles.quickMenuItem} 
-                  onPress={() => router.push('/shelter/' as any)}
-                >
-                  <View style={[styles.quickMenuIconBg, { backgroundColor: '#F0FDF4' }]}>
-                    <Ionicons name="help-circle" size={24} color="#16A34A" />
-                  </View>
-                  <Text style={styles.quickMenuLabel}>Shelter</Text>
-                </TouchableOpacity> */}
 
               </View>
             </View>
@@ -179,7 +176,7 @@ export default function HomeScreen() {
             <Text style={styles.sectionTitleWhite}>Bantu Anabul Dengan Cara Kamu</Text>
           </View>
 
-          {/* Card 1: Lapor (Tetap ke Report/Rescue) */}
+          {/* Card 1: Lapor */}
           <TouchableOpacity style={styles.serviceCard} onPress={() => router.push('/(tabs)/report' as any)}>
             <View style={styles.serviceIconBg}>
               <Ionicons name="camera" size={32} color={Colors.primary} />
@@ -298,6 +295,51 @@ export default function HomeScreen() {
   );
 }
 
+// ==================================================
+// 2. KOMPONEN UTAMA (Switcher Role)
+// ==================================================
+export default function HomeScreen() {
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      checkRole();
+    }, [])
+  );
+
+  const checkRole = async () => {
+    try {
+      const role = await AsyncStorage.getItem('userRole');
+      setUserRole(role);
+    } catch (e) {
+      console.error("Error checking role:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Tampilkan Loading saat cek role
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F3F4F6' }}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
+  // JIKA SHELTER -> Tampilkan Dashboard Shelter
+  if (userRole === 'shelter') {
+    return <ShelterHomeScreen />;
+  }
+
+  // JIKA BUKAN -> Tampilkan User Home (Kode Lama)
+  return <UserHomeScreen />;
+}
+
+// ==================================================
+// 3. STYLES
+// ==================================================
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   textPrimary: { color: '#3A5F50' },
