@@ -7,21 +7,23 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ImageBackground,
-  SafeAreaView,
   StatusBar,
   LayoutAnimation,
   Platform,
   UIManager,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import apiClient from '@/api/apiClient';
 
-// Aktifkan animasi di Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
 const FAQScreen = () => {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [faqItems, setFaqItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
@@ -50,9 +52,7 @@ const FAQScreen = () => {
     }
   };
 
-  useEffect(() => {
-    fetchFaqs();
-  }, []);
+  useEffect(() => { fetchFaqs(); }, []);
 
   const toggleAccordion = (index: number) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -61,14 +61,24 @@ const FAQScreen = () => {
 
   return (
     <ImageBackground
-      source={require('../../assets/images/background.png')} // Path background Cattake
+      source={require('../../assets/images/background.png')} 
       style={styles.fullBackground}
       resizeMode="repeat"
       imageStyle={{ opacity: 0.15 }}
     >
-      <SafeAreaView style={styles.safeContainer}>
-        <StatusBar barStyle="light-content" />
+      {/* Container utama dengan padding atas/bawah aman */}
+      <View style={[styles.safeContainer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
         
+        {/* --- HEADER STICKY --- */}
+        {/* Berada di LUAR ScrollView agar tidak ikut ter-scroll */}
+        <View style={styles.stickyHeader}>
+          <TouchableOpacity onPress={() => router.replace('/(tabs)')} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color="#374151" />
+            <Text style={styles.backText}>Kembali</Text>
+          </TouchableOpacity>
+        </View>
+
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.card}>
             <Text style={styles.headerTitle}>FAQ?</Text>
@@ -115,7 +125,7 @@ const FAQScreen = () => {
             )}
           </View>
         </ScrollView>
-      </SafeAreaView>
+      </View>
     </ImageBackground>
   );
 };
@@ -125,14 +135,43 @@ export default FAQScreen;
 const styles = StyleSheet.create({
   fullBackground: {
     flex: 1,
-    backgroundColor: '#2c473c', // Dasar warna hijau Cattake
+    backgroundColor: '#2c473c', 
   },
   safeContainer: {
     flex: 1,
   },
+  // Style Header Sticky
+  stickyHeader: { 
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+    zIndex: 10,
+  },
+  backBtn: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: 'rgba(255,255,255,0.9)', 
+    paddingVertical: 8, 
+    paddingHorizontal: 14, 
+    borderRadius: 20, 
+    alignSelf: 'flex-start', // Agar tombol tidak selebar layar
+    elevation: 5, 
+    shadowColor: "#000", 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 3 
+  },
+  backText: { 
+    marginLeft: 8, 
+    fontWeight: '700', 
+    color: '#374151', 
+    fontSize: 14 
+  },
+  // End Header Style
+
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 40,
     alignItems: 'center',
   },

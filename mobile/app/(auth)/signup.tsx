@@ -121,7 +121,7 @@ export default function SignupScreen() {
       {/* 2. Logo Fixed (Di Belakang Scroll) */}
       <View style={styles.fixedLogoContainer}>
         <Image 
-            source={require('../../../frontend/src/assets/img/catTakePutih.png')} 
+            source={require('../../assets/images/catTakePutih.png')} 
             style={styles.logo}
             resizeMode="contain"
         />

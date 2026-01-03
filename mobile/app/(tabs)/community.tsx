@@ -12,18 +12,21 @@ import {
   Dimensions, 
   StatusBar,
   ScrollView,
-  SafeAreaView,
+  // SafeAreaView, // Hapus ini
   Alert,
   ActivityIndicator
 } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons'; 
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // [1] Import Insets
 import apiClient, { API_BASE_URL } from '@/api/apiClient';
 
 const { width } = Dimensions.get('window');
 const BASE_SERVER_URL = API_BASE_URL?.replace('/api/v1', '');
 
 export default function CommunityScreen() {
-  // --- STATE ---
+  const insets = useSafeAreaInsets(); // [2] Panggil Hooks
+
+  // --- STATE (TIDAK BERUBAH) ---
   const [activeTab, setActiveTab] = useState('untukAnda'); 
   const [searchQuery, setSearchQuery] = useState('');
   const [posts, setPosts] = useState([]);
@@ -43,7 +46,7 @@ export default function CommunityScreen() {
   const [newPostContent, setNewPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // --- API CALLS ---
+  // --- API CALLS (TIDAK BERUBAH) ---
   const fetchPosts = async () => {
     try {
       setLoading(true);
@@ -70,7 +73,7 @@ export default function CommunityScreen() {
     fetchSidebar();
   }, []);
 
-  // --- HANDLERS ---
+  // --- HANDLERS (TIDAK BERUBAH) ---
   const handleLike = async (id: number) => {
     try {
       setPosts(current => current.map(p => p.id === id ? {
@@ -110,7 +113,7 @@ export default function CommunityScreen() {
     }
   };
 
-  // --- RENDER HELPERS ---
+  // --- RENDER HELPERS (TIDAK BERUBAH) ---
   const resolveImg = (path: string) => {
     if (!path || path.includes('NULL')) return 'https://i.pravatar.cc/150';
     return path.startsWith('http') ? path : `${BASE_SERVER_URL}${path}`;
@@ -157,7 +160,7 @@ export default function CommunityScreen() {
       <View style={styles.sideCard}>
         <Text style={styles.sideTitle}>Event Mendatang</Text>
         {sidebarData.events.length === 0 ? <Text style={styles.emptySide}>Belum ada event.</Text> :
-          sidebarData.events.map((ev, i) => (
+          sidebarData.events.map((ev: any, i) => (
             <View key={i} style={styles.eventItem}>
               <View style={styles.eventRow}>
                 <Image source={require('../../assets/images/calendar.png')} style={styles.sideIcon} />
@@ -182,7 +185,7 @@ export default function CommunityScreen() {
       <View style={styles.sideCard}>
         <Text style={styles.sideTitle}>Kucing Hilang</Text>
         {sidebarData.missing.length === 0 ? <Text style={styles.emptySide}>Tidak ada laporan.</Text> :
-          sidebarData.missing.map((cat, i) => (
+          sidebarData.missing.map((cat: any, i) => (
             <View key={i} style={styles.lostItem}>
               <Image source={{ uri: resolveImg(cat.image) }} style={styles.lostImg} />
               <View style={{flex:1}}>
@@ -197,7 +200,7 @@ export default function CommunityScreen() {
 
       <View style={styles.sideCard}>
         <Text style={styles.sideTitle}>Leaderboard Paws (Poin)</Text>
-        {sidebarData.activeMembersByPoints.map((m, i) => (
+        {sidebarData.activeMembersByPoints.map((m: any, i) => (
           <View key={i} style={styles.leaderItem}>
             <View>
               <Image source={{ uri: resolveImg(m.profilePic) }} style={styles.leaderAvatar} />
@@ -233,15 +236,17 @@ export default function CommunityScreen() {
       source={require('../../assets/images/background.png')} 
       style={styles.fullBackground}
       imageStyle={{
-        width: 400,  // Ubah angka ini (misal 150 atau 100) untuk mengecilkan pola
-        height: 700, // Sesuaikan tinggi agar tetap simetris
+        width: 400,
+        height: 700,
       }}
       resizeMode="repeat"
     >
-      <SafeAreaView style={styles.safeContainer}>
+      {/* [3] Ganti SafeAreaView dengan View biasa */}
+      <View style={styles.safeContainer}>
         <StatusBar barStyle="light-content" />
         
-        <View style={styles.header}>
+        {/* [4] Tambahkan paddingTop dinamis di sini */}
+        <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
           <Text style={styles.mainTitle}>Komunitas</Text>
           <Text style={styles.mainSub}>Tempat berbagi cerita & menolong kucing bersama</Text>
           
@@ -270,9 +275,9 @@ export default function CommunityScreen() {
           {activeTab === 'untukAnda' ? (
             loading ? <ActivityIndicator color="#78C89F" style={{marginTop:20}} /> :
             <FlatList 
-              data={posts.filter(p => (p.title + p.description).toLowerCase().includes(searchQuery.toLowerCase()))}
+              data={posts.filter((p: any) => (p.title + p.description).toLowerCase().includes(searchQuery.toLowerCase()))}
               renderItem={renderPostItem}
-              keyExtractor={item => item.id.toString()}
+              keyExtractor={(item: any) => item.id.toString()}
               contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={<Text style={styles.empty}>Belum ada postingan yang cocok.</Text>}
@@ -284,6 +289,7 @@ export default function CommunityScreen() {
           <Ionicons name="add" size={32} color="#fff" />
         </TouchableOpacity>
 
+        {/* Modal Create Post */}
         <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -332,7 +338,7 @@ export default function CommunityScreen() {
           </View>
         </Modal>
 
-      </SafeAreaView>
+      </View>
     </ImageBackground>
   );
 }
@@ -340,7 +346,8 @@ export default function CommunityScreen() {
 const styles = StyleSheet.create({
   fullBackground: { flex: 1, backgroundColor: '#2c473c' },
   safeContainer: { flex: 1 },
-  header: { padding: 20, paddingTop: 10 },
+  // Hapus paddingTop statis dari sini, karena sudah di-handle inline
+  header: { padding: 20, /* paddingTop: 10 */ }, 
   mainTitle: { fontSize: 30, fontWeight: 'bold', color: '#fff' },
   mainSub: { color: '#cbd5e1', marginBottom: 20, fontSize: 13, lineHeight: 18 },
   searchBox: { 
@@ -398,7 +405,7 @@ const styles = StyleSheet.create({
 
   fab: { 
     position: 'absolute', 
-    bottom: 110, // Dinaikkan agar tidak tertutup Tab Bar (sebelumnya 30)
+    bottom: 110, 
     right: 25, 
     width: 60, height: 60, 
     borderRadius: 30, backgroundColor: '#78C89F', alignItems: 'center', 
