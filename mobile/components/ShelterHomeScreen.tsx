@@ -177,7 +177,10 @@ export default function ShelterHomeScreen() {
             <View style={styles.statsContainer}>
                 
                 {/* Card: Rescue Masuk */}
-                <TouchableOpacity style={[styles.statCard, { borderLeftColor: '#EBCD5E' }]}>
+                <TouchableOpacity
+                    style={[styles.statCard, { borderLeftColor: '#EBCD5E' }]}
+                    onPress={() => router.push('/shelter/rescue')}
+                >
                     <View style={styles.statRow}>
                         <View>
                             <Text style={styles.statLabel}>RESCUE MASUK</Text>
@@ -195,7 +198,10 @@ export default function ShelterHomeScreen() {
                 </TouchableOpacity>
 
                 {/* Card: Permintaan Adopsi */}
-                <TouchableOpacity style={[styles.statCard, { borderLeftColor: '#3A5F50' }]}>
+                <TouchableOpacity
+                    style={[styles.statCard, { borderLeftColor: '#3A5F50' }]}
+                    onPress={() => router.push('/shelter/adopt')}
+                >
                     <View style={styles.statRow}>
                         <View>
                             <Text style={styles.statLabel}>PERMINTAAN ADOPSI</Text>
