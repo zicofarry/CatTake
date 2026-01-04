@@ -8,11 +8,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import apiClient, { API_BASE_URL } from '@/api/apiClient';
 import CatCard from '@/components/CatCard'; 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import StickyBackButton from '../../components/StickyBackButton';
 
 // Membersihkan URL dari /api/v1 untuk akses file statis
 const BASE_SERVER_URL = API_BASE_URL?.replace('/api/v1', '') || 'http://localhost:3000';
 
 export default function AdoptScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [activeUserTab, setActiveUserTab] = useState<'browse' | 'history'>('browse');
   const [refreshing, setRefreshing] = useState(false);
@@ -105,9 +108,9 @@ export default function AdoptScreen() {
     >
       <SafeAreaView style={{flex: 1}}>
         <StatusBar barStyle="light-content" />
-        
+        <StickyBackButton /> 
         {/* HERO SECTION */}
-        <View style={styles.hero}>
+        <View style={[styles.hero, { paddingTop: insets.top + 60 }]}>
           <Image source={require('../../assets/images/cathelo.png')} style={styles.heroImg} resizeMode="contain" />
           <Text style={styles.heroTitle}>Adopsi & Cinta</Text>
           
