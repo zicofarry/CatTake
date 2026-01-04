@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   View, Text, StyleSheet, TouchableOpacity, Image, ImageBackground, 
   Alert, ActivityIndicator, RefreshControl, SafeAreaView, 
-  StatusBar, FlatList, ScrollView // PERBAIKAN: Import ScrollView
+  StatusBar, FlatList, ScrollView 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -25,7 +25,7 @@ export default function AdoptScreen() {
   const [cats, setCats] = useState<any[]>([]);
   const [myAdoptions, setMyAdoptions] = useState([]);
   
-  // State Filter (Sinkron dengan Vue)
+  // State Filter
   const [activeFilter, setActiveFilter] = useState('all');
 
   const loadData = async () => {
@@ -35,8 +35,6 @@ export default function AdoptScreen() {
       const res = await apiClient.get(endpoint);
       
       if (activeUserTab === 'browse') {
-        // PERBAIKAN: Jangan tulis ulang isFavorited: false
-        // Gunakan data langsung dari backend karena backend sudah menghitung isFavorited
         setCats(res.data); 
       } else {
         setMyAdoptions(res.data);
@@ -57,7 +55,7 @@ export default function AdoptScreen() {
     loadData();
   }, [activeUserTab]);
 
-  // Logika Filter (Sinkron dengan Vue)
+  // Logika Filter
   const filteredCats = cats.filter(cat => {
     if (activeFilter === 'favorite') return cat.isFavorited;
     if (activeFilter === 'male') return cat.gender === 'male';
@@ -67,18 +65,10 @@ export default function AdoptScreen() {
 
   const handleToggleFavorite = async (id: number) => {
     try {
-      // 1. Panggil API backend
       await apiClient.post(`/cats/${id}/favorite`);
-
-      // 2. Update state lokal agar UI langsung berubah (Optimistic Update)
       setCats(prev => prev.map(c => 
         c.id === id ? { ...c, isFavorited: !c.isFavorited } : c
       ));
-      
-      // Opsional: Jika sedang di tab favorit, kita mungkin ingin refresh data
-      if (activeFilter === 'favorite') {
-        // loadData(); // Aktifkan jika ingin item langsung hilang saat un-favorite
-      }
     } catch (e: any) {
       console.error("Gagal toggle favorite:", e);
       Alert.alert("Gagal", e.response?.data?.error || "Terjadi kesalahan saat menyukai kucing.");
@@ -109,7 +99,7 @@ export default function AdoptScreen() {
       <SafeAreaView style={{flex: 1}}>
         <StatusBar barStyle="light-content" />
         <StickyBackButton /> 
-        {/* HERO SECTION */}
+        
         <View style={[styles.hero, { paddingTop: insets.top + 60 }]}>
           <Image source={require('../../assets/images/cathelo.png')} style={styles.heroImg} resizeMode="contain" />
           <Text style={styles.heroTitle}>Adopsi & Cinta</Text>
@@ -132,7 +122,6 @@ export default function AdoptScreen() {
 
         {activeUserTab === 'browse' ? (
           <View style={{flex: 1}}>
-            {/* FILTER HORIZONTAL */}
             <View style={styles.filterBar}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{paddingHorizontal: 20}}>
                 <FilterBtn label="Semua" active={activeFilter === 'all'} onPress={() => setActiveFilter('all')} />
@@ -174,38 +163,46 @@ export default function AdoptScreen() {
             )}
           </View>
         ) : (
-          /* RIWAYAT VIEW */
+          /* RIWAYAT VIEW - PERBAIKAN RETURN STATEMENT */
           <FlatList
             data={myAdoptions}
             keyExtractor={(item: any) => item.id.toString()}
             contentContainerStyle={{padding: 20, paddingBottom: 100}}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />}
-            renderItem={({ item }: any) => (
-              <TouchableOpacity 
-                style={styles.historyCard}
-                onPress={() => router.push(`/adopt/history/${item.id}`)}
-              >
-                <Image 
-                  source={{ uri: `${BASE_SERVER_URL}/public/img/cats/${item.catImage}` }} 
-                  style={styles.histImg} 
-                />
-                <View style={{flex: 1}}>
-                  <View style={{flexDirection:'row', justifyContent:'space-between', alignItems: 'center'}}>
-                    <Text style={styles.catNameText}>{item.catName}</Text>
-                    <View style={[styles.badge, getStatusBg(item.status)]}>
-                      <Text style={styles.badgeText}>{item.status.toUpperCase()}</Text>
+            renderItem={({ item }: any) => {
+                // LOGIKA SMART URL UNTUK RIWAYAT
+                const displayImg = item.catImage?.startsWith('http') 
+                  ? item.catImage 
+                  : `${BASE_SERVER_URL}/public/img/cats/${item.catImage || 'NULL.png'}`;
+
+                return (
+                  <TouchableOpacity 
+                    key={item.id}
+                    style={styles.historyCard}
+                    onPress={() => router.push(`/adopt/history/${item.id}`)}
+                  >
+                    <Image 
+                      source={{ uri: displayImg }} 
+                      style={styles.histImg} 
+                    />
+                    <View style={{flex: 1}}>
+                      <View style={{flexDirection:'row', justifyContent:'space-between', alignItems: 'center'}}>
+                        <Text style={styles.catNameText}>{item.catName}</Text>
+                        <View style={[styles.badge, getStatusBg(item.status)]}>
+                          <Text style={styles.badgeText}>{item.status.toUpperCase()}</Text>
+                        </View>
+                      </View>
+                      <Text style={styles.shelterText}>{item.shelterName}</Text>
+                      <Text style={styles.dateText}>{item.appliedDate}</Text>
                     </View>
-                  </View>
-                  <Text style={styles.shelterText}>{item.shelterName}</Text>
-                  <Text style={styles.dateText}>{item.appliedDate}</Text>
-                </View>
-                {item.status === 'pending' && (
-                  <TouchableOpacity onPress={() => handleCancel(item.id)} style={styles.cancelBtn}>
-                    <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                    {item.status === 'pending' && (
+                      <TouchableOpacity onPress={() => handleCancel(item.id)} style={styles.cancelBtn}>
+                        <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                      </TouchableOpacity>
+                    )}
                   </TouchableOpacity>
-                )}
-              </TouchableOpacity>
-            )}
+                );
+            }}
             ListEmptyComponent={
                 <View style={styles.emptyBox}>
                   <Ionicons name="document-text-outline" size={50} color="rgba(255,255,255,0.4)" />
