@@ -144,8 +144,11 @@ export default function ShelterHomeScreen() {
               <Text style={styles.dashboardTagText}>DASHBOARD PARTNER</Text>
             </View>
 
-            {/* Greeting */}
-            <Text style={styles.greetingTitle}>Halo, {shelterName}! 👋</Text>
+            {/* Greeting - Klik untuk Edit Profil */}
+            <TouchableOpacity onPress={() => router.push('/shelter/edit-profile')}>
+                <Text style={styles.greetingTitle}>Halo, {shelterName}! 👋</Text>
+            </TouchableOpacity>
+            
             <Text style={styles.greetingSubtitle}>
               Siap menyelamatkan nyawa hari ini? Berikut ringkasan aktivitas sheltermu.
             </Text>
