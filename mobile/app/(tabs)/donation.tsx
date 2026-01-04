@@ -10,11 +10,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from "jwt-decode";
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
-
+import StickyBackButton from '../../components/StickyBackButton';
 // Helper agar URL gambar dari backend bisa tampil di HP
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://192.168.1.5:3000';
 
 export default function DonationScreen() {
+   const insets = useSafeAreaInsets();
+
   // --- STATE ---
   const [userRole, setUserRole] = useState<string>('guest');
   const [userId, setUserId] = useState<number | null>(null);
@@ -246,6 +248,7 @@ export default function DonationScreen() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1F352C" />
+      <StickyBackButton /> 
       <ImageBackground 
         source={require('../../assets/images/bg-texture.png')} 
         style={StyleSheet.absoluteFillObject} 
@@ -253,7 +256,7 @@ export default function DonationScreen() {
       />
 
       <ScrollView 
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 100, paddingTop: insets.top + 40 }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >

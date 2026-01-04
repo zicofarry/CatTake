@@ -13,16 +13,17 @@ import {
   UIManager,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import apiClient from '@/api/apiClient';
+
+// [1] Import Komponen StickyBackButton
+import StickyBackButton from '../../components/StickyBackButton';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
 const FAQScreen = () => {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [faqItems, setFaqItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -66,18 +67,12 @@ const FAQScreen = () => {
       resizeMode="repeat"
       imageStyle={{ opacity: 0.15 }}
     >
-      {/* Container utama dengan padding atas/bawah aman */}
       <View style={[styles.safeContainer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
         
-        {/* --- HEADER STICKY --- */}
-        {/* Berada di LUAR ScrollView agar tidak ikut ter-scroll */}
-        <View style={styles.stickyHeader}>
-          <TouchableOpacity onPress={() => router.replace('/(tabs)')} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#374151" />
-            <Text style={styles.backText}>Kembali</Text>
-          </TouchableOpacity>
-        </View>
+        {/* [2] Gunakan Komponen StickyBackButton */}
+        {/* Menggunakan style default (putih transparan) sesuai design FAQ */}
+        <StickyBackButton />
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.card}>
@@ -140,38 +135,13 @@ const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
   },
-  // Style Header Sticky
-  stickyHeader: { 
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 10,
-    zIndex: 10,
-  },
-  backBtn: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    backgroundColor: 'rgba(255,255,255,0.9)', 
-    paddingVertical: 8, 
-    paddingHorizontal: 14, 
-    borderRadius: 20, 
-    alignSelf: 'flex-start', // Agar tombol tidak selebar layar
-    elevation: 5, 
-    shadowColor: "#000", 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.1, 
-    shadowRadius: 3 
-  },
-  backText: { 
-    marginLeft: 8, 
-    fontWeight: '700', 
-    color: '#374151', 
-    fontSize: 14 
-  },
-  // End Header Style
+  
+  // Style manual untuk header dihapus karena sudah digantikan komponen
 
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    // Tambahkan padding top extra agar konten awal tidak tertutup tombol sticky
+    paddingTop: 80, 
     paddingBottom: 40,
     alignItems: 'center',
   },
