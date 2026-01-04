@@ -17,6 +17,7 @@ import Svg, { Path } from 'react-native-svg';
 import { FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import CustomPopup from '../../components/CustomPopup'; // Import komponen baru
 
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
@@ -31,39 +32,89 @@ export default function LoginScreen() {
   const [focusUser, setFocusUser] = useState(false);
   const [focusPass, setFocusPass] = useState(false);
 
+  // --- TAMBAHKAN BAGIAN INI ---
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalType, setModalType] = useState<'success' | 'error'>('success');
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+
+  const showModal = (type: 'success' | 'error', title: string, message: string) => {
+    setModalType(type);
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+    // Hanya pindah halaman jika login sukses
+    if (modalType === 'success') {
+      router.replace('/(tabs)');
+    }
+  };
+
   const handleLogin = async () => {
     if (!identifier || !password) {
-      Alert.alert('Perhatian', 'Mohon isi Email/Username dan Password.');
+      // GANTI Alert.alert DENGAN INI:
+      showModal('error', 'Perhatian', 'Mohon isi Email/Username dan Password.');
       return;
     }
 
     setIsLoading(true);
 
+    const handleLogin = async () => {
+    // ... validasi input (identifier/password) biarkan saja ...
+
+    setIsLoading(true);
+
     try {
+      console.log("1. Mengirim data login...", { username: identifier, password }); // Log data yang dikirim
+
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        identifier,
+        username: identifier, 
         password,
       });
 
-      const resData = response.data.data;
+      // --- TAMBAHKAN LOG INI ---
+      console.log("2. STATUS RESPONSE:", response.status);
+      console.log("3. DATA RESPONSE FULL:", JSON.stringify(response.data, null, 2));
+      // -------------------------
+
+      const resData = response.data.data; // Sesuaikan dengan struktur JSON kamu
+      
+      // Log tambahan untuk memastikan variabel yang diambil benar
+      console.log("4. Token yang didapat:", resData?.token); 
+
       if (resData && resData.token) {
-        // Pastikan semua nilai adalah String dan berikan fallback jika undefined
         await AsyncStorage.setItem('userToken', resData.token);
         await AsyncStorage.setItem('userRole', String(resData.role || 'user'));
         await AsyncStorage.setItem('userId', String(resData.id || ''));
-        
-        // Ambil username dari identifier input jika di respon tidak ada
         await AsyncStorage.setItem('username', String(resData.username || identifier));
         
-        Alert.alert('Sukses', 'Login Berhasil!');
-        router.replace('/(tabs)');
+        showModal('success', 'Berhasil Masuk!', 'Selamat datang kembali di CatTake.');
       } else {
-        Alert.alert('Login Gagal', 'Data user tidak ditemukan dalam respon server.');
+        console.log("5. Aneh, tidak ada token di response data.");
+        showModal('error', 'Login Gagal', 'Data user tidak ditemukan dalam respon server.');
       }
       
     } catch (error: any) {
+      // --- LOG ERROR LEBIH DETAIL ---
+      console.log("!!! ERROR LOGIN !!!");
+      if (error.response) {
+        // Server merespon dengan status code diluar 2xx (misal 401, 404, 500)
+        console.log("Status Error:", error.response.status);
+        console.log("Data Error:", JSON.stringify(error.response.data, null, 2));
+      } else if (error.request) {
+        // Request terkirim tapi tidak ada respon (masalah jaringan/server mati)
+        console.log("Tidak ada respon dari server (Network Error?)", error.request);
+      } else {
+        // Error lain saat setup request
+        console.log("Error Message:", error.message);
+      }
+      // -----------------------------
+
       const errorMessage = error.response?.data?.error || 'Login gagal. Cek kredensial atau server.';
-      Alert.alert('Login Gagal', errorMessage);
+      showModal('error', 'Login Gagal', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -195,9 +246,17 @@ export default function LoginScreen() {
           </View>
         </View>
       </ScrollView>
+      {/* --- TAMBAHKAN INI DI PALING BAWAH (Sebelum </View>) --- */}
+      <CustomPopup
+        visible={modalVisible}
+        onClose={handleModalClose}
+        title={modalTitle}
+        message={modalMessage}
+        type={modalType}
+      />
     </View>
   );
-}
+}}
 
 const styles = StyleSheet.create({
   container: {
