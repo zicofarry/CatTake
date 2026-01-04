@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "CatTake",
     "slug": "mobile",
     "version": "1.0.0",
     "jsEngine": "hermes",
@@ -11,7 +11,11 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "jsEngine": "jsc"
+      "jsEngine": "jsc",
+      "bundleIdentifier": "com.zicofarry.cattake",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "CatTake memerlukan akses lokasi untuk melaporkan kucing yang ditemukan dan melacak status penjemputan secara real-time."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +27,17 @@
       "jsEngine": "hermes",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.mobile"
+      "package": "com.zicofarry.cattake",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "FOREGROUND_SERVICE"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "ISI_API_KEY_GOOGLE_MAPS_KAMU_DISINI"
+        }
+      }
     },
     "web": {
       "output": "static",
@@ -43,7 +57,13 @@
           }
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationAlwaysPermission": "Izinkan CatTake untuk mengakses lokasi kamu setiap saat agar pelacakan tetap berjalan di latar belakang."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

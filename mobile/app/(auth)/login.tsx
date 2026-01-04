@@ -45,15 +45,21 @@ export default function LoginScreen() {
         password,
       });
 
-      const { token, role, id, username } = response.data.data;
-
-      await AsyncStorage.setItem('userToken', token);
-      await AsyncStorage.setItem('userRole', role);
-      await AsyncStorage.setItem('userId', String(id));
-      await AsyncStorage.setItem('username', username);
-      
-      Alert.alert('Sukses', 'Login Berhasil!');
-      router.replace('/(tabs)');
+      const resData = response.data.data;
+      if (resData && resData.token) {
+        // Pastikan semua nilai adalah String dan berikan fallback jika undefined
+        await AsyncStorage.setItem('userToken', resData.token);
+        await AsyncStorage.setItem('userRole', String(resData.role || 'user'));
+        await AsyncStorage.setItem('userId', String(resData.id || ''));
+        
+        // Ambil username dari identifier input jika di respon tidak ada
+        await AsyncStorage.setItem('username', String(resData.username || identifier));
+        
+        Alert.alert('Sukses', 'Login Berhasil!');
+        router.replace('/(tabs)');
+      } else {
+        Alert.alert('Login Gagal', 'Data user tidak ditemukan dalam respon server.');
+      }
       
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || 'Login gagal. Cek kredensial atau server.';

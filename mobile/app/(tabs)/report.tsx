@@ -1,56 +1,60 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, 
-  Image, ImageBackground, Alert, Modal, ActivityIndicator, 
-  RefreshControl, Dimensions, StatusBar 
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  View, Text, ScrollView, TouchableOpacity, TextInput,
+  Image, ImageBackground, Alert, Modal, ActivityIndicator,
+  RefreshControl, Dimensions, StatusBar
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { WebView } from 'react-native-webview';
-import { useSafeAreaInsets } from 'react-native-safe-area-context'; // [1] Import Insets
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import apiClient, { API_BASE_URL } from '@/api/apiClient';
 
-const { width, height } = Dimensions.get('window');
+// Import komponen wrapper yang baru dibuat
+import MapBox from '@/components/MapBox';
+
+const { width } = Dimensions.get('window');
 const BASE_SERVER_URL = API_BASE_URL?.replace('/api/v1', '');
 
-export default function ReportScreen() {
-  const insets = useSafeAreaInsets(); // [2] Panggil Hooks Insets
+const INITIAL_REGION = {
+  latitude: -6.9175,
+  longitude: 107.6191,
+  latitudeDelta: 0.005,
+  longitudeDelta: 0.005,
+};
 
-  // --- STATES UTAMA ---
-  const [userRole, setUserRole] = useState('guest');
+export default function ReportScreen() {
+  const insets = useSafeAreaInsets();
+  const mapRef = useRef<any>(null);
+
+  // --- STATES ---
   const [activeUserTab, setActiveUserTab] = useState<'create' | 'history'>('create');
   const [activeReportType, setActiveReportType] = useState<'stray' | 'missing' | 'my_lost'>('stray');
   const [refreshing, setRefreshing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form State (Penemuan & Kehilangan)
   const [form, setForm] = useState({
-    title: '',
     description: '',
     location: '',
-    lat: '',
-    long: '',
+    lat: -6.9175,
+    long: 107.6191,
     lost_cat_id: null as number | null,
-    // Field khusus iklan kehilangan
-    name: '', age: '', breed: '', color: '', reward: '', shareToCommunity: false
+    name: '', age: '', breed: '', color: '', reward: ''
   });
+  
   const [selectedImage, setSelectedImage] = useState<any>(null);
+  const [mapModalVisible, setMapModalVisible] = useState(false);
+  const [tempCoords, setTempCoords] = useState({ lat: -6.9175, lng: 107.6191 });
+  const [isLocating, setIsLocating] = useState(false);
+  const [myHistory, setMyHistory] = useState([]);
 
-  // Search Kucing Hilang State
+  // Search logic
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
 
-  // History & UI State
-  const [myHistory, setMyHistory] = useState([]);
-  const [mapModalVisible, setMapModalVisible] = useState(false);
-
-  // --- FETCH DATA ---
   const loadData = async () => {
-    const role = await AsyncStorage.getItem('userRole') || 'guest';
-    setUserRole(role);
     if (activeUserTab === 'history') fetchUserHistory();
   };
 
@@ -68,35 +72,61 @@ export default function ReportScreen() {
     loadData().then(() => setRefreshing(false));
   }, [activeUserTab]);
 
-  // --- HANDLERS ---
-  
-  // 1. Fitur Search Kucing Hilang (Autocomplete)
+  const getAddressFromCoords = async (lat: number, lng: number) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`,
+        { headers: { 'User-Agent': 'CatTake-Mobile' } }
+      );
+      const data = await response.json();
+      if (data.display_name) {
+        setForm(prev => ({ ...prev, location: data.display_name, lat, long: lng }));
+      }
+    } catch (error) {
+      console.error("Nominatim Error:", error);
+    }
+  };
+
+  const getCurrentLocation = async () => {
+    setIsLocating(true);
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Izin Ditolak', 'Aplikasi butuh izin lokasi.');
+      setIsLocating(false);
+      return;
+    }
+
+    let loc = await Location.getCurrentPositionAsync({});
+    const newCoords = { lat: loc.coords.latitude, lng: loc.coords.longitude };
+    setTempCoords(newCoords);
+    
+    mapRef.current?.animateToRegion({
+      latitude: newCoords.lat,
+      longitude: newCoords.lng,
+      latitudeDelta: 0.005,
+      longitudeDelta: 0.005,
+    }, 1000);
+
+    await getAddressFromCoords(newCoords.lat, newCoords.lng);
+    setIsLocating(false);
+  };
+
   const handleSearchInput = async (text: string) => {
     setSearchQuery(text);
     if (text.length < 2) { setSearchResults([]); setShowDropdown(false); return; }
-    
-    setIsSearching(true);
     setShowDropdown(true);
     try {
       const res = await apiClient.get(`/lost-cats/search?q=${text}`);
       setSearchResults(res.data);
-    } catch (e) { console.error(e); } finally { setIsSearching(false); }
+    } catch (e) { console.error(e); }
   };
-
-  const selectLostCat = (cat: any) => {
-    setSearchQuery(`${cat.cat_name} - ${cat.owner_name}`);
-    setForm({ ...form, lost_cat_id: cat.id });
-    setShowDropdown(false);
-  };
-
-  // 2. Ambil Foto (Fix Format FormData)
+  
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 0.6,
     });
-
     if (!result.canceled) {
       const asset = result.assets[0];
       setSelectedImage({
@@ -107,61 +137,36 @@ export default function ReportScreen() {
     }
   };
 
-  // 3. Peta Leaflet Logic
-  const handleMapMessage = (event: any) => {
-    const data = JSON.parse(event.nativeEvent.data);
-    setForm({ ...form, location: data.address, lat: data.lat, long: data.lng });
-    setMapModalVisible(false);
-  };
-
-  // 4. Submit Laporan (Discovery & Lost Ad)
   const handleSubmit = async () => {
     if (!form.location || !form.description || !selectedImage) {
       return Alert.alert("Peringatan", "Mohon lengkapi lokasi, deskripsi, dan foto.");
     }
-
     setIsSubmitting(true);
     const formData = new FormData();
 
     if (activeReportType === 'my_lost') {
-      // Endpoint Iklan Kehilangan
       formData.append('name', form.name);
       formData.append('age', form.age);
-      formData.append('breed', form.breed);
-      formData.append('color', form.color);
       formData.append('description', form.description);
       formData.append('last_seen_address', form.location);
-      formData.append('reward_amount', form.reward);
-      formData.append('share_to_community', form.shareToCommunity ? '1' : '0');
     } else {
-      // Endpoint Laporan Penemuan (Stray/Missing)
       formData.append('report_type', activeReportType);
       formData.append('location', form.location);
       formData.append('description', form.description);
-      formData.append('lat', form.lat || '0');
-      formData.append('long', form.long || '0');
+      formData.append('lat', form.lat.toString());
+      formData.append('long', form.long.toString());
       if (form.lost_cat_id) formData.append('lost_cat_id', form.lost_cat_id.toString());
     }
-
-    // PENTING: Fix Not-Null Constraint dengan format objek file RN
     formData.append('photo', selectedImage as any);
 
     try {
       const endpoint = activeReportType === 'my_lost' ? '/lost-cats' : '/reports';
       await apiClient.post(endpoint, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      
-      Alert.alert("Sukses", "Laporan berhasil diproses!");
+      Alert.alert("Sukses", "Laporan berhasil dikirim!");
       setActiveUserTab('history');
-      resetForm();
     } catch (e: any) {
-      Alert.alert("Gagal", e.response?.data?.error || "Terjadi kesalahan server.");
+      Alert.alert("Gagal", e.response?.data?.error || "Terjadi kesalahan.");
     } finally { setIsSubmitting(false); }
-  };
-
-  const resetForm = () => {
-    setForm({ title: '', description: '', location: '', lat: '', long: '', lost_cat_id: null, name: '', age: '', breed: '', color: '', reward: '', shareToCommunity: false });
-    setSelectedImage(null);
-    setSearchQuery('');
   };
 
   const resolveImg = (path: string) => {
@@ -169,89 +174,97 @@ export default function ReportScreen() {
     return path.startsWith('http') ? path : `${BASE_SERVER_URL}${path}`;
   };
 
-  // --- UI COMPONENTS ---
-
-  const LeafletMap = () => (
-    <WebView 
-      originWhitelist={['*']}
-      onMessage={handleMapMessage}
-      source={{ html: `
-        <!DOCTYPE html><html><head>
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-        <style>#map { height: 100vh; width: 100vw; margin: 0; }</style></head>
-        <body><div id="map"></div><script>
-          var map = L.map('map').setView([-6.9175, 107.6191], 13);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-          var marker;
-          map.on('click', function(e) {
-            if (marker) map.removeLayer(marker);
-            marker = L.marker(e.latlng).addTo(map);
-            fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+e.latlng.lat+'&lon='+e.latlng.lng)
-              .then(r => r.json()).then(d => {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ address: d.display_name, lat: e.latlng.lat, lng: e.latlng.lng }));
-              });
-          });
-        </script></body></html>
-      `}}
-    />
-  );
-
   return (
-    <ImageBackground 
-      source={require('../../assets/images/background.png')} 
-      style={styles.container}
+    <ImageBackground
+      source={require('../../assets/images/background.png')}
+      className="flex-1 bg-[#2c473c]"
       resizeMode="repeat"
       imageStyle={{ width: 150, height: 150, opacity: 0.15 }}
     >
-      {/* [3] Ganti SafeAreaView dengan View + Padding dari Insets */}
-      <View style={{flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+      <View style={{ flex: 1, paddingTop: insets.top }}>
         <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-        <ScrollView 
+        
+        <ScrollView
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />}
-          contentContainerStyle={{paddingBottom: 100}}
+          contentContainerStyle={{ paddingBottom: 100 }}
         >
-          {/* Header Hero */}
-          <View style={styles.hero}>
-            <Image source={require('../../assets/images/tigakucing.png')} style={styles.heroImg} resizeMode="contain" />
-            <Text style={styles.heroTitle}>Lapor & Temukan</Text>
-            
-            <View style={styles.tabContainer}>
-              <TouchableOpacity style={[styles.tabBtn, activeUserTab === 'create' && styles.tabActive]} onPress={() => setActiveUserTab('create')}>
-                <Text style={[styles.tabText, activeUserTab === 'create' && {color: '#3A5F50'}]}>Buat Laporan</Text>
+          {/* Header Hero Section */}
+          <View className="p-6 items-center pt-8">
+            <Image source={require('../../assets/images/tigakucing.png')} className="w-40 h-24 mb-2" resizeMode="contain" />
+            <Text className="text-3xl font-bold text-white">Lapor & Temukan</Text>
+
+            <View className="flex-row bg-white/20 rounded-full p-1 mt-6 w-full shadow-sm">
+              <TouchableOpacity
+                className={`flex-1 py-2.5 rounded-full ${activeUserTab === 'create' ? 'bg-white' : ''}`}
+                onPress={() => setActiveUserTab('create')}
+              >
+                <Text className={`text-center font-bold text-xs ${activeUserTab === 'create' ? 'text-[#3A5F50]' : 'text-white'}`}>
+                  Buat Laporan
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.tabBtn, activeUserTab === 'history' && styles.tabActive]} onPress={() => setActiveUserTab('history')}>
-                <Text style={[styles.tabText, activeUserTab === 'history' && {color: '#3A5F50'}]}>Riwayat Saya</Text>
+              <TouchableOpacity
+                className={`flex-1 py-2.5 rounded-full ${activeUserTab === 'history' ? 'bg-white' : ''}`}
+                onPress={() => setActiveUserTab('history')}
+              >
+                <Text className={`text-center font-bold text-xs ${activeUserTab === 'history' ? 'text-[#3A5F50]' : 'text-white'}`}>
+                  Riwayat Saya
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {activeUserTab === 'create' ? (
-            <View style={{padding: 20}}>
-              {/* Tipe Laporan */}
-              <View style={styles.typeRow}>
-                {(['stray', 'missing', 'my_lost'] as const).map(t => (
-                  <TouchableOpacity key={t} onPress={() => setActiveReportType(t)} style={[styles.typeBtn, activeReportType === t && (t==='my_lost'?styles.btnRed:styles.btnYellow)]}>
-                    <Text style={[styles.typeText, activeReportType === t && {color:'#fff'}]}>{t==='stray'?'Nemu Liar':t==='missing'?'Nemu Hilang':'Kucing Saya Hilang!'}</Text>
+            <View className="p-5">
+              {/* Tipe Laporan Row */}
+              <View className="flex-row justify-center gap-2 mb-5">
+                {[
+                  { id: 'stray', label: 'Nemu Liar', color: 'bg-[#EBCD5E]' },
+                  { id: 'missing', label: 'Nemu Hilang', color: 'bg-[#EBCD5E]' },
+                  { id: 'my_lost', label: 'Kucing Saya Hilang!', color: 'bg-red-500' }
+                ].map(t => (
+                  <TouchableOpacity
+                    key={t.id}
+                    onPress={() => setActiveReportType(t.id as any)}
+                    className={`px-3 py-2.5 rounded-2xl ${activeReportType === t.id ? t.color : 'bg-white/80'}`}
+                  >
+                    <Text className={`text-[10px] font-bold ${activeReportType === t.id ? 'text-white' : 'text-slate-500'}`}>
+                      {t.label}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
-              <View style={styles.cardForm}>
-                {/* Search Bar Khusus Nemu Hilang */}
+              {/* Card Form */}
+              <View className="bg-white rounded-[35px] p-6 shadow-xl">
                 {activeReportType === 'missing' && (
-                  <View style={{zIndex: 100, marginBottom: 15}}>
-                    <Text style={styles.label}>Cari Data Kucing Hilang</Text>
-                    <View style={styles.searchBox}>
+                  <View className="z-50 mb-4">
+                    <Text className="text-sm font-bold text-slate-800 mb-2">Cari Data Kucing Hilang</Text>
+                    <View className="flex-row items-center bg-slate-100 rounded-xl px-3 h-12">
                       <Ionicons name="search" size={18} color="#94a3b8" />
-                      <TextInput style={{flex: 1, marginLeft: 10}} placeholder="Nama kucing atau pemilik..." value={searchQuery} onChangeText={handleSearchInput} />
+                      <TextInput
+                        className="flex-1 ml-2 text-sm"
+                        placeholder="Nama kucing atau pemilik..."
+                        value={searchQuery}
+                        onChangeText={handleSearchInput}
+                      />
                     </View>
                     {showDropdown && searchResults.length > 0 && (
-                      <View style={styles.dropdown}>
+                      <View className="absolute top-[75px] left-0 right-0 bg-white rounded-2xl shadow-2xl z-[999] border border-slate-100">
                         {searchResults.map((item: any) => (
-                          <TouchableOpacity key={item.id} style={styles.dropdownItem} onPress={() => selectLostCat(item)}>
-                            <Image source={{ uri: resolveImg(item.photo) }} style={styles.dropImg} />
-                            <View><Text style={{fontWeight:'bold'}}>{item.cat_name}</Text><Text style={{fontSize:10}}>Pemilik: {item.owner_name}</Text></View>
+                          <TouchableOpacity
+                            key={item.id}
+                            className="flex-row items-center p-3 border-b border-slate-50"
+                            onPress={() => {
+                              setSearchQuery(`${item.cat_name} - ${item.owner_name}`);
+                              setForm({ ...form, lost_cat_id: item.id });
+                              setShowDropdown(false);
+                            }}
+                          >
+                            <Image source={{ uri: resolveImg(item.photo) }} className="w-10 h-10 rounded-full" />
+                            <View className="ml-3">
+                              <Text className="font-bold text-slate-800">{item.cat_name}</Text>
+                              <Text className="text-[10px] text-slate-500">Pemilik: {item.owner_name}</Text>
+                            </View>
                           </TouchableOpacity>
                         ))}
                       </View>
@@ -259,112 +272,164 @@ export default function ReportScreen() {
                   </View>
                 )}
 
-                {/* Form Khusus Saya Hilang */}
                 {activeReportType === 'my_lost' && (
-                   <View style={{gap: 12, marginBottom: 15}}>
-                      <TextInput style={styles.inputRow} placeholder="Nama Kucing" value={form.name} onChangeText={t=>setForm({...form, name:t})} />
-                      <TextInput style={styles.inputRow} placeholder="Umur (Bulan)" keyboardType="numeric" value={form.age} onChangeText={t=>setForm({...form, age:t})} />
-                   </View>
+                  <View className="gap-3 mb-4">
+                    <TextInput
+                      className="bg-slate-100 rounded-xl p-3.5 text-sm"
+                      placeholder="Nama Kucing"
+                      value={form.name}
+                      onChangeText={t => setForm({ ...form, name: t })}
+                    />
+                    <TextInput
+                      className="bg-slate-100 rounded-xl p-3.5 text-sm"
+                      placeholder="Umur (Bulan)"
+                      keyboardType="numeric"
+                      value={form.age}
+                      onChangeText={t => setForm({ ...form, age: t })}
+                    />
+                  </View>
                 )}
 
-                <Text style={styles.label}>Lokasi Kejadian</Text>
-                <View style={styles.locationBox}>
-                  <TouchableOpacity style={styles.mapBtn} onPress={() => setMapModalVisible(true)}>
-                    <Image source={require('../../assets/images/maps.png')} style={styles.mapThumb} />
-                    <Ionicons name="location" size={24} color="red" style={{position:'absolute'}} />
+                <Text className="text-sm font-bold text-slate-800 mb-2">Lokasi Kejadian</Text>
+                <View className="flex-row gap-3 mb-4">
+                  <TouchableOpacity
+                    className="w-16 h-16 rounded-2xl bg-slate-100 overflow-hidden items-center justify-center border border-slate-200"
+                    onPress={() => {
+                       setMapModalVisible(true);
+                       setTimeout(() => getCurrentLocation(), 500); // Auto focus saat buka
+                    }}
+                  >
+                    <Image source={require('../../assets/images/maps.png')} className="w-full h-full opacity-40" />
+                    <Ionicons name="location" size={24} color="#ef4444" className="absolute" />
                   </TouchableOpacity>
-                  <TextInput style={styles.locInput} placeholder="Klik peta atau ketik alamat..." value={form.location} onChangeText={t=>setForm({...form, location:t})} multiline />
+                  <TextInput
+                    className="flex-1 bg-slate-100 rounded-2xl p-3 text-[11px] text-slate-600"
+                    placeholder="Klik ikon peta untuk pilih lokasi..."
+                    value={form.location}
+                    onChangeText={t => setForm({ ...form, location: t })}
+                    multiline
+                  />
                 </View>
 
-                <Text style={styles.label}>Deskripsi Kondisi</Text>
-                <TextInput style={[styles.inputRow, {height: 80, textAlignVertical:'top'}]} placeholder="Jelaskan ciri-ciri, warna, atau luka..." value={form.description} onChangeText={t=>setForm({...form, description:t})} multiline />
+                <Text className="text-sm font-bold text-slate-800 mb-2">Deskripsi Kondisi</Text>
+                <TextInput
+                  className="bg-slate-100 rounded-2xl p-4 text-sm h-24 mb-4"
+                  style={{ textAlignVertical: 'top' }}
+                  placeholder="Jelaskan ciri-ciri, warna, atau luka..."
+                  value={form.description}
+                  onChangeText={t => setForm({ ...form, description: t })}
+                  multiline
+                />
 
-                <Text style={styles.label}>Foto Bukti</Text>
-                <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
+                <Text className="text-sm font-bold text-slate-800 mb-2">Foto Bukti</Text>
+                <TouchableOpacity
+                  className="h-36 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 items-center justify-center mb-6 overflow-hidden"
+                  onPress={pickImage}
+                >
                   {selectedImage ? (
-                    <Image source={{ uri: selectedImage.uri }} style={styles.previewImg} />
+                    <Image source={{ uri: selectedImage.uri }} className="w-full h-full" />
                   ) : (
-                    <View style={{alignItems:'center'}}><Ionicons name="camera" size={40} color="#cbd5e1" /><Text style={{color:'#94a3b8', fontSize: 12}}>Klik untuk ambil foto</Text></View>
+                    <>
+                      <Ionicons name="camera" size={40} color="#cbd5e1" />
+                      <Text className="text-slate-400 text-xs mt-1">Ambil atau pilih foto</Text>
+                    </>
                   )}
                 </TouchableOpacity>
 
-                <TouchableOpacity style={[styles.submitBtn, activeReportType === 'my_lost' && {backgroundColor:'#ef4444'}]} onPress={handleSubmit} disabled={isSubmitting}>
-                  {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitText}>Kirim Laporan</Text>}
+                <TouchableOpacity
+                  className={`py-4 rounded-2xl items-center shadow-md ${activeReportType === 'my_lost' ? 'bg-red-500' : 'bg-[#EBCD5E]'}`}
+                  onPress={handleSubmit}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-lg">Kirim Laporan</Text>}
                 </TouchableOpacity>
               </View>
             </View>
           ) : (
-            <View style={{padding: 20}}>
-              {myHistory.map((item: any) => (
-                <View key={item.id} style={styles.historyCard}>
-                  <Image source={{ uri: resolveImg(item.photo) }} style={styles.histImg} />
-                  <View style={{flex: 1}}>
-                    <View style={{flexDirection:'row', justifyContent:'space-between'}}>
-                      <Text style={{fontWeight:'bold'}}>Laporan #{item.id}</Text>
-                      <View style={[styles.badge, {backgroundColor: item.assignment_status === 'completed' ? '#d1fae5' : '#fef3c7'}]}>
-                        <Text style={{fontSize: 8, fontWeight:'bold'}}>{(item.assignment_status || 'PENDING').toUpperCase()}</Text>
+             <View className="p-5">
+              {myHistory.length > 0 ? myHistory.map((item: any) => (
+                <View key={item.id} className="bg-white rounded-2xl p-3 flex-row gap-3 mb-3 shadow-sm">
+                  <Image source={{ uri: resolveImg(item.photo) }} className="w-20 h-20 rounded-xl" />
+                  <View className="flex-1 justify-center">
+                    <View className="flex-row justify-between items-center">
+                      <Text className="font-bold text-slate-800">Laporan #{item.id}</Text>
+                      <View className={`px-2 py-0.5 rounded-md ${item.assignment_status === 'completed' ? 'bg-emerald-100' : 'bg-amber-100'}`}>
+                        <Text className={`text-[8px] font-bold ${item.assignment_status === 'completed' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                          {(item.assignment_status || 'PENDING').toUpperCase()}
+                        </Text>
                       </View>
                     </View>
-                    <Text style={{fontSize: 12, color: '#64748b', marginTop: 4}} numberOfLines={1}>{item.location}</Text>
-                    <Text style={{fontSize: 10, color: '#94a3b8', marginTop: 2}}>{new Date(item.created_at).toLocaleDateString()}</Text>
+                    <Text className="text-[11px] text-slate-500 mt-1" numberOfLines={1}>{item.location}</Text>
+                    <Text className="text-[10px] text-slate-400 mt-1">{new Date(item.created_at).toLocaleDateString('id-ID')}</Text>
                   </View>
                 </View>
-              ))}
+              )) : (
+                <View className="items-center mt-10">
+                   <Ionicons name="document-text-outline" size={60} color="white" opacity={0.5} />
+                   <Text className="text-white opacity-60 mt-2">Belum ada riwayat laporan</Text>
+                </View>
+              )}
             </View>
           )}
         </ScrollView>
 
-        {/* MODAL PETA */}
+        {/* --- FULLSCREEN MAP MODAL --- */}
         <Modal visible={mapModalVisible} animationType="slide">
-          {/* [4] Fix Padding Modal dengan Insets juga */}
-          <View style={{flex: 1, backgroundColor: '#fff', paddingTop: insets.top, paddingBottom: insets.bottom }}>
-            <View style={styles.modalHeader}>
-              <Text style={{fontWeight:'bold', fontSize: 18}}>Pilih Lokasi</Text>
-              <TouchableOpacity onPress={() => setMapModalVisible(false)}><Ionicons name="close" size={28} /></TouchableOpacity>
+          <View className="flex-1" style={{ paddingTop: insets.top }}>
+            {/* Header Modal */}
+            <View className="flex-row justify-between items-center p-4 border-b border-slate-100 bg-white z-10">
+              <Text className="text-lg font-bold text-slate-800">Pilih Titik Lokasi</Text>
+              <TouchableOpacity onPress={() => setMapModalVisible(false)} className="p-1">
+                <Ionicons name="close-circle" size={32} color="#1e293b" />
+              </TouchableOpacity>
             </View>
-            <LeafletMap />
+
+            {/* Area Peta */}
+            <View className="flex-1 relative bg-slate-100">
+               <MapBox 
+                  mapRef={mapRef}
+                  region={INITIAL_REGION}
+                  selectedCoords={tempCoords}
+                  onSelectLocation={(coords: any) => {
+                      setTempCoords({ lat: coords.latitude, lng: coords.longitude });
+                  }}
+               />
+
+               {/* Tombol My Location (Floating) */}
+               <TouchableOpacity
+                 className="absolute bottom-40 right-6 bg-white p-4 rounded-full shadow-2xl border border-slate-100"
+                 onPress={getCurrentLocation}
+                 style={{ elevation: 10 }}
+               >
+                 {isLocating ? (
+                   <ActivityIndicator size="small" color="#2c473c" />
+                 ) : (
+                   <Ionicons name="locate" size={26} color="#2c473c" />
+                 )}
+               </TouchableOpacity>
+
+               {/* Bottom Info & Confirmation Box */}
+               <View className="absolute bottom-0 left-0 right-0 bg-white p-6 rounded-t-[40px] shadow-2xl">
+                 <View className="w-12 h-1 bg-slate-200 rounded-full self-center mb-4" />
+                 <Text className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Koordinat Terpilih</Text>
+                 <Text className="text-sm font-semibold text-slate-700 mb-6">
+                    {tempCoords.lat.toFixed(6)}, {tempCoords.lng.toFixed(6)}
+                 </Text>
+                 
+                 <TouchableOpacity
+                   className="bg-[#2c473c] py-4.5 rounded-2xl items-center active:bg-[#1a2c25]"
+                   onPress={async () => {
+                     await getAddressFromCoords(tempCoords.lat, tempCoords.lng);
+                     setMapModalVisible(false);
+                   }}
+                 >
+                   <Text className="text-white font-bold text-base">Konfirmasi Lokasi Ini</Text>
+                 </TouchableOpacity>
+               </View>
+            </View>
           </View>
         </Modal>
       </View>
     </ImageBackground>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#2c473c' },
-  hero: { padding: 24, alignItems: 'center', paddingTop: 30 },
-  heroImg: { width: 160, height: 100, marginBottom: 10 },
-  heroTitle: { fontSize: 32, fontWeight: 'bold', color: '#fff' },
-  tabContainer: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 30, padding: 4, marginTop: 25 },
-  tabBtn: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 25 },
-  tabActive: { backgroundColor: '#fff' },
-  tabText: { fontWeight: 'bold', color: '#fff', fontSize: 13 },
-  
-  typeRow: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 20 },
-  typeBtn: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.8)' },
-  btnYellow: { backgroundColor: '#EBCD5E' },
-  btnRed: { backgroundColor: '#ef4444' },
-  typeText: { fontWeight: 'bold', color: '#64748b', fontSize: 12 },
-
-  cardForm: { backgroundColor: '#fff', borderRadius: 30, padding: 20, elevation: 5 },
-  label: { fontSize: 14, fontWeight: 'bold', color: '#1e293b', marginBottom: 8 },
-  inputRow: { backgroundColor: '#f1f5f9', borderRadius: 12, padding: 12, fontSize: 14 },
-  locationBox: { flexDirection: 'row', gap: 10, marginBottom: 15 },
-  mapBtn: { width: 60, height: 60, borderRadius: 12, overflow: 'hidden', alignItems:'center', justifyContent:'center' },
-  mapThumb: { width: '100%', height: '100%', opacity: 0.6 },
-  locInput: { flex: 1, backgroundColor: '#f1f5f9', borderRadius: 12, padding: 10, fontSize: 12 },
-  uploadBox: { height: 140, backgroundColor: '#f8fafc', borderRadius: 15, borderStyle: 'dashed', borderWidth: 2, borderColor: '#e2e8f0', alignItems: 'center', justifyContent: 'center', marginBottom: 20, overflow: 'hidden' },
-  previewImg: { width: '100%', height: '100%' },
-  submitBtn: { backgroundColor: '#EBCD5E', padding: 16, borderRadius: 15, alignItems: 'center' },
-  submitText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-
-  searchBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: 12, paddingHorizontal: 12, height: 45 },
-  dropdown: { position: 'absolute', top: 75, left: 0, right: 0, backgroundColor: '#fff', elevation: 10, borderRadius: 15, zIndex: 1000 },
-  dropdownItem: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderBottomWidth: 0.5, borderBottomColor: '#eee' },
-  dropImg: { width: 30, height: 30, borderRadius: 15 },
-
-  historyCard: { backgroundColor: '#fff', borderRadius: 20, padding: 12, flexDirection: 'row', gap: 12, marginBottom: 12 },
-  histImg: { width: 70, height: 70, borderRadius: 12 },
-  badge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 5 },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', padding: 20, borderBottomWidth: 1, borderBottomColor: '#eee' }
-});
