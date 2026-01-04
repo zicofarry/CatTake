@@ -9,6 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router'; 
 import apiClient, { API_BASE_URL } from '@/api/apiClient';
 
 // Import komponen wrapper yang baru dibuat
@@ -26,6 +27,7 @@ const INITIAL_REGION = {
 
 export default function ReportScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter(); 
   const mapRef = useRef<any>(null);
 
   // --- STATES ---
@@ -348,20 +350,33 @@ export default function ReportScreen() {
           ) : (
              <View className="p-5">
               {myHistory.length > 0 ? myHistory.map((item: any) => (
-                <View key={item.id} className="bg-white rounded-2xl p-3 flex-row gap-3 mb-3 shadow-sm">
-                  <Image source={{ uri: resolveImg(item.photo) }} className="w-20 h-20 rounded-xl" />
-                  <View className="flex-1 justify-center">
-                    <View className="flex-row justify-between items-center">
-                      <Text className="font-bold text-slate-800">Laporan #{item.id}</Text>
-                      <View className={`px-2 py-0.5 rounded-md ${item.assignment_status === 'completed' ? 'bg-emerald-100' : 'bg-amber-100'}`}>
-                        <Text className={`text-[8px] font-bold ${item.assignment_status === 'completed' ? 'text-emerald-700' : 'text-amber-700'}`}>
-                          {(item.assignment_status || 'PENDING').toUpperCase()}
-                        </Text>
+                <View key={item.id} className="bg-white rounded-3xl p-4 mb-4 shadow-sm border border-slate-50">
+                  <View className="flex-row gap-4">
+                    <Image source={{ uri: resolveImg(item.photo) }} className="w-20 h-20 rounded-2xl bg-slate-100" />
+                    <View className="flex-1">
+                      <View className="flex-row justify-between items-center mb-1">
+                        <Text className="font-bold text-slate-800">Laporan #{item.id}</Text>
+                        <View className={`px-2 py-0.5 rounded-md ${item.assignment_status === 'completed' ? 'bg-emerald-100' : 'bg-amber-100'}`}>
+                          <Text className={`text-[8px] font-bold ${item.assignment_status === 'completed' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                            {(item.assignment_status || 'PENDING').toUpperCase()}
+                          </Text>
+                        </View>
                       </View>
+                      <Text className="text-[11px] text-slate-500" numberOfLines={1}>{item.location}</Text>
+                      <Text className="text-[10px] text-slate-400 mt-1">{new Date(item.created_at).toLocaleDateString('id-ID')}</Text>
                     </View>
-                    <Text className="text-[11px] text-slate-500 mt-1" numberOfLines={1}>{item.location}</Text>
-                    <Text className="text-[10px] text-slate-400 mt-1">{new Date(item.created_at).toLocaleDateString('id-ID')}</Text>
                   </View>
+                  
+                  {/* TOMBOL LACAK (Hanya muncul jika statusnya assigned atau in_transit) */}
+                  {(item.assignment_status === 'assigned' || item.assignment_status === 'in_transit') && (
+                    <TouchableOpacity 
+                      onPress={() => router.push(`/track/${item.id}`)}
+                      className="mt-4 bg-teal-600 py-2.5 rounded-xl flex-row items-center justify-center gap-2 active:bg-teal-700"
+                    >
+                      <Ionicons name="map" size={14} color="white" />
+                      <Text className="text-white font-bold text-xs uppercase tracking-wider">Lacak Penjemputan</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               )) : (
                 <View className="items-center mt-10">
@@ -409,7 +424,7 @@ export default function ReportScreen() {
                </TouchableOpacity>
 
                {/* Bottom Info & Confirmation Box */}
-               <View className="absolute bottom-0 left-0 right-0 bg-white p-6 rounded-t-[40px] shadow-2xl">
+               <View className="absolute bottom-0 left-0 right-0 bg-white p-6 rounded-t-[30px] shadow-2xl">
                  <View className="w-12 h-1 bg-slate-200 rounded-full self-center mb-4" />
                  <Text className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Koordinat Terpilih</Text>
                  <Text className="text-sm font-semibold text-slate-700 mb-6">
