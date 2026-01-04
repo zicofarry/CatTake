@@ -95,6 +95,23 @@ class DonationService {
             };
         });
     }
+
+    static async getUserDonations(userId) {
+        const query = `
+            SELECT 
+                d.id,
+                d.amount,
+                d.donation_date,
+                d.payment_method,
+                COALESCE(dui.full_name, 'Shelter') as "shelterName"
+            FROM donations d
+            LEFT JOIN detail_user_individu dui ON d.shelter_id = dui.id
+            WHERE d.donatur_id = $1
+            ORDER BY d.donation_date DESC
+        `;
+        const result = await db.query(query, [userId]);
+        return result.rows;
+    }
 }
 
 module.exports = DonationService;

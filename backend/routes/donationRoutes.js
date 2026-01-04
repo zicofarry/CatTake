@@ -9,6 +9,9 @@ async function donationRoutes(fastify, options) {
 
     // Endpoint Shelter Melihat Donasi Masuk (Bisa diamankan dengan cek role shelter)
     fastify.get('/shelter/:shelterId', { preHandler: [authentication] }, DonationController.getByShelter);
+
+    fastify.get('/my-history', { preHandler: [authentication] }, DonationController.getMyHistory);
+
 }
 
 module.exports = donationRoutes;
