@@ -33,6 +33,14 @@ export default function RootLayout() {
       {/* (auth) = Halaman Login/Register. Gak butuh header back. */}
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
 
+      <Stack.Screen 
+        name="post/[id]" 
+        options={{ 
+          title: 'Detail Postingan',
+          headerShown: false // Kita pakai custom back button di dalam file [id].tsx seperti di web
+        }} 
+      />
+
       {/* Halaman Detail (misal: adopt/[id]) butuh tombol back */}
       <Stack.Screen name="adopt/[id]" options={{ title: 'Detail Kucing' }} />
       
