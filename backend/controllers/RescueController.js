@@ -1,9 +1,5 @@
 const RescueService = require('../services/RescueService');
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
-const { pipeline } = require('stream');
-const pump = util.promisify(pipeline);
+const { uploadToCloudinary } = require('../config/cloudinary');
 
 class RescueController {
     
@@ -65,23 +61,15 @@ class RescueController {
         try {
             const parts = req.parts();
             let fields = {};
-            let fileName = null;
+            let imageUrl = null;
 
             // Proses Multipart (File + Text)
             for await (const part of parts) {
                 if (part.file) {
-                    const ext = path.extname(part.filename);
-                    // Nama file: rescue-[id]-[timestamp].jpg
-                    fileName = `rescue-${Date.now()}${ext}`;
-                    
-                    // Pastikan folder ada dulu
-                    const saveDir = path.join(__dirname, '../public/img/rescue_proof');
-                    if (!fs.existsSync(saveDir)){
-                        fs.mkdirSync(saveDir, { recursive: true });
-                    }
-
-                    const savePath = path.join(saveDir, fileName);
-                    await pump(part.file, fs.createWriteStream(savePath));
+                    const buffer = await part.toBuffer();
+                    // [MIGRASI] Upload ke Cloudinary folder 'cattake/rescue'
+                    const result = await uploadToCloudinary(buffer, 'cattake/rescue');
+                    imageUrl = result.secure_url;
                 } else {
                     fields[part.fieldname] = part.value;
                 }
@@ -91,10 +79,10 @@ class RescueController {
                 return reply.code(400).send({ error: 'Data tidak lengkap (assignmentId, status)' });
             }
 
-            // Panggil Service
-            await RescueService.updateJobStatus(fields.assignmentId, fields.status, fileName);
+            // Panggil Service dengan URL Cloudinary
+            await RescueService.updateJobStatus(fields.assignmentId, fields.status, imageUrl);
             
-            return reply.send({ message: 'Status berhasil diupdate', photo: fileName });
+            return reply.send({ message: 'Status berhasil diupdate', photo: imageUrl });
 
         } catch (error) {
             console.error(error);

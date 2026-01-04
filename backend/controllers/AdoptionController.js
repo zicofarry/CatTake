@@ -1,11 +1,6 @@
 const AdoptionService = require('../services/AdoptionService');
 const CatService = require('../services/CatService');
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
-const { pipeline } = require('stream');
-const pump = util.promisify(pipeline);
-const sharp = require('sharp');
+const { uploadToCloudinary } = require('../config/cloudinary');
 
 const ensureDir = async (dirPath) => {
     try {
@@ -39,54 +34,30 @@ class AdoptionController {
 
             const parts = req.parts();
             let fields = {};
-            let identityFileName = null;
-            let statementFileName = null;
-
-            // Tentukan path folder tujuan
-            const identityDir = path.join(__dirname, '../public/img/identity');
-            const statementDir = path.join(__dirname, '../public/docs/stmt');
-
-            // Buat folder jika belum ada
-            await ensureDir(identityDir);
-            await ensureDir(statementDir);
+            let identityUrl = null;
+            let statementUrl = null;
 
             for await (const part of parts) {
                 if (part.file) {
-                    const fileExt = path.extname(part.filename).toLowerCase();
-                    const timestamp = Date.now();
+                    const buffer = await part.toBuffer();
                     
+                    // Cek fieldname sesuai yang dikirim frontend (identity_photo & statement_letter)
                     if (part.fieldname === 'identity_photo') {
-                        // Simpan KTP (Image) -> COMPRESS
-                        identityFileName = `ktp-${req.user.id}-${timestamp}.jpeg`;
-                        const savePath = path.join(identityDir, identityFileName);
-                        
-                        const buffer = await part.toBuffer();
-                        await sharp(buffer).resize(800).jpeg({ quality: 80 }).toFile(savePath);
-                    
+                        const result = await uploadToCloudinary(buffer, 'cattake/legal');
+                        identityUrl = result.secure_url;
                     } else if (part.fieldname === 'statement_letter') {
-                        // Surat Pernyataan -> Cek tipe file
-                        if (fileExt === '.pdf') {
-                            // PDF -> Save Normal
-                            statementFileName = `stmt-${req.user.id}-${timestamp}.pdf`;
-                            const savePath = path.join(statementDir, statementFileName);
-                            await pump(part.file, fs.createWriteStream(savePath));
-                        } else {
-                            // Image -> Compress
-                            statementFileName = `stmt-${req.user.id}-${timestamp}.jpeg`;
-                            const savePath = path.join(statementDir, statementFileName);
-                            const buffer = await part.toBuffer();
-                            await sharp(buffer).resize(1024).jpeg({ quality: 80 }).toFile(savePath);
-                        }
-                    } else {
-                        part.file.resume();
+                        // Cloudinary otomatis handle PDF atau Image jika resource_type: 'auto'
+                        const result = await uploadToCloudinary(buffer, 'cattake/statements');
+                        statementUrl = result.secure_url;
                     }
                 } else {
                     fields[part.fieldname] = part.value;
                 }
             }
 
-            if (!identityFileName || !statementFileName) {
-                return reply.code(400).send({ error: 'Mohon lengkapi Foto Identitas dan Surat Pernyataan (PDF).' });
+            // Validasi: Pastikan kedua file sudah terupload ke Cloudinary
+            if (!identityUrl || !statementUrl) {
+                return reply.code(400).send({ error: 'Mohon lengkapi Foto Identitas dan Surat Pernyataan.' });
             }
 
             const applicationData = {
@@ -96,19 +67,20 @@ class AdoptionController {
                 phone: fields.phone,
                 job: fields.job,
                 address: fields.address,
-                identityPhoto: identityFileName, 
-                statementLetter: statementFileName
+                identityPhoto: identityUrl,   // Simpan URL lengkap Cloudinary
+                statementLetter: statementUrl // Simpan URL lengkap Cloudinary
             };
 
             const result = await AdoptionService.createAdoption(applicationData);
+            
             return reply.code(201).send({ 
                 status: 'success', 
-                message: 'Pengajuan adopsi berhasil dikirim.',
+                message: 'Pengajuan adopsi berhasil dikirim ke Cloudinary.',
                 data: result 
             });
 
         } catch (error) {
-            console.error(error);
+            console.error("Adoption Error:", error);
             return reply.code(500).send({ error: error.message });
         }
     }

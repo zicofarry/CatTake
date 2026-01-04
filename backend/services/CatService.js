@@ -65,34 +65,27 @@ class CatService {
                     c.name, 
                     c.breed, 
                     c.photo,
-                    -- Ambil nama adopter
                     COALESCE(dui.full_name, u.username) AS adopter_name,
                     a.updated_at
                 FROM cats c
-                -- Join ke tabel adoptions
                 JOIN adoptions a ON c.id = a.cat_id
                 JOIN users u ON a.applicant_id = u.id
                 LEFT JOIN detail_user_individu dui ON u.id = dui.id
-                
                 WHERE c.adoption_status = 'adopted' 
                 AND a.status IN ('approved', 'completed')
-                
-                -- Pastikan ambil data adopsi terbaru untuk kucing ini
                 ORDER BY c.id, a.updated_at DESC
             ) AS unique_cats
-            -- Urutkan hasil akhir berdasarkan waktu adopsi terbaru
             ORDER BY updated_at DESC
-            -- [HAPUS LIMIT DI SINI]
         `;
 
-        const result = await db.query(query); // Hapus parameter array [limit]
+        const result = await db.query(query);
         
         return result.rows.map(cat => ({
             id: cat.id,
             name: cat.name,
             breed: cat.breed || 'Domestik',
             adopter: cat.adopter_name,
-            photo: cat.photo ? `/public/img/cats/${cat.photo}` : null
+            photo: cat.photo || null 
         }));
     }
 }

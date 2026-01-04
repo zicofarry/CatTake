@@ -1,36 +1,20 @@
 const ReportService = require('../services/ReportService');
 const GamificationService = require('../services/GamificationService');
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
-const { pipeline } = require('stream');
-const pump = util.promisify(pipeline);
-const sharp = require('sharp');
+const { uploadToCloudinary } = require('../config/cloudinary');
 
 class ReportController {
     static async create(req, reply) {
         try {
             const parts = req.parts();
             let fields = {};
-            let fileName = null;
+            let imageUrl = null;
 
             for await (const part of parts) {
                 if (part.file) {
-                    const fileExtension = path.extname(part.filename).toLowerCase(); // .jpg, .png
-                    // Ubah ekstensi jadi .jpeg atau .webp agar konsisten dan kecil
-                    fileName = `report-${Date.now()}.jpeg`;
-                    const savePath = path.join(__dirname, '../public/img/report_cat', fileName);
-                    
-                    
-                    // --- LOGIKA BARU: KOMPRESI ---
-                    // 1. Ubah file stream menjadi Buffer dulu
                     const buffer = await part.toBuffer();
-
-                    // 2. Proses dengan Sharp (Resize & Compress)
-                    await sharp(buffer)
-                        .resize(800) // Resize lebar max 800px (tinggi otomatis), cukup buat web
-                        .jpeg({ quality: 80 }) // Kompres JPEG kualitas 80%
-                        .toFile(savePath); // Simpan ke disk
+                    // [MIGRASI] Upload ke Cloudinary folder 'cattake/reports'
+                    const result = await uploadToCloudinary(buffer, 'cattake/reports');
+                    imageUrl = result.secure_url;
                 } else {
                     fields[part.fieldname] = part.value;
                 }
@@ -40,29 +24,24 @@ class ReportController {
 
             const reportData = {
                 reporter_id: req.user.id,
-                // Logika mapping tipe laporan
                 report_type: fields.report_type,
-                
-                // PERBAIKAN DISINI: Ambil lost_cat_id
                 lost_cat_id: fields.lost_cat_id ? parseInt(fields.lost_cat_id) : null,
-
                 location: fields.location,
                 latitude: fields.lat ? parseFloat(fields.lat) : 0,
                 longitude: fields.long ? parseFloat(fields.long) : 0,
                 description: fields.description,
-                photo: fileName
+                photo: imageUrl // Sekarang berisi URL lengkap
             };
 
             const result = await ReportService.createReport(reportData);
             
-            // --- NEW LOGIC: TRIGGER QUESTS ---
+            // TRIGGER QUESTS
             const userId = req.user.id;
             if (reportData.report_type === 'stray') {
                 GamificationService.updateProgress(userId, 'RESCUE_STRAY_COUNT', 1).catch(err => console.error("Quest Update Error:", err));
             } else if (reportData.report_type === 'missing') {
                 GamificationService.updateProgress(userId, 'RESCUE_MISSING_COUNT', 1).catch(err => console.error("Quest Update Error:", err));
             }
-            // ---------------------------------
 
             return reply.code(201).send({ message: 'Report submitted', data: result });
 

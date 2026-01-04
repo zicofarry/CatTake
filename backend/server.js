@@ -1,3 +1,4 @@
+require('dotenv').config();
 const fastify = require('fastify')({ 
     logger: true,
     trustProxy: true 
@@ -39,8 +40,8 @@ fastify.register(cors, {
 
 fastify.register(multipart, {
     limits: {
-        fileSize: 5 * 1024 * 1024, // Batas 5 MB (dalam bytes)
-        files: 5 // Opsional: Memastikan hanya satu file yang diizinkan per request
+        fileSize: 10 * 1024 * 1024, // Batas 10 MB (dalam bytes)
+        files: 10 // Opsional: Memastikan hanya satu file yang diizinkan per request
     }
 });
 

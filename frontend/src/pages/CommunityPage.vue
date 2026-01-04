@@ -34,7 +34,7 @@
                         class="p-3 px-4 hover:bg-gray-50 border-b border-gray-50 last:border-none cursor-pointer flex items-center gap-3 transition-colors"
                     >
                         <img 
-                            :src="resolveImageUrl(post.postImg)" 
+                            :src="post.postImg" 
                             class="w-10 h-10 rounded-lg object-cover bg-gray-100 border border-gray-200 flex-shrink-0"
                             @error="$event.target.src='/img/logoFaktaKucing.png'" 
                         >
@@ -114,7 +114,7 @@
                             class="p-3 px-4 hover:bg-gray-50 border-b border-gray-50 last:border-none cursor-pointer flex items-center gap-3 transition-colors"
                         >
                             <img 
-                                :src="resolveImageUrl(post.postImg)" 
+                                :src="post.postImg" 
                                 class="w-10 h-10 rounded-lg object-cover bg-gray-100 border border-gray-200 flex-shrink-0"
                                 @error="$event.target.src='/img/logoFaktaKucing.png'" 
                             >
@@ -166,7 +166,7 @@
             
             <div v-for="(cat, idx) in lostCatHighlights" :key="idx" class="flex items-center gap-3 mb-4 last:mb-0 hover:bg-gray-50 p-2 rounded-lg transition-colors cursor-pointer">
               <img 
-                :src="resolveImageUrl(cat.image)" 
+                :src="cat.image" 
                 :alt="cat.name" 
                 class="w-12 h-12 rounded-full object-cover bg-gray-200 border border-gray-200 flex-shrink-0" 
                 @error="$event.target.src='/img/kucingtidur.png'"
@@ -197,7 +197,7 @@
 
             <div v-for="(member, index) in activeMembersByPoints" :key="'point-' + member.name" class="flex items-center gap-3 mb-3 last:mb-0">
               <div class="relative">
-                  <img :src="resolveImageUrl(member.profilePic)" :alt="member.name" class="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                  <img :src="member.profilePic" :alt="member.name" class="w-10 h-10 rounded-full object-cover border border-gray-200" />
                   <div v-if="index < 3" class="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] border border-white shadow-sm" 
                        :class="index === 0 ? 'bg-yellow-400 text-white' : index === 1 ? 'bg-gray-300 text-gray-700' : 'bg-orange-300 text-white'">
                       <i class="fas fa-crown"></i>
@@ -219,7 +219,7 @@
 
             <div v-for="(member, index) in activeMembersByActivity" :key="'activity-' + member.name" class="flex items-center gap-3 mb-3 last:mb-0">
               <div class="relative">
-                  <img :src="resolveImageUrl(member.profilePic)" :alt="member.name" class="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                  <img :src="member.profilePic" :alt="member.name" class="w-10 h-10 rounded-full object-cover border border-gray-200" />
                   <div v-if="index < 3" class="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] border border-white shadow-sm" 
                        :class="index === 0 ? 'bg-yellow-400 text-white' : index === 1 ? 'bg-gray-300 text-gray-700' : 'bg-orange-300 text-white'">
                       <i class="fas fa-medal"></i>
@@ -241,7 +241,7 @@
             
             <div v-for="popular in popularPosts" :key="popular.id" class="flex items-center gap-3 mb-4 last:mb-0 hover:bg-gray-50 p-1 rounded-lg transition-colors cursor-pointer">
               <img 
-                :src="resolveImageUrl(popular.image)" 
+                :src="popular.image" 
                 :alt="popular.title" 
                 class="w-12 h-12 rounded-lg object-cover bg-gray-200 border border-gray-200 flex-shrink-0" 
                 @error="$event.target.src='/img/postinganPopuler1.png'"
@@ -409,83 +409,6 @@ const isSubmitting = ref(false);
 const newPost = ref({ title: "", content: "", file: null });
 const previewImage = ref(null);
 
-// Helper Image URL
-function resolveImageUrl(path) {
-    // 1. Handle Null/Undefined atau string kosong
-    if (!path || path === 'NULL' || path === 'NULL.JPG' || path === 'null') {
-        return '/img/NULL.JPG'; // Pastikan file placeholder ini ada di frontend
-    }
-
-    // 2. Handle URL Eksternal (misal dari Google Login atau link luar)
-    if (path.startsWith('http')) {
-        return path;
-    }
-
-    // --- BAGIAN PENTING: Ambil URL Server Dinamis ---
-    // Ambil dari .env (contoh: "http://localhost:3000/api/v1")
-    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-    // Hapus '/api/v1' karena file statis ada di root, bukan di dalam route API
-    const serverUrl = apiBase.replace('/api/v1', ''); 
-
-    // 3. Handle Path Lengkap dari Backend (misal: /public/img/...)
-    if (path.startsWith('/public/')) {
-        return `${serverUrl}${path}`;
-    }
-
-    // 4. Handle Berdasarkan Prefix Nama File (Manual Mapping)
-    // Ini berguna jika di database cuma tersimpan nama file "profile-123.jpg"
-    
-    // Foto Profil (User/Driver/Shelter)
-    if (path.startsWith('profile-') || path.startsWith('driver-')) {
-        return `${serverUrl}/public/img/profile/${path}`;
-    }
-
-    // Foto Kucing Hilang
-    if (path.startsWith('lost-')) {
-        return `${serverUrl}/public/img/lost_cat/${path}`;
-    }
-    
-    // Foto Laporan Penemuan (Rescue)
-    if (path.startsWith('report-')) {
-        return `${serverUrl}/public/img/report_cat/${path}`;
-    }
-
-    // Foto Kucing Adopsi (Cat) - Tambahan dari analisa file CatController.js
-    if (path.startsWith('cat-')) {
-        return `${serverUrl}/public/img/cats/${path}`;
-    }
-
-    // Foto Bukti Transfer - Tambahan dari DonationController.js
-    if (path.startsWith('proof-')) {
-        return `${serverUrl}/public/img/proof_payment/${path}`;
-    }
-
-    // Foto QRIS Shelter - Tambahan dari ShelterProfilePage
-    if (path.startsWith('qr-')) {
-        return `${serverUrl}/public/img/qr_img/${path}`;
-    }
-
-    // Foto Dokumen Legalitas & KTP - Tambahan untuk dokumen
-    if (path.startsWith('ktp-')) {
-        return `${serverUrl}/public/img/identity/${path}`;
-    }
-    
-    if (path.startsWith('rescue-')) {
-        return `${serverUrl}/public/img/rescue_proof/${path}`;
-    }
-
-    if (path.startsWith('sim-')) {
-        return `${serverUrl}/public/img/licence/${path}`;
-    }
-
-    if (path.startsWith('post-')) {
-        return `${serverUrl}/public/img/post/${path}`;
-    }
-
-    // 5. Default Fallback (Asumsi aset statis lokal di folder public Frontend)
-    // Jika tidak cocok dengan pola di atas, anggap file ada di frontend/public/img/
-    return `/img/${path}`;
-}
 
 // --- LOGIK PENCARIAN BARU ---
 function handleSearchFocus() {

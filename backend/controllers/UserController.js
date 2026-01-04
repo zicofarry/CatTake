@@ -1,11 +1,6 @@
 const UserService = require('../services/UserService'); // <-- Memanggil service yang melakukan JOIN DB
-const fs = require('fs');
-const fsp = require('fs').promises;
-const path = require('path');
-const util = require('util');
-const { pipeline } = require('stream');
-const pump = util.promisify(pipeline);
-const sharp = require('sharp');
+const { uploadToCloudinary, deleteFromCloudinary } = require('../config/cloudinary');const fs = require('fs');
+
 
 async function deleteOldFile(fileName) {
     // Abaikan penghapusan jika tidak ada nama file atau itu adalah nama default/null
@@ -87,44 +82,44 @@ class UserController {
             const { userId } = req.params;
             const parts = req.parts();
             
-            let fileName = null;
-            let role = 'individu'; // Default fallback
+            let fileBuffer = null; // Ganti fileName jadi buffer
+            let role = 'individu'; 
 
-            // Loop untuk memproses file dan field lainnya (seperti role)
+            // Loop tetap sama untuk ambil file dan role
             for await (const part of parts) {
                 if (part.file) {
-                    fileName = `profile-${userId}-${Date.now()}.jpeg`; // .jpeg
-                    const savePath = path.join(__dirname, '../public/img/profile', fileName);
-                    
-                    // [BARU] Kompresi Profil (Kecilkan lebih lanjut)
-                    const buffer = await part.toBuffer();
-                    await sharp(buffer)
-                        .resize(400, 400, { fit: 'cover' }) // Square Crop 400x400
-                        .jpeg({ quality: 80 })
-                        .toFile(savePath);
+                    // Ambil buffer-nya saja, urusan kompresi & simpan serahkan ke Cloudinary
+                    fileBuffer = await part.toBuffer();
                 } else {
-                    // Ambil field 'role' jika dikirim dari frontend
                     if (part.fieldname === 'role') {
                         role = part.value;
                     }
                 }
             }
 
-            if (!fileName) {
+            if (!fileBuffer) {
                 return reply.code(400).send({ error: 'No file uploaded' });
             }
 
-            // 1. Simpan nama file baru & ambil nama file lama
-            const result = await UserService.updateProfilePhoto(userId, role, fileName);
+            // [PROSES BARU] Upload ke Cloudinary
+            // Kita pakai folder 'cattake/profiles' agar rapi
+            const cloudinaryResult = await uploadToCloudinary(fileBuffer, 'cattake/profiles');
+            const imageUrl = cloudinaryResult.secure_url; // Ini URL lengkapnya
 
-            // 2. Hapus file lama (hanya jika ada)
+            // 1. Simpan URL ke Database melalui Service (Struktur tetap sama)
+            // Kita kirim imageUrl sebagai pengganti fileName
+            const result = await UserService.updateProfilePhoto(userId, role, imageUrl);
+
+            // 2. Hapus file lama (Cloudinary atau Lokal)
+            // Fungsi deleteFromCloudinary sudah kita buat agar pintar: 
+            // Kalau isinya URL Cloudinary dia hapus di awan, kalau bukan dia abaikan.
             if (result.oldPhoto) {
-                await deleteOldFile(result.oldPhoto); 
+                await deleteFromCloudinary(result.oldPhoto); 
             }
 
             return reply.send({ 
                 message: 'Profile photo updated', 
-                photo: fileName 
+                photo: imageUrl // Kirim URL lengkap ke frontend
             });
 
         } catch (error) {

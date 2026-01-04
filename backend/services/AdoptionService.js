@@ -119,8 +119,8 @@ class AdoptionService {
                 
                 // PATH BARU UNTUK DOKUMEN
                 // Ingat: server.js serve 'public' di prefix '/public/'
-                documentUrl: row.statementFile ? `/public/docs/stmt/${row.statementFile}` : null,
-                identityUrl: row.identityFile ? `/public/img/identity/${row.identityFile}` : null
+                documentUrl: row.statementFile ? `${row.statementFile}` : null,
+                identityUrl: row.identityFile ? `${row.identityFile}` : null
             }
         }));
     }

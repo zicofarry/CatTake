@@ -2,12 +2,8 @@
 const LostCatService = require('../services/LostCatService');
 const CommunityService = require('../services/CommunityService');
 const GamificationService = require('../services/GamificationService');
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
-const { pipeline } = require('stream');
-const pump = util.promisify(pipeline);
-const sharp = require('sharp');
+const { uploadToCloudinary } = require('../config/cloudinary');
+
 
 class LostCatController {
 
@@ -15,18 +11,16 @@ class LostCatController {
         try {
             const parts = req.parts();
             let fields = {};
-            let fileName = null;
+            let imageUrl = null; // Gunakan imageUrl untuk menampung URL Cloudinary
 
             for await (const part of parts) {
                 if (part.file) {
-                    fileName = `lost-${Date.now()}.jpeg`;
-                    const savePath = path.join(__dirname, '../public/img/lost_cat', fileName);
-                    
+                    // Ambil buffer file
                     const buffer = await part.toBuffer();
-                    await sharp(buffer)
-                        .resize(800, null, { withoutEnlargement: true })
-                        .jpeg({ quality: 80 })
-                        .toFile(savePath);
+                    
+                    // [MIGRASI] Upload ke Cloudinary folder 'cattake/lost_cats'
+                    const result = await uploadToCloudinary(buffer, 'cattake/lost_cats');
+                    imageUrl = result.secure_url;
                 } else {
                     fields[part.fieldname] = part.value;
                 }
@@ -45,28 +39,24 @@ class LostCatController {
                 color: fields.color,
                 description: fields.description,
                 last_seen_address: fields.last_seen_address,
-                // Koordinat opsional
                 last_seen_lat: fields.last_seen_lat ? parseFloat(fields.last_seen_lat) : null,
                 last_seen_long: fields.last_seen_long ? parseFloat(fields.last_seen_long) : null,
                 reward_amount: fields.reward_amount ? parseFloat(fields.reward_amount) : 0,
-                photo: fileName
+                photo: imageUrl // Simpan URL lengkap
             };
 
             const newReport = await LostCatService.createLostCatReport(lostCatData);
             
-            // --- NEW LOGIC: TRIGGER QUESTS ---
+            // Trigger Quests
             GamificationService.updateProgress(req.user.id, 'LOST_REPORT_COUNT', 1).catch(err => console.error("Quest Update Error:", err));
-            // ---------------------------------
             
-            // [FITUR BARU] Auto Post ke Komunitas jika dicentang
+            // Auto Post ke Komunitas jika dicentang
             if (fields.share_to_community === 'true' || fields.share_to_community === 'on' || fields.share_to_community === true) {
-                
                 const postTitle = `[DICARI] ${fields.name} Hilang!`;
                 const postContent = `Halo teman-teman, kucing saya hilang.\n\nNama: ${fields.name}\nCiri-ciri: ${fields.description}\nLokasi Terakhir: ${fields.last_seen_address}\n\nMohon bantuannya jika melihat. Bisa hubungi saya atau lapor di menu Kucing Hilang. Terima kasih.`;
                 
-                // Kita reuse fileName yang sama (sudah ada di folder lost_cat)
-                // Service Community sudah kita update untuk handle prefix 'lost-'
-                await CommunityService.createPost(req.user.id, postTitle, postContent, fileName);
+                // Gunakan imageUrl yang sama untuk post komunitas
+                await CommunityService.createPost(req.user.id, postTitle, postContent, imageUrl);
             }
 
             return reply.code(201).send({ 
@@ -98,7 +88,7 @@ class LostCatController {
             const formattedList = list.map(cat => ({
                 id: cat.id,
                 name: cat.name,
-                image: cat.photo, // Service sudah memformat path ini
+                image: cat.photo, // Sekarang sudah berisi URL lengkap
                 owner: cat.owner_name,
                 breed: cat.breed,
                 age: cat.age,

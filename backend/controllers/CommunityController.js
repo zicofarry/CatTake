@@ -1,11 +1,7 @@
+// backend/controllers/CommunityController.js
 const CommunityService = require('../services/CommunityService');
 const GamificationService = require('../services/GamificationService');
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
-const { pipeline } = require('stream');
-const pump = util.promisify(pipeline);
-const sharp = require('sharp');
+const { uploadToCloudinary, deleteFromCloudinary } = require('../config/cloudinary');
 
 class CommunityController {
     
@@ -33,25 +29,15 @@ class CommunityController {
         try {
             const parts = req.parts();
             let content = '';
-            let fileName = null;
+            let imageUrl = null; // Diubah dari fileName
             let title = ''; 
 
             for await (const part of parts) {
                 if (part.file) {
-                    fileName = `post-${Date.now()}.jpeg`;
-                    const uploadDir = path.join(__dirname, '../public/img/post');
-                    if (!fs.existsSync(uploadDir)) {
-                        fs.mkdirSync(uploadDir, { recursive: true });
-                    }
-
-                    const savePath = path.join(uploadDir, fileName);
-                    
-                    // Kompresi
+                    // [MIGRASI] Ambil buffer dan upload ke Cloudinary folder 'cattake/posts'
                     const buffer = await part.toBuffer();
-                    await sharp(buffer)
-                        .resize(800, null, { withoutEnlargement: true })
-                        .jpeg({ quality: 80 })
-                        .toFile(savePath);
+                    const result = await uploadToCloudinary(buffer, 'cattake/posts');
+                    imageUrl = result.secure_url;
                 } else {
                     if (part.fieldname === 'content') content = part.value;
                     else if (part.fieldname === 'title') title = part.value; 
@@ -59,7 +45,8 @@ class CommunityController {
             }
 
             const userId = req.user.id;
-            const newPost = await CommunityService.createPost(userId, title, content, fileName);
+            // Simpan URL lengkap ke database
+            const newPost = await CommunityService.createPost(userId, title, content, imageUrl);
             
             // TRIGGER QUEST: Tambah 1 ke counter postingan
             try {
@@ -74,11 +61,9 @@ class CommunityController {
         }
     }
 
-    // [BARU] Handler Update Post
     static async updatePost(req, reply) {
         try {
             const { id } = req.params;
-            // Kita handle text content dulu, update gambar butuh logic upload terpisah jika mau kompleks
             const { title, content } = req.body; 
             const userId = req.user.id;
 
@@ -89,7 +74,6 @@ class CommunityController {
         }
     }
 
-    // [BARU] Handler Delete Post
     static async deletePost(req, reply) {
         try {
             const { id } = req.params;
@@ -98,22 +82,12 @@ class CommunityController {
             // 1. Hapus dari Database & Ambil Data Postingan
             const deletedPost = await CommunityService.deletePost(userId, id);
 
-            // 2. Hapus File Fisik (Hanya jika file ada dan berawalan 'post-')
-            // Kita filter 'post-' agar tidak tidak sengaja menghapus gambar 'lost-' (kucing hilang) 
-            // yang mungkin masih dipakai di menu Laporan Kehilangan.
-            if (deletedPost.media_path && deletedPost.media_path.startsWith('post-')) {
-                
-                const filePath = path.join(__dirname, '../public/img/post', deletedPost.media_path);
-                
-                try {
-                    if (fs.existsSync(filePath)) {
-                        fs.unlinkSync(filePath); // Hapus file
-                        console.log(`[File Deleted] ${filePath}`);
-                    }
-                } catch (err) {
-                    console.error("[File Error] Gagal menghapus file fisik:", err);
-                    // Kita tidak throw error di sini agar response ke user tetap sukses (karena DB sudah kehapus)
-                }
+            // 2. [MIGRASI] Hapus File di Cloudinary
+            // Kita tetap pertahankan logika filter agar hanya menghapus gambar yang berasal dari folder 'posts'.
+            // Ini untuk mencegah terhapusnya gambar 'lost_cats' jika postingan tersebut adalah hasil auto-share.
+            if (deletedPost.media_path && deletedPost.media_path.includes('/cattake/posts/')) {
+                await deleteFromCloudinary(deletedPost.media_path);
+                console.log(`[Cloudinary Deleted] ${deletedPost.media_path}`);
             }
 
             return reply.send({ message: 'Post deleted successfully' });
@@ -122,6 +96,8 @@ class CommunityController {
         }
     }
 
+    // ... Handler addComment, replyComment, toggleLike, getSidebarData, dll tetap sama ...
+    
     static async addComment(req, reply) {
         try {
             const { id } = req.params;
@@ -161,14 +137,9 @@ class CommunityController {
         }
     }
 
-    // [PERBAIKAN UTAMA DI SINI]
-    // Menggunakan method service yang sudah mengembalikan 'missing'
     static async getSidebarData(req, reply) {
         try {
-            // Panggil service yang sudah menggabungkan semua data (termasuk kucing hilang)
             const data = await CommunityService.getSidebarData();
-            
-            // Kirim response
             return reply.send({ status: 'success', data: data });
         } catch (error) {
             return reply.code(500).send({ error: error.message });

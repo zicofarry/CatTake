@@ -4,7 +4,6 @@ const GamificationService = require('./GamificationService');
 class CommunityService {
     
     // --- HELPER: Format Waktu dengan Status Edit ---
-    // Jika selisih waktu update & create > 5 detik, tambahkan label "Diupdate"
     static formatTime(createdAt, updatedAt) {
         const created = new Date(createdAt);
         const updated = new Date(updatedAt);
@@ -13,39 +12,39 @@ class CommunityService {
             hour: '2-digit', minute: '2-digit'
         };
 
-        // Toleransi 5 detik untuk proses insert awal database
         if (updated - created > 5000) {
             return `Diupdate: ${updated.toLocaleString('id-ID', opts)}`;
         }
         return created.toLocaleString('id-ID', opts);
     }
 
+    // --- HELPER: Resolve Image URL ---
+    // Fungsi internal untuk memastikan URL yang dikirim ke frontend benar
+    static resolveImage(path, placeholder = '/img/NULL.JPG') {
+        if (!path || path === 'NULL.JPG' || path === 'null') return placeholder;
+        if (path.startsWith('http')) return path;
+        // Jika ada data lama yang terselip bukan URL, kita arahkan ke placeholder agar tidak broken
+        return placeholder;
+    }
+
     // --- 1. POSTINGAN UTAMA (LIST) ---
     static async getAllPosts(currentUserId) {
-        // [FIX] Menambahkan kolom is_verified untuk fitur centang biru
         const query = `
             SELECT 
                 p.id, p.author_id, p.title, p.content, p.media_path, p.likes_count, 
                 p.created_at, p.updated_at,
                 u.username, 
-                
-                -- Info User Biasa
                 d.full_name, 
                 d.profile_picture, 
-                d.is_verified,          -- Ambil status user biasa
-
-                -- Info Shelter
+                d.is_verified,
                 ds.shelter_name, 
-                ds.is_verified_shelter, -- Ambil status shelter
-                
-                -- Hitung Total Komentar + Reply
+                ds.is_verified_shelter,
                 (
                     (SELECT COUNT(*) FROM "comment" c WHERE c.post_id = p.id) + 
                     (SELECT COUNT(*) FROM reply_comment rc 
                      JOIN "comment" c ON rc.comment_id = c.id 
                      WHERE c.post_id = p.id)
                 ) AS total_comments,
-
                 CASE 
                     WHEN pl.user_id IS NOT NULL THEN true 
                     ELSE false 
@@ -61,40 +60,19 @@ class CommunityService {
         const result = await db.query(query, [currentUserId || null]);
 
         return result.rows.map(row => {
-            // Format Foto Profil
-            let profilePath = row.profile_picture;
-            if (!profilePath || profilePath === 'NULL.JPG') profilePath = '/img/NULL.JPG';
-            else if (!profilePath.startsWith('http') && !profilePath.startsWith('/img/')) profilePath = `/public/img/profile/${profilePath}`;
-
-            // Format Foto Postingan
-            let postPath = row.media_path;
-            if (postPath) {
-                if (postPath.startsWith('lost-')) {
-                    postPath = `/public/img/lost_cat/${postPath}`;
-                } else if (postPath.startsWith('http')) {
-                    postPath = postPath;
-                } else {
-                    postPath = `/public/img/post/${postPath}`;
-                }
-            }
-
             return {
                 id: row.id,
                 authorId: row.author_id,
                 author: row.full_name || row.shelter_name || row.username,
                 username: row.username,
-                
-                // [FIX] Menggunakan Class Name untuk memanggil static method
                 time: CommunityService.formatTime(row.created_at, row.updated_at),
-                
-                // [FIX] Logika Verified (User Biasa Verified ATAU Shelter Verified)
                 isVerified: (row.is_verified === true) || (row.is_verified_shelter === true),
-
                 title: row.title || (row.content ? row.content.substring(0, 30) + '...' : 'Tanpa Judul'),
                 excerpt: row.content ? row.content.substring(0, 60) + '...' : '',
                 description: row.content,
-                profileImg: profilePath,
-                postImg: postPath,
+                // [FIX] Gunakan resolveImage, tidak perlu prefix path lokal lagi
+                profileImg: this.resolveImage(row.profile_picture),
+                postImg: row.media_path && row.media_path.startsWith('http') ? row.media_path : null,
                 likes: row.likes_count,
                 comments: parseInt(row.total_comments),
                 isLiked: row.isLiked
@@ -102,9 +80,8 @@ class CommunityService {
         });
     }
 
-    // --- 2. DETAIL POSTINGAN (Termasuk Komentar & Reply) ---
+    // --- 2. DETAIL POSTINGAN ---
     static async getPostById(postId) {
-        // A. Ambil Data Post
         const postQuery = `
             SELECT 
                 p.id, p.author_id, p.title, p.content, p.media_path, p.likes_count, 
@@ -119,7 +96,6 @@ class CommunityService {
         if (postResult.rows.length === 0) throw new Error('Post not found');
         const row = postResult.rows[0];
 
-        // B. Ambil Komentar
         const commentQuery = `
             SELECT c.id, c.content, c.created_at, c.updated_at, u.id as user_id, u.username, d.full_name, d.profile_picture
             FROM "comment" c
@@ -130,7 +106,6 @@ class CommunityService {
         `;
         const commentResult = await db.query(commentQuery, [postId]);
 
-        // C. Ambil Balasan (Reply)
         let allReplies = [];
         if (commentResult.rows.length > 0) {
             const commentIds = commentResult.rows.map(c => c.id);
@@ -146,72 +121,47 @@ class CommunityService {
             allReplies = replyResult.rows;
         }
 
-        // Helper: Susun Tree Reply
         const buildReplyTree = (replies, parentId = null) => {
             return replies
                 .filter(r => r.parent_reply_id === parentId)
-                .map(r => {
-                    let repProfile = r.profile_picture;
-                    if (!repProfile || repProfile === 'NULL.JPG') repProfile = '/img/NULL.JPG';
-                    else if (!repProfile.startsWith('http')) repProfile = `/public/img/profile/${repProfile}`;
-
-                    return {
-                        id: r.id,
-                        comment_id: r.comment_id,
-                        userId: r.user_id,
-                        user: r.full_name || r.username,
-                        profileImg: repProfile,
-                        text: r.content,
-                        // [FITUR BARU] Waktu Reply
-                        time: this.formatTime(r.created_at, r.updated_at), 
-                        replies: buildReplyTree(replies, r.id)
-                    };
-                });
+                .map(r => ({
+                    id: r.id,
+                    comment_id: r.comment_id,
+                    userId: r.user_id,
+                    user: r.full_name || r.username,
+                    // [FIX] Bersihkan path
+                    profileImg: this.resolveImage(r.profile_picture),
+                    text: r.content,
+                    time: this.formatTime(r.created_at, r.updated_at), 
+                    replies: buildReplyTree(replies, r.id)
+                }));
         };
 
-        // Mapping Komentar Utama
         const commentsWithReplies = commentResult.rows.map(c => {
             const rootRepliesForThisComment = allReplies.filter(r => r.comment_id === c.id);
-            
-            let comProfile = c.profile_picture;
-            if (!comProfile || comProfile === 'NULL.JPG') comProfile = '/img/NULL.JPG';
-            else if (!comProfile.startsWith('http')) comProfile = `/public/img/profile/${comProfile}`;
-
             return {
                 id: c.id,
                 userId: c.user_id,
                 user: c.full_name || c.username,
-                profileImg: comProfile,
+                // [FIX] Bersihkan path
+                profileImg: this.resolveImage(c.profile_picture),
                 text: c.content,
-                // [FITUR BARU] Waktu Komentar
                 time: this.formatTime(c.created_at, c.updated_at),
                 replies: buildReplyTree(rootRepliesForThisComment, null) 
             };
         });
 
-        // Format Data Postingan Detail
-        let profilePath = row.profile_picture;
-        if (!profilePath || profilePath === 'NULL.JPG') profilePath = '/img/NULL.JPG';
-        else if (!profilePath.startsWith('http')) profilePath = `/public/img/profile/${profilePath}`;
-        
-        let postPath = row.media_path;
-        if (postPath) {
-             if (postPath.startsWith('lost-')) postPath = `/public/img/lost_cat/${postPath}`;
-             else postPath = `/public/img/post/${postPath}`;
-        }
-
         return {
             id: row.id,
             authorId: row.author_id,
-            // community: 'CatLover Umum',
             author: row.full_name || row.username,
             username: row.username,
-            // [FITUR BARU] Waktu Postingan Detail
             time: this.formatTime(row.created_at, row.updated_at),
             title: row.title,
             description: row.content,
-            profileImg: profilePath,
-            postImg: postPath,
+            // [FIX] Bersihkan path
+            profileImg: this.resolveImage(row.profile_picture),
+            postImg: row.media_path && row.media_path.startsWith('http') ? row.media_path : null,
             likes: row.likes_count,
             comments: commentResult.rowCount + allReplies.length,
             commentData: commentsWithReplies
@@ -219,14 +169,13 @@ class CommunityService {
     }
 
     // --- 3. CREATE & INTERACTION ---
-
+    // (createPost, updatePost, deletePost, dll tetap sama karena hanya handle DB ID/Content)
     static async createPost(userId, title, content, mediaPath) {
         const query = `INSERT INTO community_post (author_id, title, content, media_path, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING id`;
         const result = await db.query(query, [userId, title, content, mediaPath]);
         return result.rows[0];
     }
 
-    // [BARU] Update Postingan (Saat diedit, updated_at jadi NOW())
     static async updatePost(userId, postId, title, content) {
         const query = `UPDATE community_post SET title = $1, content = $2, updated_at = NOW() WHERE id = $3 AND author_id = $4 RETURNING id`;
         const result = await db.query(query, [title, content, postId, userId]);
@@ -235,15 +184,10 @@ class CommunityService {
     }
 
     static async deletePost(userId, postId) {
-        // [UPDATE] Ubah RETURNING id menjadi RETURNING * agar kita bisa dapat media_path
         const query = `DELETE FROM community_post WHERE id = $1 AND author_id = $2 RETURNING *`;
         const result = await db.query(query, [postId, userId]);
-        
-        if (result.rows.length === 0) {
-            throw new Error('Gagal hapus: Postingan tidak ditemukan atau bukan milik Anda.');
-        }
-        
-        return result.rows[0]; // Kembalikan seluruh data post yang dihapus
+        if (result.rows.length === 0) throw new Error('Gagal hapus.');
+        return result.rows[0];
     }
 
     static async addComment(userId, postId, content) {
@@ -267,8 +211,7 @@ class CommunityService {
 
     static async deleteComment(userId, commentId) {
         const query = `DELETE FROM "comment" WHERE id = $1 AND user_id = $2 RETURNING id`;
-        const result = await db.query(query, [commentId, userId]);
-        if (result.rows.length === 0) throw new Error('Gagal hapus.');
+        await db.query(query, [commentId, userId]);
         return true;
     }
 
@@ -281,21 +224,14 @@ class CommunityService {
 
     static async deleteReply(userId, replyId) {
         const query = `DELETE FROM reply_comment WHERE id = $1 AND user_id = $2 RETURNING id`;
-        const result = await db.query(query, [replyId, userId]);
-        if (result.rows.length === 0) throw new Error('Gagal hapus.');
+        await db.query(query, [replyId, userId]);
         return true;
     }
 
     static async toggleLike(userId, postId) {
-        // 1. Ambil ID Penulis SEBELUM transaksi dimulai
         const authorRes = await db.query('SELECT author_id FROM community_post WHERE id = $1', [postId]);
-        if (authorRes.rows.length === 0) {
-            // Kita masih bisa lanjut ke langkah-langkah selanjutnya, 
-            // tapi kita harus tahu siapa penulisnya agar bisa update quest
-            // Jika post tidak ditemukan, kita bisa throw error lebih awal atau menangani di sini.
-            throw new Error('Postingan tidak ditemukan.');
-        }
-        const authorId = authorRes.rows[0].author_id; // Penulis Postingan
+        if (authorRes.rows.length === 0) throw new Error('Postingan tidak ditemukan.');
+        const authorId = authorRes.rows[0].author_id;
 
         const checkQuery = `SELECT 1 FROM post_likes WHERE user_id = $1 AND post_id = $2`;
         const check = await db.query(checkQuery, [userId, postId]);
@@ -313,25 +249,14 @@ class CommunityService {
             }
             await db.query('COMMIT');
 
-            // --- NEW LOGIC: TRIGGER POST_LIKE_COUNT QUEST ---
-            // 2. Hitung TOTAL likes yang dimiliki penulis (authorId) di SEMUA postingannya.
-            const totalLikesQuery = `
-                SELECT COALESCE(SUM(likes_count), 0) AS total_likes 
-                FROM community_post 
-                WHERE author_id = $1
-            `;
-            // NOTE: Query ini aman dijalankan di luar transaction karena COMMIT sudah selesai
+            const totalLikesQuery = `SELECT COALESCE(SUM(likes_count), 0) AS total_likes FROM community_post WHERE author_id = $1`;
             const totalLikesRes = await db.query(totalLikesQuery, [authorId]);
             const totalLikes = parseInt(totalLikesRes.rows[0].total_likes);
             
-            // 3. Panggil GamificationService (Fire and forget: tidak perlu await)
-            // Quest ini menggunakan total akumulasi sebagai nilai progress.
             GamificationService.updateProgress(authorId, 'POST_LIKE_COUNT', totalLikes)
-                .catch(err => console.error("Quest Update Error (POST_LIKE_COUNT):", err));
-            // ------------------------------------------------------------------   
+                .catch(err => console.error("Quest Update Error:", err));
 
-            const countQuery = `SELECT likes_count FROM community_post WHERE id = $1`;
-            const countRes = await db.query(countQuery, [postId]);
+            const countRes = await db.query(`SELECT likes_count FROM community_post WHERE id = $1`, [postId]);
             return { isLiked, likesCount: countRes.rows[0].likes_count };
         } catch (error) {
             await db.query('ROLLBACK');
@@ -339,70 +264,79 @@ class CommunityService {
         }
     }
     
-    // --- 4. SIDEBAR & DATA LAIN ---
-
-    // --- FUNGSI 1: Leaderboard Berdasarkan Keaktifan (Aktivitas Forum) ---
+    // --- 4. SIDEBAR & LEADERBOARD ---
     static async getTopMembersByActivity() {
         const query = `
-            SELECT 
-                u.id, 
-                COALESCE(d.full_name, u.username) as name, 
-                d.profile_picture,
-                (
-                    (SELECT COUNT(*) FROM community_post WHERE author_id = u.id) +
-                    (SELECT COUNT(*) FROM "comment" WHERE user_id = u.id) +
-                    (SELECT COUNT(*) FROM reply_comment WHERE user_id = u.id)
-                ) as activity_score
+            SELECT u.id, COALESCE(d.full_name, u.username) as name, d.profile_picture,
+                ((SELECT COUNT(*) FROM community_post WHERE author_id = u.id) +
+                 (SELECT COUNT(*) FROM "comment" WHERE user_id = u.id) +
+                 (SELECT COUNT(*) FROM reply_comment WHERE user_id = u.id)) as activity_score
             FROM users u
             JOIN detail_user_individu d ON u.id = d.id
             WHERE u.role = 'individu' 
-            ORDER BY activity_score DESC
-            LIMIT 5
+            ORDER BY activity_score DESC LIMIT 5
         `;
         const result = await db.query(query);
-        
-        return result.rows.map(row => {
-            let pic = row.profile_picture;
-            if (!pic || pic === 'NULL.JPG') pic = '/img/NULL.JPG';
-            else if (!pic.startsWith('http')) pic = `/public/img/profile/${pic}`;
-
-            return {
-                name: row.name,
-                profilePic: pic,
-                score: parseInt(row.activity_score) // Score adalah Activity Count
-            };
-        });
+        return result.rows.map(row => ({
+            name: row.name,
+            // [FIX] Bersihkan path
+            profilePic: this.resolveImage(row.profile_picture),
+            score: parseInt(row.activity_score)
+        }));
     }
 
-    // --- FUNGSI 2: Leaderboard Berdasarkan Poin (Gamification Points) ---
     static async getTopMembersByPoints() {
         const query = `
-            SELECT 
-                u.id, 
-                COALESCE(d.full_name, u.username) as name, 
-                d.profile_picture,
-                COALESCE(u.total_points, 0) as total_points
+            SELECT u.id, COALESCE(d.full_name, u.username) as name, d.profile_picture, COALESCE(u.total_points, 0) as total_points
             FROM users u
             JOIN detail_user_individu d ON u.id = d.id
             WHERE u.role = 'individu' 
-            ORDER BY total_points DESC
-            LIMIT 5
+            ORDER BY total_points DESC LIMIT 5
         `;
         const result = await db.query(query);
-        
-        return result.rows.map(row => {
-            let pic = row.profile_picture;
-            if (!pic || pic === 'NULL.JPG') pic = '/img/NULL.JPG';
-            else if (!pic.startsWith('http')) pic = `/public/img/profile/${pic}`;
-
-            return {
-                name: row.name,
-                profilePic: pic,
-                score: parseFloat(row.total_points) // Score adalah Total Poin
-            };
-        });
+        return result.rows.map(row => ({
+            name: row.name,
+            // [FIX] Bersihkan path
+            profilePic: this.resolveImage(row.profile_picture),
+            score: parseFloat(row.total_points)
+        }));
     }
 
+    static async getPopularPosts() {
+        const query = `SELECT id, title, content, media_path FROM community_post ORDER BY likes_count DESC LIMIT 3`;
+        const result = await db.query(query);
+        return result.rows.map(p => ({
+            id: p.id,
+            title: p.title || (p.content.substring(0, 40) + '...'),
+            // [FIX] Gunakan URL langsung dari DB
+            image: p.media_path && p.media_path.startsWith('http') ? p.media_path : '/img/postinganPopuler1.png'
+        }));
+    }
+
+    static async getSidebarData() {
+        const [events, popular, fact, activeMembersByActivity, activeMembersByPoints] = await Promise.all([
+            this.getUpcomingEvents(),
+            this.getPopularPosts(),
+            this.getRandomFact(),
+            this.getTopMembersByActivity(),
+            this.getTopMembersByPoints()
+        ]);
+
+        const lostQuery = `SELECT id, name, last_seen_address, reward_amount, photo FROM lost_cats WHERE status = 'searching' ORDER BY created_at DESC LIMIT 3`;
+        const lostRes = await db.query(lostQuery);
+        const missing = lostRes.rows.map(l => ({
+            id: l.id,
+            name: l.name,
+            address: l.last_seen_address,
+            reward: parseFloat(l.reward_amount),
+            // [FIX] Gunakan URL langsung dari DB
+            image: l.photo && l.photo.startsWith('http') ? l.photo : '/img/NULL.JPG'
+        }));
+
+        return { events, popular, fact, activeMembersByActivity, activeMembersByPoints, missing };
+    }
+
+    // (getUpcomingEvents, getRandomFact, getAllFacts tetap sama karena aset statis di frontend)
     static async getUpcomingEvents() {
         const query = `SELECT title, event_date, start_time, location_name FROM events WHERE is_active = true AND event_date >= CURRENT_DATE ORDER BY event_date ASC LIMIT 3`;
         const result = await db.query(query);
@@ -414,51 +348,11 @@ class CommunityService {
         }));
     }
 
-    static async getPopularPosts() {
-        const query = `SELECT id, title, content, media_path FROM community_post ORDER BY likes_count DESC LIMIT 3`;
-        const result = await db.query(query);
-        return result.rows.map(p => ({
-            id: p.id,
-            title: p.title || (p.content.substring(0, 40) + '...'),
-            image: p.media_path ? (p.media_path.startsWith('lost-') ? `/public/img/lost_cat/${p.media_path}` : `/public/img/post/${p.media_path}`) : '/img/postinganPopuler1.png'
-        }));
-    }
-
     static async getRandomFact() {
         const query = `SELECT fact_text, image_path FROM cat_facts ORDER BY RANDOM() LIMIT 1`;
         const result = await db.query(query);
         if (result.rows.length === 0) return null;
         return { fact: result.rows[0].fact_text, image: result.rows[0].image_path ? `/img/${result.rows[0].image_path}` : '/img/logoFaktaKucing.png' };
-    }
-
-    // Gabungan Data Sidebar
-    static async getSidebarData() {
-        const [events, popular, fact, activeMembersByActivity, activeMembersByPoints] = await Promise.all([
-            this.getUpcomingEvents(),
-            this.getPopularPosts(),
-            this.getRandomFact(),
-            this.getTopMembersByActivity(), // Leaderboard Keaktifan
-            this.getTopMembersByPoints()    // Leaderboard Poin
-        ]);
-
-        const lostQuery = `SELECT id, name, last_seen_address, reward_amount, photo FROM lost_cats WHERE status = 'searching' ORDER BY created_at DESC LIMIT 3`;
-        const lostRes = await db.query(lostQuery);
-        const missing = lostRes.rows.map(l => ({
-            id: l.id,
-            name: l.name,
-            address: l.last_seen_address,
-            reward: parseFloat(l.reward_amount),
-            image: l.photo ? `/public/img/lost_cat/${l.photo}` : '/img/NULL.JPG'
-        }));
-
-        return { 
-            events, 
-            popular, 
-            fact, 
-            activeMembersByActivity, 
-            activeMembersByPoints,
-            missing 
-        };
     }
 
     static async getAllFacts() {

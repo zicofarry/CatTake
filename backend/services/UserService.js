@@ -202,7 +202,7 @@ class UserService {
         return result.rows[0];
     }
 
-    static async updateProfilePhoto(userId, role, fileName) {
+    static async updateProfilePhoto(userId, role, imageUrl) { // Ganti nama param agar jelas (imageUrl)
         let table;
         let column;
 
@@ -220,8 +220,9 @@ class UserService {
         const oldResult = await db.query(getOldQuery, [userId]);
         const oldFileName = oldResult.rows.length > 0 ? oldResult.rows[0].old_photo : null;
         
+        // Query tetap sama, hanya value-nya sekarang string URL panjang
         const updateQuery = `UPDATE ${table} SET ${column} = $1 WHERE id = $2 RETURNING ${column}`;
-        const result = await db.query(updateQuery, [fileName, userId]);
+        const result = await db.query(updateQuery, [imageUrl, userId]);
         
         if (result.rowCount === 0) {
             throw new Error('User not found');

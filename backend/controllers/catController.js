@@ -1,11 +1,7 @@
 const CatService = require('../services/CatService');
 const CatModel = require('../models/CatModel');
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
-const { pipeline } = require('stream');
-const pump = util.promisify(pipeline);
-const sharp = require('sharp');
+const { uploadToCloudinary, cloudinary } = require('../config/cloudinary');
+
 
 class CatController {
     // --- FITUR AMBIL KUCING SHELTER ---
@@ -44,21 +40,14 @@ class CatController {
         try {
             const parts = req.parts();
             let fields = {};
-            let filename = null;
+            let imageUrl = null;
 
             for await (const part of parts) {
                 if (part.file) {
-                    const uploadDir = path.join(__dirname, '../public/img/cats');
-                    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-                    filename = `cat-${Date.now()}.jpeg`; // Ubah ke jpeg
-                    
-                    // [BARU] Kompresi
                     const buffer = await part.toBuffer();
-                    await sharp(buffer)
-                        .resize(800, null, { withoutEnlargement: true })
-                        .jpeg({ quality: 80 })
-                        .toFile(path.join(uploadDir, filename));
+                    // Upload ke Cloudinary di folder 'cattake/cats'
+                    const result = await uploadToCloudinary(buffer, 'cattake/cats');
+                    imageUrl = result.secure_url; // URL lengkap (https://...)
                 } else {
                     fields[part.fieldname] = part.value;
                 }
@@ -73,56 +62,43 @@ class CatController {
                 health_status: fields.health_status,
                 description: fields.description,
                 adoption_status: fields.adoption_status || 'available',
-                photo: filename
+                photo: imageUrl // Simpan URL lengkap
             };
 
             await CatModel.create(catData);
             reply.code(201).send({ message: 'Kucing berhasil ditambahkan' });
 
         } catch (error) {
-            console.error("Error Upload:", error);
-            reply.code(500).send({ error: 'Gagal upload data' });
+            console.error("Error Create Cat:", error);
+            reply.code(500).send({ error: 'Gagal menambahkan data kucing' });
         }
     }
 
-    // --- FITUR: UPDATE KUCING (Hapus Foto Lama jika Ganti Foto) ---
     static async updateCat(req, reply) {
         try {
             const { id } = req.params;
             const parts = req.parts();
             let fields = {};
-            let newFilename = null;
+            let newImageUrl = null;
 
-            // 1. Proses Upload File Baru (Jika ada)
             for await (const part of parts) {
                 if (part.file) {
-                    const uploadDir = path.join(__dirname, '../public/img/cats');
-                    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-                    
-                    newFilename = `cat-${Date.now()}.jpeg`;
-                    
-                    // [BARU] Kompresi
                     const buffer = await part.toBuffer();
-                    await sharp(buffer)
-                        .resize(800, null, { withoutEnlargement: true })
-                        .jpeg({ quality: 80 })
-                        .toFile(path.join(uploadDir, newFilename));
+                    const result = await uploadToCloudinary(buffer, 'cattake/cats');
+                    newImageUrl = result.secure_url;
                 } else {
                     fields[part.fieldname] = part.value;
                 }
             }
 
-            // 2. LOGIKA HAPUS FOTO LAMA
-            // Jika user mengupload foto baru (newFilename tidak null), 
-            // kita cari data lama dulu untuk hapus fotonya.
-            if (newFilename) {
-                const oldCat = await CatService.getCatById(id); // Ambil data lama
+            // Jika ada foto baru, hapus foto lama di Cloudinary
+            if (newImageUrl) {
+                const oldCat = await CatService.getCatById(id);
                 if (oldCat && oldCat.photo) {
-                    CatController.deleteImageFile(oldCat.photo); // Hapus foto lama
+                    await CatController.deleteCloudinaryImage(oldCat.photo);
                 }
             }
 
-            // 3. Update Database
             const updateData = {
                 name: fields.name,
                 breed: fields.breed,
@@ -130,46 +106,33 @@ class CatController {
                 gender: fields.gender,
                 health_status: fields.health_status,
                 description: fields.description,
-                // Jika newFilename ada, pakai itu. Jika tidak, kosongkan agar Model tahu tidak ada update foto
-                photo: newFilename 
+                photo: newImageUrl 
             };
 
             const updatedCat = await CatModel.update(id, updateData);
-            
-            if (!updatedCat) {
-                return reply.code(404).send({ message: 'Kucing tidak ditemukan' });
-            }
+            if (!updatedCat) return reply.code(404).send({ message: 'Kucing tidak ditemukan' });
 
             reply.send({ message: 'Data kucing berhasil diperbarui', data: updatedCat });
-
         } catch (error) {
             console.error("Error Update:", error);
             reply.code(500).send({ error: 'Gagal update data kucing' });
         }
     }
 
-    // --- FITUR: HAPUS KUCING (Hapus Foto Juga) ---
     static async deleteCat(req, reply) {
         try {
             const { id } = req.params;
-
-            // 1. Ambil data kucing dulu SEBELUM dihapus untuk dapat nama filenya
             const catToDelete = await CatService.getCatById(id);
 
-            if (!catToDelete) {
-                return reply.code(404).send({ message: 'Kucing tidak ditemukan' });
-            }
+            if (!catToDelete) return reply.code(404).send({ message: 'Kucing tidak ditemukan' });
 
-            // 2. Hapus dari Database
             const deleted = await CatModel.delete(id);
-            
-            // 3. Jika sukses hapus DB, hapus juga FOTO fisiknya
             if (deleted && catToDelete.photo) {
-                CatController.deleteImageFile(catToDelete.photo);
+                // Hapus foto dari Cloudinary
+                await CatController.deleteCloudinaryImage(catToDelete.photo);
             }
 
             reply.send({ message: 'Kucing dan fotonya berhasil dihapus' });
-
         } catch (error) {
             console.error("Error Delete:", error);
             reply.code(500).send({ error: 'Gagal menghapus kucing' });
@@ -237,6 +200,24 @@ class CatController {
         } catch (error) {
             console.error("Error Fetching Adopted Cats:", error);
             reply.code(500).send({ error: 'Internal Server Error' });
+        }
+    }
+
+    // Helper untuk menghapus foto di Cloudinary
+    static async deleteCloudinaryImage(imageUrl) {
+        if (!imageUrl || !imageUrl.includes('cloudinary')) return;
+        
+        try {
+            // Ekstrak public_id dari URL (contoh: cattake/cats/filename)
+            const parts = imageUrl.split('/');
+            const folderIndex = parts.indexOf('cattake');
+            const publicIdWithExtension = parts.slice(folderIndex).join('/');
+            const publicId = publicIdWithExtension.split('.')[0];
+            
+            await cloudinary.uploader.destroy(publicId);
+            console.log(`Foto ${publicId} berhasil dihapus dari Cloudinary.`);
+        } catch (err) {
+            console.error(`Gagal menghapus foto dari Cloudinary:`, err);
         }
     }
 }

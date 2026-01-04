@@ -144,7 +144,7 @@
                 </div>
                 <div v-else class="grid gap-4">
                     <div v-for="item in myAdoptions" :key="item.id" class="bg-white rounded-3xl p-5 flex items-center shadow-lg transition-all hover:scale-[1.02]">
-                        <img :src="`${SERVER_URL}/public/img/cats/${item.catImage}`" class="w-20 h-20 rounded-2xl object-cover mr-4" />
+                        <img :src="`${item.catImage}`" class="w-20 h-20 rounded-2xl object-cover mr-4" />
                         <div class="flex-1">
                             <h3 class="font-bold text-gray-800">{{ item.catName }}</h3>
                             <p class="text-sm text-gray-500">{{ item.shelterName }}</p>

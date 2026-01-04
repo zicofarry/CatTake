@@ -196,6 +196,9 @@ function resolveProofUrl(filename) {
     // Sesuaikan port jika berbeda
     const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
     const serverUrl = apiBase.replace('/api/v1', '');
+    if(filename.startsWith('http')) {
+        return `${filename}`;
+    }
     return `${serverUrl}/public/img/proof_payment/${filename}`;
 }
 
