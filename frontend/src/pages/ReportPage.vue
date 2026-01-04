@@ -459,8 +459,11 @@
                 <button @click="switchUserTab('create')" class="mt-4 text-[#EBCD5E] font-bold hover:underline">Buat Laporan Sekarang</button>
             </div>
 
-            <div v-else v-for="item in myReportHistory" :key="item.id" class="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-gray-100 flex flex-col md:flex-row gap-6 items-center md:items-start">
+            <div v-else v-for="item in myReportHistory" :key="item.source + item.id" 
+                class="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-gray-100 flex flex-col md:flex-row gap-6 items-center md:items-start transition-all hover:shadow-xl">
                 
+                <div class="hidden">{{ isLostCat = item.source === 'lost_cat' }}</div>
+
                 <div class="w-full md:w-32 h-32 flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 shadow-inner">
                     <img :src="resolveImageUrl(item.photo)" class="w-full h-full object-cover">
                 </div>
@@ -469,48 +472,65 @@
                     <div class="flex justify-between items-start mb-2">
                         <div>
                             <span 
-                                class="text-xs font-bold px-2 py-1 rounded-md uppercase mb-1 inline-block"
-                                :class="item.report_type === 'stray' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'"
+                                class="text-[10px] font-bold px-2 py-1 rounded-md uppercase mb-1 inline-block"
+                                :class="isLostCat ? 'bg-red-50 text-red-500 border border-red-100' : (item.report_type === 'stray' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600')"
                             >
-                                {{ item.report_type === 'stray' ? 'Kucing Liar' : 'Kucing Hilang' }}
+                                {{ isLostCat ? 'ANABUL SAYA HILANG' : (item.report_type === 'stray' ? 'Temuan Kucing Liar' : 'Temuan Kucing Hilang') }}
                             </span>
-                            <h3 class="text-xl font-bold text-gray-800">Laporan #{{ item.id }}</h3>
+                            
+                            <h3 class="text-xl font-bold text-gray-800">
+                                {{ isLostCat ? item.name : 'Laporan Penemuan #' + item.id }}
+                            </h3>
                         </div>
                         <span class="text-xs text-gray-400">{{ formatDate(item.created_at) }}</span>
                     </div>
 
-                    <p class="text-gray-600 text-sm mb-1"><i class="fas fa-map-marker-alt w-5 text-center"></i> {{ item.location }}</p>
-                    <p class="text-gray-500 text-sm line-clamp-2 italic">"{{ item.description }}"</p>
+                    <p class="text-gray-600 text-sm mb-1">
+                        <i class="fas fa-map-marker-alt w-5 text-center"></i> 
+                        {{ isLostCat ? item.last_seen_address : item.location }}
+                    </p>
                     
                     <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
                         <div>
-                            <p class="text-xs text-gray-400 uppercase font-bold">Status</p>
-                            <p class="font-bold" :class="getStatusColor(item.assignment_status)">
+                            <p class="text-xs text-gray-400 uppercase font-bold mb-1">Status Saat Ini</p>
+                            
+                            <div v-if="isLostCat" 
+                                class="px-3 py-1 rounded-full font-bold text-sm inline-block"
+                                :class="getLostCatStatus(item.status).color"
+                            >
+                                <i class="fas" :class="item.status === 'searching' ? 'fa-search' : (item.status === 'returned' ? 'fa-home' : 'fa-paw')"></i>
+                                {{ getLostCatStatus(item.status).label }}
+                            </div>
+
+                            <p v-else class="font-bold" :class="getStatusColor(item.assignment_status)">
                                 {{ formatStatus(item.assignment_status || 'Mencari Shelter') }}
                             </p>
                         </div>
 
-                        <router-link 
-                            v-if="item.is_trackable && item.assignment_status !== 'completed'"
-                            :to="`/track?id=${item.tracking_id}`"
-                            class="bg-[#EBCD5E] hover:bg-[#dcb945] text-white font-bold py-2 px-6 rounded-xl shadow-md transition-transform active:scale-95 flex items-center gap-2 text-sm"
-                        >
-                            <i class="fas fa-location-arrow"></i> Lacak Driver
-                        </router-link>
-                        
-                        <div 
-                            v-else-if="item.assignment_status === 'completed'"
-                            class="bg-green-100 text-green-600 font-bold py-2 px-6 rounded-xl border border-green-200 flex items-center gap-2 text-sm"
-                        >
-                            <i class="fas fa-check-circle"></i> Misi Sukses
+                        <div class="flex gap-2">
+                            <router-link 
+                                v-if="(!isLostCat && item.is_trackable && item.assignment_status !== 'completed') || (isLostCat && item.status === 'found')"
+                                :to="`/track?id=${item.tracking_id || item.id}`"
+                                class="bg-[#EBCD5E] hover:bg-[#dcb945] text-white font-bold py-2 px-6 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 text-sm"
+                            >
+                                <i class="fas fa-location-arrow"></i> Lacak Penjemputan
+                            </router-link>
+                            
+                            <button 
+                                v-if="isLostCat"
+                                @click="router.push('/lost-cats')"
+                                class="bg-gray-800 hover:bg-black text-white font-bold py-2 px-6 rounded-xl shadow-md transition-all text-sm"
+                            >
+                                Lihat Info Iklan
+                            </button>
+
+                            <div 
+                                v-if="!isLostCat && item.assignment_status === 'completed'"
+                                class="bg-green-100 text-green-600 font-bold py-2 px-6 rounded-xl border border-green-200 flex items-center gap-2 text-sm"
+                            >
+                                <i class="fas fa-check-circle"></i> Selesai
+                            </div>
                         </div>
-                        
-                        <button 
-                            v-else 
-                            class="bg-gray-100 text-gray-400 font-bold py-2 px-6 rounded-xl cursor-not-allowed text-sm"
-                        >
-                            <i class="fas fa-clock"></i> Menunggu
-                        </button>
                     </div>
                 </div>
             </div>
@@ -629,8 +649,22 @@ const myReportHistory = ref([]);
 // --- METHOD USER ---
 async function fetchUserHistory() {
     try {
-        const res = await apiClient.get('/reports/my-history');
-        myReportHistory.value = res.data;
+        // Ambil data dari kedua endpoint secara bersamaan
+        const [resReports, resLostCats] = await Promise.all([
+            apiClient.get('/reports/my-history'),
+            apiClient.get('/lost-cats/my-history')
+        ]);
+
+        // Beri penanda 'source' agar UI tahu ini data dari tabel mana
+        const reports = resReports.data.map(item => ({ ...item, source: 'report' }));
+        const lostCats = resLostCats.data.map(item => ({ ...item, source: 'lost_cat' }));
+
+        // Gabungkan dan urutkan berdasarkan created_at terbaru
+        const combined = [...reports, ...lostCats].sort((a, b) => {
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
+
+        myReportHistory.value = combined;
     } catch (error) {
         console.error("Gagal load history:", error);
     }
@@ -852,6 +886,22 @@ function selectLostCat(item) {
     reportForm.lostCatId = item.id; // PENTING: Simpan ID ini untuk dikirim ke backend nanti
     
     isDropdownOpen.value = false;
+}
+
+// --- HELPER STATUS KUCING SAYA HILANG ---
+function getLostCatStatus(status) {
+    switch(status) {
+        case 'searching':
+            return { label: 'Masih Hilang', color: 'bg-amber-100 text-amber-600' };
+        case 'found':
+            return { label: 'Ditemukan (Dijemput)', color: 'bg-blue-100 text-blue-600' };
+        case 'at_shelter':
+            return { label: 'Ada di Shelter', color: 'bg-indigo-100 text-indigo-600' };
+        case 'returned':
+            return { label: 'Sudah Pulang', color: 'bg-green-100 text-green-600' };
+        default:
+            return { label: 'Mencari...', color: 'bg-gray-100 text-gray-600' };
+    }
 }
 
 function handleBlur() { 

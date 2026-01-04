@@ -14,6 +14,11 @@ async function lostCatRoutes(fastify, options) {
 
     // Search Kucing Hilang (Public)
     fastify.get('/search', LostCatController.search);
+
+    fastify.get('/my-history', { preHandler: [authentication] }, LostCatController.getMyHistory);
+
+    fastify.put('/status/:id', { preHandler: [authentication] }, LostCatController.updateStatus);
 }
+
 
 module.exports = lostCatRoutes;

@@ -62,9 +62,47 @@ export default function ReportScreen() {
 
   const fetchUserHistory = async () => {
     try {
-      const res = await apiClient.get('/reports/my-history');
-      setMyHistory(res.data);
-    } catch (e) { console.error(e); }
+      // Jalankan dua request secara paralel
+      const [resReports, resLostCats] = await Promise.allSettled([
+        apiClient.get('/reports/my-history'),
+        apiClient.get('/lost-cats/my-history')
+      ]);
+
+      let combinedData: any[] = [];
+
+      // Ambil data dari reports jika sukses
+      if (resReports.status === 'fulfilled') {
+        combinedData.push(...resReports.value.data.map((item: any) => ({ ...item, source: 'report' })));
+      } else {
+        console.warn("Gagal ambil history reports:", resReports.reason);
+      }
+
+      // Ambil data dari lost_cats jika sukses
+      if (resLostCats.status === 'fulfilled') {
+        combinedData.push(...resLostCats.value.data.map((item: any) => ({ ...item, source: 'lost_cat' })));
+      } else {
+        console.warn("Gagal ambil history lost_cats:", resLostCats.reason);
+      }
+
+      // Urutkan berdasarkan created_at
+      combinedData.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setMyHistory(combinedData);
+    } catch (e) {
+      console.error("Fetch History General Error:", e);
+    }
+  };
+  
+  const handleUpdateLostCatStatus = async (catId: number, newStatus: string) => {
+    try {
+      await apiClient.put(`/lost-cats/status/${catId}`, { status: newStatus });
+      Alert.alert("Sukses", "Status berhasil diperbarui. Senang anabul Anda sudah kembali!");
+      fetchUserHistory(); // Refresh data
+    } catch (e) {
+      Alert.alert("Error", "Gagal memperbarui status.");
+    }
   };
 
   useEffect(() => { loadData(); }, [activeUserTab]);
@@ -349,41 +387,98 @@ export default function ReportScreen() {
             </View>
           ) : (
              <View className="p-5">
-              {myHistory.length > 0 ? myHistory.map((item: any) => (
-                <View key={item.id} className="bg-white rounded-3xl p-4 mb-4 shadow-sm border border-slate-50">
+              {myHistory.map((item: any, index: number) => {
+              const isLostCat = item.source === 'lost_cat';
+              
+              return (
+                <View key={index} className="bg-white rounded-3xl p-4 mb-4 shadow-sm border border-slate-50">
                   <View className="flex-row gap-4">
                     <Image source={{ uri: resolveImg(item.photo) }} className="w-20 h-20 rounded-2xl bg-slate-100" />
+                    
                     <View className="flex-1">
                       <View className="flex-row justify-between items-center mb-1">
-                        <Text className="font-bold text-slate-800">Laporan #{item.id}</Text>
-                        <View className={`px-2 py-0.5 rounded-md ${item.assignment_status === 'completed' ? 'bg-emerald-100' : 'bg-amber-100'}`}>
-                          <Text className={`text-[8px] font-bold ${item.assignment_status === 'completed' ? 'text-emerald-700' : 'text-amber-700'}`}>
-                            {(item.assignment_status || 'PENDING').toUpperCase()}
+                        <Text className="font-bold text-slate-800 flex-1 mr-2" numberOfLines={1}>
+                          {isLostCat ? `Anabul Hilang: ${item.name}` : `Laporan Penemuan #${item.id}`}
+                        </Text>
+                        
+                        {/* Status Badge */}
+                        <View className={`px-2 py-0.5 rounded-md ${
+                          (item.status === 'returned' || item.assignment_status === 'completed') 
+                          ? 'bg-emerald-100' : 'bg-amber-100'
+                        }`}>
+                          <Text className={`text-[8px] font-bold ${
+                            (item.status === 'returned' || item.assignment_status === 'completed') 
+                            ? 'text-emerald-700' : 'text-amber-700'
+                          }`}>
+                            {(item.status || item.assignment_status || 'PENDING').replace('_', ' ').toUpperCase()}
                           </Text>
                         </View>
                       </View>
-                      <Text className="text-[11px] text-slate-500" numberOfLines={1}>{item.location}</Text>
-                      <Text className="text-[10px] text-slate-400 mt-1">{new Date(item.created_at).toLocaleDateString('id-ID')}</Text>
+
+                      <View className="flex-row items-center mb-1">
+                        <Ionicons name="location" size={10} color="#94a3b8" />
+                        <Text className="text-[11px] text-slate-500 ml-1" numberOfLines={1}>
+                          {isLostCat ? item.last_seen_address : item.location}
+                        </Text>
+                      </View>
+
+                      <Text className={`text-[9px] font-bold ${isLostCat ? 'text-red-500' : 'text-teal-600'}`}>
+                        {isLostCat ? 'LAPORAN KUCING SAYA' : 'LAPORAN TEMUAN'}
+                      </Text>
                     </View>
                   </View>
                   
-                  {/* TOMBOL LACAK (Hanya muncul jika statusnya assigned atau in_transit) */}
-                  {(item.assignment_status === 'assigned' || item.assignment_status === 'in_transit') && (
+                  {/* --- TOMBOL AKSI KHUSUS LOST CAT --- */}
+                  {isLostCat && item.status === 'at_shelter' && (
+                    <View className="mt-4 gap-2">
+                      {/* Tombol Chat ke Shelter */}
+                      <TouchableOpacity 
+                        onPress={() => {
+                          if (item.shelter_assigned_id) {
+                            router.push({
+                              pathname: "/chat/[id]",
+                              params: { 
+                                id: `${item.shelter_assigned_id}`, 
+                                name: item.shelter_name || 'Admin Shelter' 
+                              }
+                            });
+                          } else {
+                            Alert.alert("Info", "Data shelter belum tersedia.");
+                          }
+                        }}
+                        className="bg-[#3A5F50] py-3 rounded-xl flex-row items-center justify-center gap-2"
+                      >
+                        <Ionicons name="chatbubbles" size={16} color="white" />
+                        <Text className="text-white font-bold text-xs uppercase">Chat Shelter</Text>
+                      </TouchableOpacity>
+
+                      {/* Tombol Konfirmasi Selesai */}
+                      <TouchableOpacity 
+                        onPress={() => Alert.alert("Konfirmasi", "Apakah kucing sudah kembali ke tangan Anda?", [
+                          { text: "Belum", style: "cancel" },
+                          { text: "Sudah", onPress: () => handleUpdateLostCatStatus(item.id, 'returned') }
+                        ])}
+                        className="bg-emerald-600 py-3 rounded-xl flex-row items-center justify-center gap-2"
+                      >
+                        <Ionicons name="checkmark-circle" size={16} color="white" />
+                        <Text className="text-white font-bold text-xs uppercase">Sudah Saya Terima</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+
+                  {/* Tombol Lacak (Hanya untuk temuan penjemputan) */}
+                  {!isLostCat && (item.assignment_status === 'assigned' || item.assignment_status === 'in_transit') && (
                     <TouchableOpacity 
                       onPress={() => router.push(`/track/${item.id}`)}
-                      className="mt-4 bg-teal-600 py-2.5 rounded-xl flex-row items-center justify-center gap-2 active:bg-teal-700"
+                      className="mt-4 bg-teal-600 py-2.5 rounded-xl flex-row items-center justify-center gap-2"
                     >
                       <Ionicons name="map" size={14} color="white" />
-                      <Text className="text-white font-bold text-xs uppercase tracking-wider">Lacak Penjemputan</Text>
+                      <Text className="text-white font-bold text-xs uppercase">Lacak Penjemputan</Text>
                     </TouchableOpacity>
                   )}
                 </View>
-              )) : (
-                <View className="items-center mt-10">
-                   <Ionicons name="document-text-outline" size={60} color="white" opacity={0.5} />
-                   <Text className="text-white opacity-60 mt-2">Belum ada riwayat laporan</Text>
-                </View>
-              )}
+              );
+            })}
             </View>
           )}
         </ScrollView>

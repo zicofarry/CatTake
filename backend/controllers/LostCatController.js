@@ -128,6 +128,45 @@ class LostCatController {
             return reply.code(500).send({ error: error.message });
         }
     }
+
+    static async getMyHistory(req, reply) {
+        try {
+            const userId = req.user.id; // Diambil dari middleware authentication
+            const list = await LostCatService.getMyLostCats(userId);
+            
+            return reply.send(list);
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
+    static async updateStatus(req, reply) {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+            const userId = req.user.id; // Dari middleware authentication
+
+            // 1. Cek dulu apakah benar ini kucing milik user yang login
+            const checkQuery = 'SELECT owner_id FROM lost_cats WHERE id = $1';
+            const checkResult = await db.query(checkQuery, [id]);
+
+            if (checkResult.rows.length === 0) {
+                return reply.code(404).send({ error: 'Data tidak ditemukan' });
+            }
+
+            if (checkResult.rows[0].owner_id !== userId) {
+                return reply.code(403).send({ error: 'Kamu tidak berhak mengubah status ini' });
+            }
+
+            // 2. Jalankan update lewat service
+            await LostCatService.updateStatus(id, status);
+            
+            return reply.send({ message: 'Status berhasil diperbarui' });
+        } catch (error) {
+            console.error("Update Status Error:", error);
+            return reply.code(500).send({ error: error.message });
+        }
+    }
 }
 
 module.exports = LostCatController;

@@ -79,6 +79,33 @@ class LostCatService {
             photo: row.photo
         }));
     }
+
+    static async getMyLostCats(ownerId) {
+        const query = `
+            SELECT 
+                lc.*, 
+                r.shelter_assigned_id,
+                u.shelter_name
+            FROM lost_cats lc
+            LEFT JOIN reports r ON lc.id = r.lost_cat_id
+            LEFT JOIN detail_user_shelter u ON r.shelter_assigned_id = u.id
+            WHERE lc.owner_id = $1
+            ORDER BY lc.created_at DESC
+        `;
+        const result = await db.query(query, [ownerId]);
+        return result.rows;
+    }
+
+    static async updateStatus(id, status) {
+        const query = 'UPDATE lost_cats SET status = $1 WHERE id = $2 RETURNING *';
+        // Gunakan parseInt untuk memastikan ID adalah angka
+        const result = await db.query(query, [status, parseInt(id)]);
+        
+        if (result.rowCount === 0) {
+            throw new Error('Data kucing tidak ditemukan');
+        }
+        return result.rows[0];
+    }
 }
 
 module.exports = LostCatService;
