@@ -89,7 +89,7 @@ function UserHomeScreen() {
              {[
                { icon: 'paw', label: 'Adopsi', route: '/(tabs)/adopt', color: '#f97316' }, // Orange
                { icon: 'heart', label: 'Donasi', route: '/(tabs)/donation', color: '#ef4444' }, // Merah
-               { icon: 'time', label: 'Riwayat', route: '/(tabs)/report', color: '#3b82f6' }, // Biru (Link ke Report/History)
+               { icon: 'time', label: 'Riwayat', route: '/(tabs)/history', color: '#3b82f6' }, // Biru (Link ke Report/History)
                { icon: 'help-circle', label: 'FAQ', route: '/(tabs)/faq', color: '#10b981' }, // Hijau
              ].map((menu, index) => (
                <TouchableOpacity key={index} style={styles.menuItem} onPress={() => router.push(menu.route as any)}>
