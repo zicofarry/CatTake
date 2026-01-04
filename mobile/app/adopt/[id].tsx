@@ -143,8 +143,11 @@ export default function CatDetail() {
           </View>
 
           {/* Tombol Aksi */}
-          <TouchableOpacity style={styles.adoptButton}>
-            <Text style={styles.adoptButtonText}>Ajukan Adopsi</Text>
+          <TouchableOpacity 
+            style={styles.adoptButton}
+            onPress={() => router.push({ pathname: '/adopt/apply', params: { id: id } })}
+          >
+            <Text style={styles.adoptButtonText}>Isi Formulir</Text>
           </TouchableOpacity>
 
         </View>
