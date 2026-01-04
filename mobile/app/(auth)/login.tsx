@@ -7,9 +7,8 @@ import {
   Image, 
   StyleSheet, 
   ScrollView, 
-  Alert,
   ActivityIndicator,
-  Dimensions
+  StatusBar
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,10 +16,9 @@ import Svg, { Path } from 'react-native-svg';
 import { FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import CustomPopup from '../../components/CustomPopup'; // Import komponen baru
+import CustomPopup from '../../components/CustomPopup'; 
 
-import apiClient, { API_BASE_URL } from '../../api/apiClient';
-const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
+import { API_BASE_URL } from '../../api/apiClient';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -28,11 +26,11 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // State untuk Focus
+  // State untuk Focus Input
   const [focusUser, setFocusUser] = useState(false);
   const [focusPass, setFocusPass] = useState(false);
 
-  // --- TAMBAHKAN BAGIAN INI ---
+  // State untuk Modal Popup
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<'success' | 'error'>('success');
   const [modalTitle, setModalTitle] = useState('');
@@ -47,45 +45,38 @@ export default function LoginScreen() {
 
   const handleModalClose = () => {
     setModalVisible(false);
-    // Hanya pindah halaman jika login sukses
+    // Jika sukses, baru pindahkan user ke home
     if (modalType === 'success') {
       router.replace('/(tabs)');
     }
   };
 
   const handleLogin = async () => {
+    // 1. Validasi Input
     if (!identifier || !password) {
-      // GANTI Alert.alert DENGAN INI:
       showModal('error', 'Perhatian', 'Mohon isi Email/Username dan Password.');
       return;
     }
 
     setIsLoading(true);
 
-    const handleLogin = async () => {
-    // ... validasi input (identifier/password) biarkan saja ...
-
-    setIsLoading(true);
-
     try {
-      console.log("1. Mengirim data login...", { username: identifier, password }); // Log data yang dikirim
+      // console.log("1. Mengirim data login...", { username: identifier }); 
 
+      // 2. Request ke Backend
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        username: identifier, 
+        identifier, 
         password,
       });
 
-      // --- TAMBAHKAN LOG INI ---
-      console.log("2. STATUS RESPONSE:", response.status);
-      console.log("3. DATA RESPONSE FULL:", JSON.stringify(response.data, null, 2));
-      // -------------------------
-
-      const resData = response.data.data; // Sesuaikan dengan struktur JSON kamu
+      // console.log("2. STATUS RESPONSE:", response.status);
       
-      // Log tambahan untuk memastikan variabel yang diambil benar
-      console.log("4. Token yang didapat:", resData?.token); 
+      const resData = response.data.data; 
 
+      // 3. Cek apakah token ada
       if (resData && resData.token) {
+        // console.log("3. Login Berhasil, menyimpan session...");
+        
         await AsyncStorage.setItem('userToken', resData.token);
         await AsyncStorage.setItem('userRole', String(resData.role || 'user'));
         await AsyncStorage.setItem('userId', String(resData.id || ''));
@@ -93,27 +84,23 @@ export default function LoginScreen() {
         
         showModal('success', 'Berhasil Masuk!', 'Selamat datang kembali di CatTake.');
       } else {
-        console.log("5. Aneh, tidak ada token di response data.");
+        // console.log("4. Token tidak ditemukan di response.");
         showModal('error', 'Login Gagal', 'Data user tidak ditemukan dalam respon server.');
       }
       
     } catch (error: any) {
-      // --- LOG ERROR LEBIH DETAIL ---
-      console.log("!!! ERROR LOGIN !!!");
-      if (error.response) {
-        // Server merespon dengan status code diluar 2xx (misal 401, 404, 500)
-        console.log("Status Error:", error.response.status);
-        console.log("Data Error:", JSON.stringify(error.response.data, null, 2));
-      } else if (error.request) {
-        // Request terkirim tapi tidak ada respon (masalah jaringan/server mati)
-        console.log("Tidak ada respon dari server (Network Error?)", error.request);
-      } else {
-        // Error lain saat setup request
-        console.log("Error Message:", error.message);
-      }
-      // -----------------------------
+      // console.log("!!! ERROR LOGIN !!!");
+      let errorMessage = 'Login gagal. Cek kredensial atau server.';
 
-      const errorMessage = error.response?.data?.error || 'Login gagal. Cek kredensial atau server.';
+      if (error.response) {
+        console.log("Status Error:", error.response.status);
+        console.log("Data Error:", JSON.stringify(error.response.data));
+        errorMessage = error.response.data?.error || errorMessage;
+      } else if (error.request) {
+        console.log("Tidak ada respon dari server.");
+        errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+      }
+
       showModal('error', 'Login Gagal', errorMessage);
     } finally {
       setIsLoading(false);
@@ -122,6 +109,8 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      
       {/* Background Gradient */}
       <View style={styles.headerContainer}>
         <LinearGradient
@@ -145,7 +134,7 @@ export default function LoginScreen() {
         </LinearGradient>
       </View>
 
-      {/* Logo Fixed */}
+      {/* Logo */}
       <View style={styles.fixedLogoContainer}>
         <Image 
           source={require('../../assets/images/catTakePutih.png')} 
@@ -154,7 +143,7 @@ export default function LoginScreen() {
         />
       </View>
 
-      {/* ScrollView */}
+      {/* Main Content */}
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent} 
@@ -184,7 +173,6 @@ export default function LoginScreen() {
                 autoCapitalize="none"
                 onFocus={() => setFocusUser(true)}
                 onBlur={() => setFocusUser(false)}
-                underlineColorAndroid="transparent" // Hapus garis bawah bawaan Android
               />
             </View>
 
@@ -206,7 +194,6 @@ export default function LoginScreen() {
                 onChangeText={setPassword}
                 onFocus={() => setFocusPass(true)}
                 onBlur={() => setFocusPass(false)}
-                underlineColorAndroid="transparent"
               />
             </View>
             
@@ -232,7 +219,7 @@ export default function LoginScreen() {
             
           <TouchableOpacity style={styles.googleButton}>
             <Image 
-              source={{ uri: 'https://www.svgrepo.com/show/475656/google-color.svg' }} 
+              source={{ uri: 'https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png' }} 
               style={styles.googleIcon} 
             />
             <Text style={styles.googleText}>Sign In with Google</Text>
@@ -246,7 +233,8 @@ export default function LoginScreen() {
           </View>
         </View>
       </ScrollView>
-      {/* --- TAMBAHKAN INI DI PALING BAWAH (Sebelum </View>) --- */}
+
+      {/* Modal Popup Custom */}
       <CustomPopup
         visible={modalVisible}
         onClose={handleModalClose}
@@ -256,7 +244,7 @@ export default function LoginScreen() {
       />
     </View>
   );
-}}
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -284,17 +272,18 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
+    zIndex: 10,
   },
   logo: {
-    width: 144, 
-    height: 144,
+    width: 120, 
+    height: 120,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     alignItems: 'center',
-    paddingTop: 220, 
+    paddingTop: 200, 
     paddingBottom: 40,
     paddingHorizontal: 20,
   },
@@ -337,8 +326,8 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: '#F9FAFB',
-    borderWidth: 2, // Kita tetap set border width agar ukuran input tidak "lompat"
-    borderColor: 'transparent', // Tapi warnanya Transparan (Hilang)
+    borderWidth: 2, 
+    borderColor: 'transparent',
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -348,7 +337,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   inputFocused: {
-    borderColor: '#EBCD5E', // Baru muncul warna kuning saat diklik
+    borderColor: '#EBCD5E',
   },
   buttonWrapper: {
     marginTop: 16,
