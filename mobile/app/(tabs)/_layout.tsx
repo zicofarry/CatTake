@@ -32,7 +32,7 @@ export default function TabLayout() {
         }
       }}
     >
-      {/* 1. BERANDA (Home) */}
+      {/* 1. BERANDA */}
       <Tabs.Screen
         name="index"
         options={{
@@ -43,7 +43,7 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 2. KOMUNITAS (Pindah ke Posisi 2) */}
+      {/* 2. KOMUNITAS */}
       <Tabs.Screen
         name="community"
         options={{
@@ -54,15 +54,14 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 3. RESCUE (TOMBOL TENGAH - Dulu file report.tsx) */}
+      {/* 3. RESCUE (TOMBOL TENGAH) */}
       <Tabs.Screen
         name="report"
         options={{
-          title: '', // Judul kosong untuk tombol floating
+          title: '', 
           tabBarLabel: () => null, 
           tabBarIcon: ({ focused }) => (
             <View style={styles.middleButton}>
-              {/* Ikon Medkit / Rescue */}
               <Ionicons name="medkit" size={30} color="white" />
             </View>
           ),
@@ -92,18 +91,9 @@ export default function TabLayout() {
       />
 
       {/* -- HALAMAN TERSEMBUNYI -- */}
-      <Tabs.Screen
-        name="donation"
-        options={{ href: null }} 
-      />
-      <Tabs.Screen
-        name="faq"
-        options={{ href: null }} 
-      />
-      <Tabs.Screen
-        name="adopt"
-        options={{ href: null }} 
-      />
+      <Tabs.Screen name="donation" options={{ href: null }} />
+      <Tabs.Screen name="faq" options={{ href: null }} />
+      <Tabs.Screen name="adopt" options={{ href: null }} />
     </Tabs>
   );
 }
@@ -114,7 +104,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: Colors.primary, // Atau warna merah '#EF4444' untuk indikasi Rescue
+    backgroundColor: Colors.primary, 
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 5, 
