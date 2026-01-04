@@ -4,10 +4,13 @@ const authentication = require('../middlewares/authentication');
 
 async function donationRoutes(fastify, options) {
     
-    // Endpoint User Mengirim Donasi (Wajib Login)
+    // Endpoint User Mengirim Donasi
     fastify.post('/', { preHandler: [authentication] }, DonationController.create);
 
-    // Endpoint Shelter Melihat Donasi Masuk (Bisa diamankan dengan cek role shelter)
+    // [PERBAIKAN] Daftarkan route riwayat donasi user
+    fastify.get('/my-history', { preHandler: [authentication] }, DonationController.getMyHistory);
+
+    // Endpoint Shelter Melihat Donasi Masuk
     fastify.get('/shelter/:shelterId', { preHandler: [authentication] }, DonationController.getByShelter);
 }
 

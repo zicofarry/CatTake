@@ -18,17 +18,14 @@ class DonationService {
         const values = [
             data.donatur_id, 
             data.shelter_id, 
-            data.amount, // Pastikan dikirim sebagai angka/float
+            data.amount, 
             data.is_anonymus,
             data.payment_method,
-            data.proof_file // Hanya nama filenya saja, misal: 'bukti-123.jpg'
+            data.proof_file 
         ];
 
-        // 1. Eksekusi Insert Donasi
         const result = await db.query(query, values);
 
-        // 2. [TAMBAHAN] Update Counter di tabel detail user
-        // Tambahkan 1 ke donasi_history_count milik user tersebut
         const updateCounterQuery = `
             UPDATE detail_user_individu
             SET donasi_history_count = donasi_history_count + 1
@@ -38,7 +35,25 @@ class DonationService {
         return result.rows[0];
     }
 
-    // 2. Ambil List Donasi Berdasarkan Shelter (Untuk Halaman Dashboard Shelter)
+    // [PERBAIKAN] Fungsi untuk mengambil riwayat donasi milik user login
+    static async getUserDonations(userId) {
+        const query = `
+            SELECT 
+                d.id,
+                d.amount,
+                d.donation_date,
+                d.payment_method,
+                COALESCE(dui.full_name, 'Shelter') as "shelterName"
+            FROM donations d
+            LEFT JOIN detail_user_individu dui ON d.shelter_id = dui.id
+            WHERE d.donatur_id = $1
+            ORDER BY d.donation_date DESC
+        `;
+        const result = await db.query(query, [userId]);
+        return result.rows;
+    }
+
+    // 2. Ambil List Donasi Berdasarkan Shelter
     static async getDonationsByShelter(shelterId) {
         const query = `
             SELECT 
@@ -65,22 +80,13 @@ class DonationService {
 
         const result = await db.query(query, [shelterId]);
         
-        // Formatting untuk Frontend
         return result.rows.map(row => {
             let pic = row.donorPhoto;
-
-            // LOGIKA BARU: Menentukan Path Gambar yang Benar
-            // 1. Jika Anonymous atau string 'NULL.JPG', gunakan default frontend
             if (pic === '/img/NULL.JPG' || pic === 'NULL.JPG' || !pic) {
                 pic = '/img/NULL.JPG'; 
-            } 
-            // 2. Jika URL Eksternal (Google Login, dll), biarkan
-            else if (pic.startsWith('http')) {
+            } else if (pic.startsWith('http')) {
                 // pic tetap
-            }
-            // 3. Jika nama file biasa (upload user), arahkan ke folder public Backend
-            //    Pastikan tidak double slash jika sudah ada prefix
-            else {
+            } else {
                 pic = `/public/img/profile/${pic}`;
             }
 
@@ -88,7 +94,7 @@ class DonationService {
                 id: row.id,
                 amount: parseFloat(row.amount),
                 donorName: row.donorName,
-                profilePic: pic, // Path sudah diperbaiki
+                profilePic: pic,
                 dateTime: new Date(row.donation_date).toLocaleString('id-ID'),
                 paymentMethod: row.payment_method,
                 proofFile: row.proof_file
