@@ -11,6 +11,9 @@ import { jwtDecode } from "jwt-decode";
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 import StickyBackButton from '../../components/StickyBackButton';
+// IMPORT CUSTOM POPUP
+import CustomPopup from '../../components/CustomPopup'; 
+
 // Helper agar URL gambar dari backend bisa tampil di HP
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://192.168.1.5:3000';
 
@@ -38,6 +41,19 @@ export default function DonationScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [shelterModalVisible, setShelterModalVisible] = useState(false);
+
+  // --- STATE UNTUK CUSTOM POPUP ---
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupType, setPopupType] = useState<'success' | 'error' | 'info'>('success');
+  const [popupTitle, setPopupTitle] = useState('');
+  const [popupMessage, setPopupMessage] = useState('');
+
+  const showPopup = (type: 'success' | 'error' | 'info', title: string, message: string) => {
+    setPopupType(type);
+    setPopupTitle(title);
+    setPopupMessage(message);
+    setPopupVisible(true);
+  };
 
   const selectedShelter = shelters.find(s => s.id === selectedShelterId);
 
@@ -129,12 +145,12 @@ export default function DonationScreen() {
 
   const submitDonation = async () => {
     if (!selectedShelterId || !amount || !paymentMethod || !proofImage) {
-      Alert.alert("Data Belum Lengkap", "Mohon lengkapi semua data formulir.");
+      showPopup("error", "Data Belum Lengkap", "Mohon lengkapi semua data formulir.");
       return;
     }
     
     if (parseInt(amount) < 10000) {
-      Alert.alert("Minimal Donasi", "Minimal donasi adalah Rp 10.000");
+      showPopup("error", "Minimal Donasi", "Minimal donasi adalah Rp 10.000");
       return;
     }
 
@@ -152,7 +168,7 @@ export default function DonationScreen() {
       uri: proofImage.uri,
       name: proofImage.name,
       type: proofImage.type,
-    });
+    } as any);
 
     try {
       // POST ke /api/v1/donations
@@ -160,9 +176,9 @@ export default function DonationScreen() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
-      Alert.alert("Berhasil!", "Donasi Anda sedang diverifikasi oleh shelter.");
+      showPopup("success", "Berhasil!", "Donasi Anda sedang diverifikasi oleh shelter.");
       
-      // Reset
+      // Reset (Logic asli tidak diubah)
       setSelectedShelterId(null);
       setAmount('');
       setPaymentMethod('');
@@ -170,7 +186,7 @@ export default function DonationScreen() {
       setIsAnonymous(false);
     } catch (error: any) {
       console.error(error);
-      Alert.alert("Gagal", error.response?.data?.message || "Gagal terhubung ke server.");
+      showPopup("error", "Gagal", error.response?.data?.message || "Gagal terhubung ke server.");
     } finally {
       setIsSubmitting(false);
     }
@@ -400,6 +416,15 @@ export default function DonationScreen() {
            </View>
         </View>
       </Modal>
+
+      {/* CUSTOM POPUP COMPONENT */}
+      <CustomPopup
+        visible={popupVisible}
+        onClose={() => setPopupVisible(false)}
+        type={popupType}
+        title={popupTitle}
+        message={popupMessage}
+      />
 
     </View>
   );

@@ -1,16 +1,8 @@
+// mobile/components/CustomPopup.tsx
 import React from 'react';
-import { 
-  Modal, 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Dimensions 
-} from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
-import { Colors } from '../constants/Colors'; // Pastikan path ini sesuai dengan struktur folder kamu
-
-const { width } = Dimensions.get('window');
+import { Modal, View, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { FontAwesome5 } from '@expo/vector-icons';
+import { Colors } from '../constants/Colors';
 
 interface CustomPopupProps {
   visible: boolean;
@@ -20,127 +12,48 @@ interface CustomPopupProps {
   type?: 'success' | 'error' | 'info';
 }
 
-export default function CustomPopup({ 
-  visible, 
-  onClose, 
-  title, 
-  message, 
-  type = 'success' 
-}: CustomPopupProps) {
+export default function CustomPopup({ visible, onClose, title, message, type = 'success' }: CustomPopupProps) {
+  let iconName = 'check';
+  let statusColor = Colors.success;
 
-  // Tentukan warna dan icon berdasarkan tipe modal
-  let iconName: keyof typeof FontAwesome.glyphMap = 'check-circle';
-  let color = Colors.success; // Default hijau dari Colors.ts
-
-  switch (type) {
-    case 'error':
-      iconName = 'times-circle';
-      color = Colors.danger; // Default merah dari Colors.ts
-      break;
-    case 'info':
-      iconName = 'info-circle';
-      color = Colors.primary; // Orange
-      break;
-    default:
-      iconName = 'check-circle';
-      color = Colors.success;
+  if (type === 'error') {
+    iconName = 'exclamation-circle';
+    statusColor = Colors.danger;
+  } else if (type === 'info') {
+    iconName = 'info-circle';
+    statusColor = Colors.primary;
   }
 
   return (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      <View style={styles.overlay}>
-        <View style={styles.popupContainer}>
-          {/* Header Icon */}
-          <View style={[styles.iconContainer, { backgroundColor: color }]}>
-            <FontAwesome name={iconName} size={40} color="white" />
+    <Modal animationType="fade" transparent={true} visible={visible} onRequestClose={onClose}>
+      <View className="flex-1 bg-black/60 justify-center items-center">
+        <View className="w-[85%] bg-white rounded-[30px] px-6 pb-6 pt-12 items-center shadow-xl relative">
+          
+          {/* Header Icon Floating */}
+          <View 
+            className="w-20 h-20 rounded-full justify-center items-center absolute -top-10 border-4 border-white"
+            style={{ backgroundColor: statusColor }}
+          >
+            <FontAwesome5 name={iconName} size={30} color="white" />
           </View>
 
           {/* Content */}
-          <View style={styles.contentContainer}>
-            <Text style={[styles.title, { color: color }]}>{title}</Text>
-            <Text style={styles.message}>{message}</Text>
+          <View className="items-center mb-8">
+            <Text className="text-2xl font-bold text-slate-800 mb-2 text-center">{title}</Text>
+            <Text className="text-base text-slate-500 text-center leading-5">{message}</Text>
           </View>
 
           {/* Button */}
           <TouchableOpacity 
-            style={[styles.button, { backgroundColor: color }]} 
             onPress={onClose}
             activeOpacity={0.8}
+            className="w-full py-4 rounded-2xl items-center"
+            style={{ backgroundColor: Colors.primary }}
           >
-            <Text style={styles.buttonText}>OK</Text>
+            <Text className="text-white font-bold text-lg">Tutup</Text>
           </TouchableOpacity>
         </View>
       </View>
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Latar belakang gelap transparan
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  popupContainer: {
-    width: width * 0.85,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 24,
-    alignItems: 'center',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    position: 'relative',
-    marginTop: 20, // Memberi ruang untuk icon yang menonjol keluar (opsional)
-  },
-  iconContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    marginTop: -40, // Membuat icon setengah keluar di atas
-    borderWidth: 4,
-    borderColor: 'white', // Memberi outline putih pada lingkaran icon
-  },
-  contentContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  message: {
-    fontSize: 15,
-    color: '#6B7280', // Text gray
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  button: {
-    width: '100%',
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
