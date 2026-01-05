@@ -33,48 +33,24 @@ class UserController {
         }
     }
     
-    static async updateShelter(req, reply) {
+    static async updateProfile(request, reply) {
         try {
-            const { userId } = req.params;
-            const parts = req.parts();
-            
-            let fields = {};
-            let qrUrl = null;
-            let legalUrl = null;
+            // Asumsi middleware JWT sudah memverifikasi user dan menaruhnya di request.user
+            // Kita akan menggunakan userId dan role dari URL params untuk saat ini
+            const { userId } = request.params; 
+            const { role } = request.body; // Ambil role dari body atau dari JWT
 
-            for await (const part of parts) {
-                if (part.file) {
-                    const buffer = await part.toBuffer();
-
-                    if (part.fieldname === 'qr_img') {
-                        // FIX: Upload QR Code ke Cloudinary
-                        const result = await uploadToCloudinary(buffer, 'cattake/qr_codes');
-                        qrUrl = result.secure_url;
-                    } else if (part.fieldname === 'legal_certificate') {
-                        // FIX: Upload PDF Legalitas ke Cloudinary
-                        const result = await uploadToCloudinary(buffer, 'cattake/legal');
-                        legalUrl = result.secure_url;
-                    }
-                } else {
-                    fields[part.fieldname] = part.value;
-                }
-            }
-
-            // Masukkan URL Cloudinary ke objek fields jika ada upload baru
-            if (qrUrl) fields.qr_img = qrUrl;
-            if (legalUrl) fields.legal_certificate = legalUrl;
-
-            // Update ke database melalui service
-            const updatedData = await UserService.updateShelterDetails(userId, fields);
+            // Panggil service untuk melakukan update
+            const updatedData = await UserService.updateProfile(parseInt(userId, 10), role, request.body);
 
             return reply.send({ 
-                message: 'Shelter profile updated successfully', 
-                data: updatedData 
+                message: 'Profile updated successfully!', 
+                data: updatedData
             });
 
         } catch (error) {
-            console.error("Update Shelter Error:", error);
-            return reply.code(500).send({ error: error.message });
+            console.error('Error updating profile:', error);
+            return reply.code(400).send({ error: error.message });
         }
     }
 
@@ -140,56 +116,34 @@ class UserController {
     }
     // Anda bisa menambahkan controller lain di sini, seperti updateProfile
 
-    // [TAMBAHAN BARU] Update Profil Shelter (Multipart)
     static async updateShelter(req, reply) {
         try {
             const { userId } = req.params;
             const parts = req.parts();
             
             let fields = {};
-            let qrFileName = null;
-            let legalFileName = null;
+            let qrUrl = null;
+            let legalUrl = null;
 
             for await (const part of parts) {
                 if (part.file) {
-                    const ext = path.extname(part.filename);
-                    const timestamp = Date.now();
+                    const buffer = await part.toBuffer();
 
                     if (part.fieldname === 'qr_img') {
-                       qrFileName = `qr-${userId}-${timestamp}.jpeg`;
-                        const savePath = path.join(__dirname, '../public/img/qr_img', qrFileName);
-                        if (!fs.existsSync(path.dirname(savePath))) fs.mkdirSync(path.dirname(savePath), { recursive: true });
-                        await pump(part.file, fs.createWriteStream(savePath));
-                    
+                        const result = await uploadToCloudinary(buffer, 'cattake/qr_codes');
+                        qrUrl = result.secure_url;
                     } else if (part.fieldname === 'legal_certificate') {
-                        if (ext.toLowerCase() === '.pdf') {
-                            // PDF -> Jangan pakai Sharp
-                            legalFileName = `legal-${userId}-${timestamp}.pdf`;
-                            const savePath = path.join(__dirname, '../public/docs/legal', legalFileName);
-                            if (!fs.existsSync(path.dirname(savePath))) fs.mkdirSync(path.dirname(savePath), { recursive: true });
-                            const util = require('util');
-                            const { pipeline } = require('stream');
-                            const pump = util.promisify(pipeline);
-                            await pump(part.file, fs.createWriteStream(savePath));
-                        } else {
-                            // Image -> Pakai Sharp
-                            legalFileName = `legal-${userId}-${timestamp}.jpeg`;
-                            const savePath = path.join(__dirname, '../public/docs/legal', legalFileName);
-                            if (!fs.existsSync(path.dirname(savePath))) fs.mkdirSync(path.dirname(savePath), { recursive: true });
-                            
-                            const buffer = await part.toBuffer();
-                            await sharp(buffer).resize(1024).jpeg({ quality: 80 }).toFile(savePath);
-                        }
-                    } else {
-                        part.file.resume();
+                        // PDF Legalitas juga masuk Cloudinary agar bisa di-preview
+                        const result = await uploadToCloudinary(buffer, 'cattake/legal');
+                        legalUrl = result.secure_url;
                     }
                 } else {
                     fields[part.fieldname] = part.value;
                 }
             }
 
-            if (qrFileName) fields.qr_img = qrFileName;
-            if (legalFileName) fields.legal_certificate = legalFileName;
+            if (qrUrl) fields.qr_img = qrUrl;
+            if (legalUrl) fields.legal_certificate = legalUrl;
 
             const updatedData = await UserService.updateShelterDetails(userId, fields);
 
