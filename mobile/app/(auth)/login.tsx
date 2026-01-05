@@ -60,7 +60,7 @@ export default function LoginScreen() {
       if (role === 'driver') {
         router.replace('/driver');
       }else if (role === 'shelter') {
-        router.replace('/shelter/dashboard');
+        router.replace('/(tabs)');
       } else {
         router.replace('/(tabs)');
       }

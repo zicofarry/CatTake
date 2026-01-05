@@ -50,18 +50,17 @@ export default function ShelterProfile() {
   // --- LOGOUT YANG BENAR (RESET STACK) ---
   const handleLogoutForce = async () => {
     try {
-      // 1. Hapus data
+      // 1. Hapus data secara sekaligus
       await AsyncStorage.multiRemove(['userToken', 'userRole', 'userId', 'username']);
       
-      // 2. Reset Navigasi (PENTING!)
-      // dismissAll() menutup semua screen yang numpuk
-      if (router.canGoBack()) {
-        router.dismissAll();
-      }
-      // 3. Pindah ke login
+      // 2. Pindah ke login menggunakan replace
+      // Kita tidak perlu dismissAll() karena replace pada group root 
+      // sudah cukup untuk mereset tumpukan navigasi.
       router.replace('/(auth)/login'); 
+      
     } catch (e) {
-      console.log(e);
+      console.log("Logout Error:", e);
+      // Jika terjadi error di AsyncStorage, tetap paksa pindah ke login
       router.replace('/(auth)/login');
     }
   };
