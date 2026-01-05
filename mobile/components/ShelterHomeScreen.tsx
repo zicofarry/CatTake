@@ -75,7 +75,7 @@ export default function ShelterHomeScreen() {
       library: 'FontAwesome5',
       color: '#EBCD5E', 
       bgColor: '#FFFBEB', // yellow-50
-      route: '/shelter/dashboard' // Arahkan ke page rescue nanti
+      route: '/shelter/rescue' // Arahkan ke page rescue nanti
     },
     { 
       title: 'Calon Adopter', 
@@ -84,7 +84,7 @@ export default function ShelterHomeScreen() {
       library: 'FontAwesome5',
       color: '#3B82F6', 
       bgColor: '#EFF6FF', // blue-50
-      route: '/shelter/adoptions' 
+      route: '/shelter/adopt' 
     },
     { 
       title: 'Laporan Donasi', 
