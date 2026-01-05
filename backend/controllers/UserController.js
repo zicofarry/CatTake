@@ -1,29 +1,6 @@
 const UserService = require('../services/UserService'); // <-- Memanggil service yang melakukan JOIN DB
 const { uploadToCloudinary, deleteFromCloudinary } = require('../config/cloudinary');const fs = require('fs');
 
-
-async function deleteOldFile(fileName) {
-    // Abaikan penghapusan jika tidak ada nama file atau itu adalah nama default/null
-    if (!fileName || fileName === 'NULL.JPG' || fileName === 'null' || fileName === 'Ellipse.png') {
-        return; 
-    }
-
-    // Gabungkan path lengkap ke folder upload
-    const filePath = path.join(__dirname, '../public/img/profile', fileName);
-    
-    // Cek apakah file ada secara fisik sebelum mencoba menghapus
-    if (fs.existsSync(filePath)) {
-        try {
-            // Hapus file secara asinkron
-            await fsp.unlink(filePath); 
-            console.log(`[File Deletion Success] Berhasil menghapus file lama: ${fileName}`);
-        } catch (error) {
-            console.error(`[File Deletion Failed] Gagal menghapus file ${fileName}:`, error);
-            // Biarkan proses berlanjut, kegagalan menghapus file lama tidak boleh menggagalkan upload foto baru
-        }
-    }
-}
-
 class UserController {
     /**
      * Mengambil detail profil pengguna (individu/shelter) berdasarkan ID dan role.
@@ -56,24 +33,48 @@ class UserController {
         }
     }
     
-    static async updateProfile(request, reply) {
+    static async updateShelter(req, reply) {
         try {
-            // Asumsi middleware JWT sudah memverifikasi user dan menaruhnya di request.user
-            // Kita akan menggunakan userId dan role dari URL params untuk saat ini
-            const { userId } = request.params; 
-            const { role } = request.body; // Ambil role dari body atau dari JWT
+            const { userId } = req.params;
+            const parts = req.parts();
+            
+            let fields = {};
+            let qrUrl = null;
+            let legalUrl = null;
 
-            // Panggil service untuk melakukan update
-            const updatedData = await UserService.updateProfile(parseInt(userId, 10), role, request.body);
+            for await (const part of parts) {
+                if (part.file) {
+                    const buffer = await part.toBuffer();
+
+                    if (part.fieldname === 'qr_img') {
+                        // FIX: Upload QR Code ke Cloudinary
+                        const result = await uploadToCloudinary(buffer, 'cattake/qr_codes');
+                        qrUrl = result.secure_url;
+                    } else if (part.fieldname === 'legal_certificate') {
+                        // FIX: Upload PDF Legalitas ke Cloudinary
+                        const result = await uploadToCloudinary(buffer, 'cattake/legal');
+                        legalUrl = result.secure_url;
+                    }
+                } else {
+                    fields[part.fieldname] = part.value;
+                }
+            }
+
+            // Masukkan URL Cloudinary ke objek fields jika ada upload baru
+            if (qrUrl) fields.qr_img = qrUrl;
+            if (legalUrl) fields.legal_certificate = legalUrl;
+
+            // Update ke database melalui service
+            const updatedData = await UserService.updateShelterDetails(userId, fields);
 
             return reply.send({ 
-                message: 'Profile updated successfully!', 
-                data: updatedData
+                message: 'Shelter profile updated successfully', 
+                data: updatedData 
             });
 
         } catch (error) {
-            console.error('Error updating profile:', error);
-            return reply.code(400).send({ error: error.message });
+            console.error("Update Shelter Error:", error);
+            return reply.code(500).send({ error: error.message });
         }
     }
 

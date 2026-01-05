@@ -43,7 +43,7 @@ class AdoptionController {
                     
                     // Cek fieldname sesuai yang dikirim frontend (identity_photo & statement_letter)
                     if (part.fieldname === 'identity_photo') {
-                        const result = await uploadToCloudinary(buffer, 'cattake/legal');
+                        const result = await uploadToCloudinary(buffer, 'cattake/identity');
                         identityUrl = result.secure_url;
                     } else if (part.fieldname === 'statement_letter') {
                         // Cloudinary otomatis handle PDF atau Image jika resource_type: 'auto'
