@@ -13,6 +13,8 @@ import { jwtDecode } from 'jwt-decode';
 
 // Import Komponen Peta
 import LocationPicker from '@/components/LocationPicker'; 
+// IMPORT CUSTOM POPUP
+import CustomPopup from '@/components/CustomPopup';
 
 const resolveImageUrl = (path: string | null) => {
   if (!path || path === 'NULL' || path === 'NULL.JPG' || path === 'null') return null;
@@ -20,6 +22,7 @@ const resolveImageUrl = (path: string | null) => {
   const baseUrl = API_BASE_URL?.replace('/api/v1', '') || '';
   if (path.startsWith('/public/')) return `${baseUrl}${path}`;
   if (path.startsWith('qr-')) return `${baseUrl}/public/img/qr_img/${path}`;
+  if (path.startsWith('profile-')) return `${baseUrl}/public/img/profile/${path}`;
   return `${baseUrl}/public/img/${path}`;
 };
 
@@ -28,6 +31,19 @@ export default function EditShelterProfile() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [mapModalVisible, setMapModalVisible] = useState(false);
+
+  // --- STATE MODAL ---
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalType, setModalType] = useState<'success' | 'error'>('success');
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+
+  const showModal = (type: 'success' | 'error', title: string, message: string) => {
+    setModalType(type);
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalVisible(true);
+  };
 
   const [form, setForm] = useState({
     shelter_name: '',
@@ -43,8 +59,12 @@ export default function EditShelterProfile() {
     address: '', 
   });
 
+  // STATE UNTUK FOTO SHELTER & QR
+  const [profileImage, setProfileImage] = useState<any>(null);
+  const [profilePreview, setProfilePreview] = useState<string | null>(null);
   const [qrImage, setQrImage] = useState<any>(null);
   const [qrPreview, setQrPreview] = useState<string | null>(null);
+  
   const [legalFile, setLegalFile] = useState<any>(null);
   const [existingLegalName, setExistingLegalName] = useState('');
   const [tempLocation, setTempLocation] = useState({ latitude: -6.9175, longitude: 107.6191, address: '' });
@@ -77,9 +97,29 @@ export default function EditShelterProfile() {
       if (data.latitude && data.longitude) {
          fetchAddress(data.latitude, data.longitude).then(addr => setForm(prev => ({ ...prev, address: addr })));
       }
-      if (data.qr_img) setQrPreview(resolveImageUrl(`qr-${data.qr_img}` || data.qr_img)); 
+      
+      // Ambil Preview Foto & QR
+      if (data.profile_img) setProfilePreview(resolveImageUrl(data.profile_img.startsWith('profile-') ? data.profile_img : `profile-${data.profile_img}`));
+      if (data.qr_img) setQrPreview(resolveImageUrl(data.qr_img.startsWith('qr-') ? data.qr_img : `qr-${data.qr_img}`)); 
+      
       if (data.legal_certificate) setExistingLegalName(data.legal_certificate);
-    } catch (error) { console.error('Error fetch profile:', error); } finally { setLoading(false); }
+    } catch (error) { 
+      console.error('Error fetch profile:', error);
+      showModal('error', 'Gagal', 'Gagal mengambil data profil.');
+    } finally { setLoading(false); }
+  };
+
+  // Fungsi Pick Foto Shelter
+  const handlePickProfileImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true, aspectRatio: [1, 1], quality: 0.8,
+    });
+    if (!result.canceled) {
+      const asset = result.assets[0];
+      setProfileImage({ uri: asset.uri, name: asset.fileName || 'profile.jpg', type: asset.mimeType || 'image/jpeg' });
+      setProfilePreview(asset.uri);
+    }
   };
 
   const handlePickImage = async () => {
@@ -127,9 +167,8 @@ export default function EditShelterProfile() {
     setMapModalVisible(false);
   };
 
-  // --- SUBMIT FIXED ---
   const handleSubmit = async () => {
-    if (!form.shelter_name) return Alert.alert('Validasi', 'Nama Shelter wajib diisi!');
+    if (!form.shelter_name) return showModal('error', 'Validasi', 'Nama Shelter wajib diisi!');
     setSubmitting(true);
     
     try {
@@ -143,6 +182,10 @@ export default function EditShelterProfile() {
         }
       });
 
+      if (profileImage) {
+          // @ts-ignore
+          formData.append('profile_img', { uri: profileImage.uri, name: profileImage.name, type: profileImage.type });
+      }
       if (qrImage) {
           // @ts-ignore
           formData.append('qr_img', { uri: qrImage.uri, name: qrImage.name, type: qrImage.type });
@@ -152,22 +195,17 @@ export default function EditShelterProfile() {
           formData.append('legal_certificate', { uri: legalFile.uri, name: legalFile.name, type: legalFile.type });
       }
 
-      // 1. KITA WAJIB PAKAI HEADER multipart/form-data
-      // 2. KITA PAKAI transformRequest AGAR AXIOS TIDAK MERUSAK DATA
       await apiClient.put(`/users/shelter/${decoded.id}`, formData, { 
-        headers: { 
-            'Content-Type': 'multipart/form-data', 
-        },
-        transformRequest: (data) => {
-            return data; // Biarkan data apa adanya (FormData), jangan di-JSON-kan
-        }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        transformRequest: (data) => data
       });
 
-      Alert.alert('Sukses', 'Profil Shelter berhasil diperbarui!', [{ text: 'OK', onPress: () => router.back() }]);
+      showModal('success', 'Sukses', 'Profil Shelter berhasil diperbarui!');
+      setTimeout(() => router.back(), 2000);
 
     } catch (error: any) {
       console.error("Submit Error:", error);
-      Alert.alert('Gagal', error.response?.data?.error || 'Gagal menyimpan data.');
+      showModal('error', 'Gagal', error.response?.data?.error || 'Gagal menyimpan data.');
     } finally {
       setSubmitting(false);
     }
@@ -187,28 +225,47 @@ export default function EditShelterProfile() {
 
       <ScrollView className="flex-1 px-4 py-2" showsVerticalScrollIndicator={false}>
         <View className="bg-white rounded-[30px] shadow-xl p-6 mb-20 border border-gray-100">
+          
           <View className="mb-6">
             <Text className="text-xl font-bold text-[#3A5F50] mb-4">Identitas Shelter</Text>
             <View className="gap-4">
+              <View>
+                <Text className="text-sm text-gray-500 mb-2">Foto Shelter</Text>
+                <TouchableOpacity onPress={handlePickProfileImage} className="w-full aspect-square bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 justify-center items-center overflow-hidden">
+                   {profilePreview ? (
+                     <Image source={{ uri: profilePreview }} className="w-full h-full" resizeMode="cover" />
+                   ) : (
+                     <View className="items-center"><Ionicons name="camera" size={40} color="#D1D5DB" /><Text className="text-gray-400 text-xs mt-2">Upload Foto</Text></View>
+                   )}
+                </TouchableOpacity>
+              </View>
+
               <View><Text className="text-sm text-gray-500 mb-2">Nama Shelter</Text><TextInput value={form.shelter_name} onChangeText={(t) => setForm({...form, shelter_name: t})} className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200" /></View>
               <View><Text className="text-sm text-gray-500 mb-2">Jenis Organisasi</Text><View className="flex-row gap-2">{['Komunitas', 'Yayasan', 'Pribadi'].map((type) => (<TouchableOpacity key={type} onPress={() => setForm({...form, organization_type: type})} className={`flex-1 py-3 rounded-xl border ${form.organization_type === type ? 'bg-[#EBCD5E] border-[#EBCD5E]' : 'bg-gray-50 border-gray-200'}`}><Text className={`text-center font-bold text-xs ${form.organization_type === type ? 'text-white' : 'text-gray-600'}`}>{type}</Text></TouchableOpacity>))}</View></View>
               <View><Text className="text-sm text-gray-500 mb-2">Tanggal Berdiri</Text><TextInput value={form.established_date} onChangeText={(t) => setForm({...form, established_date: t})} className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200" placeholder="YYYY-MM-DD" /></View>
               <View><Text className="text-sm text-gray-500 mb-2">Bio Singkat</Text><TextInput value={form.bio} onChangeText={(t) => setForm({...form, bio: t})} multiline className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200 h-20" /></View>
             </View>
           </View>
+          
           <View className="h-[1px] bg-gray-100 my-4" />
+          
           <View className="mb-6">
             <Text className="text-xl font-bold text-[#3A5F50] mb-4">Kontak & Donasi</Text>
             <View className="gap-4">
               <View><Text className="text-sm text-gray-500 mb-2">WA</Text><TextInput value={form.contact_phone} onChangeText={(t) => setForm({...form, contact_phone: t})} className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200" keyboardType="phone-pad" /></View>
               <View><Text className="text-sm text-gray-500 mb-2">Rekening</Text><TextInput value={form.donation_account_number} onChangeText={(t) => setForm({...form, donation_account_number: t})} className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200" /></View>
-              <TouchableOpacity onPress={handlePickImage} className="flex-row items-center gap-4 p-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                  {qrPreview ? <Image source={{ uri: qrPreview }} className="w-20 h-20 rounded-lg" resizeMode="contain" /> : <View className="w-20 h-20 bg-gray-200 rounded-lg justify-center items-center"><Ionicons name="qr-code" size={24} /></View>}
-                  <Text className="flex-1 text-xs text-gray-500">Upload QRIS (JPG/PNG)</Text>
-              </TouchableOpacity>
+              <View>
+                <Text className="text-sm text-gray-500 mb-2">QRIS Code</Text>
+                <TouchableOpacity onPress={handlePickImage} className="flex-row items-center gap-4 p-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                    {qrPreview ? <Image source={{ uri: qrPreview }} className="w-20 h-20 rounded-lg" resizeMode="contain" /> : <View className="w-20 h-20 bg-gray-200 rounded-lg justify-center items-center"><Ionicons name="qr-code" size={24} /></View>}
+                    <Text className="flex-1 text-xs text-gray-500">Upload QRIS (JPG/PNG)</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
+          
           <View className="h-[1px] bg-gray-100 my-4" />
+          
           <View className="mb-6">
             <Text className="text-xl font-bold text-[#3A5F50] mb-4">Legalitas & PJ</Text>
             <View className="gap-4">
@@ -220,6 +277,7 @@ export default function EditShelterProfile() {
                </TouchableOpacity>
             </View>
           </View>
+
           <View className="mb-8">
             <Text className="text-xl font-bold text-[#3A5F50] mb-4">Lokasi</Text>
             <TouchableOpacity onPress={() => setMapModalVisible(true)} className="w-full h-40 bg-gray-200 rounded-2xl mb-4 overflow-hidden relative">
@@ -228,6 +286,7 @@ export default function EditShelterProfile() {
             </TouchableOpacity>
             <Text className="text-xs text-gray-400 mb-1">Alamat: {form.address || 'Belum diset'}</Text>
           </View>
+
           <TouchableOpacity onPress={handleSubmit} disabled={submitting} className={`w-full py-4 rounded-full shadow-lg flex-row justify-center items-center gap-2 ${submitting ? 'bg-[#dcb945]' : 'bg-[#EBCD5E]'}`}>
             {submitting ? <ActivityIndicator color="white" /> : <Text className="text-white font-bold text-xl">Simpan Perubahan</Text>}
           </TouchableOpacity>
@@ -251,6 +310,15 @@ export default function EditShelterProfile() {
             </View>
         </View>
       </Modal>
+
+      {/* MODAL POPUP */}
+      <CustomPopup
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        title={modalTitle}
+        message={modalMessage}
+        type={modalType}
+      />
     </View>
   );
 }
