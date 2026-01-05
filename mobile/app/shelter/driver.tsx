@@ -7,21 +7,19 @@ import {
 import { useRouter, Stack } from 'expo-router';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { LinearGradient } from 'expo-linear-gradient';
 
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 
-const { width } = Dimensions.get('window');
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://192.168.1.5:3000';
 
 // Helper URL Gambar
 const resolveImageUrl = (path: string | null, folder: 'profile' | 'license') => {
-  if (!path) return null;
+  if (!path || path === 'null') return null;
   if (path.startsWith('http')) return path;
   return `${serverUrl}/public/img/${folder}/${path}`;
 };
 
-// Helper Warna Avatar Random (Mirip Vue)
+// Helper Warna Avatar Random
 const getAvatarColor = (index: number) => {
   const colors = ['#60997E', '#4E7C68', '#3A5F50', '#88B09B', '#EBCD5E'];
   return colors[index % colors.length];
@@ -39,7 +37,6 @@ export default function ShelterDriverPage() {
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [expandedDriverId, setExpandedDriverId] = useState<number | null>(null);
 
   // Form State
   const [form, setForm] = useState({
@@ -61,10 +58,9 @@ export default function ShelterDriverPage() {
     try {
       setIsLoading(true);
       const response = await apiClient.get('/drivers');
-      // Mapping sesuai struktur backend -> frontend
       const mapped = response.data.map((d: any) => ({
         id: d.id,
-        name: d.full_name || d.name, // Handle beda field name
+        name: d.full_name || d.name,
         username: d.username,
         email: d.email,
         phone: d.contact_phone,
@@ -118,7 +114,6 @@ export default function ShelterDriverPage() {
         formData.append('password', form.password);
       }
 
-      // Append File Photo
       if (form.photo && form.photo.uri) {
         formData.append('photo', {
           uri: form.photo.uri,
@@ -127,7 +122,6 @@ export default function ShelterDriverPage() {
         } as any);
       }
 
-      // Append File SIM
       if (form.sim && form.sim.uri) {
         formData.append('sim', {
           uri: form.sim.uri,
@@ -152,7 +146,6 @@ export default function ShelterDriverPage() {
       fetchDrivers();
 
     } catch (error: any) {
-      console.error(error);
       const msg = error.response?.data?.message || "Terjadi kesalahan.";
       Alert.alert("Gagal", msg);
     } finally {
@@ -161,10 +154,6 @@ export default function ShelterDriverPage() {
   };
 
   // --- HANDLERS UI ---
-  const toggleExpand = (id: number) => {
-    setExpandedDriverId(expandedDriverId === id ? null : id);
-  };
-
   const openAddModal = () => {
     setIsEditing(false);
     setEditId(null);
@@ -179,13 +168,11 @@ export default function ShelterDriverPage() {
       name: driver.name,
       username: driver.username,
       email: driver.email,
-      password: '', // Password kosong saat edit
+      password: '',
       phone: driver.phone,
-      sim: null, // Reset file picker (tapi preview pakai URL lama)
+      sim: null,
       photo: null
     });
-    // Kita simpan URL lama di object form sementara jika user tidak upload baru
-    // Tapi logic display di modal pakai kondisi (form.photo ? form.photo.uri : oldUrl)
     setShowModal(true);
   };
 
@@ -204,180 +191,148 @@ export default function ShelterDriverPage() {
     }
   };
 
-  // --- RENDER ---
   return (
     <>
     <Stack.Screen options={{ headerShown: false }} />
     <View style={styles.container}>
-      <LinearGradient colors={['#cfe3d4', '#3A5F50']} style={styles.bgGradient} />
       
-      {/* HEADER */}
+      {/* HEADER (Gaya Dashboard.tsx) */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Ionicons name="arrow-back" size={24} color="#3A5F50" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Kelola Driver</Text>
-        <TouchableOpacity style={styles.addBtn} onPress={openAddModal}>
-            <Ionicons name="add" size={24} color="#3A5F50" />
-        </TouchableOpacity>
+        <View>
+            <Text style={styles.headerTitle}>Manajemen Driver</Text>
+            <Text style={styles.headerSubtitle}>Kelola akun petugas penjemputan</Text>
+        </View>
       </View>
 
       {/* CONTENT */}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 100 }}>
+        
+        {/* Tombol Tambah (Gaya Dashboard.tsx) */}
+        <TouchableOpacity style={styles.addBtn} onPress={openAddModal}>
+            <Ionicons name="add-circle" size={20} color="#1f2937" />
+            <Text style={styles.addBtnText}>Tambah Driver Baru</Text>
+        </TouchableOpacity>
+
         {isLoading ? (
-            <ActivityIndicator size="large" color="#3A5F50" style={{marginTop: 50}} />
+            <ActivityIndicator size="large" color="#EBCD5E" style={{marginTop: 50}} />
         ) : drivers.length === 0 ? (
-            <View style={styles.emptyBox}>
-                <View style={styles.emptyIcon}>
-                    <FontAwesome5 name="id-card" size={40} color="#ccc" />
-                </View>
-                <Text style={styles.emptyTitle}>Belum ada driver</Text>
-                <Text style={styles.emptySub}>Tambahkan driver untuk membantu penjemputan.</Text>
-            </View>
+            <Text style={styles.emptyText}>Belum ada driver terdaftar.</Text>
         ) : (
             drivers.map((driver, index) => (
-                <View key={driver.id} style={styles.card}>
-                    {/* Header Card (Clickable) */}
-                    <TouchableOpacity 
-                        style={styles.cardHeader} 
-                        onPress={() => toggleExpand(driver.id)}
-                        activeOpacity={0.7}
-                    >
-                        <View style={styles.cardLeft}>
-                            {driver.photo ? (
-                                <Image 
-                                    source={{ uri: resolveImageUrl(driver.photo, 'profile') || undefined }} 
-                                    style={styles.avatarImg} 
-                                />
-                            ) : (
-                                <View style={[styles.avatarPlaceholder, { backgroundColor: getAvatarColor(index) }]}>
-                                    <Text style={styles.avatarInitial}>{driver.name.charAt(0).toUpperCase()}</Text>
-                                </View>
-                            )}
-                            <View>
-                                <Text style={styles.driverName}>{driver.name}</Text>
-                                <Text style={styles.driverUsername}>@{driver.username}</Text>
-                            </View>
-                        </View>
-                        <Ionicons 
-                            name={expandedDriverId === driver.id ? "chevron-up-circle" : "chevron-down-circle"} 
-                            size={28} 
-                            color={expandedDriverId === driver.id ? "#EBCD5E" : "#cbd5e1"} 
+                <View key={driver.id} style={styles.driverCard}>
+                    {/* Foto/Avatar di Kiri */}
+                    {driver.photo ? (
+                        <Image 
+                            source={{ uri: resolveImageUrl(driver.photo, 'profile') || undefined }} 
+                            style={styles.driverImage} 
                         />
-                    </TouchableOpacity>
-
-                    {/* Expandable Content */}
-                    {expandedDriverId === driver.id && (
-                        <View style={styles.cardBody}>
-                            <View style={styles.divider} />
-                            
-                            <View style={styles.infoRow}>
-                                <View style={{flex:1}}>
-                                    <Text style={styles.label}>EMAIL</Text>
-                                    <Text style={styles.value}>{driver.email}</Text>
-                                </View>
-                                <View style={{flex:1}}>
-                                    <Text style={styles.label}>NO. TELEPON</Text>
-                                    <Text style={styles.value}>{driver.phone || '-'}</Text>
-                                </View>
-                            </View>
-
-                            <Text style={[styles.label, {marginTop: 15}]}>FOTO SIM</Text>
-                            <View style={styles.simBox}>
-                                {driver.sim ? (
-                                    <Image 
-                                        source={{ uri: resolveImageUrl(driver.sim, 'license') || undefined }} 
-                                        style={styles.simImg} 
-                                        resizeMode="contain"
-                                    />
-                                ) : (
-                                    <Text style={styles.noSimText}>Tidak ada foto SIM</Text>
-                                )}
-                            </View>
-
-                            <View style={styles.actionRow}>
-                                <TouchableOpacity onPress={() => openEditModal(driver)} style={styles.editBtn}>
-                                    <Text style={styles.btnTextWhite}>Edit Data</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={() => handleDelete(driver.id)} style={styles.deleteBtn}>
-                                    <Text style={styles.btnTextRed}>Hapus</Text>
-                                </TouchableOpacity>
-                            </View>
+                    ) : (
+                        <View style={[styles.driverImage, { backgroundColor: getAvatarColor(index), justifyContent: 'center', alignItems: 'center' }]}>
+                            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 24 }}>{driver.name.charAt(0).toUpperCase()}</Text>
                         </View>
                     )}
+
+                    {/* Info di Kanan */}
+                    <View style={styles.driverInfo}>
+                        <View style={styles.driverHeader}>
+                            <Text style={styles.driverName}>{driver.name}</Text>
+                            <View style={[styles.statusBadge, { backgroundColor: driver.is_available ? '#ecfdf5' : '#fff7ed' }]}>
+                                <Text style={[styles.statusText, { color: driver.is_available ? '#047857' : '#ea580c' }]}>
+                                    {driver.is_available ? 'Aktif' : 'Sibuk'}
+                                </Text>
+                            </View>
+                        </View>
+                        
+                        <Text style={styles.driverSubText}>@{driver.username} • {driver.phone || 'No HP -'}</Text>
+                        <Text style={styles.driverEmail} numberOfLines={1}>{driver.email}</Text>
+                        
+                        {/* Aksi (Gaya Dashboard.tsx) */}
+                        <View style={styles.actionRow}>
+                            <TouchableOpacity onPress={() => openEditModal(driver)} style={styles.editAction}>
+                                <Text style={styles.actionText}>Edit</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => handleDelete(driver.id)} style={styles.deleteAction}>
+                                <Text style={[styles.actionText, { color: '#ef4444' }]}>Hapus</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                 </View>
             ))
         )}
       </ScrollView>
 
-      {/* MODAL FORM */}
+      {/* MODAL FORM (Gaya Dashboard.tsx) */}
       <Modal visible={showModal} animationType="slide" transparent>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
-            <View style={styles.modalContainer}>
-                <View style={styles.modalHeader}>
-                    <Text style={styles.modalTitle}>{isEditing ? 'Edit Driver' : 'Tambah Driver'}</Text>
+            <View style={styles.modalContent}>
+                <View style={styles.modalHeaderModal}>
+                    <Text style={styles.modalTitle}>{isEditing ? 'Edit Data Driver' : 'Tambah Driver'}</Text>
                     <TouchableOpacity onPress={closeModal}>
-                        <Ionicons name="close-circle" size={28} color="#9ca3af" />
+                        <Ionicons name="close" size={24} color="#666" />
                     </TouchableOpacity>
                 </View>
                 
-                <ScrollView contentContainerStyle={styles.modalBody}>
-                    {/* Foto Profil */}
-                    <TouchableOpacity onPress={() => pickImage('photo')} style={styles.uploadAvatar}>
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    {/* Foto Profil Picker */}
+                    <TouchableOpacity onPress={() => pickImage('photo')} style={styles.imagePicker}>
                         {form.photo ? (
-                            <Image source={{ uri: form.photo.uri }} style={styles.uploadAvatarImg} />
+                            <Image source={{ uri: form.photo.uri }} style={{ width: '100%', height: '100%' }} />
                         ) : isEditing && drivers.find(d => d.id === editId)?.photo ? (
-                            <Image source={{ uri: resolveImageUrl(drivers.find(d => d.id === editId)?.photo, 'profile')! }} style={styles.uploadAvatarImg} />
+                            <Image source={{ uri: resolveImageUrl(drivers.find(d => d.id === editId)?.photo, 'profile')! }} style={{ width: '100%', height: '100%' }} />
                         ) : (
-                            <View style={styles.uploadAvatarPlaceholder}>
-                                <Ionicons name="camera" size={24} color="#9ca3af" />
-                                <Text style={styles.uploadLabel}>Foto</Text>
+                            <View style={{ alignItems: 'center' }}>
+                                <Ionicons name="camera" size={32} color="#ccc" />
+                                <Text style={{ color: '#999', fontSize: 11 }}>Foto Profil</Text>
                             </View>
                         )}
                     </TouchableOpacity>
 
-                    <Text style={styles.inputLabel}>Nama Lengkap</Text>
-                    <TextInput style={styles.input} value={form.name} onChangeText={t => setForm({...form, name: t})} placeholder="Budi Santoso" />
+                    <Text style={styles.label}>Nama Lengkap</Text>
+                    <TextInput style={styles.input} value={form.name} onChangeText={t => setForm({...form, name: t})} placeholder="Masukkan nama" />
 
                     <View style={{flexDirection: 'row', gap: 10}}>
                         <View style={{flex: 1}}>
-                            <Text style={styles.inputLabel}>Username</Text>
-                            <TextInput style={styles.input} value={form.username} onChangeText={t => setForm({...form, username: t})} placeholder="budidriver" autoCapitalize="none" />
+                            <Text style={styles.label}>Username</Text>
+                            <TextInput style={styles.input} value={form.username} onChangeText={t => setForm({...form, username: t})} placeholder="username" autoCapitalize="none" />
                         </View>
                         <View style={{flex: 1}}>
-                            <Text style={styles.inputLabel}>No. HP</Text>
-                            <TextInput style={styles.input} value={form.phone} onChangeText={t => setForm({...form, phone: t})} placeholder="0812..." keyboardType="phone-pad" />
+                            <Text style={styles.label}>No. HP</Text>
+                            <TextInput style={styles.input} value={form.phone} onChangeText={t => setForm({...form, phone: t})} placeholder="08..." keyboardType="phone-pad" />
                         </View>
                     </View>
 
-                    <Text style={styles.inputLabel}>Email</Text>
-                    <TextInput style={styles.input} value={form.email} onChangeText={t => setForm({...form, email: t})} placeholder="email@contoh.com" keyboardType="email-address" autoCapitalize="none" />
+                    <Text style={styles.label}>Email</Text>
+                    <TextInput style={styles.input} value={form.email} onChangeText={t => setForm({...form, email: t})} placeholder="email@driver.com" keyboardType="email-address" autoCapitalize="none" />
 
                     {!isEditing && (
                         <>
-                            <Text style={styles.inputLabel}>Password</Text>
+                            <Text style={styles.label}>Password</Text>
                             <TextInput style={styles.input} value={form.password} onChangeText={t => setForm({...form, password: t})} placeholder="******" secureTextEntry />
                         </>
                     )}
 
-                    {/* Foto SIM */}
-                    <Text style={styles.inputLabel}>Upload Foto SIM</Text>
-                    <TouchableOpacity onPress={() => pickImage('sim')} style={styles.uploadSim}>
+                    <Text style={styles.label}>Foto SIM</Text>
+                    <TouchableOpacity onPress={() => pickImage('sim')} style={styles.simPicker}>
                         {form.sim ? (
-                            <Image source={{ uri: form.sim.uri }} style={styles.uploadSimImg} />
+                            <Image source={{ uri: form.sim.uri }} style={{ width: '100%', height: '100%' }} />
                         ) : isEditing && drivers.find(d => d.id === editId)?.sim ? (
-                            <Image source={{ uri: resolveImageUrl(drivers.find(d => d.id === editId)?.sim, 'license')! }} style={styles.uploadSimImg} />
+                            <Image source={{ uri: resolveImageUrl(drivers.find(d => d.id === editId)?.sim, 'license')! }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
                         ) : (
                             <View style={{alignItems: 'center'}}>
                                 <Ionicons name="image-outline" size={24} color="#9ca3af" />
-                                <Text style={styles.uploadLabel}>Pilih Foto SIM</Text>
+                                <Text style={{ fontSize: 11, color: '#9ca3af' }}>Pilih Foto SIM</Text>
                             </View>
                         )}
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} disabled={isSubmitting}>
-                        {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitBtnText}>Simpan Driver</Text>}
+                    <TouchableOpacity style={[styles.submitBtn, isSubmitting && { opacity: 0.7 }]} onPress={handleSubmit} disabled={isSubmitting}>
+                        {isSubmitting ? <ActivityIndicator color="#1f2937" /> : <Text style={styles.submitBtnText}>Simpan Data</Text>}
                     </TouchableOpacity>
+                    
+                    <View style={{ height: 20 }} />
                 </ScrollView>
             </View>
         </KeyboardAvoidingView>
@@ -389,70 +344,80 @@ export default function ShelterDriverPage() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f3f4f6' },
-  bgGradient: { position: 'absolute', top: 0, left: 0, right: 0, height: 250 },
+  container: { flex: 1, backgroundColor: '#F3F4F6' },
   
+  // Header
   header: { 
-    paddingTop: 50, paddingHorizontal: 20, paddingBottom: 20, 
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' 
+    paddingTop: Platform.OS === 'android' ? 50 : 60, 
+    paddingHorizontal: 20, 
+    paddingBottom: 20, 
+    backgroundColor: '#fff', 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee'
   },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', color: '#fff', textShadowColor: 'rgba(0,0,0,0.2)', textShadowRadius: 3 },
-  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  addBtn: { width: 44, height: 44, backgroundColor: '#EBCD5E', borderRadius: 22, justifyContent: 'center', alignItems: 'center', elevation: 5 },
+  backBtn: { padding: 5 },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#1f2937' },
+  headerSubtitle: { fontSize: 13, color: '#6b7280' },
 
-  scrollContent: { padding: 20, paddingBottom: 100 },
+  content: { padding: 20 },
+
+  // Add Button
+  addBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: '#EBCD5E', padding: 12, borderRadius: 12, marginBottom: 20,
+    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 5, elevation: 3
+  },
+  addBtnText: { fontWeight: 'bold', color: '#1f2937' },
   
-  // Empty State
-  emptyBox: { alignItems: 'center', marginTop: 50, padding: 30, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 20 },
-  emptyIcon: { width: 80, height: 80, backgroundColor: '#e5e7eb', borderRadius: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 15 },
-  emptyTitle: { fontSize: 18, fontWeight: 'bold', color: '#374151' },
-  emptySub: { fontSize: 13, color: '#6b7280', textAlign: 'center', marginTop: 5 },
+  emptyText: { textAlign: 'center', marginTop: 40, color: '#9ca3af', fontStyle: 'italic' },
 
-  // Card Driver
-  card: { backgroundColor: '#fff', borderRadius: 16, marginBottom: 15, elevation: 2, overflow: 'hidden' },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15 },
-  cardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatarImg: { width: 50, height: 50, borderRadius: 25 },
-  avatarPlaceholder: { width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center' },
-  avatarInitial: { color: '#fff', fontWeight: 'bold', fontSize: 20 },
-  driverName: { fontSize: 16, fontWeight: 'bold', color: '#1f2937' },
-  driverUsername: { fontSize: 12, color: '#6b7280', backgroundColor: '#f3f4f6', alignSelf: 'flex-start', paddingHorizontal: 6, borderRadius: 4, marginTop: 2 },
+  // Driver Card (Mirip Cat Card di Dashboard.tsx)
+  driverCard: {
+    backgroundColor: '#fff', borderRadius: 16, marginBottom: 15, flexDirection: 'row',
+    overflow: 'hidden', elevation: 2, padding: 12, alignItems: 'center'
+  },
+  driverImage: { width: 85, height: 85, borderRadius: 100 },
+  driverInfo: { flex: 1, marginLeft: 15 },
+  driverHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  driverName: { fontWeight: 'bold', fontSize: 16, color: '#333' },
+  driverSubText: { fontSize: 12, color: '#6b7280', marginVertical: 2 },
+  driverEmail: { fontSize: 11, color: '#9ca3af', marginBottom: 8 },
   
-  // Expanded Content
-  cardBody: { paddingHorizontal: 15, paddingBottom: 20, backgroundColor: '#f9fafb' },
-  divider: { height: 1, backgroundColor: '#e5e7eb', marginBottom: 15 },
-  infoRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
-  label: { fontSize: 10, fontWeight: 'bold', color: '#9ca3af', marginBottom: 3 },
-  value: { fontSize: 14, color: '#374151', fontWeight: '500' },
-  
-  simBox: { height: 120, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginTop: 5, overflow: 'hidden' },
-  simImg: { width: '100%', height: '100%' },
-  noSimText: { fontSize: 12, color: '#9ca3af' },
+  statusBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+  statusText: { fontSize: 10, fontWeight: 'bold' },
 
-  actionRow: { flexDirection: 'row', gap: 10, marginTop: 20 },
-  editBtn: { flex: 1, backgroundColor: '#3A5F50', padding: 10, borderRadius: 8, alignItems: 'center' },
-  deleteBtn: { flex: 1, backgroundColor: '#fff', borderWidth: 1, borderColor: '#fca5a5', padding: 10, borderRadius: 8, alignItems: 'center' },
-  btnTextWhite: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
-  btnTextRed: { color: '#ef4444', fontWeight: 'bold', fontSize: 13 },
+  actionRow: { flexDirection: 'row', gap: 10 },
+  editAction: { backgroundColor: '#f3f4f6', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 6 },
+  deleteAction: { backgroundColor: '#fef2f2', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 6 },
+  actionText: { fontSize: 12, fontWeight: 'bold', color: '#4b5563' },
 
-  // Modal
+  // Modal (Mirip Dashboard.tsx)
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContainer: { backgroundColor: '#fff', borderTopLeftRadius: 25, borderTopRightRadius: 25, maxHeight: '90%' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#1f2937' },
-  modalBody: { padding: 20 },
-
-  uploadAvatar: { alignSelf: 'center', marginBottom: 20 },
-  uploadAvatarImg: { width: 90, height: 90, borderRadius: 45, borderWidth: 2, borderColor: '#EBCD5E' },
-  uploadAvatarPlaceholder: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#f3f4f6', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#d1d5db', borderStyle: 'dashed' },
+  modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 25, borderTopRightRadius: 25, padding: 25, maxHeight: '92%' },
+  modalHeaderModal: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
+  modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#333' },
   
-  inputLabel: { fontSize: 12, fontWeight: 'bold', color: '#6b7280', marginBottom: 5 },
-  input: { backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10, padding: 12, marginBottom: 15, fontSize: 14 },
+  imagePicker: { 
+    width: 90, height: 90, backgroundColor: '#f9fafb', borderRadius: 45, borderWidth: 1, 
+    borderColor: '#e5e7eb', borderStyle: 'dashed', alignSelf: 'center', marginBottom: 20, 
+    justifyContent: 'center', alignItems: 'center', overflow: 'hidden'
+  },
   
-  uploadSim: { height: 100, backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#d1d5db', borderStyle: 'dashed', borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-  uploadSimImg: { width: '100%', height: '100%', borderRadius: 10, resizeMode: 'cover' },
-  uploadLabel: { fontSize: 11, color: '#9ca3af', marginTop: 4 },
+  simPicker: { 
+    height: 120, backgroundColor: '#f9fafb', borderRadius: 12, borderWidth: 1, 
+    borderColor: '#e5e7eb', borderStyle: 'dashed', marginBottom: 20, 
+    justifyContent: 'center', alignItems: 'center', overflow: 'hidden'
+  },
 
-  submitBtn: { backgroundColor: '#3A5F50', padding: 15, borderRadius: 12, alignItems: 'center' },
-  submitBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 }
+  label: { fontSize: 11, fontWeight: 'bold', color: '#6b7280', marginBottom: 5, textTransform: 'uppercase' },
+  input: { 
+    backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb', 
+    borderRadius: 10, padding: 12, marginBottom: 15, fontSize: 14 
+  },
+  
+  submitBtn: { backgroundColor: '#EBCD5E', padding: 15, borderRadius: 12, alignItems: 'center', marginTop: 10 },
+  submitBtnText: { fontWeight: 'bold', color: '#1f2937', fontSize: 16 }
 });

@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { 
   View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, 
   Image, ImageBackground, Dimensions, StatusBar, Alert, Modal, 
-  ActivityIndicator, RefreshControl 
+  ActivityIndicator, RefreshControl, Platform 
 } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from "jwt-decode";
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
+import { useRouter } from 'expo-router';
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 import StickyBackButton from '../../components/StickyBackButton';
 // IMPORT CUSTOM POPUP
@@ -18,7 +19,8 @@ import CustomPopup from '../../components/CustomPopup';
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://192.168.1.5:3000';
 
 export default function DonationScreen() {
-   const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   // --- STATE ---
   const [userRole, setUserRole] = useState<string>('guest');
@@ -85,16 +87,11 @@ export default function DonationScreen() {
         setUserId(decoded.id);
 
         if (role === 'shelter') {
-          // KHUSUS SHELTER: Ambil Laporan Donasi Masuk
-          // Endpoint: GET /api/v1/donations/shelter/:id
           await fetchReceivedDonations(decoded.id);
         } else {
-          // KHUSUS USER: Ambil List Shelter
-          // Endpoint: GET /api/v1/users/shelters
           await fetchShelters();
         }
       } else {
-        // GUEST
         await fetchShelters();
       }
     } catch (e) {
@@ -104,8 +101,6 @@ export default function DonationScreen() {
   };
 
   // --- API FUNCTIONS ---
-
-  // 1. Ambil List Shelter (Sesuai server.js -> userRoutes)
   const fetchShelters = async () => {
     try {
       const response = await apiClient.get('/users/shelters');
@@ -115,7 +110,6 @@ export default function DonationScreen() {
     }
   };
 
-  // 2. Ambil History Donasi (Sesuai server.js -> donationRoutes)
   const fetchReceivedDonations = async (id: number) => {
     try {
       const response = await apiClient.get(`/donations/shelter/${id}`);
@@ -155,15 +149,12 @@ export default function DonationScreen() {
     }
 
     setIsSubmitting(true);
-    
-    // Gunakan FormData agar cocok dengan @fastify/multipart di server.js
     const formData = new FormData();
     formData.append('shelter_id', selectedShelterId.toString());
     formData.append('payment_method', paymentMethod);
     formData.append('amount', amount);
     formData.append('is_anonymus', isAnonymous ? '1' : '0');
     
-    // File Upload
     formData.append('proof', {
       uri: proofImage.uri,
       name: proofImage.name,
@@ -171,48 +162,42 @@ export default function DonationScreen() {
     } as any);
 
     try {
-      // POST ke /api/v1/donations
       await apiClient.post('/donations', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      
       showPopup("success", "Berhasil!", "Donasi Anda sedang diverifikasi oleh shelter.");
-      
-      // Reset (Logic asli tidak diubah)
       setSelectedShelterId(null);
       setAmount('');
       setPaymentMethod('');
       setProofImage(null);
       setIsAnonymous(false);
     } catch (error: any) {
-      console.error(error);
       showPopup("error", "Gagal", error.response?.data?.message || "Gagal terhubung ke server.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // --- RENDER: SHELTER VIEW ---
+  // --- RENDER: SHELTER VIEW (UPGRADED UI) ---
   if (userRole === 'shelter') {
     return (
-      <View style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#1F352C" />
+      <View style={[styles.container, { backgroundColor: '#F3F4F6' }]}>
+        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
         
-        <View style={styles.headerShelter}>
-           <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-              <View>
-                 <Text style={styles.headerSubtitle}>Laporan Pemasukan</Text>
-                 <Text style={styles.headerTitle}>Donasi Masuk</Text>
-              </View>
-              <View style={styles.iconBox}>
-                 <FontAwesome5 name="hand-holding-heart" size={20} color="#EBCD5E" />
-              </View>
-           </View>
+        {/* HEADER (Gaya Dashboard.tsx) */}
+        <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+                <Ionicons name="arrow-back" size={24} color="#3A5F50" />
+            </TouchableOpacity>
+            <View>
+                <Text style={styles.headerTitle}>Laporan Donasi</Text>
+                <Text style={styles.headerSubtitle}>Riwayat dana masuk dari donatur</Text>
+            </View>
         </View>
 
         <ScrollView 
           contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3A5F50" />}
         >
            {isLoading ? (
               <ActivityIndicator size="large" color="#EBCD5E" style={{marginTop: 50}} />
@@ -287,7 +272,6 @@ export default function DonationScreen() {
                <Text style={styles.formTitle}>Formulir Donasi</Text>
             </View>
 
-            {/* Checkbox Anonim */}
             <TouchableOpacity 
               style={[styles.anonContainer, isAnonymous && styles.anonActive]}
               onPress={() => setIsAnonymous(!isAnonymous)}
@@ -301,7 +285,6 @@ export default function DonationScreen() {
                </View>
             </TouchableOpacity>
 
-            {/* Dropdown Shelter */}
             <View style={styles.inputGroup}>
                <Text style={styles.label}>SHELTER TUJUAN</Text>
                <TouchableOpacity style={styles.dropdown} onPress={() => setShelterModalVisible(true)}>
@@ -312,7 +295,6 @@ export default function DonationScreen() {
                </TouchableOpacity>
             </View>
 
-            {/* Input Nominal */}
             <View style={styles.inputGroup}>
                <Text style={styles.label}>JUMLAH DONASI</Text>
                <View style={styles.inputWrapper}>
@@ -327,7 +309,6 @@ export default function DonationScreen() {
                </View>
             </View>
 
-            {/* Metode Pembayaran */}
             <View style={styles.inputGroup}>
                <Text style={styles.label}>METODE PEMBAYARAN</Text>
                <View style={styles.radioContainer}>
@@ -368,7 +349,6 @@ export default function DonationScreen() {
                )}
             </View>
 
-            {/* Upload Bukti */}
             <View style={styles.inputGroup}>
                <Text style={styles.label}>BUKTI TRANSFER</Text>
                <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
@@ -389,7 +369,6 @@ export default function DonationScreen() {
         </View>
       </ScrollView>
 
-      {/* MODAL SHELTER */}
       <Modal visible={shelterModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
            <View style={styles.modalContent}>
@@ -417,7 +396,6 @@ export default function DonationScreen() {
         </View>
       </Modal>
 
-      {/* CUSTOM POPUP COMPONENT */}
       <CustomPopup
         visible={popupVisible}
         onClose={() => setPopupVisible(false)}
@@ -425,21 +403,24 @@ export default function DonationScreen() {
         title={popupTitle}
         message={popupMessage}
       />
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#2C473C' },
-  headerShelter: {
-    paddingTop: 60, paddingHorizontal: 24, paddingBottom: 30,
-    backgroundColor: '#3A5F50', borderBottomLeftRadius: 30, borderBottomRightRadius: 30,
-    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, elevation: 5
+  
+  // Header Style Baru (Dashboard.tsx Style)
+  header: { 
+    paddingTop: Platform.OS === 'android' ? 50 : 60, 
+    paddingHorizontal: 20, paddingBottom: 20, backgroundColor: '#fff', 
+    flexDirection: 'row', alignItems: 'center', gap: 15, borderBottomWidth: 1, borderBottomColor: '#eee'
   },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#fff' },
-  headerSubtitle: { fontSize: 12, color: '#EBCD5E', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 },
-  iconBox: { width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  backBtn: { padding: 5 },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#1f2937' },
+  headerSubtitle: { fontSize: 13, color: '#6b7280' },
+
+  // Shelter Content Styles
   emptyState: { alignItems: 'center', marginTop: 80, opacity: 0.7 },
   donationCard: {
     backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 12,
@@ -456,6 +437,8 @@ const styles = StyleSheet.create({
   donorName: { fontWeight: 'bold', color: '#1F2937', fontSize: 14 },
   paymentMethod: { fontSize: 11, color: '#6B7280' },
   amountText: { fontWeight: 'bold', color: '#059669', fontSize: 16 },
+
+  // Donatur Content Styles
   heroSection: { alignItems: 'center', padding: 24, paddingTop: 40 },
   heroImage: { width: 140, height: 140, marginBottom: 15 },
   heroTitle: { fontSize: 22, fontWeight: 'bold', color: '#fff', textAlign: 'center' },

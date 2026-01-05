@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, Alert, ActivityIndicator, Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { FontAwesome } from '@expo/vector-icons';
+import { 
+  View, Text, ScrollView, Image, TouchableOpacity, Alert, 
+  ActivityIndicator, Dimensions, StyleSheet, Platform 
+} from 'react-native';
+import { useRouter, Stack } from 'expo-router';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 
-const { width } = Dimensions.get('window');
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://192.168.1.5:3000';
 
+// --- HELPERS ---
 const resolveBackendUrl = (path: string) => {
   if (!path) return null;
   if (path.startsWith('http')) return path;
@@ -17,7 +19,7 @@ const resolveBackendUrl = (path: string) => {
 };
 
 const resolveImageUrl = (path: string) => {
-  if (!path || path === 'null') return 'https://via.placeholder.com/150'; // Placeholder
+  if (!path || path === 'null') return 'https://via.placeholder.com/150';
   if (path.startsWith('http')) return path;
   if (path.startsWith('/public/')) return `${serverUrl}${path}`;
   if (path.startsWith('profile-')) return `${serverUrl}/public/img/profile/${path}`;
@@ -25,6 +27,7 @@ const resolveImageUrl = (path: string) => {
 };
 
 export default function ShelterAdoptionDashboard() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,150 +89,241 @@ export default function ShelterAdoptionDashboard() {
   }, [reports, activeTab]);
 
   return (
-    <View className="flex-1">
-      <LinearGradient
-        colors={['#cfe3d4', '#3A5F50']}
-        className="flex-1"
-      >
-        <SafeAreaView className="flex-1">
-          {/* HEADER */}
-          <View className="items-center py-6">
-            <Text className="text-2xl font-extrabold text-white">Dashboard Adopsi</Text>
-            
-            {/* TABS */}
-            <View className="flex-row bg-white/90 p-1 rounded-full mt-6 shadow-lg">
-              <TouchableOpacity 
-                onPress={() => setActiveTab('pending')}
-                className={`px-8 py-2 rounded-full flex-row items-center ${activeTab === 'pending' ? 'bg-[#EBCD5E]' : ''}`}
-              >
-                <Text className={`font-bold text-sm ${activeTab === 'pending' ? 'text-white' : 'text-gray-500'}`}>Menunggu</Text>
+    <>
+    <Stack.Screen options={{ headerShown: false }} />
+    <View style={styles.container}>
+      
+      {/* HEADER (Gaya Dashboard.tsx) */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color="#3A5F50" />
+        </TouchableOpacity>
+        <View>
+            <Text style={styles.headerTitle}>Dashboard Adopsi</Text>
+            <Text style={styles.headerSubtitle}>Verifikasi berkas calon adopter</Text>
+        </View>
+      </View>
+
+      {/* TABS (Gaya Dashboard.tsx) */}
+      <View style={styles.tabContainer}>
+          <TouchableOpacity 
+              style={[styles.tabBtn, activeTab === 'pending' && styles.tabBtnActive]} 
+              onPress={() => setActiveTab('pending')}
+          >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={[styles.tabText, activeTab === 'pending' && styles.tabTextActive]}>Menunggu</Text>
                 {reports.filter(r => r.status === 'pending').length > 0 && (
-                  <View className="bg-red-500 rounded-full px-1.5 ml-2">
-                    <Text className="text-white text-[10px] font-bold">
-                      {reports.filter(r => r.status === 'pending').length}
-                    </Text>
+                  <View style={styles.countBadge}>
+                    <Text style={styles.countText}>{reports.filter(r => r.status === 'pending').length}</Text>
                   </View>
                 )}
-              </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={() => setActiveTab('history')}
-                className={`px-8 py-2 rounded-full ${activeTab === 'history' ? 'bg-[#3A5F50]' : ''}`}
-              >
-                <Text className={`font-bold text-sm ${activeTab === 'history' ? 'text-white' : 'text-gray-500'}`}>Riwayat</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+              </View>
+          </TouchableOpacity>
+          <TouchableOpacity 
+              style={[styles.tabBtn, activeTab === 'history' && styles.tabBtnActive]} 
+              onPress={() => setActiveTab('history')}
+          >
+              <Text style={[styles.tabText, activeTab === 'history' && styles.tabTextActive]}>Riwayat</Text>
+          </TouchableOpacity>
+      </View>
 
-          {/* LIST CONTENT */}
-          {loading ? (
-            <ActivityIndicator color="white" size="large" className="mt-20" />
-          ) : (
-            <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
-              {filteredReports.length === 0 ? (
-                <View className="bg-white/80 rounded-3xl p-10 items-center mt-10 shadow-lg">
-                  <FontAwesome name={activeTab === 'pending' ? 'clipboard' : 'history'} size={40} color="#9ca3af" />
-                  <Text className="text-gray-500 mt-3 text-center">
-                    {activeTab === 'pending' ? 'Tidak ada permintaan baru.' : 'Belum ada riwayat.'}
-                  </Text>
-                </View>
-              ) : (
-                filteredReports.map((report) => (
-                  <View 
+      {/* CONTENT */}
+      <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 100 }}>
+        {loading ? (
+            <ActivityIndicator size="large" color="#EBCD5E" style={{ marginTop: 50 }} />
+        ) : filteredReports.length === 0 ? (
+            <View style={styles.emptyBox}>
+                <FontAwesome name={activeTab === 'pending' ? 'clipboard' : 'history'} size={40} color="#ccc" />
+                <Text style={styles.emptyText}>
+                  {activeTab === 'pending' ? 'Tidak ada permintaan baru.' : 'Belum ada riwayat.'}
+                </Text>
+            </View>
+        ) : (
+            filteredReports.map((report) => (
+                <View 
                     key={report.id} 
-                    className={`bg-white rounded-2xl p-4 mb-4 shadow-sm border-l-4 ${
-                      report.status === 'pending' ? 'border-l-[#EBCD5E]' : 
-                      report.status === 'approved' ? 'border-l-green-500' : 'border-l-red-500'
-                    }`}
-                  >
-                    {/* Compact Header Clickable */}
+                    style={[
+                      styles.reportCard, 
+                      { borderLeftColor: report.status === 'pending' ? '#EBCD5E' : report.status === 'approved' ? '#22c55e' : '#ef4444' }
+                    ]}
+                >
+                    {/* Compact Header */}
                     <TouchableOpacity 
-                      onPress={() => setExpandedId(expandedId === report.id ? null : report.id)}
-                      className="flex-row items-center justify-between"
+                        onPress={() => setExpandedId(expandedId === report.id ? null : report.id)}
+                        style={styles.cardHeader}
+                        activeOpacity={0.7}
                     >
-                      <View className="flex-row items-center flex-1">
-                        <Image 
-                          source={{ uri: resolveImageUrl(report.adopter.profilePic) }} 
-                          className="w-12 h-12 rounded-full bg-gray-200"
-                        />
-                        <View className="ml-3 flex-1">
-                          <View className="flex-row items-center">
-                            <Text className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full mr-2 ${
-                              report.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 
-                              report.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                            }`}>
-                              {report.status}
-                            </Text>
-                            <Text className="text-xs text-gray-400">{report.date}</Text>
-                          </View>
-                          <Text className="font-bold text-gray-800 text-base" numberOfLines={1}>
-                            {report.adopter.name} <Text className="font-normal text-gray-500 text-xs">ingin adopsi</Text> {report.catName}
-                          </Text>
+                        <View style={styles.cardHeaderLeft}>
+                            <Image 
+                                source={{ uri: resolveImageUrl(report.adopter.profilePic) }} 
+                                style={styles.adopterAvatar} 
+                            />
+                            <View style={{ flex: 1, marginLeft: 12 }}>
+                                <View style={styles.statusRow}>
+                                    <View style={[styles.statusPill, { backgroundColor: report.status === 'pending' ? '#fef9c3' : report.status === 'approved' ? '#dcfce7' : '#fef2f2' }]}>
+                                        <Text style={[styles.statusPillText, { color: report.status === 'pending' ? '#a16207' : report.status === 'approved' ? '#15803d' : '#b91c1c' }]}>
+                                            {report.status.toUpperCase()}
+                                        </Text>
+                                    </View>
+                                    <Text style={styles.dateText}>{report.date}</Text>
+                                </View>
+                                <Text style={styles.cardTitle} numberOfLines={1}>
+                                    <Text style={{ fontWeight: 'bold' }}>{report.adopter.name}</Text>
+                                    <Text style={{ color: '#6b7280', fontSize: 12 }}> ingin adopsi </Text>
+                                    <Text style={{ fontWeight: 'bold' }}>{report.catName}</Text>
+                                </Text>
+                            </View>
                         </View>
-                      </View>
-                      <FontAwesome name={expandedId === report.id ? 'chevron-up' : 'chevron-down'} size={14} color="#9ca3af" />
+                        <FontAwesome name={expandedId === report.id ? 'chevron-up' : 'chevron-down'} size={14} color="#9ca3af" />
                     </TouchableOpacity>
 
-                    {/* Expandable Details */}
+                    {/* Expandable Details (Isi Card Tetap) */}
                     {expandedId === report.id && (
-                      <View className="mt-4 pt-4 border-t border-gray-100">
-                        <Text className="font-bold text-gray-900 mb-2">Data Pelamar</Text>
-                        <View className="space-y-1">
-                          <Text className="text-sm text-gray-600"><Text className="font-medium">NIK:</Text> {report.adopter.nik}</Text>
-                          <Text className="text-sm text-gray-600"><Text className="font-medium">HP:</Text> {report.adopter.phone}</Text>
-                          <Text className="text-sm text-gray-600"><Text className="font-medium">Pekerjaan:</Text> {report.adopter.job}</Text>
-                          <Text className="text-sm text-gray-600 mb-3"><Text className="font-medium">Alamat:</Text> {report.adopter.address}</Text>
-                        </View>
+                        <View style={styles.cardExpanded}>
+                            <View style={styles.divider} />
+                            <Text style={styles.sectionTitle}>Data Pelamar</Text>
+                            <View style={styles.infoList}>
+                                <Text style={styles.infoItem}><Text style={styles.infoLabel}>NIK:</Text> {report.adopter.nik}</Text>
+                                <Text style={styles.infoItem}><Text style={styles.infoLabel}>HP:</Text> {report.adopter.phone}</Text>
+                                <Text style={styles.infoItem}><Text style={styles.infoLabel}>Pekerjaan:</Text> {report.adopter.job}</Text>
+                                <Text style={styles.infoItem}><Text style={styles.infoLabel}>Alamat:</Text> {report.adopter.address}</Text>
+                            </View>
 
-                        <Text className="font-bold text-gray-900 mb-2 mt-4">Dokumen</Text>
-                        <View className="flex-row gap-2">
-                          {report.adopter.documentUrl && (
-                            <TouchableOpacity 
-                              onPress={() => openDocument(report.adopter.documentUrl)}
-                              className="bg-green-50 border border-green-100 p-2 rounded-lg flex-row items-center"
-                            >
-                              <FontAwesome name="file-pdf-o" size={16} color="#ef4444" />
-                              <Text className="text-[#3A5F50] text-xs font-bold ml-2">Surat Pernyataan</Text>
-                            </TouchableOpacity>
-                          )}
-                          {report.adopter.identityUrl && (
-                            <TouchableOpacity 
-                              onPress={() => openDocument(report.adopter.identityUrl)}
-                              className="bg-gray-50 border border-gray-200 p-2 rounded-lg flex-row items-center"
-                            >
-                              <FontAwesome name="id-card" size={16} color="#3b82f6" />
-                              <Text className="text-gray-600 text-xs font-bold ml-2">Foto KTP</Text>
-                            </TouchableOpacity>
-                          )}
-                        </View>
+                            <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Dokumen</Text>
+                            <View style={styles.docRow}>
+                                {report.adopter.documentUrl && (
+                                    <TouchableOpacity onPress={() => openDocument(report.adopter.documentUrl)} style={styles.docBtn}>
+                                        <FontAwesome name="file-pdf-o" size={14} color="#ef4444" />
+                                        <Text style={styles.docBtnText}>Surat Pernyataan</Text>
+                                    </TouchableOpacity>
+                                )}
+                                {report.adopter.identityUrl && (
+                                    <TouchableOpacity onPress={() => openDocument(report.adopter.identityUrl)} style={[styles.docBtn, { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }]}>
+                                        <FontAwesome name="id-card" size={14} color="#3b82f6" />
+                                        <Text style={[styles.docBtnText, { color: '#475569' }]}>Foto KTP</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
 
-                        {/* Action Buttons */}
-                        {report.status === 'pending' && (
-                          <View className="flex-row justify-end mt-6 gap-3">
-                            <TouchableOpacity 
-                              onPress={() => handleVerification(report.id, 'rejected')}
-                              className="px-6 py-2 rounded-xl border border-red-200"
-                            >
-                              <Text className="text-red-600 font-bold">Tolak</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                              onPress={() => handleVerification(report.id, 'approved')}
-                              className="px-6 py-2 rounded-xl bg-[#3A5F50] shadow-md"
-                            >
-                              <Text className="text-white font-bold">Setujui</Text>
-                            </TouchableOpacity>
-                          </View>
-                        )}
-                      </View>
+                            {/* Action Buttons */}
+                            {report.status === 'pending' && (
+                                <View style={styles.actionRow}>
+                                    <TouchableOpacity 
+                                        onPress={() => handleVerification(report.id, 'rejected')}
+                                        style={styles.rejectBtn}
+                                    >
+                                        <Text style={styles.rejectBtnText}>Tolak</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity 
+                                        onPress={() => handleVerification(report.id, 'approved')}
+                                        style={styles.approveBtn}
+                                    >
+                                        <Text style={styles.approveBtnText}>Setujui</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        </View>
                     )}
-                  </View>
-                ))
-              )}
-              {/* Spacer Bottom */}
-              <View className="h-20" />
-            </ScrollView>
-          )}
-        </SafeAreaView>
-      </LinearGradient>
+                </View>
+            ))
+        )}
+      </ScrollView>
     </View>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#F3F4F6' },
+  
+  // Header Style (Dashboard.tsx)
+  header: { 
+    paddingTop: Platform.OS === 'android' ? 50 : 60, 
+    paddingHorizontal: 20, 
+    paddingBottom: 20, 
+    backgroundColor: '#fff', 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee'
+  },
+  backBtn: { padding: 5 },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#1f2937' },
+  headerSubtitle: { fontSize: 13, color: '#6b7280' },
+  
+  // Tab Style (Dashboard.tsx)
+  tabContainer: { 
+    flexDirection: 'row', 
+    padding: 15, 
+    gap: 10,
+    backgroundColor: '#fff' 
+  },
+  tabBtn: { 
+    flex: 1, 
+    paddingVertical: 10, 
+    borderRadius: 25, 
+    alignItems: 'center', 
+    backgroundColor: '#f3f4f6' 
+  },
+  tabBtnActive: { backgroundColor: '#3A5F50' },
+  tabText: { fontWeight: '600', color: '#666', fontSize: 13 },
+  tabTextActive: { color: '#fff' },
+  
+  countBadge: { backgroundColor: '#ef4444', borderRadius: 10, paddingHorizontal: 6, paddingVertical: 1 },
+  countText: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
+
+  content: { padding: 20 },
+  emptyBox: { backgroundColor: '#fff', borderRadius: 20, padding: 40, alignItems: 'center', marginTop: 20, elevation: 2 },
+  emptyText: { textAlign: 'center', marginTop: 10, color: '#9ca3af', fontStyle: 'italic' },
+
+  // Report Card (Gaya Card Tetap)
+  reportCard: { 
+    backgroundColor: '#fff', 
+    borderRadius: 16, 
+    marginBottom: 15, 
+    elevation: 2, 
+    overflow: 'hidden',
+    borderLeftWidth: 4
+  },
+  cardHeader: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    padding: 15 
+  },
+  cardHeaderLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  adopterAvatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#f3f4f6' },
+  statusRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
+  statusPill: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12, marginRight: 8 },
+  statusPillText: { fontSize: 9, fontWeight: 'bold' },
+  dateText: { fontSize: 11, color: '#9ca3af' },
+  cardTitle: { fontSize: 14, color: '#1f2937' },
+
+  // Expanded Content (Isi Tetap)
+  cardExpanded: { paddingHorizontal: 15, paddingBottom: 15 },
+  divider: { height: 1, backgroundColor: '#f3f4f6', marginBottom: 12 },
+  sectionTitle: { fontSize: 13, fontWeight: 'bold', color: '#111827', marginBottom: 8 },
+  infoList: { gap: 4 },
+  infoItem: { fontSize: 13, color: '#4b5563' },
+  infoLabel: { fontWeight: '600', color: '#374151' },
+  
+  docRow: { flexDirection: 'row', gap: 8, marginTop: 5 },
+  docBtn: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#f0fdf4', 
+    borderWidth: 1, 
+    borderColor: '#dcfce7', 
+    padding: 8, 
+    borderRadius: 8,
+    gap: 6
+  },
+  docBtnText: { color: '#166534', fontSize: 11, fontWeight: 'bold' },
+
+  actionRow: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 20, gap: 10 },
+  rejectBtn: { px: 20, paddingVertical: 8, paddingHorizontal: 24, borderRadius: 10, borderWidth: 1, borderColor: '#fecaca' },
+  rejectBtnText: { color: '#dc2626', fontWeight: 'bold', fontSize: 13 },
+  approveBtn: { paddingVertical: 8, paddingHorizontal: 24, borderRadius: 10, backgroundColor: '#3A5F50', elevation: 2 },
+  approveBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
+});
