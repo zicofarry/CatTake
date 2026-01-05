@@ -17,8 +17,10 @@ import { FontAwesome } from '@expo/vector-icons';
 import axios from 'axios';
 
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
+// IMPORT KOMPONEN POPUP
+import CustomPopup from '../../components/CustomPopup'; 
+
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
- 
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -41,18 +43,31 @@ export default function SignupScreen() {
   const [focusPass, setFocusPass] = useState(false);
   const [focusConfirm, setFocusConfirm] = useState(false);
 
+  // --- STATE UNTUK MODAL POPUP ---
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalType, setModalType] = useState<'success' | 'error'>('success');
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+
+  const showModal = (type: 'success' | 'error', title: string, message: string) => {
+    setModalType(type);
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalVisible(true);
+  };
+
   const handleSignup = async () => {
-    // ... logic validasi sama ...
+    // Logic validasi (TETAP SAMA)
     if (password !== confirmPassword) {
-      Alert.alert('Gagal', 'Password dan Konfirmasi Password harus sama!');
+      showModal('error', 'Gagal', 'Password dan Konfirmasi Password harus sama!');
       return;
     }
     if (!selectedRole) {
-      Alert.alert('Gagal', 'Mohon pilih jenis akun (User Biasa atau Shelter)!');
+      showModal('error', 'Gagal', 'Mohon pilih jenis akun (User Biasa atau Shelter)!');
       return;
     }
     if (selectedRole === 'shelter' && !shelterName) {
-      Alert.alert('Gagal', 'Nama Resmi Shelter wajib diisi.');
+      showModal('error', 'Gagal', 'Nama Resmi Shelter wajib diisi.');
       return;
     }
 
@@ -77,17 +92,16 @@ export default function SignupScreen() {
 
     try {
       await axios.post(`${API_BASE_URL}/auth/register`, data);
-      Alert.alert(
-        'Sukses', 
-        `Pendaftaran ${selectedRole} berhasil! Silakan Login.`,
-        [{ text: 'OK', onPress: () => router.push('/login') }]
+      // PENGGANTIAN ALERT KE MODAL
+      showModal(
+        'success', 
+        'Pendaftaran Berhasil!', 
+        `Selamat bergabung ${fullName}! Akunmu sudah siap digunakan.`
       );
     } catch (error: any) {
-      if (error.response?.status === 409) {
-          Alert.alert('Gagal', 'Email/Username sudah terdaftar.');
-      } else {
-          Alert.alert('Error', error.response?.data?.error || 'Server Error.');
-      }
+      // PENGGANTIAN ALERT ERROR KE MODAL
+      const errMsg = error.response?.status === 409 ? 'Email/Username sudah terdaftar.' : 'Terjadi kesalahan pada server.';
+      showModal('error', 'Pendaftaran Gagal', errMsg);
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +109,6 @@ export default function SignupScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 1. Header Background */}
       <View style={styles.headerContainer}>
         <LinearGradient
           colors={['#3A5F50', '#578d76']}
@@ -118,7 +131,6 @@ export default function SignupScreen() {
         </LinearGradient>
       </View>
 
-      {/* 2. Logo Fixed (Di Belakang Scroll) */}
       <View style={styles.fixedLogoContainer}>
         <Image 
             source={require('../../assets/images/catTakePutih.png')} 
@@ -127,7 +139,6 @@ export default function SignupScreen() {
         />
       </View>
 
-      {/* 3. ScrollView */}
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent} 
@@ -138,7 +149,6 @@ export default function SignupScreen() {
           <Text style={styles.subtitle}>Create your account today</Text>
 
           <View style={styles.formContainer}>
-            
             <View>
                 <Text style={styles.roleLabel}>DAFTAR SEBAGAI:</Text>
                 <View style={styles.roleWrapper}>
@@ -157,7 +167,6 @@ export default function SignupScreen() {
                 </View>
             </View>
 
-            {/* Email */}
             <View style={styles.inputGroup}>
               <View style={styles.inputIcon}>
                 <FontAwesome name="envelope" size={16} color={focusEmail ? '#EBCD5E' : '#9CA3AF'} />
@@ -175,7 +184,6 @@ export default function SignupScreen() {
               />
             </View>
 
-            {/* Shelter Name */}
             {selectedRole === 'shelter' && (
                 <View style={styles.inputGroup}>
                 <View style={styles.inputIcon}>
@@ -193,7 +201,6 @@ export default function SignupScreen() {
                 </View>
             )}
 
-            {/* Full Name */}
             <View style={styles.inputGroup}>
               <View style={styles.inputIcon}>
                 <FontAwesome name="id-card" size={16} color={focusName ? '#EBCD5E' : '#9CA3AF'} />
@@ -209,7 +216,6 @@ export default function SignupScreen() {
               />
             </View>
 
-            {/* Username */}
             <View style={styles.inputGroup}>
               <View style={styles.inputIcon}>
                 <FontAwesome name="user" size={18} color={focusUser ? '#EBCD5E' : '#9CA3AF'} />
@@ -226,7 +232,6 @@ export default function SignupScreen() {
               />
             </View>
 
-            {/* Password */}
             <View style={styles.inputGroup}>
               <View style={styles.inputIcon}>
                 <FontAwesome name="lock" size={18} color={focusPass ? '#EBCD5E' : '#9CA3AF'} />
@@ -243,7 +248,6 @@ export default function SignupScreen() {
               />
             </View>
 
-            {/* Confirm Password */}
             <View style={styles.inputGroup}>
               <View style={styles.inputIcon}>
                 <FontAwesome name="check-circle" size={18} color={focusConfirm ? '#EBCD5E' : '#9CA3AF'} />
@@ -287,7 +291,7 @@ export default function SignupScreen() {
             
           <TouchableOpacity style={styles.googleButton}>
             <Image 
-              source={{ uri: 'https://www.svgrepo.com/show/475656/google-color.svg' }} 
+              source={{ uri: 'https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png' }} 
               style={styles.googleIcon} 
             />
             <Text style={styles.googleText}>Sign Up with Google</Text>
@@ -299,220 +303,58 @@ export default function SignupScreen() {
                 <Text style={styles.linkText}>Login</Text>
             </TouchableOpacity>
           </View>
-
         </View>
       </ScrollView>
+
+      {/* MODAL POPUP CUSTOM */}
+      <CustomPopup
+        visible={modalVisible}
+        onClose={() => {
+          setModalVisible(false);
+          if (modalType === 'success') router.push('/login');
+        }}
+        title={modalTitle}
+        message={modalMessage}
+        type={modalType}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f3f4f6',
-  },
-  headerContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '65%', 
-    zIndex: 0,
-  },
-  gradientHeader: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  svgCurve: {
-    marginBottom: -1,
-  },
-  fixedLogoContainer: {
-    position: 'absolute',
-    top: 40,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    // Tanpa zIndex
-  },
-  logo: {
-    width: 144,
-    height: 144,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    alignItems: 'center',
-    paddingTop: 220, // Jarak dari atas
-    paddingBottom: 40,
-    paddingHorizontal: 20,
-  },
-  card: {
-    backgroundColor: 'white',
-    width: '100%',
-    maxWidth: 450,
-    borderRadius: 30,
-    padding: 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 8,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1F1F1F',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    marginBottom: 24,
-  },
-  formContainer: {
-    width: '100%',
-    gap: 16,
-  },
-  roleLabel: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#6B7280',
-    marginBottom: 8,
-    textAlign: 'center',
-    letterSpacing: 0.5,
-  },
-  roleWrapper: {
-    flexDirection: 'row',
-    backgroundColor: '#F3F4F6',
-    padding: 4,
-    borderRadius: 12,
-    gap: 12,
-    marginBottom: 8,
-  },
-  roleBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  roleBtnActive: {
-    backgroundColor: '#3A5F50',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  roleText: {
-    fontWeight: '600',
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  roleTextActive: {
-    color: 'white',
-  },
-  inputGroup: {
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  inputIcon: {
-    position: 'absolute',
-    left: 16,
-    zIndex: 1,
-  },
-  input: {
-    backgroundColor: '#F9FAFB',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    paddingLeft: 44,
-    fontSize: 14,
-    color: '#374151',
-    fontWeight: '500',
-  },
-  // Style Focus
-  inputFocused: {
-    borderColor: '#EBCD5E',
-    borderWidth: 2,
-  },
-  buttonWrapper: {
-    marginTop: 8,
-    alignSelf: 'center',
-    shadowColor: '#EBCD5E',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 14,
-    elevation: 5,
-    borderRadius: 9999,
-  },
-  btnDisabled: {
-    opacity: 0.6,
-  },
-  mainButton: {
-    width: 160,
-    paddingVertical: 12,
-    borderRadius: 9999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    color: '#111827',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    marginVertical: 24,
-    gap: 12,
-  },
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E5E7EB',
-  },
-  orText: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  googleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    paddingVertical: 12,
-    borderRadius: 12,
-    gap: 12,
-  },
-  googleIcon: {
-    width: 20,
-    height: 20,
-  },
-  googleText: {
-    color: '#4B5563',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  footerContainer: {
-    marginTop: 32,
-    flexDirection: 'row',
-  },
-  footerText: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  linkText: {
-    fontSize: 14,
-    color: '#E0C048',
-    fontWeight: 'bold',
-  },
+  container: { flex: 1, backgroundColor: '#f3f4f6' },
+  headerContainer: { position: 'absolute', top: 0, left: 0, right: 0, height: '65%', zIndex: 0 },
+  gradientHeader: { flex: 1, justifyContent: 'flex-end' },
+  svgCurve: { marginBottom: -1 },
+  fixedLogoContainer: { position: 'absolute', top: 40, left: 0, right: 0, alignItems: 'center' },
+  logo: { width: 144, height: 144 },
+  scrollView: { flex: 1 },
+  scrollContent: { alignItems: 'center', paddingTop: 220, paddingBottom: 40, paddingHorizontal: 20 },
+  card: { backgroundColor: 'white', width: '100%', maxWidth: 450, borderRadius: 30, padding: 32, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 8, alignItems: 'center' },
+  title: { fontSize: 28, fontWeight: 'bold', color: '#1F1F1F', marginBottom: 8 },
+  subtitle: { fontSize: 14, color: '#9CA3AF', marginBottom: 24 },
+  formContainer: { width: '100%', gap: 16 },
+  roleLabel: { fontSize: 12, fontWeight: 'bold', color: '#6B7280', marginBottom: 8, textAlign: 'center', letterSpacing: 0.5 },
+  roleWrapper: { flexDirection: 'row', backgroundColor: '#F3F4F6', padding: 4, borderRadius: 12, gap: 12, marginBottom: 8 },
+  roleBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8 },
+  roleBtnActive: { backgroundColor: '#3A5F50', elevation: 2 },
+  roleText: { fontWeight: '600', fontSize: 14, color: '#6B7280' },
+  roleTextActive: { color: 'white' },
+  inputGroup: { position: 'relative', justifyContent: 'center' },
+  inputIcon: { position: 'absolute', left: 16, zIndex: 1 },
+  input: { backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingVertical: 14, paddingHorizontal: 16, paddingLeft: 44, fontSize: 14, color: '#374151', fontWeight: '500' },
+  inputFocused: { borderColor: '#EBCD5E', borderWidth: 2 },
+  buttonWrapper: { marginTop: 8, alignSelf: 'center', elevation: 5, borderRadius: 9999 },
+  btnDisabled: { opacity: 0.6 },
+  mainButton: { width: 160, paddingVertical: 12, borderRadius: 9999, alignItems: 'center', justifyContent: 'center' },
+  buttonText: { color: '#111827', fontWeight: 'bold', fontSize: 16 },
+  divider: { flexDirection: 'row', alignItems: 'center', width: '100%', marginVertical: 24, gap: 12 },
+  line: { flex: 1, height: 1, backgroundColor: '#E5E7EB' },
+  orText: { color: '#9CA3AF', fontSize: 14, fontWeight: '500' },
+  googleButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', backgroundColor: 'white', borderWidth: 1, borderColor: '#E5E7EB', paddingVertical: 12, borderRadius: 12, gap: 12 },
+  googleIcon: { width: 20, height: 20 },
+  googleText: { color: '#4B5563', fontSize: 14, fontWeight: '600' },
+  footerContainer: { marginTop: 32, flexDirection: 'row' },
+  footerText: { fontSize: 14, color: '#6B7280' },
+  linkText: { fontSize: 14, color: '#E0C048', fontWeight: 'bold' },
 });

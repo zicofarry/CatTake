@@ -16,6 +16,8 @@ import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
+// IMPORT CUSTOM POPUP
+import CustomPopup from '../../components/CustomPopup';
 
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : '';
 
@@ -41,6 +43,19 @@ export default function AdoptionForm() {
   const [identityPhoto, setIdentityPhoto] = useState<any>(null);
   const [statementLetter, setStatementLetter] = useState<any>(null);
 
+  // --- STATE UNTUK CUSTOM POPUP ---
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalType, setModalType] = useState<'success' | 'error'>('success');
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+
+  const showModal = (type: 'success' | 'error', title: string, message: string) => {
+    setModalType(type);
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalVisible(true);
+  };
+
   useEffect(() => {
     if (id) fetchCatDetail();
   }, [id]);
@@ -51,7 +66,7 @@ export default function AdoptionForm() {
       const res = await apiClient.get(`/cats/${id}`);
       setCat(res.data.data || res.data);
     } catch (err) {
-      Alert.alert("Error", "Gagal mengambil detail kucing.");
+      showModal("error", "Error", "Gagal mengambil detail kucing.");
     }
   };
 
@@ -73,7 +88,7 @@ export default function AdoptionForm() {
   // LOGIC: Handle Submit (Tetap sama, tidak diubah)
   const handleSubmit = async () => {
     if (!identityPhoto || !statementLetter) {
-      Alert.alert("Peringatan", "Mohon lengkapi dokumen identitas dan surat pernyataan.");
+      showModal("error", "Peringatan", "Mohon lengkapi dokumen identitas dan surat pernyataan.");
       return;
     }
 
@@ -102,11 +117,12 @@ export default function AdoptionForm() {
       await apiClient.post('/adopt/apply', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      Alert.alert("Sukses", "Pengajuan adopsi berhasil dikirim!", [
-        { text: "OK", onPress: () => router.replace('/(tabs)/adopt') }
-      ]);
+      
+      // PENGGANTIAN ALERT KE MODAL
+      showModal("success", "Sukses", "Pengajuan adopsi berhasil dikirim!");
+      
     } catch (error: any) {
-      Alert.alert("Gagal", error.response?.data?.error || "Terjadi kesalahan.");
+      showModal("error", "Gagal", error.response?.data?.error || "Terjadi kesalahan.");
     } finally {
       setIsSubmitting(false);
     }
@@ -206,6 +222,21 @@ export default function AdoptionForm() {
         </TouchableOpacity>
 
       </ScrollView>
+
+      {/* CUSTOM POPUP COMPONENT */}
+      <CustomPopup
+        visible={modalVisible}
+        onClose={() => {
+          setModalVisible(false);
+          // LOGIC: OK PRESS -> router.replace
+          if (modalType === 'success') {
+            router.replace('/(tabs)/adopt');
+          }
+        }}
+        title={modalTitle}
+        message={modalMessage}
+        type={modalType}
+      />
     </KeyboardAvoidingView>
   );
 }

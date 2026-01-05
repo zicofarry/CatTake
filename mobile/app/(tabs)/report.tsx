@@ -14,6 +14,8 @@ import apiClient, { API_BASE_URL } from '@/api/apiClient';
 
 // Import komponen wrapper yang baru dibuat
 import MapBox from '@/components/MapBox';
+// IMPORT CUSTOM POPUP
+import CustomPopup from '@/components/CustomPopup';
 
 const { width } = Dimensions.get('window');
 const BASE_SERVER_URL = API_BASE_URL?.replace('/api/v1', '');
@@ -55,6 +57,19 @@ export default function ReportScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+
+  // --- STATE UNTUK CUSTOM POPUP ---
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalType, setModalType] = useState<'success' | 'error'>('success');
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+
+  const showModal = (type: 'success' | 'error', title: string, message: string) => {
+    setModalType(type);
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalVisible(true);
+  };
 
   const loadData = async () => {
     if (activeUserTab === 'history') fetchUserHistory();
@@ -98,10 +113,10 @@ export default function ReportScreen() {
   const handleUpdateLostCatStatus = async (catId: number, newStatus: string) => {
     try {
       await apiClient.put(`/lost-cats/status/${catId}`, { status: newStatus });
-      Alert.alert("Sukses", "Status berhasil diperbarui. Senang anabul Anda sudah kembali!");
+      showModal("success", "Sukses", "Status berhasil diperbarui. Senang anabul Anda sudah kembali!");
       fetchUserHistory(); // Refresh data
     } catch (e) {
-      Alert.alert("Error", "Gagal memperbarui status.");
+      showModal("error", "Error", "Gagal memperbarui status.");
     }
   };
 
@@ -131,7 +146,7 @@ export default function ReportScreen() {
     setIsLocating(true);
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Izin Ditolak', 'Aplikasi butuh izin lokasi.');
+      showModal('error', 'Izin Ditolak', 'Aplikasi butuh izin lokasi.');
       setIsLocating(false);
       return;
     }
@@ -179,7 +194,7 @@ export default function ReportScreen() {
 
   const handleSubmit = async () => {
     if (!form.location || !form.description || !selectedImage) {
-      return Alert.alert("Peringatan", "Mohon lengkapi lokasi, deskripsi, dan foto.");
+      return showModal("error", "Peringatan", "Mohon lengkapi lokasi, deskripsi, dan foto.");
     }
     setIsSubmitting(true);
     const formData = new FormData();
@@ -202,10 +217,9 @@ export default function ReportScreen() {
     try {
       const endpoint = activeReportType === 'my_lost' ? '/lost-cats' : '/reports';
       await apiClient.post(endpoint, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      Alert.alert("Sukses", "Laporan berhasil dikirim!");
-      setActiveUserTab('history');
+      showModal("success", "Sukses", "Laporan berhasil dikirim!");
     } catch (e: any) {
-      Alert.alert("Gagal", e.response?.data?.error || "Terjadi kesalahan.");
+      showModal("error", "Gagal", e.response?.data?.error || "Terjadi kesalahan.");
     } finally { setIsSubmitting(false); }
   };
 
@@ -443,7 +457,7 @@ export default function ReportScreen() {
                               }
                             });
                           } else {
-                            Alert.alert("Info", "Data shelter belum tersedia.");
+                            showModal("error", "Info", "Data shelter belum tersedia.");
                           }
                         }}
                         className="bg-[#3A5F50] py-3 rounded-xl flex-row items-center justify-center gap-2"
@@ -539,6 +553,31 @@ export default function ReportScreen() {
             </View>
           </View>
         </Modal>
+
+        {/* CUSTOM POPUP COMPONENT */}
+        <CustomPopup
+          visible={modalVisible}
+          onClose={() => {
+            setModalVisible(false);
+            if (modalType === 'success') {
+               // Logic setelah sukses
+               setActiveUserTab('history');
+               setSelectedImage(null);
+               setForm({
+                 description: '',
+                 location: '',
+                 lat: -6.9175,
+                 long: 107.6191,
+                 lost_cat_id: null,
+                 name: '', age: '', breed: '', color: '', reward: ''
+               });
+               setSearchQuery('');
+            }
+          }}
+          title={modalTitle}
+          message={modalMessage}
+          type={modalType}
+        />
       </View>
     </ImageBackground>
   );
