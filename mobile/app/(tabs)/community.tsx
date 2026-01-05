@@ -199,9 +199,13 @@ export default function CommunityScreen() {
       </View>
 
       <View style={styles.sideCard}>
-        <Text style={styles.sideTitle}>Kucing Hilang</Text>
+        {/* Header Widget dengan Tombol 'Lihat Semua' */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <Text style={[styles.sideTitle, { marginBottom: 0 }]}>Kucing Hilang</Text>
+        </View>
+
         {sidebarData.missing.length === 0 ? <Text style={styles.emptySide}>Tidak ada laporan.</Text> :
-          sidebarData.missing.map((cat: any, i) => (
+          sidebarData.missing.slice(0, 3).map((cat: any, i) => ( // Batasi tampil 3 saja di sidebar
             <View key={i} style={styles.lostItem}>
               <Image source={{ uri: resolveImg(cat.image) }} style={styles.lostImg} />
               <View style={{flex:1}}>
@@ -212,6 +216,14 @@ export default function CommunityScreen() {
             </View>
           ))
         }
+        
+        {/* Tombol CTA Tambahan di bawah list */}
+        <TouchableOpacity 
+            style={{ marginTop: 8, paddingVertical: 10, backgroundColor: '#f0fdf4', borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#dcfce7' }}
+            onPress={() => router.push('/community/lost-cats')}
+        >
+            <Text style={{ color: '#166534', fontWeight: 'bold', fontSize: 12 }}>Bantu Temukan Mereka</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.sideCard}>
