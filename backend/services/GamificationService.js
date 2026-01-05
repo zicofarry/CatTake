@@ -192,6 +192,51 @@ class GamificationService {
             client.release();
         }
     }
+    
+    static async syncDaysJoined(userId) {
+        const client = await db.connect();
+        try {
+            await client.query('BEGIN');
+
+            // Query ini melakukan:
+            // 1. Menghitung selisih hari: (Sekarang - Tanggal Regis) / 86400 detik + 1
+            // 2. Mencari quest dengan kategori 'DAYS_JOINED'
+            // 3. Update tabel user_quest_progress (Insert jika belum ada, Update jika sudah ada)
+            // 4. Otomatis mengisi completed_at jika mencapai target_value
+            const syncQuery = `
+                WITH calc AS (
+                    SELECT 
+                        q.id as quest_id,
+                        q.target_value,
+                        FLOOR(EXTRACT(EPOCH FROM (NOW() - u.created_at)) / 86400)::int + 1 as actual_days
+                    FROM users u
+                    CROSS JOIN quests q
+                    WHERE u.id = $1 AND q.category = 'DAYS_JOINED'
+                )
+                INSERT INTO user_quest_progress (user_id, quest_id, current_value, updated_at, completed_at)
+                SELECT $1, quest_id, actual_days, NOW(), 
+                    CASE WHEN actual_days >= target_value THEN NOW() ELSE NULL END
+                FROM calc
+                ON CONFLICT (user_id, quest_id) 
+                DO UPDATE SET 
+                    current_value = EXCLUDED.current_value,
+                    updated_at = NOW(),
+                    completed_at = CASE 
+                        WHEN EXCLUDED.current_value >= (SELECT target_value FROM quests WHERE id = user_quest_progress.quest_id) 
+                        THEN COALESCE(user_quest_progress.completed_at, NOW()) 
+                        ELSE user_quest_progress.completed_at 
+                    END;
+            `;
+
+            await client.query(syncQuery, [userId]);
+            await client.query('COMMIT');
+        } catch (error) {
+            await client.query('ROLLBACK');
+            console.error("Gagal Sync Days Joined:", error);
+        } finally {
+            client.release();
+        }
+    }
 }
 
 module.exports = GamificationService;
