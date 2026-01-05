@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -18,7 +19,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import CustomPopup from '../../components/CustomPopup'; 
 
-import { API_BASE_URL } from '../../api/apiClient';
+// Import apiClient dan API_BASE_URL dari file config kamu
+import apiClient, { API_BASE_URL } from '../../api/apiClient';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -36,6 +38,14 @@ export default function LoginScreen() {
   const [modalTitle, setModalTitle] = useState('');
   const [modalMessage, setModalMessage] = useState('');
 
+  // Konfigurasi Google Sign-In saat komponen pertama kali muncul
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: '845303611060-f0660l7kgva0k0f610mag698b9a9b86u.apps.googleusercontent.com', 
+      offlineAccess: true,
+    });
+  }, []);
+
   const showModal = (type: 'success' | 'error', title: string, message: string) => {
     setModalType(type);
     setModalTitle(title);
@@ -43,16 +53,63 @@ export default function LoginScreen() {
     setModalVisible(true);
   };
 
-  const handleModalClose = () => {
+  const handleModalClose = async () => {
     setModalVisible(false);
-    // Jika sukses, baru pindahkan user ke home
     if (modalType === 'success') {
-      router.replace('/(tabs)');
+      const role = await AsyncStorage.getItem('userRole');
+      if (role === 'driver') {
+        router.replace('/driver');
+      }else if (role === 'shelter') {
+        router.replace('/shelter/dashboard');
+      } else {
+        router.replace('/(tabs)');
+      }
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      
+      // Ambil idToken
+      const idToken = response.data?.idToken;
+
+      if (!idToken) {
+        throw new Error("Gagal mendapatkan Token dari Google");
+      }
+
+      // Kirim ke backend (endpoint /auth/google sesuai diskusi sebelumnya)
+      const result = await apiClient.post('/auth/google', { token: idToken });
+      
+      const resData = result.data.data;
+
+      // Simpan session yang sama dengan login manual
+      if (resData && resData.token) {
+        await AsyncStorage.setItem('userToken', resData.token);
+        await AsyncStorage.setItem('userRole', String(resData.role || 'user'));
+        await AsyncStorage.setItem('userId', String(resData.id || ''));
+        await AsyncStorage.setItem('username', String(resData.username || resData.name));
+        
+        showModal('success', 'Berhasil Masuk!', 'Selamat datang di CatTake melalui Google.');
+      }
+
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log("User membatalkan login");
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        console.log("Proses login sedang berjalan");
+      } else {
+        console.error("Gagal Login Google:", error);
+        showModal('error', 'Login Google Gagal', error.response?.data?.error || 'Terjadi kesalahan saat verifikasi ke server.');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleLogin = async () => {
-    // 1. Validasi Input
     if (!identifier || !password) {
       showModal('error', 'Perhatian', 'Mohon isi Email/Username dan Password.');
       return;
@@ -61,22 +118,14 @@ export default function LoginScreen() {
     setIsLoading(true);
 
     try {
-      // console.log("1. Mengirim data login...", { username: identifier }); 
-
-      // 2. Request ke Backend
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         identifier, 
         password,
       });
 
-      // console.log("2. STATUS RESPONSE:", response.status);
-      
       const resData = response.data.data; 
 
-      // 3. Cek apakah token ada
       if (resData && resData.token) {
-        // console.log("3. Login Berhasil, menyimpan session...");
-        
         await AsyncStorage.setItem('userToken', resData.token);
         await AsyncStorage.setItem('userRole', String(resData.role || 'user'));
         await AsyncStorage.setItem('userId', String(resData.id || ''));
@@ -84,23 +133,16 @@ export default function LoginScreen() {
         
         showModal('success', 'Berhasil Masuk!', 'Selamat datang kembali di CatTake.');
       } else {
-        // console.log("4. Token tidak ditemukan di response.");
         showModal('error', 'Login Gagal', 'Data user tidak ditemukan dalam respon server.');
       }
       
     } catch (error: any) {
-      // console.log("!!! ERROR LOGIN !!!");
       let errorMessage = 'Login gagal. Cek kredensial atau server.';
-
       if (error.response) {
-        console.log("Status Error:", error.response.status);
-        console.log("Data Error:", JSON.stringify(error.response.data));
         errorMessage = error.response.data?.error || errorMessage;
       } else if (error.request) {
-        console.log("Tidak ada respon dari server.");
         errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
       }
-
       showModal('error', 'Login Gagal', errorMessage);
     } finally {
       setIsLoading(false);
@@ -217,12 +259,23 @@ export default function LoginScreen() {
             <View style={styles.line} />
           </View>
             
-          <TouchableOpacity style={styles.googleButton}>
-            <Image 
-              source={{ uri: 'https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png' }} 
-              style={styles.googleIcon} 
-            />
-            <Text style={styles.googleText}>Sign In with Google</Text>
+          {/* TOMBOL GOOGLE SUDAH TERSAMBUNG */}
+          <TouchableOpacity 
+            style={styles.googleButton} 
+            onPress={handleGoogleLogin}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+                <ActivityIndicator color="#4B5563" />
+            ) : (
+              <>
+                <Image 
+                  source={{ uri: 'https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png' }} 
+                  style={styles.googleIcon} 
+                />
+                <Text style={styles.googleText}>Sign In with Google</Text>
+              </>
+            )}
           </TouchableOpacity>
             
           <View style={styles.footerContainer}>

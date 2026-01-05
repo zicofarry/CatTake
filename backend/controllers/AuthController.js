@@ -1,19 +1,16 @@
 const AuthService = require('../services/AuthService');
 const GamificationService = require('../services/GamificationService');
-// const { OAuth2Client } = require('google-auth-library');
-// const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '899392310680-d4566vlejmbdu2ltobbj1sbliu2tq4gr.apps.googleusercontent.com'; 
-// const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+const { OAuth2Client } = require('google-auth-library');
+
+// Pastikan GOOGLE_WEB_CLIENT_ID ada di file .env backend kamu
+const client = new OAuth2Client(process.env.GOOGLE_WEB_CLIENT_ID);
 
 class AuthController {
-static async register(request, reply) {
+    static async register(request, reply) {
         try {
-            // 1. Panggil Service (Data masuk ke DB di sini)
             const result = await AuthService.registerUser(request.body);
-
             
-            // Logika Gamifikasi: Gunakan sync agar seragam dengan Login
             if (result && result.id) {
-                // Gunakan syncDaysJoined supaya hitungannya langsung presisi sejak daftar
                 GamificationService.syncDaysJoined(result.id)
                     .catch(err => console.error("Gagal sync gamifikasi saat register:", err));
             }
@@ -28,7 +25,6 @@ static async register(request, reply) {
                 return reply.code(409).send({ error: 'Email or username already exists.' });
             }
             if (error.message.includes('violates check constraint')) {
-                // Menangani error ENUM/CHECK constraint
                 return reply.code(400).send({ error: 'Data tidak valid: ' + error.message });
             }
             return reply.code(500).send({ error: error.message });
@@ -40,10 +36,9 @@ static async register(request, reply) {
             const { identifier, password } = request.body; 
             const result = await AuthService.loginUser(identifier, password);
 
-            // [SINKRONISASI BARU]
-            // Hitung ulang hari bergabung berdasarkan tanggal registrasi setiap kali login
-            if (result && result.user && result.user.id) {
-                GamificationService.syncDaysJoined(result.user.id) // Pakai method sync
+            // FIX: Ganti result.user.id menjadi result.id karena struktur return AuthService flat
+            if (result && result.id) {
+                GamificationService.syncDaysJoined(result.id)
                     .catch(err => console.error("Sync Days Joined Error:", err));
             }
 
@@ -55,21 +50,23 @@ static async register(request, reply) {
 
     static async googleLogin(request, reply) {
         try {
-            const { accessToken, role } = request.body;
-            if (!accessToken) return reply.code(400).send({ error: 'Access Token Google diperlukan' });
+            // Frontend Mobile mengirim { token: idToken }
+            const { token, role } = request.body;
+            if (!token) return reply.code(400).send({ error: 'Token Google diperlukan' });
 
-            const googleResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                headers: { Authorization: `Bearer ${accessToken}` }
+            // Verifikasi ID Token secara aman menggunakan library resmi
+            const ticket = await client.verifyIdToken({
+                idToken: token,
+                audience: process.env.GOOGLE_WEB_CLIENT_ID, 
             });
-
-            if (!googleResponse.ok) throw new Error('Gagal mengambil data user dari Google');
-            const payload = await googleResponse.json();
+            
+            const payload = ticket.getPayload(); // Berisi email, name, picture, sub
 
             const result = await AuthService.loginOrRegisterGoogle(payload, role);
 
-            // [BARU] TRIGGER GAMIFIKASI SAAT GOOGLE LOGIN
-            if (result && result.user && result.user.id) {
-                GamificationService.syncDaysJoined(result.user.id) // Pakai method sync
+            // FIX: Ganti result.user.id menjadi result.id
+            if (result && result.id) {
+                GamificationService.syncDaysJoined(result.id)
                     .catch(err => console.error("Sync Days Joined Google Error:", err));
             }
 
