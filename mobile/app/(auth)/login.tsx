@@ -71,6 +71,13 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       await GoogleSignin.hasPlayServices();
+
+      // biar sso nya hilang yang google
+      try {
+        await GoogleSignin.signOut();
+      } catch (e) {
+        // Abaikan jika user memang belum pernah login ke Google sebelumnya
+      }
       const response = await GoogleSignin.signIn();
       
       // Ambil idToken

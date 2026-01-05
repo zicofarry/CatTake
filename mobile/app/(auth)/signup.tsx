@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -8,7 +8,8 @@ import {
   StyleSheet, 
   ScrollView, 
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  Platform
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,11 +17,12 @@ import Svg, { Path } from 'react-native-svg';
 import { FontAwesome } from '@expo/vector-icons';
 import axios from 'axios';
 
+// IMPORT GOOGLE SIGN IN
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 // IMPORT KOMPONEN POPUP
 import CustomPopup from '../../components/CustomPopup'; 
-
-const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -49,11 +51,62 @@ export default function SignupScreen() {
   const [modalTitle, setModalTitle] = useState('');
   const [modalMessage, setModalMessage] = useState('');
 
+  // --- CONFIG GOOGLE SIGN IN ---
+  useEffect(() => {
+    GoogleSignin.configure({
+      // Ganti dengan Web Client ID dari Google Cloud Console kamu
+      webClientId: '563124578129-u3v3v3v3v3v3v3v3v3v3v3.apps.googleusercontent.com', 
+      offlineAccess: true,
+    });
+  }, []);
+
   const showModal = (type: 'success' | 'error', title: string, message: string) => {
     setModalType(type);
     setModalTitle(title);
     setModalMessage(message);
     setModalVisible(true);
+  };
+
+  // --- LOGIKA GOOGLE SIGNUP ---
+  const handleGoogleSignup = async () => {
+    if (!selectedRole) {
+      showModal('error', 'Pilih Peran', 'Mohon pilih daftar sebagai User atau Shelter terlebih dahulu sebelum menggunakan Google.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const idToken = userInfo.data?.idToken;
+
+      if (!idToken) {
+        throw new Error('Gagal mendapatkan ID Token dari Google');
+      }
+
+      // Kirim ke backend sesuai AuthController.js
+      const response = await apiClient.post('/auth/google-login', {
+        token: idToken,
+        role: selectedRole === 'user' ? 'individu' : 'shelter' // Mapping role ke backend
+      });
+
+      showModal(
+        'success', 
+        'Login Berhasil', 
+        `Selamat datang ${response.data.data.full_name || 'di CatTake'}!`
+      );
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // User membatalkan login, tidak perlu tampilkan error besar
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        showModal('error', 'Proses Berjalan', 'Proses login sedang berlangsung.');
+      } else {
+        console.error("Google Signup Error:", error);
+        showModal('error', 'Gagal', 'Terjadi kesalahan saat pendaftaran Google: ' + error.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignup = async () => {
@@ -91,15 +144,13 @@ export default function SignupScreen() {
     }
 
     try {
-      await axios.post(`${API_BASE_URL}/auth/register`, data);
-      // PENGGANTIAN ALERT KE MODAL
+      await apiClient.post(`/auth/register`, data);
       showModal(
         'success', 
         'Pendaftaran Berhasil!', 
         `Selamat bergabung ${fullName}! Akunmu sudah siap digunakan.`
       );
     } catch (error: any) {
-      // PENGGANTIAN ALERT ERROR KE MODAL
       const errMsg = error.response?.status === 409 ? 'Email/Username sudah terdaftar.' : 'Terjadi kesalahan pada server.';
       showModal('error', 'Pendaftaran Gagal', errMsg);
     } finally {
@@ -289,12 +340,22 @@ export default function SignupScreen() {
             <View style={styles.line} />
           </View>
             
-          <TouchableOpacity style={styles.googleButton}>
-            <Image 
-              source={{ uri: 'https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png' }} 
-              style={styles.googleIcon} 
-            />
-            <Text style={styles.googleText}>Sign Up with Google</Text>
+          <TouchableOpacity 
+            style={styles.googleButton} 
+            onPress={handleGoogleSignup}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#4B5563" />
+            ) : (
+              <>
+                <Image 
+                  source={{ uri: 'https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png' }} 
+                  style={styles.googleIcon} 
+                />
+                <Text style={styles.googleText}>Sign Up with Google</Text>
+              </>
+            )}
           </TouchableOpacity>
             
           <View style={styles.footerContainer}>
