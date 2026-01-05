@@ -39,10 +39,11 @@ class LostCatService {
         const query = `
             SELECT 
                 lc.*, 
-                u.username as owner_name, 
+                COALESCE(dui.full_name, u.username) as owner_name,
                 u.email as owner_contact 
             FROM lost_cats lc
             JOIN users u ON lc.owner_id = u.id
+            LEFT JOIN detail_user_individu dui ON u.id = dui.id
             WHERE lc.status = 'searching'
             ORDER BY lc.created_at DESC
         `;
@@ -51,7 +52,7 @@ class LostCatService {
         // Format URL gambar
         return result.rows.map(cat => ({
             ...cat,
-            photo: cat.photo ? `/public/img/lost_cat/${cat.photo}` : '/img/NULL.JPG'
+            photo: cat.photo ? `${cat.photo}` : '/img/NULL.JPG'
         }));
     }
 

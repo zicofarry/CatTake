@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { resolveImageUrl } from '@/api/apiClient';
 
 const { width } = Dimensions.get('window');
 // Menghitung lebar kotak agar pas 2 kolom dengan margin
@@ -17,23 +18,9 @@ export default function CatCard({ cat, serverUrl, onPress, onFavoritePress }: Ca
   if (!cat) return null;
 
   // Mendukung field 'photo' (list cats) atau 'catImage' (riwayat adopsi)
-  const photoPath = cat.photo || cat.catImage;
   
-  let imageUrl = '';
+  const imageUrl = resolveImageUrl(cat.photo || cat.catImage, 'cat') || `${serverUrl}/public/img/cats/NULL.png`;
 
-  // --- LOGIKA SMART URL ---
-  if (!photoPath || photoPath === 'NULL.png' || photoPath === 'NULL.JPG' || photoPath === 'null') {
-    // Fallback jika tidak ada foto
-    const cleanServerUrl = serverUrl.endsWith('/') ? serverUrl.slice(0, -1) : serverUrl;
-    imageUrl = `${cleanServerUrl}/public/img/cats/NULL.png`; 
-  } else if (photoPath.startsWith('http')) {
-    // Jika sudah berisi URL Cloudinary (dimulai dengan http), gunakan langsung
-    imageUrl = photoPath;
-  } else {
-    // Jika masih berupa nama file lama (data lama), tambahkan prefix server lokal
-    const cleanServerUrl = serverUrl.endsWith('/') ? serverUrl.slice(0, -1) : serverUrl;
-    imageUrl = `${cleanServerUrl}/public/img/cats/${photoPath}`;
-  }
   
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
