@@ -108,8 +108,7 @@ class AdoptionService {
             date: row.date,
             adopter: {
                 name: row.adopterName || 'No Name',
-                // Foto Profil (asumsi masih di /img/profile/)
-                profilePic: row.adopterPhoto ? `/public/img/profile/${row.adopterPhoto}` : null, 
+                profilePic: row.adopterPhoto ? `${row.adopterPhoto}` : null, 
                 
                 nik: row.nik || '-', 
                 phone: row.phone || '-',

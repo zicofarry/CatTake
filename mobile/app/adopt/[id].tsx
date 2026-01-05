@@ -72,7 +72,7 @@ export default function CatDetail() {
         {/* Gambar Header */}
         <View style={styles.imageContainer}>
           <Image 
-            source={{ uri: `${serverUrl}/public/img/cats/${cat.image || cat.photo}` }} 
+            source={{ uri: `${cat.image || cat.photo}` }} 
             style={styles.image} 
             resizeMode="cover"
           />

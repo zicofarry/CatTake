@@ -17,17 +17,15 @@ import {
 } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router'; // [REVISI] Import Router untuk navigasi
-import apiClient, { API_BASE_URL } from '@/api/apiClient';
+import { useRouter } from 'expo-router';
+import apiClient, { resolveImageUrl } from '@/api/apiClient'; // Import resolveImageUrl
 
 const { width } = Dimensions.get('window');
-const BASE_SERVER_URL = API_BASE_URL?.replace('/api/v1', '');
 
 export default function CommunityScreen() {
   const insets = useSafeAreaInsets();
-  const router = useRouter(); // [REVISI] Inisialisasi router
+  const router = useRouter();
 
-  // --- STATE (Tetap sesuai aslinya) ---
   const [activeTab, setActiveTab] = useState('untukAnda'); 
   const [searchQuery, setSearchQuery] = useState('');
   const [posts, setPosts] = useState([]);
@@ -46,7 +44,6 @@ export default function CommunityScreen() {
   const [newPostContent, setNewPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // --- API CALLS ---
   const fetchPosts = async () => {
     try {
       setLoading(true);
@@ -73,7 +70,6 @@ export default function CommunityScreen() {
     fetchSidebar();
   }, []);
 
-  // --- HANDLERS ---
   const handleLike = async (id: number) => {
     try {
       setPosts(current => current.map(p => p.id === id ? {
@@ -113,66 +109,64 @@ export default function CommunityScreen() {
     }
   };
 
-  // --- RENDER HELPERS ---
-  // [REVISI] resolveImg disesuaikan dengan path yang dikirim backend (CommunityService.js)
-  const resolveImg = (path: string) => {
-    if (!path || path.includes('NULL') || path === 'null') return 'https://i.pravatar.cc/150';
-    if (path.startsWith('http')) return path;
-    // Karena backend sudah memberikan prefix /public/img/..., kita tinggal tempel Base URL
-    return `${BASE_SERVER_URL}${path}`;
-  };
+  const renderPostItem = ({ item }: { item: any }) => {
+    // Resolve URL untuk Avatar dan Gambar Postingan
+    const authorAvatar = resolveImageUrl(item.profileImg, 'profile');
+    const postImage = resolveImageUrl(item.postImg, 'post');
 
-  const renderPostItem = ({ item }: { item: any }) => (
-    <View style={styles.card}>
-      {/* [REVISI] Navigasi ke Detail Postingan dengan folder /post/ */}
-      <TouchableOpacity 
-        onPress={() => router.push(`/post/${item.id}`)} 
-        activeOpacity={0.7}
-      >
-        <View style={styles.cardHeader}>
-          <Image source={{ uri: resolveImg(item.profileImg) }} style={styles.avatar} />
-          <View style={styles.headerTextContainer}>
-            <View style={styles.nameRow}>
-              <Text style={styles.authorName}>{item.author}</Text>
-              {item.isVerified && <Ionicons name="checkmark-circle" size={14} color="#3b82f6" style={{marginLeft:4}} />}
-            </View>
-            <Text style={styles.username}>@{item.username} · {item.time}</Text>
-          </View>
-        </View>
-        <View style={styles.cardContent}>
-          {item.title && <Text style={styles.postTitle}>{item.title}</Text>}
-          <Text style={styles.postDescription} numberOfLines={4}>{item.description}</Text>
-          {item.postImg && (
-            <Image source={{ uri: resolveImg(item.postImg) }} style={styles.postImage} resizeMode="cover" />
-          )}
-        </View>
-      </TouchableOpacity>
-
-      <View style={styles.cardFooter}>
-        <TouchableOpacity style={styles.actionButton} onPress={() => handleLike(item.id)}>
-          <Ionicons 
-            name={item.isLiked ? "heart" : "heart-outline"} 
-            size={20} 
-            color={item.isLiked ? "#FF5757" : "#6b7280"} 
-          />
-          <Text style={[styles.actionText, item.isLiked && {color:'#FF5757'}]}>{item.likes || 0}</Text>
-        </TouchableOpacity>
-        
-        {/* [REVISI] Tombol komentar juga arahkan ke detail */}
+    return (
+      <View style={styles.card}>
         <TouchableOpacity 
-          style={styles.actionButton} 
-          onPress={() => router.push(`/post/${item.id}`)}
+          onPress={() => router.push(`/post/${item.id}`)} 
+          activeOpacity={0.7}
         >
-          <Ionicons name="chatbubble-outline" size={18} color="#6b7280" />
-          <Text style={styles.actionText}>{item.comments || 0}</Text>
+          <View style={styles.cardHeader}>
+            {/* Fallback ke Ellipse.png untuk avatar postingan jika null */}
+            <Image 
+              source={authorAvatar ? { uri: authorAvatar } : require('../../assets/images/Ellipse.png')} 
+              style={styles.avatar} 
+            />
+            <View style={styles.headerTextContainer}>
+              <View style={styles.nameRow}>
+                <Text style={styles.authorName}>{item.author}</Text>
+                {item.isVerified && <Ionicons name="checkmark-circle" size={14} color="#3b82f6" style={{marginLeft:4}} />}
+              </View>
+              <Text style={styles.username}>@{item.username} · {item.time}</Text>
+            </View>
+          </View>
+          <View style={styles.cardContent}>
+            {item.title && <Text style={styles.postTitle}>{item.title}</Text>}
+            <Text style={styles.postDescription} numberOfLines={4}>{item.description}</Text>
+            {postImage && (
+              <Image source={{ uri: postImage }} style={styles.postImage} resizeMode="cover" />
+            )}
+          </View>
         </TouchableOpacity>
+
+        <View style={styles.cardFooter}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => handleLike(item.id)}>
+            <Ionicons 
+              name={item.isLiked ? "heart" : "heart-outline"} 
+              size={20} 
+              color={item.isLiked ? "#FF5757" : "#6b7280"} 
+            />
+            <Text style={[styles.actionText, item.isLiked && {color:'#FF5757'}]}>{item.likes || 0}</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={() => router.push(`/post/${item.id}`)}
+          >
+            <Ionicons name="chatbubble-outline" size={18} color="#6b7280" />
+            <Text style={styles.actionText}>{item.comments || 0}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const SorotanTab = () => (
     <ScrollView style={styles.sorotanContainer} showsVerticalScrollIndicator={false}>
-      {/* Section Sidebar (Event, Kucing Hilang, Leaderboard) tetap sama */}
       <View style={styles.sideCard}>
         <Text style={styles.sideTitle}>Event Mendatang</Text>
         {sidebarData.events.length === 0 ? <Text style={styles.emptySide}>Belum ada event.</Text> :
@@ -199,15 +193,14 @@ export default function CommunityScreen() {
       </View>
 
       <View style={styles.sideCard}>
-        {/* Header Widget dengan Tombol 'Lihat Semua' */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <Text style={[styles.sideTitle, { marginBottom: 0 }]}>Kucing Hilang</Text>
         </View>
 
         {sidebarData.missing.length === 0 ? <Text style={styles.emptySide}>Tidak ada laporan.</Text> :
-          sidebarData.missing.slice(0, 3).map((cat: any, i) => ( // Batasi tampil 3 saja di sidebar
+          sidebarData.missing.slice(0, 3).map((cat: any, i) => (
             <View key={i} style={styles.lostItem}>
-              <Image source={{ uri: resolveImg(cat.image) }} style={styles.lostImg} />
+              <Image source={{ uri: resolveImageUrl(cat.image, 'lost') || 'https://via.placeholder.com/150' }} style={styles.lostImg} />
               <View style={{flex:1}}>
                 <Text style={styles.lostName}>{cat.name}</Text>
                 <Text style={styles.lostAddr} numberOfLines={1}>Lokasi: {cat.address}</Text>
@@ -217,7 +210,6 @@ export default function CommunityScreen() {
           ))
         }
         
-        {/* Tombol CTA Tambahan di bawah list */}
         <TouchableOpacity 
             style={{ marginTop: 8, paddingVertical: 10, backgroundColor: '#f0fdf4', borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#dcfce7' }}
             onPress={() => router.push('/community/lost-cats')}
@@ -228,29 +220,44 @@ export default function CommunityScreen() {
 
       <View style={styles.sideCard}>
         <Text style={styles.sideTitle}>Leaderboard Paws (Poin)</Text>
-        {sidebarData.activeMembersByPoints.map((m: any, i) => (
-          <View key={i} style={styles.leaderItem}>
-            <View>
-              <Image source={{ uri: resolveImg(m.profilePic) }} style={styles.leaderAvatar} />
-              {i < 3 && (
-                <View style={[styles.badge, { backgroundColor: i===0?'#fbbf24':i===1?'#9ca3af':'#f97316' }]}>
-                  <FontAwesome5 name="crown" size={7} color="#fff" />
-                </View>
-              )}
+        {sidebarData.activeMembersByPoints.map((m: any, i) => {
+          // Resolve foto profil anggota leaderboard
+          const memberPhoto = resolveImageUrl(m.profilePic, 'profile');
+          // console.log(`DEBUG Member [${i}] - Resolved URL:`, memberPhoto);
+          return (
+            <View key={i} style={styles.leaderItem}>
+              <View>
+                {/* [UPDATE]: Jika m.profilePic null, gunakan assets/images/null.png */}
+                <Image 
+                  source={memberPhoto ? { uri: memberPhoto } : require('../../assets/images/null.png')} 
+                  style={styles.leaderAvatar} 
+                />
+                {i < 3 && (
+                  <View style={[styles.badge, { backgroundColor: i===0?'#fbbf24':i===1?'#9ca3af':'#f97316' }]}>
+                    <FontAwesome5 name="crown" size={7} color="#fff" />
+                  </View>
+                )}
+              </View>
+              <View>
+                <Text style={styles.leaderName}>{m.name}</Text>
+                <Text style={styles.leaderScore}>{m.score.toLocaleString('id-ID')} Poin</Text>
+              </View>
             </View>
-            <View>
-              <Text style={styles.leaderName}>{m.name}</Text>
-              <Text style={styles.leaderScore}>{m.score.toLocaleString('id-ID')} Poin</Text>
-            </View>
-          </View>
-        ))}
+          );
+        })}
       </View>
 
       {sidebarData.fact && (
         <View style={styles.sideCard}>
           <Text style={styles.sideTitle}>Fakta Kucing</Text>
           <View style={styles.factRow}>
-            <Image source={{ uri: resolveImg(sidebarData.fact.image) }} style={styles.factImg} />
+            {/* [UPDATE]: Jika foto fakta kucing null, gunakan assets/images/logoFaktaKucing.png */}
+            <Image 
+              source={sidebarData.fact.image && sidebarData.fact.image !== '/img/logoFaktaKucing.png' 
+                ? { uri: resolveImageUrl(sidebarData.fact.image, 'post') } 
+                : require('../../assets/images/logoFaktaKucing.png')} 
+              style={styles.factImg} 
+            />
             <Text style={styles.factText}>{sidebarData.fact.fact}</Text>
           </View>
         </View>
@@ -312,7 +319,6 @@ export default function CommunityScreen() {
           <Ionicons name="add" size={32} color="#fff" />
         </TouchableOpacity>
 
-        {/* Modal Create Post tetap sama */}
         <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -366,7 +372,6 @@ export default function CommunityScreen() {
   );
 }
 
-// STYLES (Tetap sesuai aslinya)
 const styles = StyleSheet.create({
   fullBackground: { flex: 1, backgroundColor: '#2c473c' },
   safeContainer: { flex: 1 },

@@ -6,7 +6,7 @@ import {
 import { useRouter, Stack, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; // [1] Import
-import apiClient, { API_BASE_URL } from '@/api/apiClient';
+import apiClient, { API_BASE_URL, resolveImageUrl } from '@/api/apiClient';
 import { Colors } from '@/constants/Colors'; 
 
 const BASE_SERVER_URL = API_BASE_URL?.replace('/api/v1', '');
@@ -46,19 +46,28 @@ export default function ChatListScreen() {
   );
 
   const resolveImg = (path: string) => {
-    if (!path || path.includes('NULL')) return 'https://i.pravatar.cc/150';
-    return path.startsWith('http') ? path : `${BASE_SERVER_URL}${path}`;
+    if (!path || path.includes('NULL')) return '@/assets/images/null.png';
+    return path.startsWith('http') ? path : `${path}`;
   };
 
-  const renderItem = ({ item }: { item: any }) => (
-    <TouchableOpacity 
+  const renderItem = ({ item }: { item: any }) => {
+    // DEBUG: Lihat data mentah dari API
+    console.log(`DEBUG Chat [${item.name}] - Raw Photo:`, item.profile_photo);
+
+    // Gunakan helper resolveImageUrl yang sudah di-import
+    const imageUrl = resolveImageUrl(item.profile_photo, 'profile');
+  
+    // DEBUG: Lihat hasil setelah diproses helper
+    console.log(`DEBUG Chat [${item.name}] - Resolved URL:`, imageUrl);
+    return(
+      <TouchableOpacity 
       style={styles.chatCard}
       activeOpacity={0.9}
       onPress={() => router.push({
         pathname: `/chat/${item.partner_id}`,
-        params: { name: item.name, avatar: resolveImg(item.profile_photo) }
+        params: { name: item.name, avatar: item.profile_photo }
       })}
-    >
+      >
       <View style={styles.avatarContainer}>
         <Image source={{ uri: resolveImg(item.profile_photo) }} style={styles.avatar} />
         {item.is_official && (
@@ -90,6 +99,7 @@ export default function ChatListScreen() {
       </View>
     </TouchableOpacity>
   );
+};
 
   return (
     <View style={styles.container}>

@@ -18,8 +18,7 @@ export default function CatCard({ cat, serverUrl, onPress, onFavoritePress }: Ca
   if (!cat) return null;
 
   // Mendukung field 'photo' (list cats) atau 'catImage' (riwayat adopsi)
-  
-  const imageUrl = resolveImageUrl(cat.photo || cat.catImage, 'cat') || `${serverUrl}/public/img/cats/NULL.png`;
+  const imageUrl = resolveImageUrl(cat.image || cat.catImage, 'cat') || `${serverUrl}/public/img/cats/NULL.png`;
 
   
   return (

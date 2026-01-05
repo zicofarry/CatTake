@@ -27,7 +27,13 @@ const migrationConfig = [
         table: 'detail_user_shelter',
         column: 'qr_img',
         localDir: 'public/img/qr_img',
-        cloudinaryFolder: 'cattake/payments'
+        cloudinaryFolder: 'cattake/qr_codes' // UPDATE: Folder khusus QR
+    },
+    {
+        table: 'detail_user_shelter',
+        column: 'legal_certificate', // TAMBAHAN: Dokumen legalitas shelter
+        localDir: 'public/docs/legal',
+        cloudinaryFolder: 'cattake/legal'
     },
     {
         table: 'donations',
@@ -51,7 +57,7 @@ const migrationConfig = [
         table: 'detail_user_individu',
         column: 'ktp_file_path',
         localDir: 'public/img/identity',
-        cloudinaryFolder: 'cattake/legal'
+        cloudinaryFolder: 'cattake/identity'
     },
     {
         table: 'adoptions',

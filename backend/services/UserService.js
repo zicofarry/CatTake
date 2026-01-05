@@ -21,7 +21,7 @@ class UserService {
                     d.contact_phone,
                     d.address,
                     d.bio,
-                    d.birth_date,
+                    TO_CHAR(d.birth_date, 'YYYY-MM-DD') AS birth_date,
                     d.gender
                 FROM users u
                 JOIN detail_user_individu d ON u.id = d.id
@@ -190,8 +190,7 @@ class UserService {
             UPDATE ${tableName} 
             SET ${fields.join(', ')} 
             WHERE id = $${i} 
-            RETURNING *;
-        `;
+            RETURNING *, TO_CHAR(birth_date, 'DD-MM-YYYY') as birth_date_string;        `;
 
         const result = await db.query(updateQuery, values);
 

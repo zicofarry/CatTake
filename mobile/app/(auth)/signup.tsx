@@ -55,7 +55,7 @@ export default function SignupScreen() {
   useEffect(() => {
     GoogleSignin.configure({
       // Ganti dengan Web Client ID dari Google Cloud Console kamu
-      webClientId: '563124578129-u3v3v3v3v3v3v3v3v3v3v3.apps.googleusercontent.com', 
+      webClientId: '845303611060-f0660l7kgva0k0f610mag698b9a9b86u.apps.googleusercontent.com', 
       offlineAccess: true,
     });
   }, []);
@@ -85,7 +85,7 @@ export default function SignupScreen() {
       }
 
       // Kirim ke backend sesuai AuthController.js
-      const response = await apiClient.post('/auth/google-login', {
+      const response = await apiClient.post('/auth/google', {
         token: idToken,
         role: selectedRole === 'user' ? 'individu' : 'shelter' // Mapping role ke backend
       });

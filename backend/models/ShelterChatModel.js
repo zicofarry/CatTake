@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 class ShelterChatModel {
     
-    // 1. Simpan Pesan Baru
+    // 1. Simpan Pesan Baru (Tetap sama)
     static async create(senderId, receiverId, message) {
         const query = `
             INSERT INTO shelter_chats (sender_id, receiver_id, message, is_read)
@@ -13,7 +13,7 @@ class ShelterChatModel {
         return result.rows[0];
     }
 
-    // 2. Ambil History Chat (Room Chat)
+    // 2. Ambil History Chat (Tetap sama)
     static async getHistory(userId1, userId2) {
         const query = `
             SELECT 
@@ -36,29 +36,43 @@ class ShelterChatModel {
         return result.rows;
     }
 
-    // 3. Ambil Daftar Inbox (Inbox List)
+    // 3. Ambil Daftar Inbox dengan Atribut Asli is_verified / is_verified_shelter
     static async getInboxList(currentUserId) {
-        // DISTINCT ON untuk ambil 1 pesan terakhir dari setiap lawan bicara
         const query = `
-            SELECT DISTINCT ON (partner_id)
-                u.id as partner_id,
-                u.username as name,
-                up.profile_picture, -- Sesuaikan dengan tabel user profile kamu
-                c.message as last_message,
-                c.created_at as time,
-                (SELECT COUNT(*) FROM shelter_chats 
-                 WHERE sender_id = u.id AND receiver_id = $1 AND is_read = false) as unread
-            FROM shelter_chats c
-            JOIN users u ON (
-                CASE 
-                    WHEN c.sender_id = $1 THEN c.receiver_id 
-                    ELSE c.sender_id 
-                END = u.id
-            )
-            LEFT JOIN detail_user_individu up ON u.id = up.id 
-            
-            WHERE c.sender_id = $1 OR c.receiver_id = $1
-            ORDER BY partner_id, c.created_at DESC
+            SELECT * FROM (
+                SELECT DISTINCT ON (u.id)
+                    u.id as partner_id,
+                    -- Ambil nama dari shelter atau individu
+                    COALESCE(us.shelter_name, up.full_name, u.username) as name,
+                    
+                    -- LOGIKA FOTO: Ambil shelter_picture jika ada, jika tidak profile_picture
+                    COALESCE(us.shelter_picture, up.profile_picture) as profile_photo,
+                    
+                    c.message as last_message,
+                    c.created_at as time,
+                    
+                    -- Hitung pesan belum dibaca
+                    (SELECT COUNT(*) FROM shelter_chats 
+                     WHERE sender_id = u.id AND receiver_id = $1 AND is_read = false) as unread,
+                    
+                    -- MAPPING VERIFIKASI: Gunakan is_verified_shelter atau is_verified
+                    -- Dikirim sebagai 'is_official' agar sesuai dengan pengecekan di frontend mobile kamu
+                    COALESCE(us.is_verified_shelter, up.is_verified, false) as is_official
+
+                FROM shelter_chats c
+                JOIN users u ON (
+                    CASE 
+                        WHEN c.sender_id = $1 THEN c.receiver_id 
+                        ELSE c.sender_id 
+                    END = u.id
+                )
+                LEFT JOIN detail_user_individu up ON u.id = up.id 
+                LEFT JOIN detail_user_shelter us ON u.id = us.id
+                
+                WHERE c.sender_id = $1 OR c.receiver_id = $1
+                ORDER BY u.id, c.created_at DESC
+            ) as sub
+            ORDER BY time DESC
         `;
         const result = await db.query(query, [currentUserId]);
         return result.rows;

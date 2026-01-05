@@ -20,7 +20,7 @@ class CommunityService {
 
     // --- HELPER: Resolve Image URL ---
     // Fungsi internal untuk memastikan URL yang dikirim ke frontend benar
-    static resolveImage(path, placeholder = '/img/NULL.JPG') {
+    static resolveImage(path, placeholder = '') {
         if (!path || path === 'NULL.JPG' || path === 'null') return placeholder;
         if (path.startsWith('http')) return path;
         // Jika ada data lama yang terselip bukan URL, kita arahkan ke placeholder agar tidak broken
@@ -330,7 +330,7 @@ class CommunityService {
             address: l.last_seen_address,
             reward: parseFloat(l.reward_amount),
             // [FIX] Gunakan URL langsung dari DB
-            image: l.photo && l.photo.startsWith('http') ? l.photo : '/img/NULL.JPG'
+            image: l.photo && l.photo.startsWith('http') ? l.photo : ''
         }));
 
         return { events, popular, fact, activeMembersByActivity, activeMembersByPoints, missing };

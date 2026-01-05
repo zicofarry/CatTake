@@ -341,7 +341,7 @@ export default function DonationScreen() {
                   <View style={styles.infoBoxGray}>
                      <Text style={{fontSize: 12, marginBottom: 5}}>Scan QRIS di bawah ini:</Text>
                      <Image 
-                       source={{ uri: `${serverUrl}/public/img/qr_img/${selectedShelter.qr_img}` }} 
+                       source={{ uri: `${selectedShelter.qr_img}` }} 
                        style={{ width: 150, height: 150, borderRadius: 8 }} 
                        resizeMode="contain" 
                      />
