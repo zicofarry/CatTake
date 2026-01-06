@@ -18,7 +18,8 @@ import {
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import apiClient, { resolveImageUrl } from '@/api/apiClient'; // Import resolveImageUrl
+import * as ImagePicker from 'expo-image-picker';
+import apiClient, { resolveImageUrl } from '@/api/apiClient';
 
 const { width } = Dimensions.get('window');
 
@@ -43,6 +44,7 @@ export default function CommunityScreen() {
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [image, setImage] = useState(null);
 
   const fetchPosts = async () => {
     try {
@@ -62,6 +64,27 @@ export default function CommunityScreen() {
       setSidebarData(res.data.data);
     } catch (e) {
       console.error("Sidebar Error:", e);
+    }
+  };
+
+  const pickImage = async () => {
+    // Minta izin akses galeri
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Izin Ditolak', 'Maaf, kami butuh izin galeri untuk mengupload foto.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
     }
   };
 
@@ -92,7 +115,17 @@ export default function CommunityScreen() {
       const formData = new FormData();
       if (newPostTitle) formData.append('title', newPostTitle);
       formData.append('content', newPostContent);
-      
+      if (image) {
+        const filename = image.split('/').pop();
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : `image`;
+        
+        formData.append('postImg', { 
+          uri: image, 
+          name: filename, 
+          type 
+        } as any);
+      }
       await apiClient.post('/community/posts', formData, { 
         headers: { 'Content-Type': 'multipart/form-data' } 
       });
@@ -110,7 +143,6 @@ export default function CommunityScreen() {
   };
 
   const renderPostItem = ({ item }: { item: any }) => {
-    // Resolve URL untuk Avatar dan Gambar Postingan
     const authorAvatar = resolveImageUrl(item.profileImg, 'profile');
     const postImage = resolveImageUrl(item.postImg, 'post');
 
@@ -121,7 +153,6 @@ export default function CommunityScreen() {
           activeOpacity={0.7}
         >
           <View style={styles.cardHeader}>
-            {/* Fallback ke Ellipse.png untuk avatar postingan jika null */}
             <Image 
               source={authorAvatar ? { uri: authorAvatar } : require('../../assets/images/Ellipse.png')} 
               style={styles.avatar} 
@@ -221,9 +252,7 @@ export default function CommunityScreen() {
       <View style={styles.sideCard}>
         <Text style={styles.sideTitle}>Leaderboard Paws (Poin)</Text>
         {sidebarData.activeMembersByPoints.map((m: any, i) => {
-          // Resolve foto profil anggota leaderboard
           const memberPhoto = resolveImageUrl(m.profilePic, 'profile');
-          // console.log(`DEBUG Member [${i}] - Resolved URL:`, memberPhoto);
           return (
             <View key={i} style={styles.leaderItem}>
               <View>
@@ -250,7 +279,6 @@ export default function CommunityScreen() {
         <View style={styles.sideCard}>
           <Text style={styles.sideTitle}>Fakta Kucing</Text>
           <View style={styles.factRow}>
-            {/* [UPDATE]: Jika foto fakta kucing null, gunakan assets/images/logoFaktaKucing.png */}
             <Image 
               source={sidebarData.fact.image && sidebarData.fact.image !== '/img/logoFaktaKucing.png' 
                 ? { uri: resolveImageUrl(sidebarData.fact.image, 'post') } 
@@ -269,11 +297,10 @@ export default function CommunityScreen() {
     <ImageBackground 
       source={require('../../assets/images/background.png')} 
       style={styles.fullBackground}
-      imageStyle={{ width: 400, height: 700 }}
-      resizeMode="repeat"
+      resizeMode="repeat" // Diubah dari "repeat" agar menutup layar sempurna
     >
       <View style={styles.safeContainer}>
-        <StatusBar barStyle="light-content" />
+        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
         
         <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
           <Text style={styles.mainTitle}>Komunitas</Text>
@@ -344,9 +371,15 @@ export default function CommunityScreen() {
                   value={newPostContent} 
                   onChangeText={setNewPostContent} 
                 />
-                <TouchableOpacity style={styles.imageUploadBox}>
-                  <Ionicons name="camera" size={24} color="#78C89F" />
-                  <Text style={{color: '#6b7280', fontSize: 12, marginTop: 4}}>Tambah Foto</Text>
+                <TouchableOpacity style={styles.imageUploadBox} onPress={pickImage}>
+                  {image ? (
+                    <Image source={{ uri: image }} style={{ width: '100%', height: '100%', borderRadius: 12 }} />
+                  ) : (
+                    <>
+                      <Ionicons name="camera" size={24} color="#78C89F" />
+                      <Text style={{color: '#6b7280', fontSize: 12, marginTop: 4}}>Tambah Foto</Text>
+                    </>
+                  )}
                 </TouchableOpacity>
               </View>
               <View style={styles.modalFooter}>
@@ -373,6 +406,7 @@ export default function CommunityScreen() {
 
 const styles = StyleSheet.create({
   fullBackground: { flex: 1, backgroundColor: '#2c473c' },
+  // ... (Sisa styles tetap sama seperti yang kamu berikan)
   safeContainer: { flex: 1 },
   header: { padding: 20 }, 
   mainTitle: { fontSize: 30, fontWeight: 'bold', color: '#fff' },
@@ -390,7 +424,6 @@ const styles = StyleSheet.create({
   tabLabelActive: { color: '#fff' },
   content: { flex: 1 },
   empty: { color: '#fff', textAlign: 'center', marginTop: 40, fontStyle: 'italic' },
-  
   card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 16, elevation: 2 },
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#e2e8f0' },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
@@ -404,7 +437,6 @@ const styles = StyleSheet.create({
   cardFooter: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingTop: 12, marginTop: 12, gap: 20 },
   actionButton: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   actionText: { color: '#64748b', fontWeight: 'bold', fontSize: 14 },
-
   sorotanContainer: { padding: 16 },
   sideCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 16, elevation: 2 },
   sideTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 16, color: '#0f172a' },
@@ -429,7 +461,6 @@ const styles = StyleSheet.create({
   factRow: { flexDirection: 'row', gap: 12 },
   factImg: { width: 64, height: 64, borderRadius: 12 },
   factText: { flex: 1, fontSize: 13, color: '#475569', lineHeight: 20 },
-
   fab: { 
     position: 'absolute', 
     bottom: 110, 

@@ -75,7 +75,7 @@ class ReportService {
         
         return result.rows.map(row => ({
             ...row,
-            photo: row.photo ? `/public/img/report_cat/${row.photo}` : '/img/placeholder.png',
+            photo: row.photo ? `${row.photo}` : '/img/placeholder.png',
             status_label: row.assignment_status || 'Mencari Shelter',
             is_trackable: !!row.tracking_id // True jika ada driver
         }));
