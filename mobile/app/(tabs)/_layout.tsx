@@ -90,6 +90,7 @@ export default function TabLayout() {
       <Tabs.Screen name="adopt" options={{ href: null }} />
       <Tabs.Screen name="history" options={{href: null }}/>
       <Tabs.Screen name="halloffame" options={{href: null }}/>
+      <Tabs.Screen name="all-shelters" options={{ href: null }} />
     </Tabs>
   );
 }
