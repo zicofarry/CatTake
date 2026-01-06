@@ -143,7 +143,9 @@ function UserHomeScreen() {
         <View style={styles.sectionContainer}>
           <View style={[styles.sectionHeaderRow, { paddingRight: 20 }]}>
              <Text style={styles.sectionTitle}>Hall of Fame</Text>
-             <TouchableOpacity><Text style={styles.seeAll}>Lihat Semua</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/(tabs)/halloffame' as any)}>
+                        <Text style={styles.seeAll}>Lihat Semua</Text>
+                </TouchableOpacity>
           </View>
         </View>
           
