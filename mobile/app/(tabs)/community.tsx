@@ -463,7 +463,7 @@ const styles = StyleSheet.create({
   factText: { flex: 1, fontSize: 13, color: '#475569', lineHeight: 20 },
   fab: { 
     position: 'absolute', 
-    bottom: 110, 
+    bottom: 25,
     right: 25, 
     width: 60, height: 60, 
     borderRadius: 30, backgroundColor: '#78C89F', alignItems: 'center', 
