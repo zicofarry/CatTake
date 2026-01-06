@@ -161,8 +161,8 @@ export default function DriverPage() {
   };
 
   const resolveImageUrl = (path: string | null) => {
-    if (!path || path === 'NULL' || path === 'NULL.JPG' || path === 'NULL.png' || path === 'null') {
-      return require('../../assets/images/NULL.png'); 
+    if (!path || path === 'NULL' || path === 'null.png' || path === 'null') {
+      return require('../../assets/images/null.png'); 
     }
     if (path.startsWith('http')) return { uri: path };
     return { uri: `${SERVER_URL}/public/img/profile/${path}` };

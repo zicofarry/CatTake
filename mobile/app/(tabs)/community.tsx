@@ -227,9 +227,8 @@ export default function CommunityScreen() {
           return (
             <View key={i} style={styles.leaderItem}>
               <View>
-                {/* [UPDATE]: Jika m.profilePic null, gunakan assets/images/null.png */}
                 <Image 
-                  source={memberPhoto ? { uri: memberPhoto } : require('../../assets/images/NULL.png')} 
+                  source={memberPhoto ? { uri: memberPhoto } : require('../../assets/images/null.png')} 
                   style={styles.leaderAvatar} 
                 />
                 {i < 3 && (

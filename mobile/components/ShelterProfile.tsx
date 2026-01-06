@@ -107,7 +107,7 @@ export default function ShelterProfile() {
             {/* FOTO PROFIL SHELTER (FIX: Prefix profile-) */}
             <View style={{ marginBottom: 20 }}>
               <Image 
-                source={profile?.profile_img ? { uri: resolveImageUrl(profile.profile_img.startsWith('profile-') ? profile.profile_img : `profile-${profile.profile_img}`) } : require('@/assets/images/NULL.png')} 
+                source={profile?.profile_img ? { uri: resolveImageUrl(profile.profile_img.startsWith('profile-') ? profile.profile_img : `profile-${profile.profile_img}`) } : require('@/assets/images/null.png')} 
                 style={{ width: '100%', height: 180, borderRadius: 20, borderWidth: 2, borderColor: 'white' }}
                 resizeMode="cover"
               />

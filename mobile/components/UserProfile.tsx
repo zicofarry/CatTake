@@ -224,8 +224,7 @@ export default function UserProfile() {
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
             <View style={styles.profileSection}>
               <View style={styles.avatarContainer}>
-                {/* [FIX]: null.png diubah menjadi NULL.png untuk menghindari error resolution */}
-                <Image source={finalAvatar ? { uri: finalAvatar } : require('@/assets/images/NULL.png')} style={styles.avatar} />
+                <Image source={finalAvatar ? { uri: finalAvatar } : require('@/assets/images/null.png')} style={styles.avatar} />
                 <TouchableOpacity style={styles.cameraIcon} onPress={pickImage}><FontAwesome name="camera" size={16} color="white" /></TouchableOpacity>
               </View>
               {/* Menampilkan Nama Lengkap di bawah Foto */}
