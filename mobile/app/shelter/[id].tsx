@@ -1,17 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  View, 
-  Text, 
-  Image, 
-  StyleSheet, 
-  TouchableOpacity, 
-  ActivityIndicator, 
-  Linking,
-  FlatList,
-  RefreshControl,
-  Alert,
-  Dimensions,
-  Platform
+  View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, 
+  Linking, FlatList, RefreshControl, Alert, Platform
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { FontAwesome, MaterialIcons, Ionicons, FontAwesome5 } from '@expo/vector-icons';
@@ -21,10 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 import CatCard from '../../components/CatCard'; 
 
-// SETUP URL GAMBAR DINAMIS (Sesuai file [id].tsx kamu)
-const serverUrl = API_BASE_URL 
-  ? API_BASE_URL.replace('/api/v1', '') 
-  : 'http://localhost:3000'; 
+const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000'; 
 
 export default function ShelterProfileScreen() {
   const { id } = useLocalSearchParams(); 
@@ -35,6 +22,32 @@ export default function ShelterProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'cats' | 'about'>('cats');
   const [refreshing, setRefreshing] = useState(false);
+  const [resolvedAddress, setResolvedAddress] = useState("Memuat alamat...");
+
+  // --- HELPER GAMBAR ---
+  const resolveImageUrl = (path: string | null, type: 'shelter' | 'cat' | 'qr' = 'cat') => {
+    if (!path || path === 'null' || path === 'NULL' || path === 'null.png') {
+        if (type === 'shelter') return require('../../assets/images/null-shelter.png');
+        if (type === 'cat') return { uri: 'https://via.placeholder.com/150' };
+        return null;
+    }
+    if (path.startsWith('http')) return { uri: path };
+    return { uri: `${serverUrl}/public/img/${type === 'cat' ? 'cats' : 'shelters'}/${path}` };
+  };
+
+  // --- REVERSE GEOCODING (NOMINATIM) ---
+  const fetchAddressText = async (lat: any, lon: any) => {
+    try {
+      if (!lat || !lon) return setResolvedAddress("Lokasi tidak tersedia");
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`, {
+        headers: { 'User-Agent': 'CatTake-App' }
+      });
+      const data = await res.json();
+      setResolvedAddress(data.display_name || "Alamat tidak ditemukan");
+    } catch (error) {
+      setResolvedAddress("Gagal memuat alamat");
+    }
+  };
 
   // --- FETCH DATA ---
   const fetchData = async () => {
@@ -45,24 +58,17 @@ export default function ShelterProfileScreen() {
         apiClient.get(`/cats/shelter/${id}`)
       ]);
 
-      // Handle Data Profil
       const shelterData = profileRes.data.data || profileRes.data;
       setShelter(shelterData);
+      setCats(catsRes.data.data || catsRes.data || []);
 
-      // Handle Data Kucing
-      const catsData = catsRes.data.data || catsRes.data;
-      setCats(Array.isArray(catsData) ? catsData : []);
-
+      // Ambil alamat teks jika koordinat tersedia
+      if (shelterData.latitude && shelterData.longitude) {
+        fetchAddressText(shelterData.latitude, shelterData.longitude);
+      }
     } catch (error: any) {
       console.error("Gagal load shelter:", error);
-      if (error.response?.status === 404) {
-        Alert.alert("Tidak Ditemukan", "Data shelter tidak ditemukan.");
-        router.back();
-      } else if (error.response?.status === 401) {
-         Alert.alert("Akses Ditolak", "Silakan login kembali.", [
-            { text: "Login", onPress: () => router.replace('/login') }
-         ]);
-      }
+      if (error.response?.status === 404) router.back();
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -70,66 +76,25 @@ export default function ShelterProfileScreen() {
   };
 
   useEffect(() => { if (id) fetchData(); }, [id]);
+
   const onRefresh = () => { setRefreshing(true); fetchData(); };
 
-  // --- FUNGSI NAVIGASI ---
-  
-  // 1. Buka Maps (Google Maps / Apple Maps)
-  const openMaps = (lat: any, long: any) => {
-    if (!lat || !long) return;
-    const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
-    const latLng = `${lat},${long}`;
-    const label = shelter?.name || 'Lokasi Shelter';
-    const url = Platform.select({
-      ios: `${scheme}${label}@${latLng}`,
-      android: `${scheme}${latLng}(${label})`
-    });
-    if (url) Linking.openURL(url);
-  };
-
-  // 2. Chat Internal (Masuk ke Room Chat Aplikasi)
-  const handleChat = () => {
-    if (!shelter) return;
-    router.push({
-        pathname: `/chat/${shelter.id}`, 
-        params: { 
-            name: shelter.name,
-            avatar: shelter.photo ? `${serverUrl}/public/img/profile/${shelter.photo}` : '' 
-        } 
-    });
-  };
-
-  // --- HEADER TAMPILAN BARU ---
+  // --- TAMPILAN HEADER ---
   const renderHeader = () => {
     if (!shelter) return null;
 
-    const profileImg = shelter.photo 
-      ? { uri: `${serverUrl}/public/img/profile/${shelter.photo}` }
-      : require('../../assets/images/profileKomunitas1.png'); 
-
-    // Ambil kalimat pertama dari bio untuk tagline singkat
-    const tagline = shelter.bio ? shelter.bio.split('.')[0] : 'Menyelamatkan dan mencarikan rumah bagi kucing jalanan.';
-    
-    // Cek Status Verified
+    const tagline = shelter.bio ? shelter.bio.split('.')[0] : 'Menyelamatkan anabul dengan cinta.';
     const isVerified = Boolean(shelter.verified);
 
     return (
       <View style={styles.headerContainer}>
-        {/* 1. Banner Hero Imersif */}
         <View style={styles.heroWrapper}>
-            <LinearGradient
-                colors={['#3A5F50', '#2c473c']}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                style={styles.bannerImage}
-            >
+            <LinearGradient colors={['#3A5F50', '#2c473c']} style={styles.bannerImage}>
                 <View style={styles.bannerOverlay} />
             </LinearGradient>
 
-            {/* Foto Profil di Tengah */}
             <View style={styles.profileImageWrapper}>
-                <Image source={profileImg} style={styles.profileImage} />
-                
-                {/* Badge Verified di Foto Profil */}
+                <Image source={resolveImageUrl(shelter.photo, 'shelter')} style={styles.profileImage} />
                 {isVerified && (
                     <View style={styles.verifiedBadgeLarge}>
                         <MaterialIcons name="verified" size={24} color="#3A5F50" />
@@ -138,41 +103,28 @@ export default function ShelterProfileScreen() {
             </View>
         </View>
 
-        {/* 2. Kartu Informasi Shelter */}
         <View style={styles.shelterInfoCard}>
-            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 6}}>
+            <View className="flex-row items-center justify-center mb-2">
                 <Text style={styles.shelterName}>{shelter.name}</Text>
-                {/* Badge Verified di Sebelah Nama */}
-                {isVerified && (
-                    <MaterialIcons name="verified" size={20} color="#3B82F6" style={{marginLeft: 4, marginTop: 2}} />
-                )}
+                {isVerified && <MaterialIcons name="verified" size={20} color="#3B82F6" style={{marginLeft: 4}} />}
             </View>
             
             <View style={styles.typeTag}>
                  <FontAwesome5 name="hand-holding-heart" size={12} color="#3A5F50" style={{marginRight: 6}} />
-                 <Text style={styles.typeTagText}>{shelter.organization_type || 'Komunitas Pecinta Kucing'}</Text>
+                 <Text style={styles.typeTagText}>{shelter.organization_type || 'Shelter Mandiri'}</Text>
             </View>
 
-            <Text style={styles.shelterTagline} numberOfLines={2}>
-                "{tagline}."
-            </Text>
+            <Text style={styles.shelterTagline} numberOfLines={2}>"{tagline}"</Text>
 
-            {/* Lokasi (Klik untuk Buka Maps) */}
             <TouchableOpacity 
                 style={styles.locationRow} 
-                onPress={() => openMaps(shelter.latitude, shelter.longitude)}
-                activeOpacity={shelter.latitude ? 0.7 : 1}
+                onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${shelter.latitude},${shelter.longitude}`)}
             >
                 <Ionicons name="location-outline" size={16} color="#666" />
-                <Text style={styles.locationText} numberOfLines={1}>
-                  {shelter.latitude && shelter.longitude 
-                    ? `${shelter.latitude}, ${shelter.longitude}` 
-                    : 'Lokasi belum diatur'}
-                </Text>
-                {shelter.latitude && <Ionicons name="open-outline" size={14} color="#3A5F50" style={{marginLeft: 4}} />}
+                <Text style={styles.locationText} numberOfLines={1}>{resolvedAddress}</Text>
+                <Ionicons name="open-outline" size={14} color="#3A5F50" style={{marginLeft: 4}} />
             </TouchableOpacity>
 
-            {/* Statistik Ringkas */}
             <View style={styles.statsContainer}>
                 <View style={styles.statItem}>
                     <Text style={styles.statNumber}>{cats.length}</Text>
@@ -180,17 +132,15 @@ export default function ShelterProfileScreen() {
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>{shelter.created_at ? new Date(shelter.created_at).getFullYear() : '2024'}</Text>
-                    <Text style={styles.statLabel}>Berdiri Sejak</Text>
+                    <Text style={styles.statNumber}>{shelter.established_date ? new Date(shelter.established_date).getFullYear() : '2024'}</Text>
+                    <Text style={styles.statLabel}>Sejak</Text>
                 </View>
             </View>
 
-            {/* Tombol Aksi Utama */}
             <View style={styles.actionButtonContainer}>
                 <TouchableOpacity 
                   style={[styles.actionButton, styles.chatButton]} 
-                  onPress={handleChat}
-                  activeOpacity={0.8}
+                  onPress={() => router.push({ pathname: `/chat/${shelter.id}`, params: { name: shelter.name, avatar: shelter.photo }})}
                 >
                   <Ionicons name="chatbubble-ellipses" size={20} color="white" /> 
                   <Text style={styles.actionButtonTextWhite}>Chat</Text>
@@ -198,7 +148,7 @@ export default function ShelterProfileScreen() {
                 
                 <TouchableOpacity 
                     style={[styles.actionButton, styles.donateButton]}
-                    activeOpacity={0.8}
+                    onPress={() => router.push({ pathname: '/(tabs)/donation', params: { shelterId: shelter.id }})}
                 >
                   <FontAwesome5 name="donate" size={18} color="#3A5F50" />
                   <Text style={styles.actionButtonTextGreen}>Donasi</Text>
@@ -206,57 +156,27 @@ export default function ShelterProfileScreen() {
             </View>
         </View>
 
-        {/* 3. Tab Menu */}
         <View style={styles.tabContainer}>
-          <TouchableOpacity 
-            style={[styles.tabItem, activeTab === 'cats' && styles.tabActive]}
-            onPress={() => setActiveTab('cats')}
-          >
-            <Text style={[styles.tabText, activeTab === 'cats' && styles.tabTextActive]}>SIAP DIADOPSI ({cats.length})</Text>
+          <TouchableOpacity style={[styles.tabItem, activeTab === 'cats' && styles.tabActive]} onPress={() => setActiveTab('cats')}>
+            <Text style={[styles.tabText, activeTab === 'cats' && styles.tabTextActive]}>KUCING ({cats.length})</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.tabItem, activeTab === 'about' && styles.tabActive]}
-            onPress={() => setActiveTab('about')}
-          >
+          <TouchableOpacity style={[styles.tabItem, activeTab === 'about' && styles.tabActive]} onPress={() => setActiveTab('about')}>
             <Text style={[styles.tabText, activeTab === 'about' && styles.tabTextActive]}>TENTANG KAMI</Text>
           </TouchableOpacity>
         </View>
-        
-        {activeTab === 'cats' && cats.length > 0 && (
-            <View style={styles.listHeaderTitle}>
-                <Text style={styles.headerTitleText}>Teman Berbulu Mencari Rumah</Text>
-                <Text style={styles.headerSubtitleText}>Pilih dan berikan mereka kesempatan kedua.</Text>
-            </View>
-        )}
       </View>
     );
   };
 
   if (loading && !refreshing) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#EBCD5E" />
-      </View>
+      <View style={styles.loadingContainer}><ActivityIndicator size="large" color="#EBCD5E" /></View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ 
-        headerShown: true, 
-        headerTransparent: true, 
-        title: '',
-        headerTintColor: 'white',
-        headerLeft: () => (
-            <TouchableOpacity 
-                onPress={() => router.back()} 
-                style={styles.backButton}
-                activeOpacity={0.7}
-            >
-              <Ionicons name="arrow-back" size={24} color="white" />
-            </TouchableOpacity>
-        )
-      }} />
+      <Stack.Screen options={{ headerShown: true, headerTransparent: true, title: '', headerTintColor: 'white' }} />
 
       <FlatList
         data={activeTab === 'cats' ? cats : []}
@@ -265,63 +185,73 @@ export default function ShelterProfileScreen() {
         columnWrapperStyle={styles.listColumnWrapper}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={renderHeader}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#EBCD5E']} />
-        }
-        initialNumToRender={6}
-        renderItem={({ item }) => {
-            if (activeTab !== 'cats') return null;
-            return (
-                <View style={styles.gridItem}>
-                    <CatCard
-                        name={item.name}
-                        breed={item.breed}
-                        age={item.age}
-                        gender={item.gender}
-                        status={item.adoption_status}
-                        imageUrl={item.photo ? `${serverUrl}/public/img/cats/${item.photo}` : 'https://via.placeholder.com/150'}
-                        onPress={() => router.push(`/adopt/${item.id}`)}
-                    />
-                </View>
-            );
-        }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        renderItem={({ item }) => (
+            <View style={styles.gridItem}>
+                <CatCard
+                    name={item.name}
+                    breed={item.breed}
+                    gender={item.gender}
+                    status={item.adoption_status}
+                    // Kirim hasil resolveImageUrl apa adanya (bisa Object atau Number)
+                    imageUrl={resolveImageUrl(item.photo, 'cat')} 
+                    onPress={
+                      item.adoption_status === 'adopted' 
+                        ? undefined // Jika sudah diadopsi, tidak bisa diklik
+                        : () => router.push(`/adopt/${item.id}`)
+                    }
+                />
+            </View>
+        )}
         ListEmptyComponent={() => {
             if (activeTab === 'about') {
                 return (
                     <View style={styles.aboutContainer}>
                         <View style={styles.aboutCard}>
-                            <Text style={styles.sectionTitle}>Visi & Misi Kami</Text>
-                            <Text style={styles.aboutText}>{shelter?.bio || 'Belum ada deskripsi yang ditambahkan.'}</Text>
-                        </View>
-                        <View style={styles.aboutCard}>
-                            <Text style={styles.sectionTitle}>Informasi Kontak & Donasi</Text>
+                            <Text style={styles.sectionTitle}>Profil Shelter</Text>
+                            
                             <View style={styles.infoRow}>
-                                <View style={styles.infoIconBg}><MaterialIcons name="person" size={20} color="#3A5F50" /></View>
+                                <View style={styles.infoIconBg}><MaterialIcons name="calendar-today" size={20} color="#3A5F50" /></View>
                                 <View style={styles.infoContent}>
-                                    <Text style={styles.infoLabel}>Penanggung Jawab</Text>
-                                    <Text style={styles.infoValue}>{shelter?.pj_name || '-'}</Text>
+                                    <Text style={styles.infoLabel}>Berdiri Sejak</Text>
+                                    <Text style={styles.infoValue}>{shelter?.established_date ? new Date(shelter.established_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}</Text>
                                 </View>
                             </View>
+
+                            <View style={styles.infoRow}>
+                                <View style={styles.infoIconBg}><MaterialIcons name="phone" size={20} color="#3A5F50" /></View>
+                                <View style={styles.infoContent}>
+                                    <Text style={styles.infoLabel}>Kontak WhatsApp</Text>
+                                    <Text style={styles.infoValue}>{shelter?.contact_phone || '-'}</Text>
+                                </View>
+                            </View>
+
                             <View style={styles.infoRow}>
                                 <View style={styles.infoIconBg}><FontAwesome name="bank" size={18} color="#3A5F50" /></View>
                                 <View style={styles.infoContent}>
                                     <Text style={styles.infoLabel}>Rekening Donasi</Text>
                                     <Text style={styles.infoValue}>{shelter?.donation_account_number || '-'}</Text>
-                                    <Text style={styles.infoSubValue}>A.n {shelter?.name || '-'}</Text>
                                 </View>
                             </View>
                         </View>
-                    </View>
-                );
-            } else {
-                return (
-                    <View style={styles.emptyContainer}>
-                         <Image source={require('../../assets/images/kucingtidur.png')} style={{width: 120, height: 120, opacity:0.5, marginBottom: 16}} resizeMode="contain" />
-                        <Text style={styles.emptyTitle}>Belum Ada Kucing</Text>
-                        <Text style={styles.emptyText}>Shelter ini belum menambahkan daftar kucing yang siap diadopsi.</Text>
+
+                        <View style={styles.aboutCard}>
+                            <Text style={styles.sectionTitle}>QR Code Donasi</Text>
+                            {shelter?.qr_img ? (
+                                <Image source={resolveImageUrl(shelter.qr_img, 'qr')} style={{ width: '100%', height: 300, borderRadius: 12 }} resizeMode="contain" />
+                            ) : (
+                                <Text style={styles.emptyText}>QR Code belum tersedia.</Text>
+                            )}
+                        </View>
                     </View>
                 );
             }
+            return (
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyTitle}>Belum Ada Kucing</Text>
+                    <Text style={styles.emptyText}>Daftar kucing akan segera diupdate.</Text>
+                </View>
+            );
         }}
       />
     </View>
@@ -330,88 +260,49 @@ export default function ShelterProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA' }, 
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
-  
-  // Back Button
-  backButton: {
-    width: 40, height: 40, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginLeft: 10,
-  },
-
-  // Header & Banner
-  headerContainer: { backgroundColor: '#F8F9FA', marginBottom: 10 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  headerContainer: { backgroundColor: '#F8F9FA' },
   heroWrapper: { position: 'relative', alignItems: 'center' },
   bannerImage: { height: 180, width: '100%', borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
   bannerOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.2)', borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
-  
-  profileImageWrapper: {
-    position: 'absolute', bottom: -50, alignItems: 'center', justifyContent: 'center',
-  },
-  profileImage: {
-    width: 110, height: 110, borderRadius: 55, borderWidth: 4, borderColor: '#fff', backgroundColor: '#eee',
-  },
-  verifiedBadgeLarge: {
-    position: 'absolute', bottom: 0, right: 0, backgroundColor: '#fff', borderRadius: 15, padding: 4, shadowColor: '#000', shadowOffset: {width:0, height:2}, shadowOpacity:0.2, shadowRadius:4, elevation:4
-  },
-
-  // Shelter Info
-  shelterInfoCard: {
-    marginTop: 60, marginHorizontal: 20, alignItems: 'center', paddingBottom: 20,
-  },
-  shelterName: { fontSize: 24, fontWeight: 'bold', color: '#2D3748', textAlign: 'center', marginBottom: 0 },
-  
-  typeTag: { 
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#E6FFFA', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginBottom: 12, marginTop: 8
-  },
+  profileImageWrapper: { position: 'absolute', bottom: -50, alignItems: 'center' },
+  profileImage: { width: 110, height: 110, borderRadius: 55, borderWidth: 4, borderColor: '#fff' },
+  verifiedBadgeLarge: { position: 'absolute', bottom: 0, right: 0, backgroundColor: '#fff', borderRadius: 15, padding: 4, elevation: 4 },
+  shelterInfoCard: { marginTop: 60, marginHorizontal: 20, alignItems: 'center', paddingBottom: 20 },
+  shelterName: { fontSize: 24, fontWeight: 'bold', color: '#2D3748' },
+  typeTag: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E6FFFA', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginBottom: 10 },
   typeTagText: { color: '#3A5F50', fontSize: 12, fontWeight: '600' },
-  shelterTagline: { fontSize: 14, color: '#718096', textAlign: 'center', fontStyle: 'italic', marginBottom: 16, paddingHorizontal: 20 },
-  
-  locationRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  locationText: { fontSize: 14, color: '#718096', marginLeft: 6 },
-
-  statsContainer: {
-    flexDirection: 'row', backgroundColor: '#fff', borderRadius: 16, paddingVertical: 16, paddingHorizontal: 30, width: '100%', justifyContent: 'space-around', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, marginBottom: 24,
-  },
+  shelterTagline: { fontSize: 14, color: '#718096', textAlign: 'center', fontStyle: 'italic', marginBottom: 12, paddingHorizontal: 10 },
+  locationRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, paddingHorizontal: 20 },
+  locationText: { fontSize: 13, color: '#718096', marginLeft: 6, flex: 1 },
+  statsContainer: { flexDirection: 'row', backgroundColor: '#fff', borderRadius: 16, padding: 16, width: '100%', justifyContent: 'space-around', elevation: 2, marginBottom: 20 },
   statItem: { alignItems: 'center' },
-  statNumber: { fontSize: 20, fontWeight: 'bold', color: '#3A5F50' },
-  statLabel: { fontSize: 12, color: '#A0AEC0', marginTop: 4 },
+  statNumber: { fontSize: 18, fontWeight: 'bold', color: '#3A5F50' },
+  statLabel: { fontSize: 12, color: '#A0AEC0' },
   statDivider: { width: 1, height: '80%', backgroundColor: '#E2E8F0' },
-
-  actionButtonContainer: { flexDirection: 'row', width: '100%', gap: 12 },
-  actionButton: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, borderRadius: 25, gap: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3,
-  },
+  actionButtonContainer: { flexDirection: 'row', width: '100%', gap: 10 },
+  actionButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 20, gap: 8 },
   chatButton: { backgroundColor: '#3A5F50' },
   donateButton: { backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#3A5F50' },
-  actionButtonTextWhite: { color: 'white', fontWeight: 'bold', fontSize: 15 },
-  actionButtonTextGreen: { color: '#3A5F50', fontWeight: 'bold', fontSize: 15 },
-
-  tabContainer: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E2E8F0', marginTop: 10, marginHorizontal: 20 },
-  tabItem: { flex: 1, alignItems: 'center', paddingVertical: 16, borderBottomWidth: 3, borderBottomColor: 'transparent' },
-  tabActive: { borderBottomColor: '#EBCD5E' },
-  tabText: { fontSize: 13, fontWeight: '600', color: '#A0AEC0', letterSpacing: 0.5 },
+  actionButtonTextWhite: { color: 'white', fontWeight: 'bold' },
+  actionButtonTextGreen: { color: '#3A5F50', fontWeight: 'bold' },
+  tabContainer: { flexDirection: 'row', marginHorizontal: 20, borderBottomWidth: 1, borderBottomColor: '#E2E8F0' },
+  tabItem: { flex: 1, alignItems: 'center', paddingVertical: 15 },
+  tabActive: { borderBottomWidth: 3, borderBottomColor: '#EBCD5E' },
+  tabText: { fontSize: 12, fontWeight: 'bold', color: '#A0AEC0' },
   tabTextActive: { color: '#3A5F50' },
-
-  listHeaderTitle: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 10 },
-  headerTitleText: { fontSize: 18, fontWeight: 'bold', color: '#2D3748' },
-  headerSubtitleText: { fontSize: 14, color: '#718096', marginTop: 4 },
-  listColumnWrapper: { gap: 16, paddingHorizontal: 20 },
+  listColumnWrapper: { gap: 15, paddingHorizontal: 20 },
   listContent: { paddingBottom: 40 },
-  gridItem: { flex: 1, marginBottom: 16 },
-
+  gridItem: { flex: 1, marginBottom: 15 },
   aboutContainer: { padding: 20 },
-  aboutCard: {
-    backgroundColor: 'white', borderRadius: 20, padding: 20, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
-  },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#2D3748', marginBottom: 16 },
-  aboutText: { fontSize: 15, color: '#4A5568', lineHeight: 24 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  infoIconBg: { width: 40, height: 40, backgroundColor: '#E6FFFA', borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+  aboutCard: { backgroundColor: 'white', borderRadius: 15, padding: 20, marginBottom: 20, elevation: 2 },
+  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#2D3748', marginBottom: 15 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+  infoIconBg: { width: 36, height: 36, backgroundColor: '#E6FFFA', borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 15 },
   infoContent: { flex: 1 },
-  infoLabel: { fontSize: 13, color: '#A0AEC0', marginBottom: 2 },
-  infoValue: { fontSize: 16, color: '#2D3748', fontWeight: '600' },
-  infoSubValue: { fontSize: 13, color: '#718096', marginTop: 2 },
-
-  emptyContainer: { alignItems: 'center', padding: 40, marginTop: 20 },
-  emptyTitle: { fontSize: 18, fontWeight: 'bold', color: '#2D3748', marginTop: 10 },
-  emptyText: { marginTop: 8, color: '#A0AEC0', fontSize: 14, textAlign: 'center' },
+  infoLabel: { fontSize: 12, color: '#A0AEC0' },
+  infoValue: { fontSize: 15, color: '#2D3748', fontWeight: 'bold' },
+  emptyContainer: { alignItems: 'center', padding: 40 },
+  emptyTitle: { fontSize: 16, fontWeight: 'bold', color: '#2D3748' },
+  emptyText: { color: '#A0AEC0', textAlign: 'center', marginTop: 5 },
 });

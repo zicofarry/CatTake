@@ -92,9 +92,8 @@ export default function AdoptScreen() {
   return (
     <ImageBackground 
       source={require('../../assets/images/background.png')} 
-      style={styles.container}
+      style={styles.fullBackground}
       resizeMode="repeat"
-      imageStyle={{ width: 150, height: 150, opacity: 0.15 }}
     >
       <SafeAreaView style={{flex: 1}}>
         <StatusBar barStyle="light-content" />
@@ -149,6 +148,7 @@ export default function AdoptScreen() {
                   <CatCard 
                     cat={item} 
                     serverUrl={BASE_SERVER_URL} 
+                    showStatus={false}
                     onPress={() => router.push(`/adopt/${item.id}`)}
                     onFavoritePress={() => handleToggleFavorite(item.id)}
                   />
@@ -229,6 +229,7 @@ const getStatusBg = (status: string) => {
 };
 
 const styles = StyleSheet.create({
+  fullBackground: { flex: 1, backgroundColor: '#2c473c' },
   container: { flex: 1, backgroundColor: '#2c473c' },
   hero: { padding: 24, alignItems: 'center', paddingTop: 20 },
   heroImg: { width: 100, height: 70, marginBottom: 5 },

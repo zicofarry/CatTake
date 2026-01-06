@@ -297,7 +297,7 @@ export default function CommunityScreen() {
     <ImageBackground 
       source={require('../../assets/images/background.png')} 
       style={styles.fullBackground}
-      resizeMode="repeat" // Diubah dari "repeat" agar menutup layar sempurna
+      resizeMode="repeat" 
     >
       <View style={styles.safeContainer}>
         <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
