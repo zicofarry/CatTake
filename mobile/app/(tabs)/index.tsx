@@ -9,7 +9,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
-import ShelterHomeScreen from '../../components/ShelterHomeScreen'; 
+import ShelterHomeScreen from '../../components/ShelterHomeScreen';
+import ShelterCard from '../../components/ShelterCard';
 
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
 const THEME_COLOR = '#3A5F50';
@@ -22,10 +23,16 @@ function UserHomeScreen() {
   const insets = useSafeAreaInsets();
   const [alumniCats, setAlumniCats] = useState<any[]>([]);
   const [loadingAlumni, setLoadingAlumni] = useState(true);
+  // --- 1. PINDAHKAN STATE SHELTERS KE SINI ---
+  const [shelters, setShelters] = useState([]);
+
+    
 
   useEffect(() => {
     fetchAlumni();
+    fetchShelters();
   }, []);
+
 
   const fetchAlumni = async () => {
     try {
@@ -40,6 +47,25 @@ function UserHomeScreen() {
       setLoadingAlumni(false);
     }
   };
+
+  // --- 2. PINDAHKAN FUNGSI FETCH SHELTERS KE SINI ---
+ const fetchShelters = async () => {
+  try {
+    // Coba ganti manual alamatnya di sini untuk ngetes
+    // Ganti '/shelters' jadi '/shelter' kalau masih 404
+    const response = await apiClient.get('/shelters'); 
+    
+    console.log("Data Shelter:", response.data);
+    
+    if (response.data && response.data.data) {
+       setShelters(response.data.data);
+    } else {
+       setShelters(response.data);
+    }
+  } catch (err) {
+    console.log("Gagal ambil shelters:", err);
+  }
+};
 
   const getImageUrl = (filename: string) => {
     if (!filename || filename === 'NULL') return 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=400'; 
@@ -138,6 +164,44 @@ function UserHomeScreen() {
             <Text style={styles.serviceCardDesc}>FAQ dan bantuan seputar kucing.</Text>
           </View>
         </ScrollView>
+
+        {/* --- SECTION LIST SHELTER (HORIZONTAL) --- */}
+          <View style={styles.sectionContainer}>
+            <View style={[styles.sectionHeaderRow, { paddingRight: 20 }]}>
+              <Text style={styles.sectionTitle}>Shelter Terdekat</Text>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/all-shelters' as any)}>
+                <Text style={styles.seeAll}>Lihat Semua</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10 }}
+            clipToPadding={false}
+          >
+            {shelters.length === 0 ? (
+              <Text style={{color:'#999', fontStyle:'italic', paddingLeft: 20}}>Belum ada data shelter.</Text>
+            ) : (
+              shelters.slice(0, 3).map((shelter: any) => (
+                <TouchableOpacity 
+                  key={shelter.id}
+                  activeOpacity={0.8}
+                  // Pakai template literal (backtick) supaya ID-nya masuk ke path
+                  onPress={() => router.push(`/shelter/${shelter.id}` as any)}
+                  className="w-[200px] mr-4 bg-white rounded-2xl shadow-md overflow-hidden"
+                >
+                  <ShelterCard
+                    id={shelter.id}
+                    name={shelter.shelter_name}
+                    address={shelter.donation_account_number || "Alamat tidak tersedia"}
+                    image={shelter.qr_img ? `${serverUrl}/public/img/qr/${shelter.qr_img}` : 'https://via.placeholder.com/150'}
+                  />
+                </TouchableOpacity>
+              ))
+            )}
+          </ScrollView>
 
         {/* --- ALUMNI (Hall of Fame) --- */}
         <View style={styles.sectionContainer}>
