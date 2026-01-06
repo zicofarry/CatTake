@@ -49,7 +49,7 @@ class DonationService {
                 d.payment_method,
                 d.proof_file,
                 CASE 
-                    WHEN d.is_anonymus = true THEN 'Hamba Allah'
+                    WHEN d.is_anonymus = true THEN 'Orang Baik'
                     ELSE dui.full_name 
                 END as "donorName",
                 CASE 
