@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { 
   View, Text, StyleSheet, Image, TouchableOpacity, TextInput, 
   ScrollView, Alert, ActivityIndicator, RefreshControl, Keyboard, 
-  StatusBar
+  StatusBar, Modal
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -13,6 +13,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import apiClient, { resolveImageUrl } from '@/api/apiClient';
 import { Colors } from '@/constants/Colors';
+// IMPORT KOMPONEN MODAL YANG KEMARIN
+import CustomPopup from '@/components/CustomPopup';
 
 export default function UserProfile() { 
   const router = useRouter();
@@ -33,6 +35,13 @@ export default function UserProfile() {
 
   const [quests, setQuests] = useState([]);
   const [achievements, setAchievements] = useState([]);
+
+  // Tambahan state untuk modal
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  // State untuk CustomPopup klaim
+  const [claimPopupVisible, setClaimPopupVisible] = useState(false);
+  // State untuk CustomPopup edit sukses
+  const [editSuccessVisible, setEditSuccessVisible] = useState(false);
 
   // --- HELPER DATE (STRICT STRING MANIPULATION) ---
   const formatDateForDisplay = (rawDate) => {
@@ -129,7 +138,8 @@ export default function UserProfile() {
 
       console.log("PAYLOAD SIAP KIRIM:", payload);
       await apiClient.patch(`/users/profile/${userId}`, payload);
-      Alert.alert('Sukses', 'Profil berhasil diperbarui!');
+      // GANTI ALERT JADI POPUP KOMPONEN
+      setEditSuccessVisible(true);
       setIsEditing(false);
       fetchProfile(); 
     } catch (error: any) {
@@ -176,7 +186,8 @@ export default function UserProfile() {
   const handleClaim = async (id: number) => {
     try {
       await apiClient.post(`/gamification/claim/${id}`);
-      Alert.alert("Hore! 🏆", "Poin berhasil diklaim!");
+      // Pake modal komponen yang kemarin
+      setClaimPopupVisible(true);
       fetchProfile();
     } catch (error: any) {
       Alert.alert("Info", error.response?.data?.error || "Gagal klaim.");
@@ -213,7 +224,8 @@ export default function UserProfile() {
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
             <View style={styles.profileSection}>
               <View style={styles.avatarContainer}>
-                <Image source={finalAvatar ? { uri: finalAvatar } : require('@/assets/images/null.png')} style={styles.avatar} />
+                {/* [FIX]: null.png diubah menjadi NULL.png untuk menghindari error resolution */}
+                <Image source={finalAvatar ? { uri: finalAvatar } : require('@/assets/images/NULL.png')} style={styles.avatar} />
                 <TouchableOpacity style={styles.cameraIcon} onPress={pickImage}><FontAwesome name="camera" size={16} color="white" /></TouchableOpacity>
               </View>
               {/* Menampilkan Nama Lengkap di bawah Foto */}
@@ -291,42 +303,95 @@ export default function UserProfile() {
               </View>
             </View>
 
-            {/* QUEST & ACHIEVEMENT TETAP SAMA KARENA SUDAH BENER */}
+            {/* QUEST SECTION: Ditambah ScrollView agar tidak kepanjangan */}
             <View style={styles.formCard}>
               <Text style={styles.sectionLabel}>📜 Quest (Misi)</Text>
-              {quests.length === 0 ? <Text style={styles.emptyText}>Tidak ada misi aktif.</Text> : 
-                quests.map((q: any, i: number) => (
-                  <View key={i} style={styles.questItem}>
-                    <Text style={styles.questName}>{q.name}</Text>
-                    <View style={styles.progressBg}><View style={[styles.progressFill, {width: `${Math.min((q.progress / q.target) * 100, 100)}%`}]} /></View>
-                    <Text style={styles.progressText}>{q.progress} / {q.target}</Text>
-                  </View>
-                ))
-              }
+              <ScrollView 
+                style={{ maxHeight: 180 }} 
+                nestedScrollEnabled={true} 
+                showsVerticalScrollIndicator={true}
+              >
+                {quests.length === 0 ? <Text style={styles.emptyText}>Tidak ada misi aktif.</Text> : 
+                  quests.map((q: any, i: number) => (
+                    <View key={i} style={styles.questItem}>
+                      <Text style={styles.questName}>{q.name}</Text>
+                      <View style={styles.progressBg}><View style={[styles.progressFill, {width: `${Math.min((q.progress / q.target) * 100, 100)}%`}]} /></View>
+                      <Text style={styles.progressText}>{q.progress} / {q.target}</Text>
+                    </View>
+                  ))
+                }
+              </ScrollView>
             </View>
 
+            {/* ACHIEVEMENT SECTION: Ditambah ScrollView agar tidak kepanjangan */}
             <View style={styles.formCard}>
               <Text style={styles.sectionLabel}>🏅 Pencapaian</Text>
-              {achievements.length === 0 ? <Text style={styles.emptyText}>Belum ada achievement.</Text> :
-                achievements.map((a: any, i: number) => (
-                  <View key={i} style={[styles.achievementBox, a.isClaimed && {backgroundColor: '#f0fdf4'}]}>
-                    <View style={{flex: 1}}>
-                      <Text style={styles.achievementName}>{a.name}</Text>
-                      <Text style={styles.achievementDesc}>{a.description}</Text>
+              <ScrollView 
+                style={{ maxHeight: 250 }} 
+                nestedScrollEnabled={true} 
+                showsVerticalScrollIndicator={true}
+              >
+                {achievements.length === 0 ? <Text style={styles.emptyText}>Belum ada achievement.</Text> :
+                  achievements.map((a: any, i: number) => (
+                    <View key={i} style={[styles.achievementBox, a.isClaimed && {backgroundColor: '#f0fdf4'}]}>
+                      <View style={{flex: 1}}>
+                        <Text style={styles.achievementName}>{a.name}</Text>
+                        <Text style={styles.achievementDesc}>{a.description}</Text>
+                      </View>
+                      {!a.isClaimed && a.progress >= a.target ? (
+                        <TouchableOpacity style={styles.claimBtn} onPress={() => handleClaim(a.id)}><Text style={styles.claimBtnText}>Klaim</Text></TouchableOpacity>
+                      ) : a.isClaimed ? (
+                        <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
+                      ) : <Text style={{fontSize: 10, color: '#9ca3af'}}>Proses</Text>}
                     </View>
-                    {!a.isClaimed && a.progress >= a.target ? (
-                      <TouchableOpacity style={styles.claimBtn} onPress={() => handleClaim(a.id)}><Text style={styles.claimBtnText}>Klaim</Text></TouchableOpacity>
-                    ) : a.isClaimed ? (
-                      <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
-                    ) : <Text style={{fontSize: 10, color: '#9ca3af'}}>Proses</Text>}
-                  </View>
-                ))
-              }
+                  ))
+                }
+              </ScrollView>
             </View>
 
-            <TouchableOpacity style={styles.logoutBtn} onPress={() => router.replace('/(auth)/login')}><Text style={styles.logoutText}>Sign Out</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.logoutBtn} onPress={() => setLogoutModalVisible(true)}><Text style={styles.logoutText}>Sign Out</Text></TouchableOpacity>
           </ScrollView>
         </View>
+
+        {/* MODAL KONFIRMASI LOGOUT */}
+        <Modal visible={logoutModalVisible} transparent animationType="fade" onRequestClose={() => setLogoutModalVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalIconContainer}>
+                <Ionicons name="log-out" size={30} color="white" />
+              </View>
+              <Text style={styles.modalTitle}>Keluar Akun</Text>
+              <Text style={styles.modalSub}>Yakin ingin keluar dari akun anda?</Text>
+              <View style={styles.modalFooter}>
+                <TouchableOpacity style={styles.cancelBtn} onPress={() => setLogoutModalVisible(false)}>
+                  <Text style={styles.cancelText}>Batal</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.confirmBtn} onPress={() => { setLogoutModalVisible(false); router.replace('/(auth)/login'); }}>
+                  <Text style={styles.confirmText}>Keluar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* --- KOMPONEN POPUP KLAIM --- */}
+        <CustomPopup
+          visible={claimPopupVisible}
+          onClose={() => setClaimPopupVisible(false)}
+          title="Hore! 🏆"
+          message="Poin berhasil diklaim!"
+          type="success"
+        />
+
+        {/* --- KOMPONEN POPUP EDIT SUKSES --- */}
+        <CustomPopup
+          visible={editSuccessVisible}
+          onClose={() => setEditSuccessVisible(false)}
+          title="Sukses"
+          message="Profil berhasil diperbarui!"
+          type="success"
+        />
+
       </LinearGradient>
     </View>
   );
@@ -373,5 +438,17 @@ const styles = StyleSheet.create({
   logoutBtn: { margin: 20, backgroundColor: '#fee2e2', padding: 15, borderRadius: 15, alignItems: 'center' },
   logoutText: { color: '#ef4444', fontWeight: 'bold', fontSize: 16 },
   emptyText: { textAlign: 'center', color: '#9ca3af', fontStyle: 'italic', fontSize: 12 },
-  backBtn: { padding: 5 }
+  backBtn: { padding: 5 },
+
+  // STYLES UNTUK MODAL (Sesuai Driver Page)
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' },
+  modalContent: { backgroundColor: '#fff', width: '85%', paddingHorizontal: 25, paddingBottom: 25, paddingTop: 50, borderRadius: 30, alignItems: 'center', position: 'relative', elevation: 10 },
+  modalIconContainer: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#ef4444', justifyContent: 'center', alignItems: 'center', position: 'absolute', top: -40, borderWidth: 4, borderColor: '#fff' },
+  modalTitle: { fontSize: 24, fontWeight: 'bold', color: '#1f2937', marginBottom: 10, textAlign: 'center' },
+  modalSub: { fontSize: 16, color: '#6b7280', textAlign: 'center', marginBottom: 30, lineHeight: 22 },
+  modalFooter: { flexDirection: 'row', gap: 12, width: '100%' },
+  cancelBtn: { flex: 1, paddingVertical: 16, borderRadius: 15, backgroundColor: '#f3f4f6', alignItems: 'center' },
+  cancelText: { fontSize: 16, fontWeight: 'bold', color: '#6b7280' },
+  confirmBtn: { flex: 1, paddingVertical: 16, borderRadius: 15, backgroundColor: '#ef4444', alignItems: 'center' },
+  confirmText: { fontSize: 16, fontWeight: 'bold', color: '#fff' }
 });
