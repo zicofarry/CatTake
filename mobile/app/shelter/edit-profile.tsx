@@ -17,13 +17,28 @@ import LocationPicker from '@/components/LocationPicker';
 import CustomPopup from '@/components/CustomPopup';
 
 const resolveImageUrl = (path: string | null) => {
-  if (!path || path === 'NULL' || path === 'NULL.JPG' || path === 'null') return null;
+  if (!path || path === 'NULL' || path === 'null.png' || path === 'null') return null;
   if (path.startsWith('http')) return path;
   const baseUrl = API_BASE_URL?.replace('/api/v1', '') || '';
   if (path.startsWith('/public/')) return `${baseUrl}${path}`;
   if (path.startsWith('qr-')) return `${baseUrl}/public/img/qr_img/${path}`;
   if (path.startsWith('profile-')) return `${baseUrl}/public/img/profile/${path}`;
   return `${baseUrl}/public/img/${path}`;
+};
+
+const toDisplayDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const [year, month, day] = dateStr.split('T')[0].split('-');
+  return `${day}-${month}-${year}`;
+};
+
+// Mengubah DD-MM-YYYY ke YYYY-MM-DD (untuk kirim ke database)
+const toDbDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  const [day, month, year] = parts;
+  return `${year}-${month}-${day}`;
 };
 
 export default function EditShelterProfile() {
@@ -83,7 +98,7 @@ export default function EditShelterProfile() {
       setForm({
         shelter_name: data.name || '',
         organization_type: data.organization_type || 'Komunitas',
-        established_date: data.established_date ? data.established_date.split('T')[0] : '',
+        established_date: toDisplayDate(data.established_date),
         bio: data.bio || '',
         contact_phone: data.contact_phone || '',
         donation_account_number: data.donation_account_number || '',
@@ -99,8 +114,14 @@ export default function EditShelterProfile() {
       }
       
       // Ambil Preview Foto & QR
-      if (data.profile_img) setProfilePreview(resolveImageUrl(data.profile_img.startsWith('profile-') ? data.profile_img : `profile-${data.profile_img}`));
-      if (data.qr_img) setQrPreview(resolveImageUrl(data.qr_img.startsWith('qr-') ? data.qr_img : `qr-${data.qr_img}`)); 
+      if (data.photo) {
+        const url = resolveImageUrl(data.photo);
+        setProfilePreview(url);
+      }
+      if (data.qr_img) {
+        const url = resolveImageUrl(data.qr_img);
+        setQrPreview(url);
+      } 
       
       if (data.legal_certificate) setExistingLegalName(data.legal_certificate);
     } catch (error) { 
@@ -154,14 +175,24 @@ export default function EditShelterProfile() {
   };
 
   const handleMapPress = async (e: any) => {
-    if (e.nativeEvent && e.nativeEvent.coordinate) {
-        const { latitude, longitude } = e.nativeEvent.coordinate;
-        setTempLocation(prev => ({ ...prev, latitude, longitude, address: 'Mencari alamat...' }));
-        const addr = await fetchAddress(latitude, longitude);
-        setTempLocation(prev => ({ ...prev, address: addr }));
+    // Cek koordinat baik dari klik peta biasa maupun klik POI
+    const coordinate = e.nativeEvent?.coordinate;
+
+    if (coordinate) {
+      const { latitude, longitude } = coordinate;
+      
+      setTempLocation(prev => ({ 
+        ...prev, 
+        latitude, 
+        longitude, 
+        address: 'Mencari alamat...' 
+      }));
+
+      // Ambil alamat dari koordinat tersebut
+      const addr = await fetchAddress(latitude, longitude);
+      setTempLocation(prev => ({ ...prev, address: addr }));
     }
   };
-
   const confirmLocation = () => {
     setForm(prev => ({ ...prev, latitude: tempLocation.latitude, longitude: tempLocation.longitude, address: tempLocation.address }));
     setMapModalVisible(false);
@@ -178,7 +209,11 @@ export default function EditShelterProfile() {
 
       Object.entries(form).forEach(([key, value]) => {
         if (value !== null && value !== undefined && key !== 'address') {
-            formData.append(key, String(value));
+            if (key === 'established_date') {
+              formData.append(key, toDbDate(String(value)));
+            } else {
+              formData.append(key, String(value));
+            }
         }
       });
 

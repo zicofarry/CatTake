@@ -36,7 +36,7 @@ class UserService {
                     d.shelter_picture AS photo,
                     d.contact_phone,
                     d.organization_type,
-                    d.established_date,
+                    TO_CHAR(d.established_date, 'YYYY-MM-DD') AS established_date,
                     d.bio,
                     d.donation_account_number,
                     d.pj_name,
@@ -104,16 +104,15 @@ class UserService {
         // ------------------------------------------
 
         // Logic URL Foto Profil
-        const BASE_IMAGE_URL = '/public/img/profile/'; 
         
-        if (profileData.photo && profileData.photo !== 'NULL.JPG') {
+        if (profileData.photo && profileData.photo !== 'null.png') {
             if (profileData.photo.startsWith('http')) {
                 // Biarkan URL eksternal
             } else {
-                profileData.photo = `${BASE_IMAGE_URL}${profileData.photo}`;
+                profileData.photo = `${profileData.photo}`;
             }
         } else {
-            profileData.photo = '/img/NULL.JPG'; 
+            profileData.photo = '/img/null.png'; 
         }
 
         return { ...profileData, role };
@@ -128,7 +127,7 @@ class UserService {
         const fields = [
             'shelter_name', 'organization_type', 'established_date', 'bio', 
             'contact_phone', 'donation_account_number', 'pj_name', 'pj_nik',
-            'legal_certificate', 'qr_img', 'latitude', 'longitude'
+            'legal_certificate', 'qr_img', 'latitude', 'longitude', 'shelter_picture'
         ];
 
         fields.forEach(field => {

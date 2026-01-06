@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { 
   View, Text, Image, ScrollView, TouchableOpacity, 
   ActivityIndicator, RefreshControl, Alert, Linking, StyleSheet, Modal 
@@ -14,16 +14,6 @@ import apiClient, { API_BASE_URL } from '@/api/apiClient';
 // IMPORT CUSTOM POPUP
 import CustomPopup from '@/components/CustomPopup';
 
-const resolveImageUrl = (path: string | null) => {
-  if (!path || path === 'NULL' || path === 'null') return null;
-  if (path.startsWith('http')) return path;
-  const baseUrl = API_BASE_URL?.replace('/api/v1', '') || '';
-  if (path.startsWith('/public/')) return `${baseUrl}${path}`;
-  if (path.startsWith('qr-')) return `${baseUrl}/public/img/qr_img/${path}`;
-  if (path.startsWith('legal-')) return `${baseUrl}/public/docs/legal/${path}`;
-  if (path.startsWith('profile-')) return `${baseUrl}/public/img/profile/${path}`;
-  return `${baseUrl}/public/img/${path}`;
-};
 
 export default function ShelterProfile() {
   const router = useRouter();
@@ -31,7 +21,8 @@ export default function ShelterProfile() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
+  const [addressName, setAddressName] = useState<string>('Memuat alamat...');
+  
   // --- STATE MODAL ---
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<'success' | 'error'>('success');
@@ -48,12 +39,29 @@ export default function ShelterProfile() {
     setModalVisible(true);
   };
 
+  const formatDateIndonesia = (dateString) => {
+    if (!dateString) return '-';
+    
+    const months = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+
+    return `${day} ${month} ${year}`;
+  };
+
   const fetchData = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return router.replace('/(auth)/login');
       const decoded: any = jwtDecode(token);
       const response = await apiClient.get(`/users/profile/${decoded.id}/${decoded.role}`);
+      
       setProfile(response.data);
     } catch (error) {
       console.error('Fetch error:', error);
@@ -67,6 +75,27 @@ export default function ShelterProfile() {
 
   useFocusEffect(useCallback(() => { fetchData(); }, []));
 
+  useEffect(() => {
+    if (profile?.latitude && profile?.longitude) {
+      getAddress(profile.latitude, profile.longitude);
+    }
+  }, [profile?.latitude, profile?.longitude]);
+
+  const getAddress = async (lat: number, lng: number) => {
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`;
+      const res = await fetch(url, { 
+        headers: { 'User-Agent': 'CatTakeApp/1.0' } 
+      });
+      const data = await res.json();
+      
+      // Ambil display_name atau fallback ke koordinat jika gagal
+      setAddressName(data.display_name || `${lat}, ${lng}`);
+    } catch (error) {
+      console.error("Geocoding Error:", error);
+      setAddressName(`${lat}, ${lng}`); // Fallback jika internet bermasalah
+    }
+  };
   const handleLogout = () => {
     // Membuka modal konfirmasi logout
     setLogoutModalVisible(true);
@@ -107,7 +136,7 @@ export default function ShelterProfile() {
             {/* FOTO PROFIL SHELTER (FIX: Prefix profile-) */}
             <View style={{ marginBottom: 20 }}>
               <Image 
-                source={profile?.profile_img ? { uri: resolveImageUrl(profile.profile_img.startsWith('profile-') ? profile.profile_img : `profile-${profile.profile_img}`) } : require('@/assets/images/null.png')} 
+                source={profile.photo ? { uri: profile.photo } : require('@/assets/images/null-shelter.png')} 
                 style={{ width: '100%', height: 180, borderRadius: 20, borderWidth: 2, borderColor: 'white' }}
                 resizeMode="cover"
               />
@@ -138,7 +167,9 @@ export default function ShelterProfile() {
 
               <View style={styles.readGroup}>
                 <Text style={styles.labelTgl}>Tanggal Berdiri</Text>
-                <Text style={styles.readData}>{profile?.established_date ? profile.established_date.split('T')[0] : '-'}</Text>
+                <Text style={styles.readData}>
+                  {profile?.established_date ? formatDateIndonesia(profile.established_date) : '-'}
+                </Text>
               </View>
 
               <View style={styles.readGroup}>
@@ -169,7 +200,7 @@ export default function ShelterProfile() {
                   <Text style={styles.readLabel}>QRIS Code</Text>
                   {/* FIX QR DISINI: Tambah prefix qr- biar gambar muncul */}
                   <Image 
-                    source={{ uri: resolveImageUrl(profile.qr_img.startsWith('qr-') ? profile.qr_img : `qr-${profile.qr_img}`) }} 
+                    source={{ uri: profile.qr_img }}
                     style={styles.qrImage} 
                     resizeMode="contain" 
                   />
@@ -197,7 +228,7 @@ export default function ShelterProfile() {
               <View style={styles.readGroup}>
                 <Text style={styles.readLabel}>Dokumen Legalitas</Text>
                 <TouchableOpacity 
-                  onPress={() => profile?.legal_certificate && Linking.openURL(resolveImageUrl(profile.legal_certificate.startsWith('legal-') ? profile.legal_certificate : `legal-${profile.legal_certificate}`))}
+                  onPress={() => profile?.legal_certificate && Linking.openURL(profile.legal_certificate)}
                   disabled={!profile?.legal_certificate}
                   style={styles.legalBtn}
                 >
@@ -214,10 +245,11 @@ export default function ShelterProfile() {
                 <FontAwesome5 name="map-marked-alt" size={16} color="#3A5F50" />
                 <Text className="text-base font-bold text-[#3A5F50]">Lokasi Shelter</Text>
               </View>
+
               <View style={styles.readGroup}>
                 <Text style={styles.readData}>
                   {profile?.latitude && profile?.longitude 
-                    ? `Koordinat: ${profile.latitude}, ${profile.longitude}` 
+                    ? addressName 
                     : 'Lokasi belum diatur'}
                 </Text>
               </View>

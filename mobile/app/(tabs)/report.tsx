@@ -483,7 +483,7 @@ export default function ReportScreen() {
                   {/* Tombol Lacak (Hanya untuk temuan penjemputan) */}
                   {!isLostCat && (item.assignment_status === 'assigned' || item.assignment_status === 'in_transit') && (
                     <TouchableOpacity 
-                      onPress={() => router.push(`/track/${item.id}`)}
+                      onPress={() => router.push(`/track/${item.tracking_id}`)}
                       className="mt-4 bg-teal-600 py-2.5 rounded-xl flex-row items-center justify-center gap-2"
                     >
                       <Ionicons name="map" size={14} color="white" />

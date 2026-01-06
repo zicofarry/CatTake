@@ -44,34 +44,43 @@ export default function UserProfile() {
   const [editSuccessVisible, setEditSuccessVisible] = useState(false);
 
   // --- HELPER DATE (STRICT STRING MANIPULATION) ---
-  const formatDateForDisplay = (rawDate) => {
-    if (!rawDate) return '';
+  const formatDateIndonesia = (dateString) => {
+    if (!dateString) return '-';
     
-    // Jika yang datang adalah angka timestamp (949190400000)
-    if (typeof rawDate === 'number') {
-      const d = new Date(rawDate);
-      const day = String(d.getUTCDate()).padStart(2, '0');
-      const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-      const year = d.getUTCFullYear();
-      return `${day}-${month}-${year}`;
+    // Ambil hanya tanggal (hilangkan jam jika ada)
+    const pureDate = dateString.split('T')[0];
+    
+    // Pisahkan angka berdasarkan "-" atau "/"
+    const parts = pureDate.split(/[-/]/);
+    if (parts.length !== 3) return dateString;
+
+    let day, monthIndex, year;
+
+    // CEK: Jika bagian pertama (index 0) panjangnya 4 angka, berarti itu TAHUN (YYYY-MM-DD)
+    if (parts[0].length === 4) {
+      year = parts[0];
+      monthIndex = parseInt(parts[1], 10) - 1;
+      day = parts[2];
+    } 
+    // Jika bagian terakhir (index 2) panjangnya 4 angka, berarti itu TAHUN (DD-MM-YYYY)
+    else {
+      day = parts[0];
+      monthIndex = parseInt(parts[1], 10) - 1;
+      year = parts[2];
     }
 
-    // Jika format ISO string
-    const dateOnly = String(rawDate).substring(0, 10);
-    const parts = dateOnly.split('-');
-    if (parts.length !== 3) return String(rawDate);
-    
-    return `${parts[2]}-${parts[1]}-${parts[0]}`; // DD-MM-YYYY
-  };
+    const months = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
 
-  const formatDateForBackend = (displayDate: string) => {
-    if (!displayDate) return null;
-    const parts = displayDate.split('-');
-    if (parts.length !== 3) return displayDate;
-    // Return YYYY-MM-DD
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
-  };
+    // Pastikan day selalu 2 digit (misal: 01)
+    const formattedDay = String(day).padStart(2, '0');
 
+    // HASIL AKHIR: Tanggal Bulan Tahun
+    return `${formattedDay} ${months[monthIndex]} ${year}`;
+  };
+  
   useFocusEffect(
     useCallback(() => {
       fetchProfile();
@@ -252,7 +261,7 @@ export default function UserProfile() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Tanggal Lahir (DD-MM-YYYY)</Text>
+                <Text style={styles.label}>Tanggal Lahir</Text>
                 {isEditing ? (
                   <TextInput 
                     style={styles.input} 
@@ -262,7 +271,10 @@ export default function UserProfile() {
                     onChangeText={(v) => setFormData({...formData, birth_date: v})} 
                   />
                 ) : (
-                  <Text style={styles.valueText}>{formData.birth_date || '-'}</Text>
+                  <Text style={styles.valueText}>
+                    {/* Menggunakan fungsi formatter untuk tampilan rapi */}
+                    {formData.birth_date ? formatDateIndonesia(formData.birth_date) : '-'}
+                  </Text>
                 )}
               </View>
 

@@ -119,6 +119,10 @@ class UserController {
     static async updateShelter(req, reply) {
         try {
             const { userId } = req.params;
+            const profile = await UserService.getProfile(userId, 'shelter'); 
+        if (!profile) {
+            return reply.code(404).send({ error: "Shelter not found" });
+        }
             const parts = req.parts();
             
             let fields = {};
@@ -132,9 +136,15 @@ class UserController {
                     if (part.fieldname === 'qr_img') {
                         const result = await uploadToCloudinary(buffer, 'cattake/qr_codes');
                         qrUrl = result.secure_url;
+                    } else if (part.fieldname === 'profile_img') { // TAMBAHKAN INI
+                        const result = await uploadToCloudinary(buffer, 'cattake/profiles');
+                        fields.shelter_picture = result.secure_url;
                     } else if (part.fieldname === 'legal_certificate') {
+                        if (profile?.legal_certificate) {
+                            await deleteFromCloudinary(profile.legal_certificate);
+                        }
                         // PDF Legalitas juga masuk Cloudinary agar bisa di-preview
-                        const result = await uploadToCloudinary(buffer, 'cattake/legal');
+                        const result = await uploadToCloudinary(buffer, 'cattake/legal', 'raw', part.filename);
                         legalUrl = result.secure_url;
                     }
                 } else {
