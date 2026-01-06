@@ -1,9 +1,29 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet,  } from 'react-native';
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function TabLayout() {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null); //
+
+  // Cek status login saat komponen dimuat
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        setIsLoggedIn(!!token); // true jika ada token, false jika tidak
+      } catch (error) {
+        setIsLoggedIn(false);
+      }
+    };
+    checkLoginStatus();
+  }, []);
+
+  // Jika status login sedang dicek, kita bisa mengembalikan null atau loading
+  if (isLoggedIn === null) return null;
+
   return (
     <Tabs
       screenOptions={{
@@ -62,11 +82,12 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 4. CHAT */}
+      {/* 4. CHAT - Disembunyikan dengan href: null jika belum login */}
       <Tabs.Screen
         name="chat"
         options={{
           title: 'Chat',
+          href: isLoggedIn ? undefined : null, // Kuncinya di sini
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name={focused ? "chatbubble" : "chatbubble-outline"} color={color} focused={focused} />
           ),

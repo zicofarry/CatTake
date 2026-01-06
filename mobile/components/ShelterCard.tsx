@@ -6,7 +6,7 @@ const ShelterCard = ({ name, address, image }: any) => {
     <View className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100">
       {/* Gambar dengan tinggi fix 120px agar sama dengan alumni */}
       <Image 
-        source={{ uri: image }} 
+        source={image} 
         className="w-full h-[120px]" 
         resizeMode="cover"
       />

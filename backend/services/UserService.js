@@ -54,11 +54,15 @@ class UserService {
                 SELECT 
                     u.id AS id,
                     u.email,
+                    u.username,
+                    dus.shelter_name AS shelter_name,
                     d.full_name AS name,
                     d.profile_picture AS photo, -- Pastikan kolom profile_picture ada di tabel drivers
-                    d.contact_phone
+                    d.contact_phone,
+                    d.license_info
                 FROM users u
                 JOIN drivers d ON u.id = d.user_id
+                JOIN detail_user_shelter dus ON d.shelter_id = dus.id
                 WHERE u.id = $1
             `;
         } else {
@@ -236,7 +240,7 @@ class UserService {
     static async getAllShelters() {
         // Menambahkan qr_img ke dalam query SELECT
         const query = `
-            SELECT id, shelter_name, donation_account_number, qr_img 
+            SELECT id, shelter_name, donation_account_number, qr_img, shelter_picture, latitude, longitude, organization_type 
             FROM detail_user_shelter
             ORDER BY shelter_name ASC
         `;

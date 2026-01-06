@@ -25,6 +25,28 @@ export default function AllSheltersScreen() {
     fetchShelters();
   }, []);
 
+  const resolveImageUrl = (path: string | null, type: 'cat' | 'shelter' = 'cat') => {
+    // Cek jika null atau string 'NULL'
+    if (!path || path === 'NULL' || path === 'null.png' || path === 'null' || path === '/img/null.png') {
+      if (type === 'shelter') {
+        return require('../../assets/images/null-shelter.png'); // Gambar lokal shelter
+      }
+      return require('../../assets/images/null.png'); // Gambar lokal kucing
+    }
+
+    // Jika sudah URL lengkap (Cloudinary biasanya http/https)
+    if (path.startsWith('http')) {
+      return { uri: path };
+    }
+
+    // Jika path relatif ke server internal
+    if (path.startsWith('cat-')) {
+      return { uri: `${serverUrl}/public/img/cats/${path}` };
+    }
+
+    return { uri: path };
+  };
+  
   const fetchShelters = async () => {
     try {
       const response = await apiClient.get('/users/shelters');
@@ -106,8 +128,8 @@ export default function AllSheltersScreen() {
             <ShelterCard
               id={item.id}
               name={item.shelter_name}
-              address={item.donation_account_number || "Alamat tidak tersedia"}
-              image={item.qr_img || 'https://via.placeholder.com/150'}
+              address={item.organization_type || "Mandiri"}
+              image={resolveImageUrl(item.shelter_picture, 'shelter') || '@/assets/images/null-shelter.png'}
             />
           </TouchableOpacity>
         )}

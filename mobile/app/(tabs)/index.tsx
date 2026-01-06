@@ -55,7 +55,7 @@ function UserHomeScreen() {
     // Ganti '/shelters' jadi '/shelter' kalau masih 404
     const response = await apiClient.get('/users/shelters'); 
     
-    console.log("Data Shelter:", response.data);
+    // console.log("Data Shelter:", response.data);
     
     if (response.data && response.data.data) {
        setShelters(response.data.data);
@@ -67,11 +67,29 @@ function UserHomeScreen() {
   }
 };
 
-  const getImageUrl = (filename: string) => {
-    if (!filename || filename === 'NULL') return 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=400'; 
-    if (filename.startsWith('cat-')) return `${serverUrl}/public/img/cats/${filename}`;
-    return filename;
+// Ganti getImageUrl lama dengan ini
+  const resolveImageUrl = (path: string | null, type: 'cat' | 'shelter' = 'cat') => {
+    // Cek jika null atau string 'NULL'
+    if (!path || path === 'NULL' || path === 'null.png' || path === 'null' || path === '/img/null.png') {
+      if (type === 'shelter') {
+        return require('../../assets/images/null-shelter.png'); // Gambar lokal shelter
+      }
+      return require('../../assets/images/null.png'); // Gambar lokal kucing
+    }
+
+    // Jika sudah URL lengkap (Cloudinary biasanya http/https)
+    if (path.startsWith('http')) {
+      return { uri: path };
+    }
+
+    // Jika path relatif ke server internal
+    if (path.startsWith('cat-')) {
+      return { uri: `${serverUrl}/public/img/cats/${path}` };
+    }
+
+    return { uri: path };
   };
+  
 
   return (
     <View style={styles.container}>
@@ -195,9 +213,8 @@ function UserHomeScreen() {
                   <ShelterCard
                     id={shelter.id}
                     name={shelter.shelter_name}
-                    address={shelter.donation_account_number || "Alamat tidak tersedia"}
-                    image={shelter.qr_img ? `${serverUrl}/public/img/qr/${shelter.qr_img}` : 'https://via.placeholder.com/150'}
-                  />
+                    address={shelter.organization_type || "Tipe tidak tersedia"}
+                    image={resolveImageUrl(shelter.shelter_picture, 'shelter')}                  />
                 </TouchableOpacity>
               ))
             )}
@@ -226,7 +243,10 @@ function UserHomeScreen() {
           ) : (
             alumniCats.map((cat: any) => (
               <View key={cat.id} style={styles.alumniCard}>
-                <Image source={{ uri: getImageUrl(cat.photo) }} style={styles.alumniImage} />
+                <Image 
+                    source={resolveImageUrl(cat.photo, 'cat')} // <--- Pakai helper tanpa bungkus {{ uri: ... }}
+                    style={styles.alumniImage} 
+                  />
                 <View style={styles.alumniInfo}>
                   <Text style={styles.alumniName}>{cat.name}</Text>
                   <Text style={styles.alumniAdopter}>diadopsi oleh {cat.adopter || 'Seseorang'}</Text>

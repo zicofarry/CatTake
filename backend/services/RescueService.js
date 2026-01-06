@@ -22,8 +22,8 @@ class RescueService {
         
         return result.rows.map(row => ({
             ...row,
-            photo: row.photo && row.photo.startsWith('http') ? row.photo : `/public/img/report_cat/${row.photo || 'NULL.JPG'}`,
-            profile_picture: row.profile_picture && row.profile_picture.startsWith('http') ? row.profile_picture : `/public/img/profile/${row.profile_picture || 'NULL.JPG'}`
+            photo: row.photo && row.photo.startsWith('http') ? row.photo : `${row.photo || '/img/null.png'}`,
+            profile_picture: row.profile_picture && row.profile_picture.startsWith('http') ? row.profile_picture : `${row.profile_picture || '/img/null.png'}`
         }));
     }
 
@@ -106,7 +106,7 @@ class RescueService {
         
         return result.rows.map(row => ({
             ...row,
-            photo: row.photo ? `/public/img/report_cat/${row.photo}` : '/img/NULL.JPG'
+            photo: row.photo ? `${row.photo}` : '/img/null.png'
         }));
     }
 
@@ -215,7 +215,7 @@ class RescueService {
                 shelter: row.shelter_name,
                 license: row.license_info,
                 // Pastikan path foto driver benar
-                foto: row.driver_foto && row.driver_foto.startsWith('http') ? row.driver_foto : `/public/img/profile/${row.driver_foto}`,
+                foto: row.driver_foto && row.driver_foto.startsWith('http') ? row.driver_foto : `${row.driver_foto}`,
                 phone: row.driver_phone || '-'
             },
             
@@ -224,15 +224,15 @@ class RescueService {
                 pemilik: row.pelapor_name || 'Anonim',
                 phone: row.pelapor_phone || '-',
                 // Pastikan path foto pelapor benar
-                foto_profil: row.pelapor_foto ? `/public/img/profile/${row.pelapor_foto}` : null,
+                foto_profil: row.pelapor_foto ? `${row.pelapor_foto}` : null,
                 lokasi: row.lokasi_jemput,
                 deskripsi: row.description,
-                foto: row.foto_laporan && row.foto_laporan.startsWith('http') ? row.foto_laporan : `/public/img/report_cat/${row.foto_laporan}`,
+                foto: row.foto_laporan && row.foto_laporan.startsWith('http') ? row.foto_laporan : `${row.foto_laporan}`,
             },
 
             bukti: {
-                pickup: row.pickup_photo && row.pickup_photo.startsWith('http') ? row.pickup_photo : `/public/img/rescue_proof/${row.pickup_photo}`,
-                dropoff: row.dropoff_photo && row.dropoff_photo.startsWith('http') ? row.dropoff_photo : `/public/img/rescue_proof/${row.dropoff_photo}`
+                pickup: row.pickup_photo && row.pickup_photo.startsWith('http') ? row.pickup_photo : `${row.pickup_photo}`,
+                dropoff: row.dropoff_photo && row.dropoff_photo.startsWith('http') ? row.dropoff_photo : `${row.dropoff_photo}`
             }
         };
     }
@@ -305,7 +305,7 @@ class RescueService {
                 id: row.report_id,
                 location: row.location,
                 cat_name: row.cat_name || (row.report_type === 'missing' ? 'Kucing Hilang' : 'Kucing Liar'),
-                photo: row.photo ? `/public/img/report_cat/${row.photo}` : '/img/NULL.JPG'
+                photo: row.photo ? `${row.photo}` : '/img/null.png'
             }
         }));
     }
@@ -393,7 +393,7 @@ class RescueService {
         
         return result.rows.map(row => ({
             ...row,
-            photo: row.photo ? `/public/img/report_cat/${row.photo}` : '/img/NULL.JPG',
+            photo: row.photo ? `${row.photo}` : '/img/null.png',
             display_name: row.report_type === 'missing' ? row.lost_cat_name : 'Kucing Liar (Rescue)',
             is_processed: row.lost_cat_status === 'returned',
             

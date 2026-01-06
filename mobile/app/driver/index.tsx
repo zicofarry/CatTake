@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, 
-  TextInput, RefreshControl, Keyboard, StatusBar, Modal
+  RefreshControl, Keyboard, StatusBar, Modal
 } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import { Ionicons, FontAwesome5, FontAwesome } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 import CustomPopup from '../../components/CustomPopup'; 
@@ -25,11 +24,6 @@ export default function DriverPage() {
 
   // Profile State
   const [user, setUser] = useState<any>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '', username: '', email: '', phone_number: '', bio: '', gender: '', birthDate: '',
-  });
 
   // State untuk Modal Popup (Sukses/Error)
   const [modalVisible, setModalVisible] = useState(false);
@@ -58,8 +52,9 @@ export default function DriverPage() {
         catName: item.report?.cat_name || 'Kucing Tanpa Nama',
         location: item.report?.location || 'Lokasi tidak diketahui',
         date: formatDate(item.createdAt),
-        img: item.report?.photo 
+        photo: item.report?.photo 
       }));
+      console.log("photo url:", mappedData[0]?.photo);
       setTasks(mappedData);
     } catch (error) {
       console.error("Gagal mengambil tugas driver:", error);
@@ -77,16 +72,6 @@ export default function DriverPage() {
       const response = await apiClient.get(`/users/profile/${userId}/${role}`);
       const data = response.data;
       setUser(data);
-
-      setFormData({
-        name: data.full_name || data.name || '',
-        username: data.username || '',
-        email: data.email || '',
-        phone_number: data.phone_number || '',
-        bio: data.bio || '',
-        gender: data.gender || 'male',
-        birthDate: data.birth_date ? data.birth_date.split('T')[0] : '',
-      });
     } catch (error) {
       console.error("Gagal mengambil profil:", error);
     } finally {
@@ -103,57 +88,13 @@ export default function DriverPage() {
     }
   }, [activeTab]);
 
-  // === 3. CRUD & PHOTO LOGIC ===
-  const handleSaveChanges = async () => {
-    Keyboard.dismiss();
-    setIsSubmitting(true);
-    try {
-      const userId = await AsyncStorage.getItem('userId');
-      const role = await AsyncStorage.getItem('userRole');
-      await apiClient.patch(`/users/profile/${userId}`, {
-        ...formData,
-        full_name: formData.name,
-        role: role
-      });
-      showModal('success', 'Berhasil!', 'Profil driver Anda telah diperbarui.');
-      setIsEditing(false);
-      fetchProfile(); 
-    } catch (error: any) {
-      showModal('error', 'Gagal', error.response?.data?.error || 'Gagal memperbarui profil.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const uploadPhoto = async (asset: ImagePicker.ImagePickerAsset) => {
-    setIsLoading(true);
-    try {
-      const userId = await AsyncStorage.getItem('userId');
-      const role = await AsyncStorage.getItem('userRole');
-      const data = new FormData();
-      // @ts-ignore
-      data.append('photo', { uri: asset.uri, name: `driver-${Date.now()}.jpg`, type: 'image/jpeg' });
-      if(role) data.append('role', role);
-
-      await apiClient.post(`/users/profile/${userId}/photo`, data, { 
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      showModal('success', 'Foto Berhasil!', 'Foto profil driver Anda telah diperbarui.');
-      fetchProfile(); 
-    } catch (error) {
-      showModal('error', 'Gagal', 'Gagal mengunggah foto profil.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const confirmLogout = async () => {
     setLogoutModalVisible(false);
     await AsyncStorage.multiRemove(['userToken', 'userRole', 'userId', 'username']);
     router.replace('/(auth)/login');
   };
 
-  // === 4. HELPERS ===
+  // === 3. HELPERS ===
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
@@ -165,7 +106,7 @@ export default function DriverPage() {
       return require('../../assets/images/null.png'); 
     }
     if (path.startsWith('http')) return { uri: path };
-    return { uri: `${SERVER_URL}/public/img/profile/${path}` };
+    return { uri: `${path}` };
   };
 
   const filteredTasks = useMemo(() => {
@@ -207,7 +148,7 @@ export default function DriverPage() {
                   <TouchableOpacity key={task.id} onPress={() => router.push(`/track/${task.id}`)} activeOpacity={0.9} className="bg-white p-5 rounded-[32px] shadow-sm border border-gray-50" style={{ elevation: 4 }}>
                     <View className="flex-row gap-x-5">
                       <View className="w-24 h-24 rounded-2xl overflow-hidden bg-gray-100 border border-gray-100">
-                        <Image source={resolveImageUrl(task.img)} className="w-full h-full" resizeMode="cover" />
+                        <Image source={{uri: task.photo}} className="w-full h-full" resizeMode="cover" />
                       </View>
                       <View className="flex-1 justify-between">
                         <View>
@@ -243,16 +184,8 @@ export default function DriverPage() {
              <View className="flex-row justify-between items-center mb-8">
               <View>
                 <Text className="text-4xl font-black text-[#3E3E3E] tracking-tighter">Profil Driver</Text>
-                <Text className="text-lg text-gray-500 font-medium">Kelola akun penyelamat Anda.</Text>
+                <Text className="text-lg text-gray-500 font-medium">Informasi akun penyelamat Anda.</Text>
               </View>
-              <TouchableOpacity 
-                onPress={isEditing ? handleSaveChanges : () => setIsEditing(true)}
-                className={`px-6 py-3 rounded-2xl ${isEditing ? 'bg-[#FF862F]' : 'bg-white border border-gray-200'}`}
-              >
-                {isSubmitting ? <ActivityIndicator size="small" color="#fff" /> : 
-                  <Text className={`font-black ${isEditing ? 'text-white' : 'text-[#3E3E3E]'}`}>{isEditing ? 'Simpan' : 'Edit'}</Text>
-                }
-              </TouchableOpacity>
             </View>
 
             {isLoading && !refreshing ? (
@@ -260,42 +193,31 @@ export default function DriverPage() {
             ) : user && (
               <View>
                 <View className="items-center mb-8">
-                  <View className="relative shadow-xl">
-                    <Image source={resolveImageUrl(user.profile_pic)} className="w-32 h-32 rounded-full border-4 border-white bg-gray-200" />
-                    <TouchableOpacity 
-                      className="absolute bottom-0 right-0 bg-[#FF862F] p-2 rounded-full border-4 border-white"
-                      onPress={async () => {
-                        const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1,1], quality: 0.7 });
-                        if(!res.canceled) uploadPhoto(res.assets[0]);
-                      }}
-                    >
-                      <FontAwesome name="camera" size={16} color="white" />
-                    </TouchableOpacity>
+                  <View className="shadow-xl">
+                    <Image source={resolveImageUrl(user.photo || user.profile_pic)} className="w-32 h-32 rounded-full border-4 border-white bg-gray-200" />
                   </View>
-                  <Text className="text-2xl font-black text-[#3E3E3E] mt-4">{formData.name || 'Driver'}</Text>
-                  <Text className="text-gray-400 font-bold">@{formData.username}</Text>
+                  <Text className="text-2xl font-black text-[#3E3E3E] mt-4">{user.full_name || user.name || 'Driver'}</Text>
+                  <Text className="text-gray-400 font-bold">@{user.username}</Text>
                 </View>
 
                 <View className="bg-white p-6 rounded-[40px] shadow-sm border border-gray-50 gap-y-5" style={{ elevation: 4 }}>
                   <Text className="text-base font-black text-[#3E3E3E] mb-1">📋 Informasi Pribadi</Text>
-                  <ProfileInput label="Nama Lengkap" value={formData.name} editable={isEditing} onChange={(v:any) => setFormData({...formData, name: v})} />
-                  <ProfileInput label="Username" value={formData.username} editable={isEditing} onChange={(v:any) => setFormData({...formData, username: v})} />
-                  <ProfileInput label="Email Akun" value={formData.email} editable={isEditing} keyboardType="email-address" onChange={(v:any) => setFormData({...formData, email: v})} />
-                  <ProfileInput label="No. WhatsApp" value={formData.phone_number} editable={isEditing} keyboardType="phone-pad" onChange={(v:any) => setFormData({...formData, phone_number: v})} />
-                  <ProfileInput label="Tanggal Lahir" value={formData.birthDate} editable={isEditing} placeholder="YYYY-MM-DD" onChange={(v:any) => setFormData({...formData, birthDate: v})} />
-                  <View>
-                    <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Jenis Kelamin</Text>
-                    {isEditing ? (
-                      <View className="flex-row gap-x-3">
-                        {['male', 'female'].map((g) => (
-                          <TouchableOpacity key={g} onPress={() => setFormData({...formData, gender: g})} className={`flex-1 p-3 rounded-2xl border ${formData.gender === g ? 'bg-[#FF862F] border-[#FF862F]' : 'bg-gray-50 border-gray-100'}`}>
-                            <Text className={`text-center font-bold ${formData.gender === g ? 'text-white' : 'text-gray-400'}`}>{g === 'male' ? 'Laki-laki' : 'Perempuan'}</Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    ) : <Text className="text-base font-bold text-gray-700 ml-1">{formData.gender === 'female' ? 'Perempuan' : 'Laki-laki'}</Text>}
+                  
+                  <ProfileDisplay label="Shelter Asal" value={user.shelter_name} />
+                  <ProfileDisplay label="Nama Lengkap" value={user.full_name || user.name} />
+                  <ProfileDisplay label="Email" value={user.email} />
+                  <ProfileDisplay label="Nomor Telepon" value={user.contact_phone} />
+                  
+                  <View className="mt-2">
+                    <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Foto Kartu SIM</Text>
+                    <View className="w-full h-48 rounded-3xl overflow-hidden bg-gray-100 border border-gray-100">
+                        <Image 
+                            source={resolveImageUrl(user.license_info || user.sim_photo)} 
+                            className="w-full h-full" 
+                            resizeMode="cover" 
+                        />
+                    </View>
                   </View>
-                  <ProfileInput label="Bio Singkat" value={formData.bio} editable={isEditing} multiline onChange={(v:any) => setFormData({...formData, bio: v})} />
                 </View>
 
                 <TouchableOpacity 
@@ -313,12 +235,12 @@ export default function DriverPage() {
 
       {/* BOTTOM NAVIGATION BAR */}
       <View className="absolute bottom-6 left-6 right-6 bg-white h-20 rounded-[32px] shadow-2xl border border-gray-100 flex-row justify-around items-center px-4" style={{ elevation: 15 }}>
-          <TabItem label="Proses" icon="time" active={activeTab === 'proses'} onPress={() => {setActiveTab('proses'); setIsEditing(false)}} />
-          <TabItem label="Selesai" icon="checkmark-done-circle" active={activeTab === 'selesai'} onPress={() => {setActiveTab('selesai'); setIsEditing(false)}} />
+          <TabItem label="Proses" icon="time" active={activeTab === 'proses'} onPress={() => setActiveTab('proses')} />
+          <TabItem label="Selesai" icon="checkmark-done-circle" active={activeTab === 'selesai'} onPress={() => setActiveTab('selesai')} />
           <TabItem label="Profile" icon="person" active={activeTab === 'profile'} onPress={() => setActiveTab('profile')} />
       </View>
 
-      {/* MODAL KONFIRMASI LOGOUT (Style CustomPopup) */}
+      {/* MODAL KONFIRMASI LOGOUT */}
       <Modal animationType="fade" transparent={true} visible={logoutModalVisible} onRequestClose={() => setLogoutModalVisible(false)}>
         <View className="flex-1 bg-black/60 justify-center items-center">
           <View className="w-[85%] bg-white rounded-[30px] px-6 pb-6 pt-12 items-center shadow-xl relative">
@@ -347,20 +269,11 @@ export default function DriverPage() {
   );
 }
 
-const ProfileInput = ({ label, value, editable, onChange, multiline, keyboardType, placeholder }: any) => (
+// Komponen Display Read-Only
+const ProfileDisplay = ({ label, value }: { label: string, value: string }) => (
   <View>
-    <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">{label}</Text>
-    {editable ? (
-      <TextInput 
-        className={`bg-gray-50 p-4 rounded-2xl font-bold text-gray-700 border border-gray-100 ${multiline ? 'h-24' : ''}`}
-        value={value} 
-        onChangeText={onChange}
-        multiline={multiline}
-        keyboardType={keyboardType}
-        placeholder={placeholder}
-        textAlignVertical={multiline ? 'top' : 'center'}
-      />
-    ) : <Text className="text-base font-bold text-gray-700 ml-1">{value || '-'}</Text>}
+    <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">{label}</Text>
+    <Text className="text-base font-bold text-gray-700 ml-1">{value || '-'}</Text>
   </View>
 );
 
