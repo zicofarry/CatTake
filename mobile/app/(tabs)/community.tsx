@@ -154,7 +154,7 @@ export default function CommunityScreen() {
         >
           <View style={styles.cardHeader}>
             <Image 
-              source={authorAvatar ? { uri: authorAvatar } : require('../../assets/images/Ellipse.png')} 
+              source={authorAvatar ? { uri: authorAvatar } : require('../../assets/images/null.png')} 
               style={styles.avatar} 
             />
             <View style={styles.headerTextContainer}>
