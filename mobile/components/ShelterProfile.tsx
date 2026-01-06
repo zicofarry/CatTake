@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { 
   View, Text, Image, ScrollView, TouchableOpacity, 
-  ActivityIndicator, RefreshControl, Alert, Linking, StyleSheet 
+  ActivityIndicator, RefreshControl, Alert, Linking, StyleSheet, Modal 
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -38,6 +38,9 @@ export default function ShelterProfile() {
   const [modalTitle, setModalTitle] = useState('');
   const [modalMessage, setModalMessage] = useState('');
 
+  // State untuk modal logout
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+
   const showModal = (type: 'success' | 'error', title: string, message: string) => {
     setModalType(type);
     setModalTitle(title);
@@ -65,18 +68,15 @@ export default function ShelterProfile() {
   useFocusEffect(useCallback(() => { fetchData(); }, []));
 
   const handleLogout = () => {
-    // Alert konfirmasi bawaan HP tetep dipake buat keamanan logout
-    Alert.alert('Konfirmasi', 'Yakin ingin keluar?', [
-      { text: 'Batal', style: 'cancel' },
-      { 
-        text: 'Keluar', 
-        style: 'destructive', 
-        onPress: async () => {
-          await AsyncStorage.multiRemove(['userToken', 'userRole', 'userId', 'username']);
-          router.replace('/(auth)/login');
-        } 
-      }
-    ]);
+    // Membuka modal konfirmasi logout
+    setLogoutModalVisible(true);
+  };
+
+  // Fungsi eksekusi logout
+  const confirmLogout = async () => {
+    setLogoutModalVisible(false);
+    await AsyncStorage.multiRemove(['userToken', 'userRole', 'userId', 'username']);
+    router.replace('/(auth)/login');
   };
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#EBCD5E" /></View>;
@@ -100,7 +100,7 @@ export default function ShelterProfile() {
         <ScrollView 
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {setRefreshing(true); fetchData();}} />}
           contentContainerStyle={{ paddingBottom: 100 }}
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={true}
         >
           <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>
             
@@ -137,7 +137,7 @@ export default function ShelterProfile() {
               </View>
 
               <View style={styles.readGroup}>
-                <Text style={styles.readLabel}>Tanggal Berdiri</Text>
+                <Text style={styles.labelTgl}>Tanggal Berdiri</Text>
                 <Text style={styles.readData}>{profile?.established_date ? profile.established_date.split('T')[0] : '-'}</Text>
               </View>
 
@@ -233,6 +233,29 @@ export default function ShelterProfile() {
         </ScrollView>
       </LinearGradient>
 
+      {/* --- MODAL KONFIRMASI LOGOUT (STYLE DRIVER PAGE) --- */}
+      <Modal animationType="fade" transparent={true} visible={logoutModalVisible} onRequestClose={() => setLogoutModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalIconContainer}>
+              <Ionicons name="log-out" size={30} color="white" />
+            </View>
+            <View style={{ itemsCenter: 'center', marginBottom: 30 }}>
+              <Text style={styles.modalTitle}>Keluar Akun</Text>
+              <Text style={styles.modalSub}>Yakin ingin keluar dari akun anda?</Text>
+            </View>
+            <View style={styles.modalFooter}>
+              <TouchableOpacity onPress={() => setLogoutModalVisible(false)} style={styles.cancelBtn}>
+                <Text style={styles.cancelText}>Batal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={confirmLogout} style={styles.confirmBtn}>
+                <Text style={styles.confirmText}>Keluar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* --- MODAL DI SINI --- */}
       <CustomPopup
         visible={modalVisible}
@@ -258,12 +281,25 @@ const styles = StyleSheet.create({
   editBtnText: { fontWeight: 'bold', color: '#374151' },
   formCard: { backgroundColor: '#fff', borderRadius: 25, padding: 20, elevation: 4 },
   readGroup: { marginBottom: 12, paddingHorizontal: 5 },
-  readLabel: { color: '#9ca3af', fontSize: 11, fontWeight: 'bold', uppercase: 'true', marginBottom: 2 },
+  readLabel: { color: '#9ca3af', fontSize: 11, fontWeight: 'bold', textTransform: 'uppercase', marginBottom: 2 },
+  labelTgl: { color: '#9ca3af', fontSize: 11, fontWeight: 'bold', textTransform: 'uppercase', marginBottom: 2 },
   readData: { color: '#374151', fontSize: 15, fontWeight: '600' },
   separator: { height: 1, backgroundColor: '#f3f4f6', marginVertical: 15 },
   qrImage: { width: 110, height: 110, marginTop: 5, borderRadius: 12 },
   legalBtn: { backgroundColor: '#f9fafb', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#f3f4f6', marginTop: 5 },
   legalText: { fontWeight: 'bold', fontSize: 13, textAlign: 'center' },
   logoutBtn: { backgroundColor: '#fee2e2', padding: 15, borderRadius: 15, alignItems: 'center', marginTop: 20 },
-  logoutText: { color: '#ef4444', fontWeight: 'bold', fontSize: 16 }
+  logoutText: { color: '#ef4444', fontWeight: 'bold', fontSize: 16 },
+
+  // STYLES UNTUK MODAL (SESUAI DRIVER PAGE)
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' },
+  modalContent: { backgroundColor: '#fff', width: '85%', paddingHorizontal: 25, paddingBottom: 25, paddingTop: 50, borderRadius: 30, alignItems: 'center', position: 'relative', elevation: 10 },
+  modalIconContainer: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#ef4444', justifyContent: 'center', alignItems: 'center', position: 'absolute', top: -40, borderWidth: 4, borderColor: '#fff' },
+  modalTitle: { fontSize: 24, fontWeight: 'bold', color: '#1f2937', marginBottom: 10, textAlign: 'center' },
+  modalSub: { fontSize: 16, color: '#6b7280', textAlign: 'center', marginBottom: 10, lineHeight: 22 },
+  modalFooter: { flexDirection: 'row', gap: 12, width: '100%' },
+  cancelBtn: { flex: 1, paddingVertical: 16, borderRadius: 15, backgroundColor: '#f3f4f6', alignItems: 'center' },
+  cancelText: { fontSize: 16, fontWeight: 'bold', color: '#6b7280' },
+  confirmBtn: { flex: 1, paddingVertical: 16, borderRadius: 15, backgroundColor: '#ef4444', alignItems: 'center' },
+  confirmText: { fontSize: 16, fontWeight: 'bold', color: '#fff' }
 });
