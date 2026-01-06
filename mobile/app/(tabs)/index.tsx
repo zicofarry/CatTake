@@ -53,7 +53,7 @@ function UserHomeScreen() {
   try {
     // Coba ganti manual alamatnya di sini untuk ngetes
     // Ganti '/shelters' jadi '/shelter' kalau masih 404
-    const response = await apiClient.get('/shelters'); 
+    const response = await apiClient.get('/users/shelters'); 
     
     console.log("Data Shelter:", response.data);
     
