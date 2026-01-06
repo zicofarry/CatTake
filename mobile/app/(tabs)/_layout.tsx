@@ -7,28 +7,25 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors.primary,
+        // Warna aktif hijau sesuai Colors.success (#10b981)
+        tabBarActiveTintColor: '#10b981',
         tabBarInactiveTintColor: '#9ca3af',
         headerShown: false,
+        // Desain flat dengan tinggi yang cukup dan padding bawah
         tabBarStyle: {
-          height: 80, 
-          paddingBottom: 15, 
-          paddingTop: 10,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
+          height: 85,
+          paddingBottom: 25,
+          paddingTop: 0, // Dibuat 0 agar indikator garis menempel ke atas
           backgroundColor: '#ffffff',
-          position: 'absolute',
-          borderTopWidth: 0,
-          elevation: 10,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
+          borderTopWidth: 1,
+          borderTopColor: '#e5e7eb',
+          elevation: 0,
+          shadowOpacity: 0,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',
-          marginBottom: 5, 
+          marginTop: 8, // Mengatur jarak teks dengan ikon
         }
       }}
     >
@@ -38,7 +35,7 @@ export default function TabLayout() {
         options={{
           title: 'Beranda',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "home" : "home-outline"} size={24} color={color} />
+            <TabIcon name={focused ? "home" : "home-outline"} color={color} focused={focused} />
           ),
         }}
       />
@@ -47,23 +44,20 @@ export default function TabLayout() {
       <Tabs.Screen
         name="community"
         options={{
-          title: 'Komunitas', 
+          title: 'Komunitas',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "people" : "people-outline"} size={24} color={color} />
+            <TabIcon name={focused ? "people" : "people-outline"} color={color} focused={focused} />
           ),
         }}
       />
 
-      {/* 3. RESCUE (TOMBOL TENGAH) */}
+      {/* 3. LAPOR (Dibuat rata & memiliki indikator yang sama) */}
       <Tabs.Screen
         name="report"
         options={{
-          title: '', 
-          tabBarLabel: () => null, 
-          tabBarIcon: ({ focused }) => (
-            <View style={styles.middleButton}>
-              <Ionicons name="medkit" size={30} color="white" />
-            </View>
+          title: 'Lapor',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name={focused ? "medkit" : "medkit-outline"} color={color} focused={focused} />
           ),
         }}
       />
@@ -74,7 +68,7 @@ export default function TabLayout() {
         options={{
           title: 'Chat',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "chatbubble" : "chatbubble-outline"} size={24} color={color} />
+            <TabIcon name={focused ? "chatbubble" : "chatbubble-outline"} color={color} focused={focused} />
           ),
         }}
       />
@@ -85,7 +79,7 @@ export default function TabLayout() {
         options={{
           title: 'Profil',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "person" : "person-outline"} size={24} color={color} />
+            <TabIcon name={focused ? "person" : "person-outline"} color={color} focused={focused} />
           ),
         }}
       />
@@ -94,26 +88,38 @@ export default function TabLayout() {
       <Tabs.Screen name="donation" options={{ href: null }} />
       <Tabs.Screen name="faq" options={{ href: null }} />
       <Tabs.Screen name="adopt" options={{ href: null }} />
-      <Tabs.Screen name="history" options={{href: null, }}/>
+      <Tabs.Screen name="history" options={{href: null }}/>
     </Tabs>
   );
 }
 
+/**
+ * Komponen Helper untuk Ikon dengan Indikator Garis Atas
+ */
+function TabIcon({ name, color, focused }: { name: any; color: string; focused: boolean }) {
+  return (
+    <View style={styles.iconContainer}>
+      {/* Garis Indikator Hijau (Hanya muncul jika aktif) */}
+      {focused && <View style={styles.activeIndicator} />}
+      <Ionicons name={name} size={24} color={color} style={{ marginTop: 10 }} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  middleButton: {
-    top: -30, 
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: Colors.primary, 
-    justifyContent: 'center',
+  iconContainer: {
     alignItems: 'center',
-    elevation: 5, 
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    borderWidth: 4,
-    borderColor: '#f3f4f6', 
-  }
+    justifyContent: 'center',
+    width: '100%',
+    height: 100,
+  },
+  activeIndicator: {
+    position: 'absolute',
+    top: 30,
+    width: 40, // Lebar garis indikator
+    height: 3, // Ketebalan garis
+    backgroundColor: '#10b981', // Hijau indikator
+    borderBottomLeftRadius: 2,
+    borderBottomRightRadius: 2,
+  },
 });
