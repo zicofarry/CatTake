@@ -173,15 +173,9 @@ export default function CommunityScreen() {
           activeOpacity={0.7}
         >
           <View style={styles.cardHeader}>
-<<<<<<< Updated upstream
             <Image 
               source={authorAvatar ? { uri: authorAvatar } : require('../../assets/images/null.png')} 
               style={styles.avatar} 
-=======
-            <Image
-              source={authorAvatar ? { uri: authorAvatar } : require('../../assets/images/Ellipse.png')}
-              style={styles.avatar}
->>>>>>> Stashed changes
             />
             <View style={styles.headerTextContainer}>
               <View style={styles.nameRow}>
@@ -324,11 +318,7 @@ export default function CommunityScreen() {
     <ImageBackground
       source={require('../../assets/images/background.png')}
       style={styles.fullBackground}
-<<<<<<< Updated upstream
       resizeMode="repeat" 
-=======
-      resizeMode="repeat"
->>>>>>> Stashed changes
     >
       <View style={styles.safeContainer}>
         <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
