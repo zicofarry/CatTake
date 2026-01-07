@@ -1,10 +1,5 @@
-<<<<<<< Updated upstream
-import React, { useState, useCallback, useMemo } from 'react';
-import { 
-=======
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
->>>>>>> Stashed changes
   View, Text, FlatList, TouchableOpacity, Image, StyleSheet,
   TextInput, ActivityIndicator, RefreshControl, Keyboard
 } from 'react-native';
@@ -81,11 +76,7 @@ export default function ChatListScreen() {
 
   const filteredChats = useMemo(() => {
     if (!searchText) return chats;
-<<<<<<< Updated upstream
-    return chats.filter((item: any) => 
-=======
     return chats.filter((item: any) =>
->>>>>>> Stashed changes
       item.name?.toLowerCase().includes(searchText.toLowerCase())
     );
   }, [chats, searchText]);
@@ -186,15 +177,8 @@ export default function ChatListScreen() {
             renderItem={renderItem}
             contentContainerStyle={styles.listPadding}
             showsVerticalScrollIndicator={false}
-<<<<<<< Updated upstream
-
             keyboardDismissMode="on-drag"
             keyboardShouldPersistTaps="handled"
-            
-=======
-            keyboardDismissMode="on-drag"
-            keyboardShouldPersistTaps="handled"
->>>>>>> Stashed changes
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={THEME_COLOR} colors={[THEME_COLOR]} />
             }
