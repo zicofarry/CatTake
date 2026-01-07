@@ -14,6 +14,8 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient, { API_BASE_URL } from '@/api/apiClient';
 import ConfirmModal from '@/components/ConfirmModal';
+import CustomPopup from '@/components/CustomPopup'; // Import CustomPopup
+
 const BASE_SERVER_URL = API_BASE_URL?.replace('/api/v1', '');
 
 export default function TrackingPage() {
@@ -40,6 +42,15 @@ export default function TrackingPage() {
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  // --- STATE POPUP BARU ---
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupConfig, setPopupConfig] = useState({ title: '', message: '', type: 'success' as 'success' | 'error' | 'info' });
+
+  const showPopup = (title: string, message: string, type: 'success' | 'error' | 'info') => {
+    setPopupConfig({ title, message, type });
+    setPopupVisible(true);
+  };
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
@@ -154,7 +165,7 @@ export default function TrackingPage() {
       await apiClient.post('/rescue/chat', { trackingId: trackingData.id, message: chatInput });
       setChatInput('');
       fetchChatMessages();
-    } catch (e) { Alert.alert("Error", "Gagal mengirim pesan"); }
+    } catch (e) { showPopup("Gagal", "Gagal mengirim pesan", "error"); }
   };
 
   const deleteMessage = (messageId: number) => {
@@ -245,10 +256,10 @@ export default function TrackingPage() {
       await apiClient.post('/rescue/update-status', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      Alert.alert("Sukses", "Status berhasil diperbarui");
+      showPopup("Sukses", "Status berhasil diperbarui", "success");
       fetchTrackingData();
     } catch (e) {
-      Alert.alert("Error", "Gagal memperbarui status");
+      showPopup("Error", "Gagal memperbarui status", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -576,6 +587,13 @@ export default function TrackingPage() {
         // Opsional: sesuaikan teks tombol jika perlu
         confirmText={confirmModal.title.includes("Bersihkan") ? "Ya, Bersihkan" : "Ya, Hapus"}
         cancelText="Batal"
+      />
+      <CustomPopup
+        visible={popupVisible}
+        onClose={() => setPopupVisible(false)}
+        title={popupConfig.title}
+        message={popupConfig.message}
+        type={popupConfig.type}
       />
     </View>
   );
