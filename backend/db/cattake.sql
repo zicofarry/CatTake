@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict gRE9FrsssMJu2E3B9xu8Gb4xNnfXJijYHSUaVwITpW4UpKxKhrkOskHSZfgCvYg
+\restrict Obfl5475DPLbqJb8P4GQnkGJTPBaSTFSgHGFbgliuhxjCeXBhNUwrMDFRqQH8f4
 
 -- Dumped from database version 18.0
 -- Dumped by pg_dump version 18.0
 
--- Started on 2026-01-05 14:47:10
+-- Started on 2026-01-07 21:54:43
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -54,6 +54,7 @@ CREATE TABLE public.adoptions (
     applied_at timestamp without time zone NOT NULL,
     verified_at timestamp without time zone,
     updated_at timestamp without time zone NOT NULL,
+    rejection_reason text,
     CONSTRAINT check_adoption_status CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'approved'::character varying, 'rejected'::character varying, 'completed'::character varying])::text[])))
 );
 
@@ -935,24 +936,28 @@ ALTER TABLE ONLY public.verification_log ALTER COLUMN id SET DEFAULT nextval('pu
 -- Data for Name: adoptions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.adoptions (id, cat_id, applicant_id, statement_letter_path, status, applied_at, verified_at, updated_at) FROM stdin;
-18	19	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562318/cattake/statements/krqpmspfaglqccwghz5l.pdf	pending	2026-01-05 04:31:56.420298	\N	2026-01-05 04:31:56.420298
-15	1	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563018/cattake/statements/krsi0jat0prrklzxvwvg.jpg	approved	2025-11-21 15:56:56.107382	2025-11-22 11:26:00.67123	2025-11-21 15:56:56.107382
-14	2	8	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563019/cattake/statements/ddonj7lc9xhozhzdhh7w.jpg	rejected	2025-11-21 10:55:36.921567	2025-11-22 11:27:22.732092	2025-11-21 10:55:36.921567
-12	1	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563020/cattake/statements/x1f79ckddjxwwl9qzmi2.jpg	approved	2025-11-21 10:44:34.873486	2025-11-22 11:36:24.295958	2025-11-21 10:44:34.873486
-11	1	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563021/cattake/statements/echevpehbdxvuoxw8wuc.jpg	rejected	2025-11-21 10:23:38.775822	2025-11-22 11:36:41.785481	2025-11-21 10:23:38.775822
-10	1	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563023/cattake/statements/fpizf9txdh8lar886xis.jpg	approved	2025-11-21 10:18:19.808177	2025-11-22 12:32:03.885964	2025-11-21 10:18:19.808177
-16	6	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563025/cattake/statements/r3s1tostazbtceg2orrc.pdf	approved	2025-11-24 21:24:17.971332	2025-11-24 21:25:07.330696	2025-11-24 21:24:17.971332
-9	1	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563026/cattake/statements/qchiprjymwzq38nwijut.jpg	approved	2025-11-21 10:05:28.846627	2025-11-25 17:26:14.454957	2025-11-21 10:05:28.846627
-17	17	37	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563027/cattake/statements/oc59rx1h8esvq5ervzci.pdf	approved	2025-11-25 16:41:55.372985	2025-11-25 17:26:21.465002	2025-11-25 16:41:55.372985
-1	3	20	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563748/cattake/statements/hiwkshmwnrqf3intqfzl.pdf	pending	2025-11-15 15:00:00	\N	2026-01-05 04:55:32.157497
-2	6	20	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563749/cattake/statements/y2k5beaebyxvsaxbhyis.pdf	rejected	2025-11-20 10:00:00	2025-11-22 12:04:03.386386	2026-01-05 04:55:32.157497
-3	7	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563750/cattake/statements/hhdl1v2nqwaa9xl8plqy.pdf	approved	2025-10-01 10:00:00	2025-10-03 14:00:00	2026-01-05 04:55:32.157497
-4	8	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563751/cattake/statements/xs1uqztni8zvcxsnprpz.pdf	approved	2025-10-05 11:00:00	2025-10-06 16:00:00	2026-01-05 04:55:32.157497
-5	9	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563752/cattake/statements/gt2hxs2iwo2hauahless.pdf	approved	2025-10-10 09:00:00	2025-10-12 13:00:00	2026-01-05 04:55:32.157497
-6	10	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563753/cattake/statements/luczdwt7uvgeuwvoafk8.pdf	approved	2025-10-15 14:00:00	2025-10-17 10:00:00	2026-01-05 04:55:32.157497
-7	11	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563754/cattake/statements/i3kc2sr5tqee9rbc0iqs.pdf	approved	2025-10-20 08:00:00	2025-10-21 11:00:00	2026-01-05 04:55:32.157497
-8	3	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563755/cattake/statements/pwexffpebxwsc2hpai1x.pdf	pending	2025-11-21 10:02:28.366243	\N	2026-01-05 04:55:32.157497
+COPY public.adoptions (id, cat_id, applicant_id, statement_letter_path, status, applied_at, verified_at, updated_at, rejection_reason) FROM stdin;
+18	19	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562318/cattake/statements/krqpmspfaglqccwghz5l.pdf	rejected	2026-01-05 04:31:56.420298	2026-01-07 21:22:50.174982	2026-01-07 21:22:50.174982	Pelamar tidak memberikan respon saat dihubungi oleh pihak shelter.
+21	19	8	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767796300/cattake/statements/jrxgtw4qvlvvgwx5tnnr.pdf	rejected	2026-01-07 21:31:41.197441	2026-01-07 21:44:31.665938	2026-01-07 21:44:31.665938	\N
+20	19	5	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767796219/cattake/statements/tolrux2aaaejrugeeesa.pdf	approved	2026-01-07 21:30:21.654168	2026-01-07 21:44:42.475218	2026-01-07 21:44:42.475218	\N
+19	19	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767796128/cattake/statements/stum2x7qkwquiclv39ov.pdf	rejected	2026-01-07 21:28:48.659612	2026-01-07 21:44:42.475218	2026-01-07 21:44:42.475218	Maaf, kucing Rio sudah diadopsi oleh pelamar lain.
+22	19	12	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767796375/cattake/statements/vqdq2xabyl5kauzi8ync.pdf	rejected	2026-01-07 21:32:56.248477	2026-01-07 21:44:42.475218	2026-01-07 21:44:42.475218	Maaf, kucing Rio sudah diadopsi oleh pelamar lain.
+15	1	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563018/cattake/statements/krsi0jat0prrklzxvwvg.jpg	approved	2025-11-21 15:56:56.107382	2025-11-22 11:26:00.67123	2025-11-21 15:56:56.107382	\N
+12	1	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563020/cattake/statements/x1f79ckddjxwwl9qzmi2.jpg	approved	2025-11-21 10:44:34.873486	2025-11-22 11:36:24.295958	2025-11-21 10:44:34.873486	\N
+10	1	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563023/cattake/statements/fpizf9txdh8lar886xis.jpg	approved	2025-11-21 10:18:19.808177	2025-11-22 12:32:03.885964	2025-11-21 10:18:19.808177	\N
+16	6	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563025/cattake/statements/r3s1tostazbtceg2orrc.pdf	approved	2025-11-24 21:24:17.971332	2025-11-24 21:25:07.330696	2025-11-24 21:24:17.971332	\N
+9	1	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563026/cattake/statements/qchiprjymwzq38nwijut.jpg	approved	2025-11-21 10:05:28.846627	2025-11-25 17:26:14.454957	2025-11-21 10:05:28.846627	\N
+17	17	37	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563027/cattake/statements/oc59rx1h8esvq5ervzci.pdf	approved	2025-11-25 16:41:55.372985	2025-11-25 17:26:21.465002	2025-11-25 16:41:55.372985	\N
+1	3	20	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563748/cattake/statements/hiwkshmwnrqf3intqfzl.pdf	pending	2025-11-15 15:00:00	\N	2026-01-05 04:55:32.157497	\N
+3	7	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563750/cattake/statements/hhdl1v2nqwaa9xl8plqy.pdf	approved	2025-10-01 10:00:00	2025-10-03 14:00:00	2026-01-05 04:55:32.157497	\N
+4	8	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563751/cattake/statements/xs1uqztni8zvcxsnprpz.pdf	approved	2025-10-05 11:00:00	2025-10-06 16:00:00	2026-01-05 04:55:32.157497	\N
+5	9	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563752/cattake/statements/gt2hxs2iwo2hauahless.pdf	approved	2025-10-10 09:00:00	2025-10-12 13:00:00	2026-01-05 04:55:32.157497	\N
+6	10	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563753/cattake/statements/luczdwt7uvgeuwvoafk8.pdf	approved	2025-10-15 14:00:00	2025-10-17 10:00:00	2026-01-05 04:55:32.157497	\N
+7	11	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563754/cattake/statements/i3kc2sr5tqee9rbc0iqs.pdf	approved	2025-10-20 08:00:00	2025-10-21 11:00:00	2026-01-05 04:55:32.157497	\N
+8	3	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563755/cattake/statements/pwexffpebxwsc2hpai1x.pdf	pending	2025-11-21 10:02:28.366243	\N	2026-01-05 04:55:32.157497	\N
+14	2	8	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563019/cattake/statements/ddonj7lc9xhozhzdhh7w.jpg	rejected	2025-11-21 10:55:36.921567	2025-11-22 11:27:22.732092	2025-11-21 10:55:36.921567	Lokasi tempat tinggal pelamar terlalu jauh dari jangkauan shelter.
+11	1	3	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563021/cattake/statements/echevpehbdxvuoxw8wuc.jpg	rejected	2025-11-21 10:23:38.775822	2025-11-22 11:36:41.785481	2025-11-21 10:23:38.775822	Lingkungan rumah dinilai kurang memadai untuk kebutuhan spesifik kucing ini.
+2	6	20	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563749/cattake/statements/y2k5beaebyxvsaxbhyis.pdf	rejected	2025-11-20 10:00:00	2025-11-22 12:04:03.386386	2026-01-05 04:55:32.157497	Maaf, kucing ini sudah diadopsi oleh pelamar lain yang lebih dulu diverifikasi.
 \.
 
 
@@ -988,9 +993,9 @@ COPY public.cats (id, shelter_id, name, age, gender, breed, description, health_
 3	11	Simba	23	male	Maine Coon	Gagah dan berani, cocok untuk menjaga rumah dari tikus.	vaccinated	available	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562572/cattake/cats/eralxke3whkq5nzbydcu.jpg
 5	11	Kitty	36	female	Anggora	Tenang dan penyayang, sudah diadopsi.	vaccinated	adopted	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562573/cattake/cats/tvjrtedzlryasnal9o36.jpg
 7	4	Mimi	11	female	Domestik	Kucing calico yang tenang.	vaccinated	adopted	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562574/cattake/cats/exdjeb5wucasppfpewnz.jpg
+11	4	Chiko	18	female	Domestik	Pandai berburu mainan tikus.	sick	adopted	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767558922/cattake/cats/rmt4wxiotjuh6v0tmlmi.jpg
+19	4	Rio	12	male	Hitam	kucing ini riang gembira	healthy	adopted	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767559197/cattake/cats/iauibwhskgl7otgtltml.jpg
 15	4	Blewah	7	female	Domestik	Kucingnya lucu suka nge wlee	healthy	available	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767558905/cattake/cats/wevbfkdkbumxefknkkrc.jpg
-11	4	Chiko	18	male	Domestik	Pandai berburu mainan tikus.	sick	adopted	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767558922/cattake/cats/rmt4wxiotjuh6v0tmlmi.jpg
-19	4	Rio	12	male	Hitam	kucing ini riang gembira	healthy	available	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767559197/cattake/cats/iauibwhskgl7otgtltml.jpg
 18	10	Rakha	24	male	Anggora	Kucing hitam eksotis dari barat	healthy	available	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562561/cattake/cats/ok1plwixlfsjmmsxcsjo.jpg
 \.
 
@@ -1025,11 +1030,37 @@ COPY public.chat_messages (id, assignment_id, sender_id, message, created_at) FR
 24	8	13	iya pakk	2025-11-23 22:22:15.832274
 26	6	3	Halo pak selamat siang	2025-11-24 00:13:23.322971
 27	6	3	bapak sudah dimana yaa	2025-11-24 00:13:27.374455
-29	9	3	a	2026-01-04 21:47:47.916903
-30	9	3	halo	2026-01-04 21:59:19.353356
 31	8	3	iya sesuai	2026-01-04 21:59:38.546506
 32	8	3	hah	2026-01-04 21:59:42.812936
 33	5	3	tes	2026-01-04 23:02:42.591675
+37	10	30	tes	2026-01-07 09:03:51.545329
+43	9	3	vjj	2026-01-07 09:53:52.758345
+44	9	3	vnkj	2026-01-07 09:53:56.304085
+45	9	3	aaaaaaaaaaaaaaaaaaaaaaaaaaa	2026-01-07 09:54:05.783584
+47	9	3	kjbastnnb sg ahc	2026-01-07 10:17:34.53297
+48	9	3	bnfga	2026-01-07 10:18:39.444339
+49	9	3	jjj wekj	2026-01-07 10:23:21.248583
+50	9	3	kb	2026-01-07 10:23:48.495345
+51	9	3	hbv	2026-01-07 10:23:50.432104
+52	9	3	a	2026-01-07 10:24:42.974043
+53	9	3	a	2026-01-07 10:24:44.235504
+54	9	3	a	2026-01-07 10:24:44.867577
+55	9	3	a	2026-01-07 10:24:45.628623
+56	9	3	aa	2026-01-07 10:24:46.056268
+57	9	3	jjbjjb	2026-01-07 10:25:34.589508
+58	9	3	jhbbbjjkjnbbbj	2026-01-07 10:25:41.024857
+59	9	3	assxd	2026-01-07 10:25:47.816382
+60	9	3	h	2026-01-07 10:25:50.148541
+61	9	3	amama	2026-01-07 10:28:06.682495
+62	9	3	babHsvz	2026-01-07 10:30:42.530949
+63	9	3	jahahshvxhs	2026-01-07 10:30:44.657365
+64	9	3	eaaa	2026-01-07 10:30:50.075407
+65	9	30	hai	2026-01-07 10:32:45.426048
+66	9	30	bvv	2026-01-07 10:33:51.705428
+67	9	3	ha	2026-01-07 10:39:25.143858
+68	6	22	hai	2026-01-07 10:49:52.708699
+69	6	22	saya sudah sampai	2026-01-07 10:49:56.171971
+70	6	3	hai	2026-01-07 11:10:40.3588
 \.
 
 
@@ -1059,6 +1090,15 @@ COPY public.comment (id, user_id, post_id, content, likes_count, created_at, upd
 17	14	5	nooo	0	2025-11-22 15:20:32.971813	2025-11-22 15:20:32.971813
 19	5	1	Halo bro	0	2025-11-24 17:25:22.410048	2025-11-24 17:25:22.410048
 20	3	5	halooo	0	2025-11-24 22:02:52.74141	2025-11-24 22:02:52.74141
+22	3	9	hai	0	2026-01-06 01:52:13.733571	2026-01-06 01:52:13.733571
+23	3	9	oke	0	2026-01-06 01:52:20.00435	2026-01-06 01:52:20.00435
+24	3	16	bs	0	2026-01-06 19:49:42.367486	2026-01-06 19:49:42.367486
+25	3	20	lalala	0	2026-01-07 08:37:57.546814	2026-01-07 08:37:57.546814
+26	3	20	mamma	0	2026-01-07 08:38:05.109471	2026-01-07 08:38:05.109471
+27	3	20	kakaka	0	2026-01-07 08:38:09.204698	2026-01-07 08:38:09.204698
+28	3	20	kama	0	2026-01-07 08:38:12.206806	2026-01-07 08:38:12.206806
+29	22	18	kaja\n	0	2026-01-07 10:55:57.038084	2026-01-07 10:55:57.038084
+30	3	11	aa	0	2026-01-07 12:51:15.104629	2026-01-07 12:51:15.104629
 \.
 
 
@@ -1072,14 +1112,19 @@ COPY public.community_post (id, author_id, title, content, media_path, likes_cou
 2	10	Info Steril Gratis	Kami membuka kuota sterilisasi gratis bulan ini!	\N	2	2025-11-18 10:00:00	2025-11-18 10:00:00
 1	20	Tanya Dokter Hewan	Kucing saya Si Putih suka makan daun, apakah normal?	\N	3	2025-11-17 09:00:00	2025-11-17 09:00:00
 5	7	Kucing Terlantar di Depan Minimarket	Teman-teman, tadi pagi aku lihat seekor kucing betina kurus banget di depan minimarket deket rumah. Kayaknya habis melahirkan dan kelaparan. Aku udah kasih makan, tapi kasian banget. Ada yang bisa bantu foster atau adopsi? Please bantu share ya.	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563064/cattake/posts/lpdme3camu53d0cwdkkd.jpg	878	2025-11-21 09:46:30.38444	2025-11-21 12:46:30.38444
+16	3	tes	a\n	\N	1	2026-01-05 22:56:16.161474	2026-01-05 22:56:16.161474
 11	3	Aku punya kucing baru	jadi pas aku jalan jalan ke singapore aku liat kucing yang lucu banget, jadi pengen aku adopsi, makannya aku bilang ke mamah biar kucingnya aku adopsi dehh	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563066/cattake/posts/f8qtoyjjjenxaqaz5m18.jpg	3	2025-11-25 19:41:46.413998	2025-11-25 19:42:12.326013
 4	6	3 Anak Kucing Butuh Rumah Baru	Halo Cat Lovers! Aku lagi foster 3 anak kucing manis yang ditemukan di depan rumah. Usianya sekitar 2 bulan, sudah bisa makan wet food dan pup di pasir. Semuanya sehat dan manja. Butuh rumah baru yang sayang sama mereka. Lokasi di Jakarta Selatan.	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563067/cattake/posts/m0rpvqx5r6mpdutade6u.jpg	1113	2025-11-20 18:46:30.358292	2025-11-21 12:46:30.358292
+19	3	ga	ga	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767703998/cattake/posts/tlk2xkbwwippgjhgoddk.jpg	0	2026-01-06 19:53:15.242991	2026-01-06 19:53:15.242991
 3	5	Kenapa Sterilisasi itu Penting?	Halo semua, aku mau share pengalaman tentang sterilisasi kucing. Ternyata banyak banget manfaatnya, bukan cuma untuk mengontrol populasi, tapi juga bagus untuk kesehatan si kucing dalam jangka panjang. Kucingku jadi lebih tenang dan gak gampang stres.	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563068/cattake/posts/clv1a1r3iq3skff7h20r.jpg	2160	2025-11-21 10:46:30.278576	2025-11-21 12:46:30.278576
 8	5	[DICARI] Mikey Hilang!	Halo teman-teman, kucing saya hilang.\n\nNama: Mikey\nCiri-ciri: Kucing nya mirip rubah\nLokasi Terakhir: Baleendah, Kabupaten Bandung, West Java, Java, 40288, Indonesia\n\nMohon bantuannya jika melihat. Bisa hubungi saya atau lapor di menu Kucing Hilang. Terima kasih.	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767564034/cattake/posts/bjlzcqyiqug258qchbzx.jpg	1	2025-11-24 17:10:16.475291	2025-11-24 17:10:16.475291
+20	3	a	a	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767749842/cattake/posts/s2ocvyoiid7gmhcszdv2.jpg	0	2026-01-07 08:37:22.878723	2026-01-07 08:37:22.878723
 9	37	[DICARI] Leonardo Hilang!	Halo teman-teman, kucing saya hilang.\n\nNama: Leonardo\nCiri-ciri: Kalungnya merah\nLokasi Terakhir: UPI NET, 229, Jalan Dokter Setiabudi, Isola, Sukajadi, Bandung City, West Java, Java, 40154, Indonesia\n\nMohon bantuannya jika melihat. Bisa hubungi saya atau lapor di menu Kucing Hilang. Terima kasih.	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767564040/cattake/posts/ja1crr5zmqg1b8rnhxrc.jpg	3	2025-11-25 16:33:34.643052	2025-11-25 16:33:34.643052
 12	12	[DICARI] Naka Hilang!	Halo teman-teman, kucing saya hilang.\n\nNama: Naka\nCiri-ciri: Matanya hijau\nLokasi Terakhir: Indonesia University of Education, 229, Jalan Cilimus, Pondok Hijau, Isola, Sukajadi, Bandung City, West Java, Java, 40154, Indonesia\n\nMohon bantuannya jika melihat. Bisa hubungi saya atau lapor di menu Kucing Hilang. Terima kasih.	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767564042/cattake/posts/lhbjjtivci9pm12ocfgr.jpg	2	2025-11-26 10:23:45.391946	2025-11-26 10:23:45.391946
+18	3	[DICARI] a Hilang!	Halo teman-teman, kucing saya hilang.\n\nNama: a\nCiri-ciri: a\nLokasi Terakhir: Sarijadi, Sukajadi, Kota Bandung, Jawa Barat, Jawa, 40515, Indonesia\n\nMohon bantuannya jika melihat. Bisa hubungi saya atau lapor di menu Kucing Hilang. Terima kasih.	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767702465/cattake/lost_cats/oz76osjxmogl2xwiqzed.jpg	1	2026-01-06 19:27:42.499506	2026-01-06 19:27:42.499506
 13	5	tes	tes	\N	1	2026-01-02 23:37:38.239451	2026-01-02 23:37:38.239451
 14	5	halo mo	hai	\N	0	2026-01-04 19:39:31.84529	2026-01-04 19:39:31.84529
+17	3	[DICARI] Marichi Hilang!	Halo teman-teman, kucing saya hilang.\n\nNama: Marichi\nCiri-ciri: Kucingnya baik pake kalung ijo\nLokasi Terakhir: Sarijadi, Sukajadi, Kota Bandung, Jawa Barat, Jawa, 40515, Indonesia\n\nMohon bantuannya jika melihat. Bisa hubungi saya atau lapor di menu Kucing Hilang. Terima kasih.	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767702416/cattake/lost_cats/x1rd1rzrcelkblsinvjj.jpg	0	2026-01-06 19:26:53.261382	2026-01-06 19:26:53.261382
 \.
 
 
@@ -1095,14 +1140,16 @@ COPY public.detail_user_individu (id, full_name, birth_date, gender, profile_pic
 38	demo4	\N	\N	\N	\N		\N	\N	\N	\N	f	f	0
 7	Ajipati Alaga	2025-11-28	male	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562583/cattake/profiles/aumkeyjpuml2zymcfunl.jpg			\N	\N	\N	\N	f	f	0
 20	Andi Nurahman	2025-10-29	male	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562584/cattake/profiles/trpo1m7np369wuctsxul.png		\N	\N	\N	\N	\N	f	f	0
-8	Anas Miftahul Falah	2006-01-29	male	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562580/cattake/profiles/xpssaeddwi5dezzcynpr.jpg	saya adalah manusia bekasi	085850603147	Bekasi	Mahasiswa	3232290120060008	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563402/cattake/legal/i07mu1mvod3qiyl2djee.jpg	f	f	0
 37	Ahmad Saripudin	2025-11-05	female	\N		087877889963	Jl. Gerlong Girang No.24	PNS	32750900001223	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563403/cattake/legal/srg4ewncwp2qqehzvmy9.jpg	f	f	2
-3	Muhammad 'Azmi Salam	2006-06-27	male	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767560027/cattake/profiles/vvo1q4poxipdf53xh93h.jpg	saya adalah pencinta kucing dari umur 3 tahun, nama kucing tercinta saya sejak kecil adalah son goku.	085850603196	RA Ulul 'Azmi Kulalet, RT. 01/RW. 09, Kec. Baleendah, Kab. Bandung, Prov. Jawa Barat	a	a	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562317/cattake/legal/lggsv6fembp6bauirkmw.jpg	t	t	10
+3	Muhammad 'Azmi	2006-06-30	male	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767647621/cattake/profiles/dmrinzcxoiz0a8ofegqt.jpg	saya adalah pencinta kucing dari umur 3 tahun, nama kucing tercinta saya sejak kecil adalah son goku.	085850603196	Sarijadi	Mahasiswa	3204323006060008	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767796124/cattake/identity/khk6o9tgmajqz9dtxbed.jpg	t	t	16
 41	demo5	\N	\N	\N	\N		\N	\N	\N	\N	f	f	0
 42	demo6	\N	\N	\N	\N		\N	\N	\N	\N	f	f	0
-12	Najmi Alifah Hilmiya	2006-02-22	female	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562575/cattake/profiles/p47km7nfyqadanni6u3u.jpg			\N	\N	\N	\N	f	f	2
+43	demo7	\N	\N	\N	\N		\N	\N	\N	\N	f	f	0
+44	demo8	\N	\N	\N	\N		\N	\N	\N	\N	f	f	0
+5	Repa Pitriani	2005-11-04	female	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562577/cattake/profiles/o4rdobnni1epub1osb63.jpg	Aku adalah pencinta kucing asal cianjur alias jati	08585063194	Cianjur	Mahasiswa	3206320511050003	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767796213/cattake/identity/vv7qctp593amm40pt0t9.jpg	f	f	4
+8	Anas Miftahul Falah	2006-01-29	male	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562580/cattake/profiles/xpssaeddwi5dezzcynpr.jpg	saya adalah manusia bekasi	085465613824	Bekasi	Mahasiswa	3206323065948886	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767796298/cattake/identity/rpsven7bcsa2hfe7yxtr.jpg	f	f	0
 6	Salman	\N	\N	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562576/cattake/profiles/buzl8oamlygvn4j0n6bx.png	\N		\N	\N	\N	\N	f	f	0
-5	Repa Pitriani	2005-11-04	female	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562577/cattake/profiles/o4rdobnni1epub1osb63.jpg	Aku adalah pencinta kucing asal cianjur alias jati		alamat belum diverifikasi	Unknown	32731763530891182975	\N	f	f	4
+12	Najmi Alifah Hilmiya	2006-02-22	female	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562575/cattake/profiles/p47km7nfyqadanni6u3u.jpg		085865963754	Bandung	Mahasiswa	3006326485967775	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767796373/cattake/identity/ydtlsntczxv3f4m2nbvy.jpg	f	f	2
 9	Renata	2017-01-05	female	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562578/cattake/profiles/djlsmyeulwke2eo5l3i7.png	Aku adalah pencinta kucing yang slayy		\N	\N	\N	\N	f	f	0
 21	donatur-bambang	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	f	0
 14	MUHAMMAD 'AZMI SALAM	\N	\N	https://lh3.googleusercontent.com/a/ACg8ocI4jlNMYTBjIfhPbtnoE2jVuCq4bTJx6saVHC59qzipgGeK-w=s96-c	\N	\N	\N	\N	\N	\N	t	f	0
@@ -1120,10 +1167,10 @@ COPY public.detail_user_individu (id, full_name, birth_date, gender, profile_pic
 --
 
 COPY public.detail_user_shelter (id, shelter_name, established_date, organization_type, shelter_picture, bio, contact_phone, legal_certificate, donation_account_number, pj_name, pj_nik, is_verified_shelter, cat_capacity, latitude, longitude, qr_img) FROM stdin;
-16	Shelter Bekasi	2025-11-07	Yayasan	https://lh3.googleusercontent.com/a/ACg8ocJoWXti03NhQHj4U8_eAkJBg5zPgdMVwH6wXCXISxkVlkU4fg=s96-c	Menampung kucing kucing yang baik	085850603196	legal-16-1764061424798.pdf	32935395739222	Muhammad 'Azmi	3204323006060008	f	0	-6.91724895	107.60860348	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562585/cattake/payments/ok3otwvj4conkmkkqnos.jpg
-10	Rumah Kucing Bandung	2015-08-17	Komunitas	\N	\N	0227654321	legal-4-1764078069167.pdf	1234567890	Rina Anggraini	3273zzzzzzzzzzzz	t	50	-6.91750000	107.61910000	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562586/cattake/payments/wr0jyqny36wdesky0ak2.jpg
-11	Panti Cat Sejahtera	2010-02-28	Yayasan	\N	\N	0219876543	legal-4-1764078069167.pdf	0987654321	Joko Susilo	3174yyyyyyyyyyyy	t	100	-6.20880000	106.84560000	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562587/cattake/payments/zqjixy3nmu9ubbhfcqsk.jpg
-4	Shelter Gerlong	2024-12-20	Komunitas	\N	\N	085850603196	legal-4-1764078069167.pdf	32440558342	Ahkam Ibadurrahman	3273PJ87252	t	0	-6.87499896	107.59530991	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562588/cattake/payments/obrw5nyvo4xldisdik2x.jpg
+4	Shelter Gerlong	2024-12-19	Komunitas	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767758625/cattake/profiles/m07jhwcb34mrflokqefj.jpg	Shelter gerlong yang suka membantu kucing kucing jalanan	085850603196	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767642508/cattake/legal/o6zv9oaqbtcqb5y7d8vp.pdf	32440558342	Ahkam Ibadurrahman	3273PJ87252	t	0	-6.87499896	107.59530991	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767643067/cattake/qr_codes/nz6ptycwowb8g5evqdvq.jpg
+10	Rumah Kucing Bandung	2014-08-17	Komunitas	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767688764/cattake/profiles/jponpqjol7xzigucfyo1.jpg	kami suka membantu kucing di jalanan	0227654321	https://res.cloudinary.com/dzx0zihxz/raw/upload/v1767694543/cattake/legal/1767694536958-siem_20_26_20soar.pdf	1234567890	Rina Anggraini	32732330003561	t	50	-6.91750000	107.61910000	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562586/cattake/payments/wr0jyqny36wdesky0ak2.jpg
+16	Shelter Bekasi	2025-11-07	Yayasan	https://lh3.googleusercontent.com/a/ACg8ocJoWXti03NhQHj4U8_eAkJBg5zPgdMVwH6wXCXISxkVlkU4fg=s96-c	Menampung kucing kucing yang baik	085850603196	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767642505/cattake/legal/qbbqkcjzurotvmhfwdim.pdf	32935395739222	Muhammad 'Azmi	3204323006060008	f	0	-6.91724895	107.60860348	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562585/cattake/payments/ok3otwvj4conkmkkqnos.jpg
+11	Panti Cat Sejahtera	2010-02-28	Yayasan	\N	\N	0219876543	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767642507/cattake/legal/idcebghpnmsqnrhc7y8b.pdf	0987654321	Joko Susilo	3174yyyyyyyyyyyy	t	100	-6.20880000	106.84560000	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562587/cattake/payments/zqjixy3nmu9ubbhfcqsk.jpg
 \.
 
 
@@ -1155,6 +1202,12 @@ COPY public.donations (id, donatur_id, shelter_id, amount, donation_date, is_ano
 17	37	10	120000.00	2025-11-25 16:54:31.640192	f	bri	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562606/cattake/payments/v5tqg5taxugqflqqwdai.png
 18	12	10	20000.00	2025-11-26 09:58:38.816563	f	qris	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562607/cattake/payments/i5fd6vdbb8ksuxkrgwyw.jpg
 19	12	4	20000.00	2025-11-26 10:13:31.895438	t	qris	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562608/cattake/payments/hmgtve0lapxgzcl5fagk.jpg
+22	3	10	27000.00	2026-01-07 01:00:48.889289	t	qris	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767722452/cattake/payments/u8xczdjz7a7rlqsarbxy.jpg
+23	3	10	38900.00	2026-01-07 01:06:15.886621	f	qris	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767722778/cattake/payments/t6q2d82wtu2l1evsx0r9.jpg
+24	3	10	12000.00	2026-01-07 01:07:46.196854	t	qris	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767722869/cattake/payments/llinprieds5isf00aaqg.jpg
+25	3	10	13000.00	2026-01-07 01:11:54.595651	t	qris	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767723117/cattake/payments/z9i7e4zck4nuumnudh2c.jpg
+26	3	10	10000.00	2026-01-07 01:14:52.965763	t	qris	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767723295/cattake/payments/hj10eijqlyorlxda7ltw.jpg
+27	3	10	50000.00	2026-01-07 01:18:06.043579	t	qris	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767723489/cattake/payments/blzbii606ljpqlndng3p.jpg
 \.
 
 
@@ -1701,6 +1754,89 @@ COPY public.driver_locations (id, driver_id, assignment_id, latitude, longitude,
 534	DRV-10-002	5	-6.87974142	107.57469342	2026-01-04 23:42:42.539809+07
 535	DRV-10-002	5	-6.87974183	107.57469638	2026-01-04 23:43:43.036367+07
 536	DRV-10-002	5	-6.87973100	107.57460400	2026-01-04 23:44:14.521653+07
+537	DRV-10-001	9	-6.87979300	107.57472920	2026-01-06 13:36:40.81534+07
+538	DRV-10-001	9	-6.87980060	107.57474920	2026-01-06 13:37:11.61899+07
+539	DRV-10-001	9	-6.87980060	107.57474920	2026-01-06 13:37:11.632596+07
+540	DRV-10-001	9	-6.87980060	107.57474920	2026-01-06 13:37:11.645714+07
+541	DRV-10-001	9	-6.87980060	107.57474920	2026-01-06 13:37:11.646712+07
+542	DRV-10-001	9	-6.87980060	107.57474920	2026-01-06 13:37:11.647342+07
+543	DRV-10-001	9	-6.87980060	107.57474920	2026-01-06 13:37:11.701994+07
+544	DRV-10-001	9	-6.87980240	107.57474440	2026-01-06 13:37:19.493788+07
+545	DRV-10-001	9	-6.87980180	107.57473980	2026-01-06 13:37:27.377374+07
+546	DRV-10-001	9	-6.87980180	107.57473980	2026-01-06 13:37:27.450167+07
+547	DRV-10-001	9	-6.87976900	107.57469200	2026-01-06 13:37:35.117023+07
+548	DRV-10-001	9	-6.87979180	107.57471820	2026-01-06 13:37:43.165554+07
+549	DRV-10-001	9	-6.87979180	107.57471820	2026-01-06 13:37:43.238601+07
+550	DRV-10-001	9	-6.87979570	107.57472320	2026-01-06 13:37:51.300064+07
+551	DRV-10-001	9	-6.87979570	107.57472320	2026-01-06 13:37:51.300607+07
+552	DRV-10-001	9	-6.87979860	107.57473270	2026-01-06 13:38:57.252273+07
+553	DRV-10-001	9	-6.87979890	107.57472650	2026-01-06 13:39:05.548464+07
+554	DRV-10-001	9	-6.87979890	107.57472650	2026-01-06 13:39:05.580384+07
+555	DRV-10-001	9	-6.87979720	107.57473150	2026-01-06 13:39:15.699757+07
+556	DRV-10-001	9	-6.87979610	107.57473170	2026-01-06 13:39:23.774298+07
+557	DRV-10-001	9	-6.87979010	107.57472460	2026-01-06 13:40:53.47067+07
+558	DRV-10-001	9	-6.87979520	107.57472450	2026-01-06 13:41:01.529199+07
+559	DRV-10-001	9	-6.87979520	107.57472450	2026-01-06 13:41:01.538195+07
+560	DRV-10-001	9	-6.87978280	107.57470700	2026-01-06 13:48:29.896294+07
+561	DRV-10-001	10	-6.87979610	107.57462690	2026-01-07 09:03:40.64829+07
+562	DRV-10-001	10	-6.87979610	107.57462690	2026-01-07 09:04:10.535459+07
+563	DRV-10-001	10	-6.87979610	107.57462690	2026-01-07 09:04:10.624194+07
+564	DRV-10-001	10	-6.87979610	107.57462690	2026-01-07 09:04:10.642593+07
+565	DRV-10-001	10	-6.87979610	107.57462690	2026-01-07 09:04:10.65802+07
+566	DRV-10-001	10	-6.87979610	107.57462690	2026-01-07 09:04:40.684075+07
+567	DRV-10-001	10	-6.87979610	107.57462690	2026-01-07 09:04:41.62954+07
+568	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:32:41.432991+07
+569	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:33:11.305449+07
+570	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:33:11.357394+07
+571	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:33:11.495715+07
+572	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:33:11.507556+07
+573	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:33:11.51383+07
+574	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:33:11.551658+07
+575	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:33:41.592176+07
+576	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:33:41.606276+07
+577	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:33:41.633617+07
+578	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:33:41.634371+07
+579	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:33:41.645967+07
+580	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:33:41.651649+07
+581	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:34:11.509704+07
+582	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:34:11.513308+07
+583	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:34:11.523921+07
+584	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:34:11.536158+07
+585	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:34:11.546556+07
+586	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:34:11.551812+07
+587	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:34:41.478303+07
+588	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:34:41.481764+07
+589	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:34:41.48729+07
+590	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:34:41.527118+07
+591	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:34:41.543125+07
+592	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:34:41.547898+07
+593	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:35:11.539627+07
+594	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:35:11.569763+07
+595	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:35:11.583618+07
+596	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:35:11.595754+07
+597	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:35:11.622267+07
+598	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:35:11.63274+07
+599	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:35:41.422686+07
+600	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:35:41.454068+07
+601	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:35:41.467355+07
+602	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:35:41.482899+07
+603	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:35:41.487904+07
+604	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:35:41.508874+07
+605	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:36:11.428743+07
+606	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:36:11.456297+07
+607	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:36:11.494063+07
+608	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:36:11.522868+07
+609	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:36:11.538978+07
+610	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:36:11.545286+07
+611	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:40:18.088654+07
+612	DRV-10-001	9	-6.87976220	107.57460900	2026-01-07 10:41:07.341859+07
+613	DRV-11-001	6	-6.87976160	107.57460670	2026-01-07 10:49:56.089221+07
+614	DRV-11-001	6	-6.87976160	107.57460670	2026-01-07 10:50:24.224925+07
+615	DRV-11-001	6	-6.87976160	107.57460670	2026-01-07 10:50:24.228714+07
+616	DRV-11-001	6	-6.87976160	107.57460670	2026-01-07 10:50:24.230185+07
+617	DRV-11-001	6	-6.87976160	107.57460670	2026-01-07 10:50:24.245029+07
+618	DRV-11-001	6	-6.87976160	107.57460670	2026-01-07 10:50:24.252925+07
+619	DRV-11-001	6	-6.87976160	107.57460670	2026-01-07 10:50:24.257026+07
 \.
 
 
@@ -1711,11 +1847,11 @@ COPY public.driver_locations (id, driver_id, assignment_id, latitude, longitude,
 --
 
 COPY public.drivers (id, user_id, shelter_id, is_available, license_info, full_name, contact_phone, profile_picture) FROM stdin;
-DRV-04-001	18	4	t	sim-1763873723959.JPG	Andi Santoso	085850603196	driver-1763897487222.png
-DRV-04-002	19	4	t	sim-1763874278197.png	Rahman Putra	085850603196	driver-1763897501968.png
-DRV-11-001	22	11	t	sim-1763882101861.png	Suherman	085850603196	driver-1763897556636.png
-DRV-10-001	30	10	t	sim-1764085365220.jpeg	Budi Kurniawan	+62 812-9502-0503	driver-1764085330006.jpeg
 DRV-10-002	31	10	t	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767561846/cattake/license/fyznw1rturfmt96ivnhu.png	Mawar Putri	081234567890	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767561847/cattake/profiles/ctkm0qrgov5dxz6ggayj.jpg
+DRV-10-001	30	10	t	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767715172/cattake/license/beoeoghjdfaldfrr87lb.png	Budi Kurniawan	+62 812-9502-0503	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767715143/cattake/profiles/pcao9vq3qlm1cznh1bby.png
+DRV-04-002	19	4	t	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767715231/cattake/license/jkkt0oq2zyjwqmfj20ev.png	Rahman Putra	085850603196	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767715233/cattake/profiles/upupckhgu5clf44q8o4n.jpg
+DRV-04-001	18	4	t	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767715249/cattake/license/l90ruixvtvbui5643sza.png	Andi Santoso	085850603196	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767715250/cattake/profiles/kcd7cstvr75oxpava4vz.png
+DRV-11-001	22	11	t	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767715286/cattake/license/esov7eomykugq42pvkiv.png	Suherman	085850603196	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767715287/cattake/profiles/xr41i9idpoakex7tlt0z.png
 \.
 
 
@@ -1764,8 +1900,10 @@ COPY public.favorite_cats (user_id, cat_id, created_at) FROM stdin;
 37	17	2025-11-25 16:35:54.042795
 3	18	2026-01-03 17:08:15.126995
 3	15	2026-01-03 17:08:17.966993
-5	18	2026-01-05 01:14:05.790791
 5	16	2026-01-05 01:14:06.303586
+37	16	2026-01-06 14:28:16.14195
+5	18	2026-01-07 00:21:46.661153
+3	16	2026-01-07 12:53:57.946583
 \.
 
 
@@ -1779,16 +1917,18 @@ COPY public.lost_cats (id, owner_id, name, age, breed, color, description, last_
 8	9	Baram	23	Kucing Hitam	Hitam	Matanya hijau keemasan	Ny. Suharti, 171, Jalan Raden Adipati Aria Wiranatakusumah, Cipaganti, Coblong, Bandung City, West Java, Java, 40161, Indonesia	-6.88443723	107.60126495	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562613/cattake/lost_cats/vbdub7vllzenhbccwvxi.png	0.00	searching	2025-11-23 22:58:51.06906
 1	3	Mochi	12	Domestik	Oren	Hilang pake kalung merah	Jl. Gegerkalong Girang	-6.87300000	107.59200000	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562614/cattake/lost_cats/ipiyphu4mo08uvwyxkjl.jpg	100000.00	returned	2025-11-21 15:59:36.591132
 10	5	Mikey	12	Persia	Oren	Kucing nya mirip rubah	Baleendah, Kabupaten Bandung, West Java, Java, 40288, Indonesia	-7.00141949	107.61645162	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562615/cattake/lost_cats/qnp1rlpitord4uotoika.jpg	120000.00	searching	2025-11-24 17:10:16.445961
-9	3	Marwin	14	Domestik	Hitam	Ekor kucingnya panjang	Sarijadi, Sukajadi, Bandung City, West Java, Java, 40515, Indonesia	-6.87979080	107.57474450	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562617/cattake/lost_cats/ldfutss0zy01qc6abvbl.jpg	700000.00	found	2025-11-24 17:02:34.805617
 11	37	Leonardo	12	Persia	Oren	Kalungnya merah	UPI NET, 229, Jalan Dokter Setiabudi, Isola, Sukajadi, Bandung City, West Java, Java, 40154, Indonesia	-6.86122717	107.59170771	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562618/cattake/lost_cats/xulkum3noca22mpekwii.jpg	500000.00	searching	2025-11-25 16:33:34.49317
 12	12	Naka	43	Persia	Abu	Matanya hijau	Indonesia University of Education, 229, Jalan Cilimus, Pondok Hijau, Isola, Sukajadi, Bandung City, West Java, Java, 40154, Indonesia	-6.85834240	107.59045120	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562619/cattake/lost_cats/ccc8ar86inyknkqy1vnb.jpg	120000.00	searching	2025-11-26 10:23:45.2198
 2	3	Nami	13	Persia	Putih	Pakai kalung emas	Golf UPI, Jalan Harsojo, Isola, Sukajadi, Kota Bandung, Jawa Barat 40154, Indonesia	-6.85854391	107.58954048	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562620/cattake/lost_cats/ifrslwgga9txx5iscwdu.png	0.00	found	2025-11-21 16:00:38.633227
 13	3	lala	12	\N	\N	hitam	Sarijadi, Sukajadi, Kota Bandung, Jawa, 40515, Indonesia	\N	\N	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562621/cattake/lost_cats/kbu5otwayltj3gxzj1vr.jpg	0.00	searching	2026-01-04 22:19:11.181415
-5	3	Garfield	24	Persia	Oren	Badan sangat gemuk, muka ceper, suara mengeong pelan. Suka takut sama orang asing.	Jl. Adopsi No. 5, Bandung	-6.91470000	107.60980000	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562622/cattake/lost_cats/dxwv8m0qfmryunceea7g.jpg	1000000.00	at_shelter	2025-11-19 16:36:51.416413
+3	5	Luna	12	Anggora	Putih	Mata warna biru dan hijau (odd eye), bulu sangat lebat, terakhir pakai kalung pink.	Jl. Setiabudi No. 45, Bandung	-6.87320000	107.58990000	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562609/cattake/lost_cats/mzvy1btkoctc4uzaev64.jpg	500000.00	returned	2025-11-20 16:36:51.416413
+14	3	Marichi	13	Domestik	Oren	Kucingnya baik pake kalung ijo	Sarijadi, Sukajadi, Kota Bandung, Jawa Barat, Jawa, 40515, Indonesia	-6.87989004	107.57472731	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767702416/cattake/lost_cats/x1rd1rzrcelkblsinvjj.jpg	20000.00	searching	2026-01-06 19:26:53.183097
+9	3	Marwin	14	Domestik	Hitam	Ekor kucingnya panjang	Sarijadi, Sukajadi, Bandung City, West Java, Java, 40515, Indonesia	-6.87979080	107.57474450	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562617/cattake/lost_cats/ldfutss0zy01qc6abvbl.jpg	700000.00	returned	2025-11-24 17:02:34.805617
 7	9	Mikey	13	Persia	Putih	pake kalung emas	Rumah Mode, #41, Jalan Dr. Setiabudi, Pasteur, Sukasari, Bandung City, West Java, Java, 40161, Indonesia	-6.88297307	107.59955907	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562608/cattake/lost_cats/rsesdhzz9btqsxvn3qat.png	200000.00	searching	2025-11-23 22:55:32.739297
-3	5	Luna	12	Anggora	Putih	Mata warna biru dan hijau (odd eye), bulu sangat lebat, terakhir pakai kalung pink.	Jl. Setiabudi No. 45, Bandung	-6.87320000	107.58990000	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562609/cattake/lost_cats/mzvy1btkoctc4uzaev64.jpg	500000.00	searching	2025-11-20 16:36:51.416413
 4	8	Oreo	6	Domestik	Hitam Putih	Kucing kecil lincah, ada motif seperti masker di wajahnya. Ekornya pendek bengkok.	Komp. Margahayu Raya, Bandung	-6.94510000	107.65430000	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562611/cattake/lost_cats/rjeuuxsqf56mj0bux0xl.png	150000.00	searching	2025-11-21 11:36:51.416413
 6	7	Blacky	36	Bombay	Hitam	Hitam legam seluruh badan, mata kuning terang. Ada bekas luka kecil di telinga kiri.	Jl. Donasi No. 10, Jakarta	-6.17540000	106.82720000	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562612/cattake/lost_cats/erj8witbhk6n6yffqhmh.jpg	250000.00	searching	2025-11-14 16:36:51.416413
+15	3	a	4	a	a	a	Sarijadi, Sukajadi, Kota Bandung, Jawa Barat, Jawa, 40515, Indonesia	-6.87989004	107.57472731	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767702465/cattake/lost_cats/oz76osjxmogl2xwiqzed.jpg	4.00	searching	2026-01-06 19:27:42.43248
+5	3	Garfield	24	Persia	Oren	Badan sangat gemuk, muka ceper, suara mengeong pelan. Suka takut sama orang asing.	Jl. Adopsi No. 5, Bandung	-6.91470000	107.60980000	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562622/cattake/lost_cats/dxwv8m0qfmryunceea7g.jpg	1000000.00	returned	2025-11-19 16:36:51.416413
 \.
 
 
@@ -1819,6 +1959,8 @@ COPY public.post_likes (user_id, post_id, created_at) FROM stdin;
 5	8	2026-01-02 17:00:58.276751
 5	13	2026-01-02 23:37:41.060517
 3	12	2026-01-05 03:42:33.710069
+3	16	2026-01-06 19:49:37.497959
+22	18	2026-01-07 10:55:49.151337
 \.
 
 
@@ -1876,6 +2018,8 @@ COPY public.reports (id, reporter_id, report_type, lost_cat_id, shelter_assigned
 8	3	missing	5	10	Sirna Manah, Pasteur, Sukasari, Bandung City, West Java 40161, Indonesia	-6.88468337	107.59753561	Saya menemukan kucing milik azmi lagi di pasteur	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562636/cattake/reports/ssi921inijoawyp36nmo.jpg	2025-11-23	2025-11-23 14:09:27.26002	f
 1	20	stray	\N	10	Jl. Kebon Jati, Bandung	-6.91470000	107.60980000	Kucing tertabrak, kaki belakang luka parah.	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562637/cattake/reports/plmw1h4chhappf3pqc1u.jpg	2025-11-18	2025-11-21 16:12:08.271329	f
 2	21	stray	\N	11	Jl. Thamrin, Jakarta	-6.17540000	106.82720000	Ditinggalkan di depan ruko, sangat kurus.	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562638/cattake/reports/mwvmrqwcnb6alpwrlajk.jpg	2025-11-17	2025-11-21 16:12:08.271329	f
+21	3	stray	\N	\N	SD Sarijadi III,IV,V, Jalan Sarimanah 2, Sarijadi, Sukajadi, Kota Bandung, Jawa Barat, Jawa, 40515, Indonesia	-6.88060869	107.57493854	Aku nemu kucing di deket sd aku	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767702276/cattake/reports/wsr1aztaypq4dkjgz3gn.jpg	2026-01-06	2026-01-06 19:24:32.495151	f
+22	3	missing	3	10	Bolu Bakar Tunggal, Jalan Sunda, Kebon Pisang, Sumur Bandung, Kota Bandung, Jawa, 40112, Indonesia	-6.91815131	107.61830986	aku nemu kucingnya repa	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767751210/cattake/reports/j9juix6kb8rn2iapd5id.jpg	2026-01-07	2026-01-07 09:00:11.626913	f
 3	3	stray	\N	10	Jl. Gegerkalong Girang	-6.87300000	107.59200000	Kucing oren pincang di pinggir jalan	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562623/cattake/reports/jhbjzb2lcrewleltxtwz.jpg	2025-11-21	2025-11-21 16:12:14.755683	f
 4	3	stray	\N	10	Indonesia University of Education, 229, Gang Bapak Arsadi, Ledeng, Cidadap, Bandung City, West Java, 40154, Indonesia	-6.85834240	107.59045120	Saya menemukan kucing liar yang kayaknya lagi sakit	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562625/cattake/reports/x9rua5dvfjlfugtvtddi.jpg	2025-11-21	2025-11-21 16:21:37.881511	t
 13	37	stray	\N	\N	Indonesia University of Education, 229, Jalan Cilimus, Pondok Hijau, Isola, Sukajadi, Bandung City, West Java, Java, 40154, Indonesia	-6.85873152	107.59055972	Saya nemu kucing liar di upi	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767562626/cattake/reports/tnyx5kv3qdb2rkymo806.jpg	2025-11-25	2025-11-25 16:30:01.747813	f
@@ -1898,12 +2042,13 @@ COPY public.reports (id, reporter_id, report_type, lost_cat_id, shelter_assigned
 COPY public.rescue_assignments (id, tracking_id, report_id, driver_id, shelter_id, assignment_status, assigned_at, pickup_time, completion_time, pickup_photo, dropoff_photo, notes) FROM stdin;
 6	RES-BDG-0006	9	DRV-11-001	11	assigned	2025-11-23 14:15:13.576105	\N	\N	\N	\N	\N
 8	RES-BDG-0008	12	DRV-04-002	4	assigned	2025-11-23 22:19:43.856501	\N	\N	\N	\N	\N
-9	RES-BDG-0009	14	DRV-10-001	10	assigned	2025-11-25 17:21:34.582935	\N	\N	\N	\N	\N
 2	RES-BDG-0002	5	DRV-10-001	10	completed	2025-11-22 16:40:24.102994	2025-11-22 19:45:17.06581	2025-11-22 19:45:42.963664	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563029/cattake/rescue/xad5r5hydz2v3mbzzehv.png	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563046/cattake/rescue/ujhi5troqssnoeaknerg.png	\N
 3	RES-BDG-0003	4	DRV-10-002	10	completed	2025-11-22 20:44:25.032454	2025-11-22 20:46:11.543035	2025-11-22 20:46:53.965437	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563035/cattake/rescue/qeiecxzafigwirlj2ayz.png	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563049/cattake/rescue/cxezhauzipxh0ft1zsxs.png	\N
 7	RES-BDG-0007	11	DRV-04-002	4	completed	2025-11-23 14:50:34.763009	2025-11-23 16:12:48.451475	2025-11-23 16:13:15.11699	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563038/cattake/rescue/cne6umwqcyqvij164eq9.png	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563053/cattake/rescue/we9vyqgrv0nqr9ktpbam.png	\N
 4	RES-BDG-0004	3	DRV-10-001	10	completed	2025-11-22 21:15:36.467418	2025-11-24 14:12:01.93649	2025-11-24 14:12:08.540317	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563041/cattake/rescue/rykppyabdef98wse9jum.png	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563057/cattake/rescue/lj5diqwgn6zg1qsp7ttk.png	\N
 5	RES-BDG-0005	8	DRV-10-002	10	completed	2025-11-23 14:11:08.332897	2026-01-04 23:04:25.44459	2026-01-04 23:04:29.611094	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563042/cattake/rescue/jqojlzgooas9yfmuwjj4.jpg	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767563058/cattake/rescue/byaarhmpyjy4sbpbnuyi.jpg	\N
+10	RES-BDG-0010	22	DRV-10-001	10	completed	2026-01-07 09:02:28.758332	2026-01-07 09:04:09.035325	2026-01-07 09:04:43.71773	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767751448/cattake/rescue/esd51avig3kdjmg3xgx6.jpg	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767751482/cattake/rescue/ywvjead8yhkkmom1nxxn.jpg	\N
+9	RES-BDG-0009	14	DRV-10-001	10	completed	2025-11-25 17:21:34.582935	2026-01-07 10:41:12.600771	2026-01-07 10:41:18.104999	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767757271/cattake/rescue/rh36ckcow1glybhzqphd.jpg	https://res.cloudinary.com/dzx0zihxz/image/upload/v1767757277/cattake/rescue/xidyeez58cgot9zpmqtr.jpg	\N
 \.
 
 
@@ -1926,6 +2071,19 @@ COPY public.shelter_chats (id, sender_id, receiver_id, message, is_read, created
 10	3	10	halo mo	f	2026-01-03 18:22:53.840461
 11	3	10	ap	f	2026-01-04 23:57:55.355376
 12	8	10	tes	f	2026-01-05 13:35:25.398011
+13	10	5	hai	f	2026-01-06 12:58:51.624327
+14	5	11	hai	f	2026-01-06 23:58:27.707225
+15	5	10	udah ada gak kucing aku	f	2026-01-07 09:06:02.941369
+16	3	10	tes	f	2026-01-07 10:41:55.69472
+17	3	10	apalu	f	2026-01-07 10:56:33.114223
+18	10	3	hahah	f	2026-01-07 11:51:10.901697
+19	10	3	kenapa	f	2026-01-07 11:51:18.184923
+20	10	5	usah	f	2026-01-07 11:51:25.198334
+21	10	5	udah	f	2026-01-07 11:51:28.221495
+22	3	11	halo	f	2026-01-07 19:31:46.202997
+23	3	10	ou	f	2026-01-07 19:32:13.410826
+24	3	10	j	f	2026-01-07 19:37:19.899047
+25	3	11	y	f	2026-01-07 19:37:45.373172
 \.
 
 
@@ -1937,18 +2095,15 @@ COPY public.shelter_chats (id, sender_id, receiver_id, message, is_read, created
 
 COPY public.user_quest_progress (id, user_id, quest_id, current_value, is_claimed, completed_at, updated_at) FROM stdin;
 3	21	1	70000.00	f	2025-11-24 21:52:07.901192	2025-11-24 21:52:07.901192
-4	3	1	2400000.00	f	2025-11-24 21:52:07.901192	2025-11-24 21:52:07.901192
 5	5	1	220000.00	f	2025-11-24 21:52:07.901192	2025-11-24 21:52:07.901192
 6	20	1	100000.00	f	2025-11-24 21:52:07.901192	2025-11-24 21:52:07.901192
 7	21	2	70000.00	f	\N	2025-11-24 21:52:07.901192
-8	3	2	2400000.00	f	2025-11-24 21:52:07.901192	2025-11-24 21:52:07.901192
 9	5	2	220000.00	f	2025-11-24 21:52:07.901192	2025-11-24 21:52:07.901192
 10	20	2	100000.00	f	2025-11-24 21:52:07.901192	2025-11-24 21:52:07.901192
 11	21	3	70000.00	f	\N	2025-11-24 21:52:07.901192
 14	20	3	100000.00	f	\N	2025-11-24 21:52:07.901192
 15	21	4	70000.00	f	\N	2025-11-24 21:52:07.901192
 18	20	4	100000.00	f	\N	2025-11-24 21:52:07.901192
-19	3	5	4.00	f	2025-11-24 21:55:26.429848	2025-11-24 21:55:26.429848
 22	13	5	1.00	f	2025-11-24 21:55:26.429848	2025-11-24 21:55:26.429848
 23	13	6	1.00	f	\N	2025-11-24 21:55:26.429848
 24	13	7	1.00	f	\N	2025-11-24 21:55:26.429848
@@ -1958,7 +2113,6 @@ COPY public.user_quest_progress (id, user_id, quest_id, current_value, is_claime
 28	21	5	1.00	f	2025-11-24 21:55:26.429848	2025-11-24 21:55:26.429848
 29	21	6	1.00	f	\N	2025-11-24 21:55:26.429848
 30	21	7	1.00	f	\N	2025-11-24 21:55:26.429848
-31	3	8	2.00	f	2025-11-24 21:55:31.873729	2025-11-24 21:55:31.873729
 33	7	10	1.00	f	2025-11-24 21:55:36.306	2025-11-24 21:55:36.306
 34	9	10	2.00	f	2025-11-24 21:55:36.306	2025-11-24 21:55:36.306
 35	3	10	4.00	f	2025-11-24 21:55:36.306	2025-11-24 21:55:36.306
@@ -1968,7 +2122,7 @@ COPY public.user_quest_progress (id, user_id, quest_id, current_value, is_claime
 41	5	11	2.00	f	\N	2025-11-24 21:55:36.306
 42	8	11	1.00	f	\N	2025-11-24 21:55:36.306
 16	3	4	2400000.00	t	2025-11-24 21:52:07.901192	2025-11-24 22:42:31.829529
-20	3	6	5.00	f	2025-11-25 22:21:35.056	2025-11-25 22:21:35.044073
+32	3	9	4.00	f	\N	2026-01-07 09:00:11.642648
 45	10	16	1.00	f	2025-11-24 21:55:44.971643	2025-11-24 21:55:44.971643
 46	6	16	1.00	f	2025-11-24 21:55:44.971643	2025-11-24 21:55:44.971643
 47	7	16	1.00	f	2025-11-24 21:55:44.971643	2025-11-24 21:55:44.971643
@@ -1983,6 +2137,17 @@ COPY public.user_quest_progress (id, user_id, quest_id, current_value, is_claime
 60	10	13	2.00	f	\N	2025-11-24 21:55:49.081278
 61	6	13	1113.00	f	2025-11-24 21:55:49.081278	2025-11-24 21:55:49.081278
 62	7	13	878.00	f	\N	2025-11-24 21:55:49.081278
+40	3	11	5.00	t	2026-01-04 22:19:11.198	2026-01-06 04:25:43.144557
+197	3	16	1.00	t	2026-01-05 22:56:16.251	2026-01-06 04:25:44.904846
+8	3	2	2400000.00	t	2025-11-24 21:52:07.901192	2026-01-06 04:36:10.240906
+4	3	1	2400000.00	t	2025-11-24 21:52:07.901192	2026-01-06 04:47:38.281202
+20	3	6	5.00	t	2025-11-25 22:21:35.056	2026-01-06 18:16:21.604718
+31	3	8	2.00	t	2025-11-24 21:55:31.873729	2026-01-06 18:16:23.909121
+19	3	5	4.00	t	2025-11-24 21:55:26.429848	2026-01-06 18:16:27.822277
+514	5	14	1.00	f	2026-01-07 21:44:42.546	2026-01-07 21:44:42.542451
+65	11	18	44.00	f	2026-01-06 23:01:07.541966	2026-01-06 23:01:07.541966
+198	3	17	3.00	f	\N	2026-01-07 08:37:22.896039
+515	5	15	1.00	f	\N	2026-01-07 21:44:42.542451
 1	3	14	9.00	t	2025-11-24 21:55:40.728582	2025-11-24 22:42:16.404958
 59	5	12	2161.00	t	2025-11-24 21:55:49.081278	2025-11-24 22:51:14.666659
 64	5	13	2161.00	t	2025-11-24 21:55:49.081278	2025-11-24 22:51:17.830747
@@ -1991,13 +2156,10 @@ COPY public.user_quest_progress (id, user_id, quest_id, current_value, is_claime
 63	20	13	3.00	f	\N	2026-01-02 16:41:15.148548
 13	5	3	230000.00	f	\N	2026-01-02 18:50:53.509068
 17	5	4	230000.00	f	\N	2026-01-02 18:50:53.509068
-32	3	9	3.00	f	\N	2026-01-04 20:05:48.507603
 37	8	10	1.00	t	2025-11-24 21:55:36.306	2026-01-03 00:00:20.681209
 12	3	3	2400000.00	t	2025-11-24 21:52:07.901192	2026-01-03 00:01:45.205864
 54	5	17	4.00	f	\N	2026-01-04 19:39:31.871843
-40	3	11	5.00	f	2026-01-04 22:19:11.198	2026-01-04 22:19:11.194515
 50	10	17	2.00	f	\N	2026-01-05 04:15:17.255944
-65	11	18	42.00	f	\N	2026-01-05 14:40:27.741015
 138	37	6	1.00	f	\N	2025-11-25 16:30:01.873978
 139	37	7	1.00	f	\N	2025-11-25 16:30:01.873978
 141	37	9	1.00	f	\N	2025-11-25 16:31:12.544907
@@ -2010,90 +2172,102 @@ COPY public.user_quest_progress (id, user_id, quest_id, current_value, is_claime
 158	42	18	1.00	f	2026-01-05 14:10:00.097	2026-01-05 14:40:27.741015
 159	42	19	1.00	f	\N	2026-01-05 14:40:27.741015
 160	42	20	1.00	f	\N	2026-01-05 14:40:27.741015
-21	3	7	5.00	f	\N	2025-11-25 22:21:35.044073
+84	8	18	48.00	f	2025-11-24 22:11:45.076728	2026-01-07 21:30:34.333527
 150	12	1	10000.00	f	2025-11-26 10:13:31.944	2025-11-26 10:13:31.941105
 151	12	2	20000.00	f	\N	2025-11-26 10:13:31.941105
 152	12	3	20000.00	f	\N	2025-11-26 10:13:31.941105
 153	12	4	20000.00	f	\N	2025-11-26 10:13:31.941105
 155	12	11	1.00	f	\N	2025-11-26 10:23:45.25904
 154	12	10	1.00	t	2025-11-26 10:23:45.271	2025-11-26 10:23:58.71092
-148	3	12	3.00	f	\N	2026-01-02 16:41:25.665889
-149	3	13	3.00	f	\N	2026-01-02 16:41:25.665889
+108	8	19	48.00	f	2026-01-07 21:30:34.333527	2026-01-07 21:30:34.333527
+70	16	18	43.00	f	2026-01-06 01:43:06.366916	2026-01-06 03:05:34.451587
+94	16	19	43.00	f	2026-01-06 01:43:06.366916	2026-01-06 03:05:34.451587
+118	16	20	43.00	f	\N	2026-01-06 03:05:34.451587
+67	12	18	44.00	f	2026-01-07 21:31:52.613272	2026-01-07 21:31:52.613272
+91	12	19	44.00	f	2026-01-07 21:31:52.613272	2026-01-07 21:31:52.613272
+115	12	20	44.00	f	\N	2026-01-07 21:31:52.613272
+66	4	18	44.00	f	2026-01-05 18:16:46.653251	2026-01-07 21:34:28.740232
+90	4	19	44.00	f	2026-01-05 18:16:46.653251	2026-01-07 21:34:28.740232
+89	11	19	44.00	f	2026-01-06 23:01:07.541966	2026-01-06 23:01:07.541966
+113	11	20	44.00	f	\N	2026-01-06 23:01:07.541966
+114	4	20	44.00	f	\N	2026-01-07 21:34:28.740232
+102	3	19	48.00	t	2026-01-05 16:52:09.81017	2026-01-07 21:44:57.002671
+126	3	20	48.00	f	\N	2026-01-07 21:44:57.002671
+69	15	18	42.00	f	2026-01-05 16:50:58.060246	2026-01-05 16:55:07.099974
+93	15	19	42.00	f	2026-01-05 16:50:58.060246	2026-01-05 16:55:07.099974
+117	15	20	42.00	f	\N	2026-01-05 16:55:07.099974
+68	14	18	43.00	f	2026-01-06 03:06:41.421446	2026-01-06 13:32:54.539051
+92	14	19	43.00	f	2026-01-06 03:06:41.421446	2026-01-06 13:32:54.539051
+116	14	20	43.00	f	\N	2026-01-06 13:32:54.539051
+87	30	18	44.00	f	2026-01-05 16:52:24.741924	2026-01-07 10:47:12.037773
+265	41	18	1.00	f	2026-01-06 13:34:12.428236	2026-01-06 13:34:12.428236
+266	41	19	1.00	f	\N	2026-01-06 13:34:12.428236
+267	41	20	1.00	f	\N	2026-01-06 13:34:12.428236
+111	30	19	44.00	f	2026-01-05 16:52:24.741924	2026-01-07 10:47:12.037773
+75	22	18	44.00	f	2026-01-07 10:49:46.055508	2026-01-07 10:49:46.055508
+76	31	18	44.00	f	2026-01-06 22:32:14.534996	2026-01-06 22:50:40.992596
+99	22	19	44.00	f	2026-01-07 10:49:46.055508	2026-01-07 10:49:46.055508
+100	31	19	44.00	f	2026-01-06 22:32:14.534996	2026-01-06 22:50:40.992596
 144	37	12	3.00	f	\N	2026-01-04 21:03:06.571112
 145	37	13	3.00	f	\N	2026-01-04 21:03:06.571112
 156	12	12	2.00	f	\N	2026-01-05 03:42:33.723527
 157	12	13	2.00	f	\N	2026-01-05 03:42:33.723527
-66	4	18	42.00	f	\N	2026-01-05 14:40:27.741015
-67	12	18	42.00	f	\N	2026-01-05 14:40:27.741015
-68	14	18	42.00	f	\N	2026-01-05 14:40:27.741015
-69	15	18	42.00	f	\N	2026-01-05 14:40:27.741015
-70	16	18	42.00	f	\N	2026-01-05 14:40:27.741015
 71	1	18	42.00	f	\N	2026-01-05 14:40:27.741015
 72	2	18	42.00	f	\N	2026-01-05 14:40:27.741015
 73	18	18	42.00	f	\N	2026-01-05 14:40:27.741015
 74	19	18	42.00	f	\N	2026-01-05 14:40:27.741015
-75	22	18	42.00	f	\N	2026-01-05 14:40:27.741015
-76	31	18	42.00	f	\N	2026-01-05 14:40:27.741015
 77	21	18	50.00	f	2025-11-24 22:11:45.076728	2026-01-05 14:40:27.741015
 80	20	18	51.00	f	2025-11-24 22:11:45.076728	2026-01-05 14:40:27.741015
 81	13	18	43.00	f	2025-11-24 22:11:45.076728	2026-01-05 14:40:27.741015
 82	7	18	52.00	f	2025-11-24 22:11:45.076728	2026-01-05 14:40:27.741015
 83	9	18	43.00	f	\N	2026-01-05 14:40:27.741015
-84	8	18	46.00	f	2025-11-24 22:11:45.076728	2026-01-05 14:40:27.741015
-85	10	18	49.00	f	2025-11-24 22:11:45.076728	2026-01-05 14:40:27.741015
 86	6	18	46.00	f	2025-11-24 22:11:45.076728	2026-01-05 14:40:27.741015
-87	30	18	42.00	f	\N	2026-01-05 14:40:27.741015
 88	32	18	42.00	f	\N	2026-01-05 14:40:27.741015
-89	11	19	42.00	f	\N	2026-01-05 14:40:27.741015
-90	4	19	42.00	f	\N	2026-01-05 14:40:27.741015
-91	12	19	42.00	f	\N	2026-01-05 14:40:27.741015
-92	14	19	42.00	f	\N	2026-01-05 14:40:27.741015
-93	15	19	42.00	f	\N	2026-01-05 14:40:27.741015
-94	16	19	42.00	f	\N	2026-01-05 14:40:27.741015
 95	1	19	42.00	f	\N	2026-01-05 14:40:27.741015
 96	2	19	42.00	f	\N	2026-01-05 14:40:27.741015
 97	18	19	42.00	f	\N	2026-01-05 14:40:27.741015
 98	19	19	42.00	f	\N	2026-01-05 14:40:27.741015
-99	22	19	42.00	f	\N	2026-01-05 14:40:27.741015
-100	31	19	42.00	f	\N	2026-01-05 14:40:27.741015
 101	21	19	50.00	f	2025-11-24 22:11:45.076728	2026-01-05 14:40:27.741015
-102	3	19	46.00	f	\N	2026-01-05 14:40:27.741015
-103	5	19	46.00	f	\N	2026-01-05 14:40:27.741015
 104	20	19	51.00	f	2025-11-24 22:11:45.076728	2026-01-05 14:40:27.741015
 105	13	19	43.00	f	\N	2026-01-05 14:40:27.741015
 106	7	19	52.00	f	2025-11-24 22:11:45.076728	2026-01-05 14:40:27.741015
 107	9	19	43.00	f	\N	2026-01-05 14:40:27.741015
-108	8	19	46.00	f	\N	2026-01-05 14:40:27.741015
-109	10	19	49.00	f	\N	2026-01-05 14:40:27.741015
 110	6	19	46.00	f	\N	2026-01-05 14:40:27.741015
-111	30	19	42.00	f	\N	2026-01-05 14:40:27.741015
 112	32	19	42.00	f	\N	2026-01-05 14:40:27.741015
-113	11	20	42.00	f	\N	2026-01-05 14:40:27.741015
-114	4	20	42.00	f	\N	2026-01-05 14:40:27.741015
-115	12	20	42.00	f	\N	2026-01-05 14:40:27.741015
-116	14	20	42.00	f	\N	2026-01-05 14:40:27.741015
-117	15	20	42.00	f	\N	2026-01-05 14:40:27.741015
-118	16	20	42.00	f	\N	2026-01-05 14:40:27.741015
 119	1	20	42.00	f	\N	2026-01-05 14:40:27.741015
 120	2	20	42.00	f	\N	2026-01-05 14:40:27.741015
 121	18	20	42.00	f	\N	2026-01-05 14:40:27.741015
 122	19	20	42.00	f	\N	2026-01-05 14:40:27.741015
-123	22	20	42.00	f	\N	2026-01-05 14:40:27.741015
-124	31	20	42.00	f	\N	2026-01-05 14:40:27.741015
 125	21	20	50.00	f	\N	2026-01-05 14:40:27.741015
-126	3	20	46.00	f	\N	2026-01-05 14:40:27.741015
-127	5	20	46.00	f	\N	2026-01-05 14:40:27.741015
 128	20	20	51.00	f	\N	2026-01-05 14:40:27.741015
 129	13	20	43.00	f	\N	2026-01-05 14:40:27.741015
+124	31	20	44.00	f	\N	2026-01-06 22:50:40.992596
+123	22	20	44.00	f	\N	2026-01-07 10:49:46.055508
+148	3	12	5.00	f	\N	2026-01-07 10:55:49.16595
+149	3	13	5.00	f	\N	2026-01-07 10:55:49.16595
+21	3	7	6.00	f	\N	2026-01-06 19:24:32.515897
+85	10	18	51.00	f	2025-11-24 22:11:45.076728	2026-01-07 21:22:16.02536
+109	10	19	51.00	f	2026-01-06 03:27:33.093853	2026-01-07 21:22:16.02536
+103	5	19	48.00	f	2026-01-06 03:19:25.292215	2026-01-07 21:29:02.872357
+127	5	20	48.00	f	\N	2026-01-07 21:29:02.872357
 130	7	20	52.00	f	\N	2026-01-05 14:40:27.741015
 131	9	20	43.00	f	\N	2026-01-05 14:40:27.741015
-132	8	20	46.00	f	\N	2026-01-05 14:40:27.741015
-133	10	20	49.00	f	\N	2026-01-05 14:40:27.741015
 134	6	20	46.00	f	\N	2026-01-05 14:40:27.741015
-135	30	20	42.00	f	\N	2026-01-05 14:40:27.741015
 136	32	20	42.00	f	\N	2026-01-05 14:40:27.741015
-78	3	18	46.00	t	2025-11-24 22:11:45.076728	2026-01-05 14:40:27.741015
-79	5	18	46.00	t	2025-11-24 22:11:45.076728	2026-01-05 14:40:27.741015
+164	44	18	1.00	f	2026-01-05 14:59:36.559609	2026-01-05 14:59:36.559609
+165	44	19	1.00	f	\N	2026-01-05 14:59:36.559609
+166	44	20	1.00	f	\N	2026-01-05 14:59:36.559609
+277	37	18	43.00	f	2026-01-06 13:42:40.473493	2026-01-07 10:43:05.873006
+278	37	19	43.00	t	2026-01-06 13:42:40.473493	2026-01-07 10:43:05.873006
+279	37	20	43.00	f	\N	2026-01-07 10:43:05.873006
+161	43	18	1.00	f	2026-01-05 14:51:52.092566	2026-01-06 13:34:37.280855
+162	43	19	1.00	f	\N	2026-01-06 13:34:37.280855
+163	43	20	1.00	f	\N	2026-01-06 13:34:37.280855
+135	30	20	44.00	f	\N	2026-01-07 10:47:12.037773
+133	10	20	51.00	f	\N	2026-01-07 21:22:16.02536
+79	5	18	48.00	t	2025-11-24 22:11:45.076728	2026-01-07 21:29:02.872357
+132	8	20	48.00	f	\N	2026-01-07 21:30:34.333527
+78	3	18	48.00	t	2025-11-24 22:11:45.076728	2026-01-07 21:44:57.002671
 \.
 
 
@@ -2107,24 +2281,26 @@ COPY public.users (id, username, email, password_hash, role, created_at, total_p
 33	user-demo36	user-demo36@gmai.com	$2b$10$2S9sq6NuSD5tScLLlLkvbOfhLhK7MkuCYpSFkq7bIqsWn.6GFriFS	individu	2025-11-25 16:07:42.274035	0.00
 36	user-demo3	user-demo3@gmai.com	$2b$10$BJ0Re3PuBjCMxOrQ23WqZO7ePbS4ByvHOv.yU/0S31y2htzUWRegu	individu	2025-11-25 16:09:30.164166	0.00
 11	shelter-jakarta	shelter_jkt@mail.com	$2a$12$EyaNgDWLl4uXeK5luSp6NeNg3rnl3v3wJ8MZhnQIMCmYCK2/MYxBy	shelter	2025-11-24 22:09:06.686097	0.00
-37	user-demo1	user-demo1@gmail.com	$2b$10$crPsHR3nuxCdwqjs8J99AeMZ.jFNmGgUD98iyIaiJQX/Li38Q/u2G	individu	2025-11-25 16:22:17.450019	50.00
-30	driver-budi	budi_drv@mail.com	$2a$12$5mH1ze4JchRj3UqwckKh5uyRS95.mGQwz1by74lIvMtQjsEvhkdZa	driver	2025-11-24 22:09:06.686097	0.00
+37	user-demo1	user-demo1@gmail.com	$2b$10$crPsHR3nuxCdwqjs8J99AeMZ.jFNmGgUD98iyIaiJQX/Li38Q/u2G	individu	2025-11-25 16:22:17.450019	55.00
 12	najmi	najmi@gmail.com	$2b$10$pwLd7JgiL5VisgFiLvIc2e4JI8.HCT5e3VfuqeUNJXgw.gpsoa9Qu	individu	2025-11-24 22:09:06.686097	5.00
 38	demo4	userdemo4@gmail.com	$2b$10$rQRzZRaP.EQ/gxlcAiW2oelYphQPWzIRh.2G9qbGpmIj1Jnr2NFjm	individu	2026-01-02 15:01:17.106287	0.00
 8	anas	anasmifta@gmail.com	$2b$10$JDKS8/kOsH3voDP3fwHFdeJfC5tgyJr7GwbsBtSNLfJ7w3gxyWpFW	individu	2025-11-21 11:36:51.416413	5.00
-3	zicofarry	mhmmdzmslm36@gmail.com	$2b$10$S/.SrKBrNC0Lt7QTIauaDe4KiQZJ4w3QxTa5Y4OnT.c07yIEMzd6S	individu	2025-11-21 03:34:41.42546	182.00
 31	driver-mawar	mawar_drv@mail.com	$2a$12$4aY1NCJGJbpI743W94xPzOe1bIq9V8G5ktIErqaddHRcsbifNQp/u	driver	2025-11-24 22:09:06.686097	0.00
 41	demo5	demo5@gmail.com	$2b$10$ao6nxrVYH.enVFFLq7YJz.fydUqJYtU/2xkPF63Q0DZrwCRJGxmQ.	individu	2026-01-05 14:07:29.729019	0.00
 42	demo6	demo6@gmail.com	$2b$10$LBZsZ6aT7JXLj.YUtySO4OgF5ZwbOx7VZfKLUvdqskfmb7LWLDu4K	individu	2026-01-05 14:10:00.071913	0.00
+43	demo7	demo7@gmail.com	$2b$10$QICEyj0xjHE5dN.drAKpe.L93uDbndHXTgB8oTDs6pIuKje46kCOG	individu	2026-01-05 14:51:52.078315	0.00
+44	demo8	demo8@gmail.com	$2b$10$b1V86PK/WKHnNEh2TCm5q.atjDifHPXUi5agCXS5JYDaZ.hIFKdfG	individu	2026-01-05 14:59:36.54174	0.00
+3	zicofarry	mhmmdzmslm36@gmail.com	$2b$10$S/.SrKBrNC0Lt7QTIauaDe4KiQZJ4w3QxTa5Y4OnT.c07yIEMzd6S	individu	2025-11-21 03:34:41.42546	307.00
+30	driver-budi	budi_drv@mail.com	$2a$12$5mH1ze4JchRj3UqwckKh5uyRS95.mGQwz1by74lIvMtQjsEvhkdZa	driver	2025-11-24 22:09:06.686097	0.00
+19	driver-rahman	rahman_drv@gmail.com	$2b$10$inqXtItfpppc4ck6z5DGhOLZG3HSx2juvLcijQJA99IcKo5qMdYvC	driver	2025-11-24 22:09:06.686097	0.00
+18	driver-andi	andi_drv@gmail.com	$2b$10$ttwEUQeteiAeUm0tjgUiee1ql2/s17pwYr6BkZSmdcffjapLSDPOO	driver	2025-11-24 22:09:06.686097	0.00
 4	shelter-gerlong	sheltergerlong@gmail.com	$2a$12$0c7TwUaK9VKllvejqx9kbOzwggL9YfrA43s3VYY/.h.RDY6.PiRve	shelter	2025-11-24 22:09:06.686097	0.00
+22	driver-suher	suher_drv@gmail.com	$2b$10$tBo7qYz/bvqzfurHxEkCUuFTC1SLHRxf4NRLQam1LW1GjoeqGqQ/i	driver	2025-11-24 22:09:06.686097	0.00
 14	muhammad'azmisalam4233	muhammadazmi36@upi.edu	$2a$12$KnzjrkMrv0Va/83HJIp7p.XjFP8HSJy2lzp9URK1pDx7lMJHxnMTK	individu	2025-11-24 22:09:06.686097	0.00
 15	cacicu7498	c2cacicu@gmail.com	$2b$10$BsZ/2ht./rAb/dXRhZ0wVOJnwEfArE.X4KlA0w4ZpUKF1fsDinxXW	individu	2025-11-24 22:09:06.686097	0.00
 16	muhammad'azmi2945	muhammadazmi.smaitfibe@gmail.com	$2b$10$2PswEEftRNsF0/fY3WKalu8xKEHqs4KzlirQ9THGua64IkRA1MKFu	shelter	2025-11-24 22:09:06.686097	0.00
 1	admin36	admin@cattake.id	$2a$12$mf/UN16PC8UXHoVgcpwraOY7IDx9ewbmfJVbkyiAuw9QO6ZKtejae	admin	2025-11-24 22:09:06.686097	0.00
 2	michael	azmi.test.001@mail.com	$2a$12$gR9X5xmgnx1Ofaf0WJYqm.YFgwrCE3zIWESzg3esC2IvgdDWfjIgG	individu	2025-11-24 22:09:06.686097	0.00
-18	driver-andi	andi_drv@gmail.com	$2b$10$ttwEUQeteiAeUm0tjgUiee1ql2/s17pwYr6BkZSmdcffjapLSDPOO	driver	2025-11-24 22:09:06.686097	0.00
-19	driver-rahman	rahman_drv@gmail.com	$2b$10$inqXtItfpppc4ck6z5DGhOLZG3HSx2juvLcijQJA99IcKo5qMdYvC	driver	2025-11-24 22:09:06.686097	0.00
-22	driver-suher	suher_drv@gmail.com	$2b$10$tBo7qYz/bvqzfurHxEkCUuFTC1SLHRxf4NRLQam1LW1GjoeqGqQ/i	driver	2025-11-24 22:09:06.686097	0.00
 21	donatur-bambang	bambang@mail.com	$2a$12$IIc7LrjwQSWZVXTqwBUsF.Xn2nCgZ4dbhufObIFDb.UxqYSUIlQUe	individu	2025-11-16 22:54:52.863077	0.00
 20	adopter-andi	andi@mail.com	$2a$12$V7sBJmn.UZFfo2Hn9kda4OkXC6PoN/H3I7zczoH0vCFjRZbcve5NG	individu	2025-11-16 05:44:54.237741	0.00
 13	harri	harri@gmail.com	$2b$10$SGHoHSetwMJnFjDrMdwK0eFrpilgPcZPmLGXkMPVbFLFrOUoCRdZy	individu	2025-11-23 22:10:13.851051	0.00
@@ -2168,7 +2344,7 @@ COPY public.verification_log (id, user_id, verifier_id, verification_type, statu
 -- Name: adoptions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.adoptions_id_seq', 18, true);
+SELECT pg_catalog.setval('public.adoptions_id_seq', 22, true);
 
 
 --
@@ -2177,7 +2353,7 @@ SELECT pg_catalog.setval('public.adoptions_id_seq', 18, true);
 -- Name: cats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.cats_id_seq', 19, true);
+SELECT pg_catalog.setval('public.cats_id_seq', 20, true);
 
 
 --
@@ -2186,7 +2362,7 @@ SELECT pg_catalog.setval('public.cats_id_seq', 19, true);
 -- Name: chat_messages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.chat_messages_id_seq', 33, true);
+SELECT pg_catalog.setval('public.chat_messages_id_seq', 70, true);
 
 
 --
@@ -2195,7 +2371,7 @@ SELECT pg_catalog.setval('public.chat_messages_id_seq', 33, true);
 -- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.comment_id_seq', 21, true);
+SELECT pg_catalog.setval('public.comment_id_seq', 30, true);
 
 
 --
@@ -2213,7 +2389,7 @@ SELECT pg_catalog.setval('public.community_post_id_seq', 5, true);
 -- Name: community_post_id_seq1; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.community_post_id_seq1', 15, true);
+SELECT pg_catalog.setval('public.community_post_id_seq1', 20, true);
 
 
 --
@@ -2222,7 +2398,7 @@ SELECT pg_catalog.setval('public.community_post_id_seq1', 15, true);
 -- Name: donations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.donations_id_seq', 21, true);
+SELECT pg_catalog.setval('public.donations_id_seq', 27, true);
 
 
 --
@@ -2231,7 +2407,7 @@ SELECT pg_catalog.setval('public.donations_id_seq', 21, true);
 -- Name: driver_locations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.driver_locations_id_seq', 536, true);
+SELECT pg_catalog.setval('public.driver_locations_id_seq', 619, true);
 
 
 --
@@ -2240,7 +2416,7 @@ SELECT pg_catalog.setval('public.driver_locations_id_seq', 536, true);
 -- Name: lost_cats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.lost_cats_id_seq', 13, true);
+SELECT pg_catalog.setval('public.lost_cats_id_seq', 15, true);
 
 
 --
@@ -2267,7 +2443,7 @@ SELECT pg_catalog.setval('public.reply_comment_id_seq', 9, true);
 -- Name: reports_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.reports_id_seq', 20, true);
+SELECT pg_catalog.setval('public.reports_id_seq', 22, true);
 
 
 --
@@ -2276,7 +2452,7 @@ SELECT pg_catalog.setval('public.reports_id_seq', 20, true);
 -- Name: rescue_assignments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.rescue_assignments_id_seq', 9, true);
+SELECT pg_catalog.setval('public.rescue_assignments_id_seq', 10, true);
 
 
 --
@@ -2285,7 +2461,7 @@ SELECT pg_catalog.setval('public.rescue_assignments_id_seq', 9, true);
 -- Name: shelter_chats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.shelter_chats_id_seq', 12, true);
+SELECT pg_catalog.setval('public.shelter_chats_id_seq', 25, true);
 
 
 --
@@ -2294,7 +2470,7 @@ SELECT pg_catalog.setval('public.shelter_chats_id_seq', 12, true);
 -- Name: user_quest_progress_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_quest_progress_id_seq', 160, true);
+SELECT pg_catalog.setval('public.user_quest_progress_id_seq', 518, true);
 
 
 --
@@ -2303,7 +2479,7 @@ SELECT pg_catalog.setval('public.user_quest_progress_id_seq', 160, true);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 42, true);
+SELECT pg_catalog.setval('public.users_id_seq', 44, true);
 
 
 --
@@ -2936,11 +3112,11 @@ ALTER TABLE ONLY public.verification_log
     ADD CONSTRAINT verification_log_verifier_id_fkey FOREIGN KEY (verifier_id) REFERENCES public.users(id);
 
 
--- Completed on 2026-01-05 14:47:10
+-- Completed on 2026-01-07 21:54:44
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict gRE9FrsssMJu2E3B9xu8Gb4xNnfXJijYHSUaVwITpW4UpKxKhrkOskHSZfgCvYg
+\unrestrict Obfl5475DPLbqJb8P4GQnkGJTPBaSTFSgHGFbgliuhxjCeXBhNUwrMDFRqQH8f4
 
