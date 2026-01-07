@@ -146,7 +146,7 @@ export default function ShelterRescuePage() {
                                             <Image source={{ uri: resolveImageUrl(report.photo) || undefined }} style={styles.reportImage} />
                                             <View style={{flex:1}}>
                                                 <View style={{flexDirection:'row', justifyContent:'space-between'}}>
-                                                    <Text style={styles.reportId}>#{report.id}</Text>
+                                                    <Text style={styles.reportId}>Laporan #{report.id}</Text>
                                                     <View style={styles.dateBadge}>
                                                         <Text style={styles.dateText}>{new Date(report.created_at).toLocaleDateString()}</Text>
                                                     </View>

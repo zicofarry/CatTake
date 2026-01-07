@@ -120,6 +120,16 @@ export default function ReportScreen() {
     } catch (e) { console.error(e); }
   };
 
+  const handleUpdateLostCatStatus = async (catId: number, newStatus: string) => {
+    try {
+      await apiClient.post(`/rescue/return-owner`, { lostCatId: catId });
+      showModal("success", "Sukses", "Status berhasil diperbarui. Senang anabul Anda sudah kembali!");
+      fetchUserHistory(); // Refresh data
+    } catch (e) {
+      showModal("error", "Error", "Gagal memperbarui status.");
+    }
+  };
+
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -461,6 +471,54 @@ export default function ReportScreen() {
                         </Text>
                       </View>
                     </View>
+                    {/* --- TOMBOL AKSI KHUSUS LOST CAT --- */}
+                    {isLostCat && item.status === 'at_shelter' && (
+                      <View className="mt-4 gap-2">
+                        {/* Tombol Chat ke Shelter */}
+                        <TouchableOpacity 
+                          onPress={() => {
+                            if (item.shelter_assigned_id) {
+                              router.push({
+                                pathname: "/chat/[id]",
+                                params: { 
+                                  id: `${item.shelter_assigned_id}`, 
+                                  name: item.shelter_name || 'Admin Shelter' 
+                                }
+                              });
+                            } else {
+                              showModal("error", "Info", "Data shelter belum tersedia.");
+                            }
+                          }}
+                          className="bg-[#3A5F50] py-3 rounded-xl flex-row items-center justify-center gap-2"
+                        >
+                          <Ionicons name="chatbubbles" size={16} color="white" />
+                          <Text className="text-white font-bold text-xs uppercase">Chat Shelter</Text>
+                        </TouchableOpacity>
+
+                        {/* Tombol Konfirmasi Selesai */}
+                        <TouchableOpacity 
+                          onPress={() => Alert.alert("Konfirmasi", "Apakah kucing sudah kembali ke tangan Anda?", [
+                            { text: "Belum", style: "cancel" },
+                            { text: "Sudah", onPress: () => handleUpdateLostCatStatus(item.id, 'returned') }
+                          ])}
+                          className="bg-emerald-600 py-3 rounded-xl flex-row items-center justify-center gap-2"
+                        >
+                          <Ionicons name="checkmark-circle" size={16} color="white" />
+                          <Text className="text-white font-bold text-xs uppercase">Sudah Saya Terima</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+
+                    {/* Tombol Lacak (Hanya untuk temuan penjemputan) */}
+                    {!isLostCat && (item.assignment_status === 'assigned' || item.assignment_status === 'in_transit') && (
+                      <TouchableOpacity 
+                        onPress={() => router.push(`/track/${item.id}`)}
+                        className="mt-4 bg-teal-600 py-2.5 rounded-xl flex-row items-center justify-center gap-2"
+                      >
+                        <Ionicons name="map" size={14} color="white" />
+                        <Text className="text-white font-bold text-xs uppercase">Lacak Penjemputan</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 );
               })}
