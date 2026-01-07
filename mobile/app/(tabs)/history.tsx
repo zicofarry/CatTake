@@ -33,6 +33,27 @@ export default function HistoryScreen() {
     rescue: { icon: 'alert-circle', color: '#10b981', label: 'Lapor' }
   };
 
+  /**
+   * Helper untuk merubah format "05 Jan 2026" menjadi objek Date yang valid
+   * karena Android/Hermes sering gagal memparsing format non-ISO
+   */
+  const parseCustomDate = (dateStr: string) => {
+    if (!dateStr) return new Date();
+    const months: { [key: string]: number } = {
+      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+    };
+    
+    const parts = dateStr.split(' ');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0]);
+      const month = months[parts[1]];
+      const year = parseInt(parts[2]);
+      return new Date(year, month, day);
+    }
+    return new Date(dateStr);
+  };
+
   const fetchHistory = async () => {
     try {
       setLoading(true);
@@ -50,17 +71,16 @@ export default function HistoryScreen() {
           ...d, 
           type: 'donasi', 
           title: `Donasi ke ${d.shelterName || 'Shelter'}`,
-          // Menggunakan donation_date dari database
           dateObj: new Date(d.donation_date) 
         })),
         
-        // 2. Pemetaan Riwayat Adopsi
+        // 2. Pemetaan Riwayat Adopsi (FIXED)
         ...(adoptions.data || []).map((a: any) => ({ 
           ...a, 
           type: 'adopsi', 
           title: `Adopsi ${a.catName || 'Kucing'}`,
-          // Menggunakan applied_at sesuai struktur tabel adoptions
-          dateObj: new Date(a.applied_at) 
+          // Menggunakan helper parse agar tidak menjadi Invalid Date di Android
+          dateObj: parseCustomDate(a.appliedDate) 
         })),
         
         // 3. Pemetaan Riwayat Laporan (Rescue)
@@ -68,7 +88,6 @@ export default function HistoryScreen() {
           ...r, 
           type: 'rescue', 
           title: `Laporan ${r.report_type === 'stray' ? 'Kucing Liar' : 'Kucing Hilang'}`,
-          // Menggunakan created_at dari tabel laporan
           dateObj: new Date(r.created_at) 
         }))
       ];
@@ -76,7 +95,7 @@ export default function HistoryScreen() {
       // Filter data agar hanya yang memiliki tanggal valid yang ditampilkan
       const validData = combined.filter(item => !isNaN(item.dateObj.getTime()));
       
-      // Urutkan dari yang paling baru
+      // Urutkan dari yang paling baru (Descending)
       validData.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
       
       setData(validData);
@@ -94,22 +113,29 @@ export default function HistoryScreen() {
 
   const renderItem = ({ item }: { item: any }) => {
     const config = categoryConfig[item.type as keyof typeof categoryConfig] || categoryConfig.semua;
-    const isSuccess = ['approved', 'verified', 'completed'].includes(item.status?.toLowerCase());
+    const status = item.status?.toLowerCase();
+    const isSuccess = ['approved', 'verified', 'completed'].includes(status);
+    const isRejected = ['rejected', 'failed', 'cancelled'].includes(status);
 
     return (
       <View style={styles.donationCard}>
         <View style={styles.cardTopRow}>
           <Text style={styles.dateText}>
-            {/* Format Tanggal Indonesia */}
             {item.dateObj.toLocaleDateString('id-ID', { 
               day: 'numeric', 
               month: 'long', 
               year: 'numeric' 
             })}
           </Text>
-          <View style={[styles.statusBadge, isSuccess ? styles.bgSuccess : styles.bgPending]}>
-            <Text style={[styles.statusText, isSuccess ? styles.textSuccess : styles.textPending]}>
-              {(item.status || 'PENDING').toUpperCase()}
+          <View style={[
+            styles.statusBadge, 
+            isSuccess ? styles.bgSuccess : isRejected ? styles.bgRejected : styles.bgPending
+          ]}>
+            <Text style={[
+              styles.statusText, 
+              isSuccess ? styles.textSuccess : isRejected ? styles.textRejected : styles.textPending
+            ]}>
+              {(item.status || 'SUCCESS').toUpperCase()}
             </Text>
           </View>
         </View>
@@ -130,7 +156,7 @@ export default function HistoryScreen() {
         </View>
         
         <Text style={styles.historyDesc}>
-          {item.description || item.location || 'Aktivitas telah tercatat di sistem CatTake.'}
+          {item.description || item.location || `Pengajuan untuk ${item.shelterName || 'shelter'} telah tercatat.`}
         </Text>
       </View>
     );
@@ -150,7 +176,7 @@ export default function HistoryScreen() {
       <FlatList
         data={filteredData}
         renderItem={renderItem}
-        keyExtractor={(item) => `${item.type}-${item.id}`}
+        keyExtractor={(item, index) => `${item.type}-${item.id || index}`}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100, paddingTop: insets.top + 40 }}
         refreshControl={
@@ -260,9 +286,13 @@ const styles = StyleSheet.create({
   cardTopRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', paddingBottom: 8 },
   dateText: { fontSize: 11, color: '#6b7280' },
   statusBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
-  bgSuccess: { backgroundColor: '#ECFDF5' }, bgPending: { backgroundColor: '#FFFBEB' },
+  bgSuccess: { backgroundColor: '#ECFDF5' }, 
+  bgPending: { backgroundColor: '#FFFBEB' },
+  bgRejected: { backgroundColor: '#FEE2E2' },
   statusText: { fontSize: 10, fontWeight: 'bold' },
-  textSuccess: { color: '#059669' }, textPending: { color: '#D97706' },
+  textSuccess: { color: '#059669' }, 
+  textPending: { color: '#D97706' },
+  textRejected: { color: '#B91C1C' },
   cardBody: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
   iconWrapper: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   donorName: { fontWeight: 'bold', color: '#1F2937', fontSize: 15 },
