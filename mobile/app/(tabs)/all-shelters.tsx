@@ -52,7 +52,7 @@ export default function AllSheltersScreen() {
       const response = await apiClient.get('/users/shelters');
       const data = response.data.data ? response.data.data : response.data;
       setShelters(data);
-      setFilteredShelters(data);
+      // setFilteredShelters(data);
     } catch (error) {
       console.error("Gagal ambil shelters:", error);
     } finally {

@@ -128,7 +128,7 @@ export default function ShelterProfileScreen() {
             <View style={styles.statsContainer}>
                 <View style={styles.statItem}>
                     <Text style={styles.statNumber}>{cats.length}</Text>
-                    <Text style={styles.statLabel}>Siap Adopsi</Text>
+                    <Text style={styles.statLabel}>Total Kucing</Text>
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
