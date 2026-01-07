@@ -10,31 +10,26 @@ import {
   Platform,
   SafeAreaView,
   ActivityIndicator,
-  Keyboard // Ditambahkan
+  Keyboard
 } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context'; // Ditambahkan
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Tambahkan ini
 import apiClient from '@/api/apiClient';
 
 export default function ChatRoomScreen() {
   const { id, name } = useLocalSearchParams();
-  const insets = useSafeAreaInsets(); // Untuk menghitung area aman layar
+  const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false); // State baru dari contoh track
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
-  // --- LOGIKA TRACKING KEYBOARD (Dari track/[id].tsx) ---
   useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
-      setIsKeyboardVisible(true);
-    });
-    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
-      setIsKeyboardVisible(false);
-    });
-
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => setIsKeyboardVisible(true));
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => setIsKeyboardVisible(false));
     return () => {
       showSubscription.remove();
       hideSubscription.remove();
@@ -44,7 +39,14 @@ export default function ChatRoomScreen() {
   const fetchHistory = async () => {
     try {
       const response = await apiClient.get(`/chat/history/${id}`);
-      setMessages(response.data.data);
+      const fetchedMessages = response.data.data;
+      setMessages(fetchedMessages);
+
+      // AKALIN: Jika ada pesan, simpan waktu pesan terakhir sebagai "sudah dibaca"
+      if (fetchedMessages.length > 0) {
+        const latestMsg = fetchedMessages[fetchedMessages.length - 1];
+        await AsyncStorage.setItem(`lastRead_${id}`, latestMsg.created_at);
+      }
     } catch (error) {
       console.error("Gagal memuat chat:", error);
     } finally {
@@ -60,25 +62,18 @@ export default function ChatRoomScreen() {
 
   const sendMessage = async () => {
     if (!inputText.trim()) return;
-
     const messageToSend = inputText;
     setInputText('');
-
     try {
-      const response = await apiClient.post('/chat/send', {
-        receiverId: id,
-        message: messageToSend
-      });
+      const response = await apiClient.post('/chat/send', { receiverId: id, message: messageToSend });
+      const newMessage = { ...response.data.data, position: 'me' };
 
-      const newMessage = {
-        ...response.data.data,
-        position: 'me'
-      };
+      // Update local storage juga saat kita kirim pesan
+      await AsyncStorage.setItem(`lastRead_${id}`, newMessage.created_at);
 
       setMessages(prev => [...prev, newMessage]);
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (error) {
-      console.error("Gagal mengirim pesan:", error);
       setInputText(messageToSend);
     }
   };
@@ -90,15 +85,12 @@ export default function ChatRoomScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Stack.Screen
-        options={{
+      <Stack.Screen options={{
           headerTitle: (name as string) || 'Chat',
           headerStyle: { backgroundColor: '#3A5F50' },
           headerTintColor: '#fff',
-        }}
-      />
+      }} />
 
-      {/* PERBAIKAN: KeyboardAvoidingView dengan offset dinamis seperti di track/[id].tsx */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -114,9 +106,7 @@ export default function ChatRoomScreen() {
             renderItem={({ item }) => (
               <View style={[styles.bubbleWrapper, item.position === 'me' ? styles.right : styles.left]}>
                 <View style={[styles.bubble, item.position === 'me' ? styles.bubbleRight : styles.bubbleLeft]}>
-                  <Text style={[styles.text, item.position === 'me' ? styles.textRight : styles.textLeft]}>
-                    {item.message}
-                  </Text>
+                  <Text style={[styles.text, item.position === 'me' ? styles.textRight : styles.textLeft]}>{item.message}</Text>
                   <Text style={[styles.time, item.position === 'me' ? {color: 'rgba(255,255,255,0.7)'} : {color: '#999'}]}>
                     {formatTime(item.created_at)}
                   </Text>
@@ -129,11 +119,7 @@ export default function ChatRoomScreen() {
           />
         )}
 
-        {/* Input Bar dengan padding dinamis menyesuaikan insets dan keyboard */}
-        <View style={[
-          styles.inputBar,
-          { paddingBottom: Platform.OS === 'ios' ? insets.bottom + 10 : (isKeyboardVisible ? 10 : 25) }
-        ]}>
+        <View style={[styles.inputBar, { paddingBottom: Platform.OS === 'ios' ? insets.bottom + 10 : (isKeyboardVisible ? 10 : 25) }]}>
           <TextInput
             style={styles.input}
             value={inputText}
@@ -163,31 +149,7 @@ const styles = StyleSheet.create({
   textLeft: { color: '#333' },
   textRight: { color: 'white' },
   time: { fontSize: 10, marginTop: 4, alignSelf: 'flex-end' },
-  inputBar: {
-    flexDirection: 'row',
-    padding: 10,
-    backgroundColor: 'white',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#eee'
-  },
-  input: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 20,
-    padding: 10,
-    paddingHorizontal: 16,
-    maxHeight: 100,
-    color: '#1F1F1F'
-  },
-  sendBtn: { 
-    marginLeft: 10, 
-    backgroundColor: '#3A5F50', 
-    padding: 10, 
-    borderRadius: 20,
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
+  inputBar: { flexDirection: 'row', padding: 10, backgroundColor: 'white', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#eee' },
+  input: { flex: 1, backgroundColor: '#f5f5f5', borderRadius: 20, padding: 10, paddingHorizontal: 16, maxHeight: 100, color: '#1F1F1F' },
+  sendBtn: { marginLeft: 10, backgroundColor: '#3A5F50', padding: 10, borderRadius: 20, width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
 });
