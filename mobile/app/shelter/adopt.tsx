@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  View, Text, ScrollView, Image, TouchableOpacity, Alert, 
-  ActivityIndicator, Dimensions, StyleSheet, Platform 
+  View, Text, ScrollView, Image, TouchableOpacity, 
+  ActivityIndicator, StyleSheet, Platform, Modal, TextInput 
 } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
@@ -13,7 +13,6 @@ import ConfirmModal from '../../components/ConfirmModal';
 
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://192.168.1.5:3000';
 
-// --- HELPERS ---
 const resolveBackendUrl = (path: string) => {
   if (!path) return null;
   if (path.startsWith('http')) return path;
@@ -35,9 +34,16 @@ export default function ShelterAdoptionDashboard() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  // --- STATE NOTIFIKASI & HELPER ---
+  // --- STATE NOTIFIKASI & MODAL ---
   const [popup, setPopup] = useState({ visible: false, title: '', message: '', type: 'success' as 'success' | 'error' });
-  const [confirm, setConfirm] = useState({ visible: false, id: 0, status: '' as 'approved' | 'rejected' });
+  const [confirm, setConfirm] = useState({ visible: false, id: 0, status: '' as 'approved' | 'rejected', catId: 0, catName: '' });
+  
+  // State untuk Alasan Penolakan
+  const [rejectionModalVisible, setRejectionModalVisible] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+  
+  // State untuk jumlah pelamar lain
+  const [otherApplicantsCount, setOtherApplicantsCount] = useState(0);
 
   const getStatusLabel = (status: string) => {
     const s = status?.toLowerCase();
@@ -57,23 +63,51 @@ export default function ShelterAdoptionDashboard() {
       const response = await apiClient.get('/adopt/my-reports');
       setReports(response.data);
     } catch (error) {
-      console.error(error);
       setPopup({ visible: true, title: 'Error', message: 'Gagal mengambil data laporan adopsi', type: 'error' });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerification = (id: number, status: 'approved' | 'rejected') => {
-    setConfirm({ visible: true, id, status });
+  const handleVerification = async (report: any, status: 'approved' | 'rejected') => {
+    console.log("Data Report yang diklik:", report); // Pastikan ada catId di sini
+    if (status === 'rejected') {
+      // Jika tolak, munculkan modal input alasan
+      setConfirm({ ...confirm, id: report.id, status: 'rejected' });
+      setRejectionReason('');
+      setRejectionModalVisible(true);
+    } else {
+      // Jika setuju, cek antrean pelamar lain dulu
+      try {
+        const res = await apiClient.get(`/adopt/count-others/${report.catId}/${report.id}`);
+        setOtherApplicantsCount(res.data.count);
+        setConfirm({ visible: true, id: report.id, status: 'approved', catId: report.catId, catName: report.catName });
+      } catch (e) {
+        setPopup({ visible: true, title: 'Error', message: 'Gagal mengecek data antrean.', type: 'error' });
+      }
+    }
   };
 
-  const processVerification = async () => {
+  const processVerification = async (reasonOverride?: string) => {
     const { id, status } = confirm;
     setConfirm({ ...confirm, visible: false });
+    setRejectionModalVisible(false);
+
+    const finalReason = reasonOverride || rejectionReason;
+
     try {
-      await apiClient.patch(`/adopt/verify/${id}`, { status });
-      setPopup({ visible: true, title: 'Berhasil', message: 'Status adopsi berhasil diperbarui.', type: 'success' });
+      await apiClient.patch(`/adopt/verify/${id}`, { 
+        status, 
+        reason: status === 'rejected' ? finalReason : null 
+      });
+      setPopup({ 
+        visible: true, 
+        title: 'Berhasil', 
+        message: status === 'approved' 
+          ? `Adopsi disetujui! ${otherApplicantsCount > 0 ? `${otherApplicantsCount} pelamar lain otomatis ditolak.` : ''}` 
+          : 'Pengajuan telah ditolak.', 
+        type: 'success' 
+      });
       fetchReports();
     } catch (error) {
       setPopup({ visible: true, title: 'Error', message: 'Gagal memproses verifikasi.', type: 'error' });
@@ -99,7 +133,6 @@ export default function ShelterAdoptionDashboard() {
     <Stack.Screen options={{ headerShown: false }} />
     <View style={styles.container}>
       
-      {/* HEADER (Gaya Dashboard.tsx) */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={24} color="#3A5F50" />
@@ -110,7 +143,6 @@ export default function ShelterAdoptionDashboard() {
         </View>
       </View>
 
-      {/* TABS (Gaya Dashboard.tsx) */}
       <View style={styles.tabContainer}>
           <TouchableOpacity 
               style={[styles.tabBtn, activeTab === 'pending' && styles.tabBtnActive]} 
@@ -133,7 +165,6 @@ export default function ShelterAdoptionDashboard() {
           </TouchableOpacity>
       </View>
 
-      {/* CONTENT */}
       <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 100 }}>
         {loading ? (
             <ActivityIndicator size="large" color="#EBCD5E" style={{ marginTop: 50 }} />
@@ -153,7 +184,6 @@ export default function ShelterAdoptionDashboard() {
                       { borderLeftColor: report.status === 'pending' ? '#EBCD5E' : report.status === 'approved' ? '#22c55e' : '#ef4444' }
                     ]}
                 >
-                    {/* Compact Header */}
                     <TouchableOpacity 
                         onPress={() => setExpandedId(expandedId === report.id ? null : report.id)}
                         style={styles.cardHeader}
@@ -183,7 +213,6 @@ export default function ShelterAdoptionDashboard() {
                         <FontAwesome name={expandedId === report.id ? 'chevron-up' : 'chevron-down'} size={14} color="#9ca3af" />
                     </TouchableOpacity>
 
-                    {/* Expandable Details (Isi Card Tetap) */}
                     {expandedId === report.id && (
                         <View style={styles.cardExpanded}>
                             <View style={styles.divider} />
@@ -211,17 +240,16 @@ export default function ShelterAdoptionDashboard() {
                                 )}
                             </View>
 
-                            {/* Action Buttons */}
                             {report.status === 'pending' && (
                                 <View style={styles.actionRow}>
                                     <TouchableOpacity 
-                                        onPress={() => handleVerification(report.id, 'rejected')}
+                                        onPress={() => handleVerification(report, 'rejected')}
                                         style={styles.rejectBtn}
                                     >
                                         <Text style={styles.rejectBtnText}>Tolak</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity 
-                                        onPress={() => handleVerification(report.id, 'approved')}
+                                        onPress={() => handleVerification(report, 'approved')}
                                         style={styles.approveBtn}
                                     >
                                         <Text style={styles.approveBtnText}>Setujui</Text>
@@ -234,15 +262,58 @@ export default function ShelterAdoptionDashboard() {
             ))
         )}
       </ScrollView>
+
+      {/* MODAL KONFIRMASI APPROVE / AUTO-REJECT */}
       <ConfirmModal
         visible={confirm.visible}
-        title="Konfirmasi"
-        message={`Apakah Anda yakin ingin ${confirm.status === 'approved' ? 'menyetujui' : 'menolak'} adopsi ini?`}
-        onConfirm={processVerification}
+        title="Konfirmasi Adopsi"
+        message={
+          otherApplicantsCount > 0 
+          ? `Kucing ${confirm.catName} juga diajukan oleh ${otherApplicantsCount} pelamar lain. Jika Anda menyetujui pelamar ini, pelamar lainnya akan OTOMATIS ditolak. Lanjutkan?`
+          : `Apakah Anda yakin ingin menyetujui pengajuan adopsi dari pelamar ini?`
+        }
+        onConfirm={() => processVerification()}
         onClose={() => setConfirm({ ...confirm, visible: false })}
-        type={confirm.status === 'approved' ? 'warning' : 'danger'}
-        confirmText="Ya, Proses"
+        type="warning"
+        confirmText="Ya, Setujui"
+        cancelText="Batal"
+        icon="checkmark-circle"
       />
+
+      {/* MODAL INPUT ALASAN PENOLAKAN */}
+      <Modal visible={rejectionModalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.reasonBox}>
+            <View style={styles.reasonHeader}>
+              <Text style={styles.reasonTitle}>Alasan Penolakan</Text>
+              <TouchableOpacity onPress={() => setRejectionModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#64748b" />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.reasonSub}>Berikan alasan yang jelas agar pelamar dapat memahami keputusan shelter.</Text>
+            <TextInput
+              style={styles.reasonInput}
+              placeholder="Contoh: Lokasi rumah terlalu jauh atau berkas tidak lengkap..."
+              multiline
+              numberOfLines={4}
+              value={rejectionReason}
+              onChangeText={setRejectionReason}
+              textAlignVertical="top"
+            />
+            <View style={styles.reasonActions}>
+              <TouchableOpacity 
+                style={styles.reasonSubmitBtn}
+                onPress={() => {
+                  if(!rejectionReason.trim()) return;
+                  processVerification();
+                }}
+              >
+                <Text style={styles.reasonSubmitText}>Kirim Penolakan</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <CustomPopup
         visible={popup.visible}
@@ -258,8 +329,6 @@ export default function ShelterAdoptionDashboard() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F3F4F6' },
-  
-  // Header Style (Dashboard.tsx)
   header: { 
     paddingTop: Platform.OS === 'android' ? 50 : 60, 
     paddingHorizontal: 20, 
@@ -274,8 +343,6 @@ const styles = StyleSheet.create({
   backBtn: { padding: 5 },
   headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#1f2937' },
   headerSubtitle: { fontSize: 13, color: '#6b7280' },
-  
-  // Tab Style (Dashboard.tsx)
   tabContainer: { 
     flexDirection: 'row', 
     padding: 15, 
@@ -292,15 +359,11 @@ const styles = StyleSheet.create({
   tabBtnActive: { backgroundColor: '#3A5F50' },
   tabText: { fontWeight: '600', color: '#666', fontSize: 13 },
   tabTextActive: { color: '#fff' },
-  
   countBadge: { backgroundColor: '#ef4444', borderRadius: 10, paddingHorizontal: 6, paddingVertical: 1 },
   countText: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
-
   content: { padding: 20 },
   emptyBox: { backgroundColor: '#fff', borderRadius: 20, padding: 40, alignItems: 'center', marginTop: 20, elevation: 2 },
   emptyText: { textAlign: 'center', marginTop: 10, color: '#9ca3af', fontStyle: 'italic' },
-
-  // Report Card (Gaya Card Tetap)
   reportCard: { 
     backgroundColor: '#fff', 
     borderRadius: 16, 
@@ -309,12 +372,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderLeftWidth: 4
   },
-  cardHeader: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    padding: 15 
-  },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15 },
   cardHeaderLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   adopterAvatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#f3f4f6' },
   statusRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
@@ -322,15 +380,12 @@ const styles = StyleSheet.create({
   statusPillText: { fontSize: 9, fontWeight: 'bold' },
   dateText: { fontSize: 11, color: '#9ca3af' },
   cardTitle: { fontSize: 14, color: '#1f2937' },
-
-  // Expanded Content (Isi Tetap)
   cardExpanded: { paddingHorizontal: 15, paddingBottom: 15 },
   divider: { height: 1, backgroundColor: '#f3f4f6', marginBottom: 12 },
   sectionTitle: { fontSize: 13, fontWeight: 'bold', color: '#111827', marginBottom: 8 },
   infoList: { gap: 4 },
   infoItem: { fontSize: 13, color: '#4b5563' },
   infoLabel: { fontWeight: '600', color: '#374151' },
-  
   docRow: { flexDirection: 'row', gap: 8, marginTop: 5 },
   docBtn: { 
     flexDirection: 'row', 
@@ -343,10 +398,20 @@ const styles = StyleSheet.create({
     gap: 6
   },
   docBtnText: { color: '#166534', fontSize: 11, fontWeight: 'bold' },
-
   actionRow: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 20, gap: 10 },
-  rejectBtn: { px: 20, paddingVertical: 8, paddingHorizontal: 24, borderRadius: 10, borderWidth: 1, borderColor: '#fecaca' },
+  rejectBtn: { paddingVertical: 8, paddingHorizontal: 24, borderRadius: 10, borderWidth: 1, borderColor: '#fecaca' },
   rejectBtnText: { color: '#dc2626', fontWeight: 'bold', fontSize: 13 },
   approveBtn: { paddingVertical: 8, paddingHorizontal: 24, borderRadius: 10, backgroundColor: '#3A5F50', elevation: 2 },
   approveBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
+
+  // Reason Modal Styles
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  reasonBox: { width: '100%', backgroundColor: '#fff', borderRadius: 25, padding: 20, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 },
+  reasonHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  reasonTitle: { fontSize: 18, fontWeight: 'bold', color: '#1e293b' },
+  reasonSub: { fontSize: 12, color: '#64748b', marginBottom: 15 },
+  reasonInput: { backgroundColor: '#f8fafc', borderRadius: 15, padding: 15, fontSize: 14, color: '#1e293b', borderWidth: 1, borderColor: '#e2e8f0', minHeight: 100 },
+  reasonActions: { marginTop: 20 },
+  reasonSubmitBtn: { backgroundColor: '#ef4444', paddingVertical: 14, borderRadius: 15, alignItems: 'center' },
+  reasonSubmitText: { color: '#fff', fontWeight: 'bold', fontSize: 14 }
 });

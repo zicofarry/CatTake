@@ -19,6 +19,7 @@ async function adoptRoutes(fastify, options) {
     fastify.get('/my-adoptions', { preHandler: [authentication] }, AdoptionController.getMyAdoptions);
     fastify.delete('/cancel/:id', { preHandler: [authentication] }, AdoptionController.cancelAdoption);
     fastify.get('/my-adoptions/:id', { preHandler: [authentication] }, AdoptionController.getMyAdoptionDetail);
+    fastify.get('/count-others/:cat_id/:adoption_id', { preHandler: [authentication] }, AdoptionController.countOthers);
 }
 
 module.exports = adoptRoutes;

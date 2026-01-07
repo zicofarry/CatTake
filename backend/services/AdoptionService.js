@@ -71,6 +71,7 @@ class AdoptionService {
         const query = `
             SELECT 
                 a.id, 
+                a.cat_id AS "catId",
                 a.status,
                 c.name AS "catName", 
                 to_char(a.applied_at, 'YYYY/MM/DD HH24:MI') AS date,
@@ -104,6 +105,7 @@ class AdoptionService {
         return result.rows.map(row => ({
             id: row.id,
             status: row.status,
+            catId: row.catId,
             catName: row.catName,
             date: row.date,
             adopter: {
@@ -124,73 +126,53 @@ class AdoptionService {
         }));
     }
 
-    static async verifyAdoption(adoptionId, status, shelterId) {
-        const client = await db.connect(); // Gunakan client untuk transaksi
+    static async verifyAdoption(adoptionId, status, shelterId, reason = null) {
+        const client = await db.connect();
         try {
             await client.query('BEGIN');
 
-            // 1. Cek Data & Ambil ID Pelamar (applicant_id) untuk logging
+            // 1. Cek Data & Ambil info cat_id
             const checkQuery = `
-                SELECT a.id, a.cat_id, a.applicant_id
+                SELECT a.id, a.cat_id, a.applicant_id, c.name as cat_name
                 FROM adoptions a
                 JOIN cats c ON a.cat_id = c.id
                 WHERE a.id = $1 AND c.shelter_id = $2
             `;
             const checkRes = await client.query(checkQuery, [adoptionId, shelterId]);
             
-            if (checkRes.rows.length === 0) {
-                throw new Error('Permintaan adopsi tidak ditemukan atau Anda tidak memiliki akses.');
-            }
-            
-            const { cat_id, applicant_id } = checkRes.rows[0];
+            if (checkRes.rows.length === 0) throw new Error('Data tidak ditemukan.');
+            const { cat_id, applicant_id, cat_name } = checkRes.rows[0];
 
-            // 2. Update Status di Tabel 'adoptions'
+            // 2. Update Status & Rejection Reason untuk user ini
             const updateAdoption = `
                 UPDATE adoptions 
-                SET status = $1, verified_at = NOW() 
-                WHERE id = $2
+                SET status = $1, rejection_reason = $2, verified_at = NOW(), updated_at = NOW()
+                WHERE id = $3
             `;
-            await client.query(updateAdoption, [status, adoptionId]);
+            await client.query(updateAdoption, [status, reason, adoptionId]);
 
-            // 3. Jika Approved, Update Status Kucing di Tabel 'cats' jadi 'adopted'
+            // 3. LOGIKA JIKA DI-APPROVE
             if (status === 'approved' || status === 'completed') {
-                const updateCat = `UPDATE cats SET adoption_status = 'adopted' WHERE id = $1`;
-                await client.query(updateCat, [cat_id]);
+                // Update status kucing jadi adopted
+                await client.query(`UPDATE cats SET adoption_status = 'adopted' WHERE id = $1`, [cat_id]);
                 
-                // --- NEW LOGIC: TRIGGER ADOPTION_COUNT ---
-                // Hanya hitung saat status berubah menjadi 'approved'
-                if (status === 'approved') { 
-                   GamificationService.updateProgress(applicant_id, 'ADOPTION_COUNT', 1).catch(err => console.error("Quest Update Error:", err));
-                }
-                // -----------------------------------------
-            }
-
-            // 4. [BARU] Masukkan Log ke Tabel 'verification_log'
-            // Kita mapping status adopsi ke status log yang valid (approved/rejected)
-            let logStatus = status;
-            if (status === 'completed') logStatus = 'approved'; 
-
-            // Pastikan hanya status valid yang masuk log (sesuai constraint check di DB)
-            if (['approved', 'rejected'].includes(logStatus)) {
-                const insertLogQuery = `
-                    INSERT INTO verification_log 
-                    (user_id, verifier_id, verification_type, status, notes, created_at)
-                    VALUES ($1, $2, 'Adoption_Application', $3, $4, NOW())
+                // AUTO-REJECT pelamar lain untuk kucing yang sama
+                const autoRejectMsg = `Maaf, kucing ${cat_name} sudah diadopsi oleh pelamar lain.`;
+                const autoRejectQuery = `
+                    UPDATE adoptions 
+                    SET status = 'rejected', rejection_reason = $1, verified_at = NOW(), updated_at = NOW()
+                    WHERE cat_id = $2 AND status = 'pending' AND id != $3
                 `;
-                
-                const notes = `Permintaan adopsi telah di-${status} oleh shelter.`;
-                
-                await client.query(insertLogQuery, [
-                    applicant_id, // User yang diverifikasi (Pelamar)
-                    shelterId,    // User yang memverifikasi (Shelter)
-                    logStatus,    // Status (approved/rejected)
-                    notes         // Catatan tambahan
-                ]);
+                await client.query(autoRejectQuery, [autoRejectMsg, cat_id, adoptionId]);
+
+                // Quest Progress
+                if (status === 'approved') {
+                    GamificationService.updateProgress(applicant_id, 'ADOPTION_COUNT', 1).catch(e => console.error(e));
+                }
             }
 
             await client.query('COMMIT');
-            return { message: `Adopsi berhasil di-${status}` };
-
+            return { message: `Berhasil memproses status: ${status}` };
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
@@ -202,13 +184,18 @@ class AdoptionService {
     static async getUserAdoptions(userId) {
         const query = `
             SELECT 
-                a.id, 
-                a.status, 
+                a.id, a.status, a.rejection_reason, 
                 to_char(a.applied_at, 'DD Mon YYYY') AS "appliedDate",
                 c.name AS "catName", 
                 c.photo AS "catImage",
                 s.shelter_name AS "shelterName",
-                dui.full_name AS "applicantName"
+                dui.full_name AS "applicantName",
+                dui.address AS "applicantAddress",
+                dui.nik AS "applicantNik",
+                dui.contact_phone AS "applicantPhone",
+                dui.job AS "applicantJob",
+                a.statement_letter_path AS "statementFile",
+                dui.ktp_file_path AS "identityFile"
             FROM adoptions a
             JOIN cats c ON a.cat_id = c.id
             JOIN detail_user_shelter s ON c.shelter_id = s.id
@@ -252,6 +239,16 @@ class AdoptionService {
         `;
         const result = await db.query(query, [adoptionId, userId]);
         return result.rows[0];
+    }
+
+    static async getOtherApplicantsCount(adoptionId, catId) {
+        const query = `
+            SELECT COUNT(*) 
+            FROM adoptions 
+            WHERE cat_id = $1 AND status = 'pending' AND id != $2
+        `;
+        const res = await db.query(query, [catId, adoptionId]);
+        return parseInt(res.rows[0].count);
     }
 }
 

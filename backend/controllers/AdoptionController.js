@@ -153,6 +153,17 @@ class AdoptionController {
             return reply.code(500).send({ error: error.message });
         }
     }
+
+    // GET /api/v1/adopt/count-others/:cat_id/:adoption_id
+    static async countOthers(req, reply) {
+        try {
+            const { cat_id, adoption_id } = req.params;
+            const count = await AdoptionService.getOtherApplicantsCount(adoption_id, cat_id);
+            return reply.send({ count });
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
 }
 
 module.exports = AdoptionController;
