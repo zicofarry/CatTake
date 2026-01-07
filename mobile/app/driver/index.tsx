@@ -8,7 +8,8 @@ import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
-import CustomPopup from '../../components/CustomPopup'; 
+import CustomPopup from '../../components/CustomPopup';
+import ConfirmModal from '@/components/ConfirmModal';
 
 const SERVER_URL = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://localhost:3000';
 
@@ -133,7 +134,7 @@ export default function DriverPage() {
           <>
             <View className="mb-8">
               <Text className="text-4xl font-black text-[#3E3E3E] tracking-tighter">
-                {activeTab === 'proses' ? 'Tugas Aktif 🚚' : 'Riwayat Tugas ✅'}
+                {activeTab === 'proses' ? 'Tugas Aktif' : 'Riwayat Tugas'}
               </Text>
               <Text className="text-lg text-gray-500 font-medium">Pantau penyelamatanmu di sini.</Text>
             </View>
@@ -201,7 +202,10 @@ export default function DriverPage() {
                 </View>
 
                 <View className="bg-white p-6 rounded-[40px] shadow-sm border border-gray-50 gap-y-5" style={{ elevation: 4 }}>
-                  <Text className="text-base font-black text-[#3E3E3E] mb-1">📋 Informasi Pribadi</Text>
+                  <View className="flex-row items-center gap-2 mb-2">
+                    <Ionicons name="person-circle" size={22} color="black" />
+                    <Text className="text-lg font-bold text-[black]">Informasi Pribadi</Text>
+                  </View>
                   
                   <ProfileDisplay label="Shelter Asal" value={user.shelter_name} />
                   <ProfileDisplay label="Nama Lengkap" value={user.full_name || user.name} />
@@ -241,27 +245,20 @@ export default function DriverPage() {
       </View>
 
       {/* MODAL KONFIRMASI LOGOUT */}
-      <Modal animationType="fade" transparent={true} visible={logoutModalVisible} onRequestClose={() => setLogoutModalVisible(false)}>
-        <View className="flex-1 bg-black/60 justify-center items-center">
-          <View className="w-[85%] bg-white rounded-[30px] px-6 pb-6 pt-12 items-center shadow-xl relative">
-            <View className="w-20 h-20 rounded-full justify-center items-center absolute -top-10 border-4 border-white bg-red-500">
-              <Ionicons name="log-out" size={30} color="white" />
-            </View>
-            <View className="items-center mb-8">
-              <Text className="text-2xl font-bold text-slate-800 mb-2 text-center">Keluar Akun</Text>
-              <Text className="text-base text-slate-500 text-center leading-5">Yakin ingin keluar dari akun anda?</Text>
-            </View>
-            <View className="flex-row gap-x-3 w-full">
-              <TouchableOpacity onPress={() => setLogoutModalVisible(false)} className="flex-1 py-4 rounded-2xl items-center bg-gray-100">
-                <Text className="text-gray-500 font-bold text-lg">Batal</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={confirmLogout} className="flex-1 py-4 rounded-2xl items-center bg-red-500">
-                <Text className="text-white font-bold text-lg">Keluar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        <ConfirmModal
+          visible={logoutModalVisible}
+          onClose={() => setLogoutModalVisible(false)}
+          onConfirm={() => {
+            setLogoutModalVisible(false);
+            router.replace('/(auth)/login');
+          }}
+          title="Keluar Akun"
+          message="Yakin ingin keluar dari akun Anda?"
+          confirmText="Keluar"
+          cancelText="Batal"
+          type="danger"
+          icon="log-out-outline"
+        />
 
       {/* MODAL ALERT SUKSES/ERROR */}
       <CustomPopup visible={modalVisible} onClose={() => setModalVisible(false)} title={modalTitle} message={modalMessage} type={modalType} />
@@ -279,7 +276,7 @@ const ProfileDisplay = ({ label, value }: { label: string, value: string }) => (
 
 const TabItem = ({ label, icon, active, onPress }: any) => (
   <TouchableOpacity onPress={onPress} className="items-center justify-center w-1/3">
-    <View className={`p-2 rounded-2xl ${active ? 'bg-orange-50' : ''}`}><Ionicons name={icon} size={24} color={active ? '#FF862F' : '#D1D5DB'} /></View>
+    <View className={`p-2 rounded-2xl`}><Ionicons name={icon} size={24} color={active ? '#FF862F' : '#D1D5DB'} /></View>
     <Text className={`text-[10px] mt-1 ${active ? 'text-[#FF862F] font-black' : 'text-gray-400 font-bold'}`}>{label}</Text>
   </TouchableOpacity>
 );
