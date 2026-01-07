@@ -38,6 +38,9 @@ export default function PostDetailScreen() {
   const [replyingTo, setReplyingTo] = useState<any>(null);
   const [editingComment, setEditingComment] = useState<any>(null);
 
+  // State untuk melacak komentar mana yang sedang di-expand balasannya
+  const [expandedComments, setExpandedComments] = useState<number[]>([]);
+
   // States untuk Menu & Edit (Post & Komentar)
   const [isEditingPost, setIsEditingPost] = useState(false);
   const [editPostTitle, setEditPostTitle] = useState('');
@@ -107,22 +110,37 @@ export default function PostDetailScreen() {
   // --- 3. LOGIKA KOMENTAR REKURSIF (Flatten Tree) ---
   const getOrganizedComments = () => {
     const list: any[] = [];
-    const flatten = (items: any[], currentDepth: number, parentName: string | null, isReply: boolean) => {
+    // Menambahkan rootId untuk melacak siapa orang tua asli dari sebuah thread balasan
+    const flatten = (items: any[], currentDepth: number, parentName: string | null, isReply: boolean, rootId: number | null) => {
       items.forEach(item => {
         const isDeep = currentDepth >= 1;
+        const currentRootId = currentDepth === 0 ? item.id : rootId;
+
         list.push({
           ...item,
           depth: isDeep ? 1 : currentDepth,
           mention: isDeep ? parentName : null,
-          isReply: isReply
+          isReply: isReply,
+          rootId: currentRootId,
+          hasReplies: item.replies && item.replies.length > 0,
+          totalReplies: item.replies ? item.replies.length : 0
         });
+
         if (item.replies && item.replies.length > 0) {
-          flatten(item.replies, currentDepth + 1, item.user, true);
+          flatten(item.replies, currentDepth + 1, item.user, true, currentRootId);
         }
       });
     };
-    flatten(comments, 0, null, false);
+    flatten(comments, 0, null, false, null);
     return list;
+  };
+
+  const toggleExpand = (commentId: number) => {
+    setExpandedComments(prev =>
+      prev.includes(commentId)
+        ? prev.filter(id => id !== commentId)
+        : [...prev, commentId]
+    );
   };
 
   // --- 4. AKSI POSTINGAN ---
@@ -162,6 +180,10 @@ export default function PostDetailScreen() {
             content: newComment,
             parentReplyId: replyingTo.isReply ? replyingTo.id : null
           });
+          // Otomatis expand setelah membalas agar komentar baru terlihat
+          if (!expandedComments.includes(rootCommentId)) {
+            toggleExpand(rootCommentId);
+          }
         } else {
           await apiClient.post(`/community/posts/${id}/comments`, { content: newComment });
         }
@@ -232,38 +254,68 @@ export default function PostDetailScreen() {
               <View style={styles.commentSection}>
                 <Text style={styles.commentTitle}><FontAwesome5 name="comments" size={18} /> Komentar ({post.comments})</Text>
 
-                {getOrganizedComments().map((comment) => (
-                  <View key={`${comment.isReply ? 'r' : 'c'}-${comment.id}`} style={[styles.commentItem, { marginLeft: comment.depth * 25 }]}>
-                    <Image source={{ uri: resolveImageUrl(comment.profileImg) }} style={[styles.commentAvatar, comment.depth > 0 && { width: 32, height: 32 }]} />
-                    <View style={styles.commentContent}>
-                      <View style={styles.commentHeader}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.commentAuthor} numberOfLines={1}>{comment.user}</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                          <Text style={styles.commentTime}>{comment.time}</Text>
-                          {/* TITIK TIGA KOMENTAR */}
-                          {(currentUserId === Number(comment.userId) || (currentUser && Number(comment.userId) === Number(currentUser.id))) && (
-                            <TouchableOpacity onPress={() => setCommentMenuVisible({ visible: true, comment })}>
-                              <Ionicons name="ellipsis-horizontal" size={16} color="#94a3b8" />
+                {getOrganizedComments().map((comment) => {
+                  const isExpanded = expandedComments.includes(comment.rootId);
+
+                  // LOGIKA DROPDOWN: Jika ini balasan dan orang tuanya (root) belum di-expand, jangan tampilkan
+                  if (comment.depth > 0 && !isExpanded) return null;
+
+                  return (
+                    <View key={`${comment.isReply ? 'r' : 'c'}-${comment.id}`} style={styles.commentWrapper}>
+                      {/* Garis Vertikal untuk Balasan */}
+                      {comment.depth > 0 && (
+                        <View style={[styles.verticalLine, { left: (comment.depth * 20) - 18 }]} />
+                      )}
+
+                      <View style={[styles.commentItem, { marginLeft: comment.depth * 20 }]}>
+                        <Image source={{ uri: resolveImageUrl(comment.profileImg) }} style={[styles.commentAvatar, comment.depth > 0 && { width: 32, height: 32 }]} />
+                        <View style={styles.commentContent}>
+                          <View style={styles.commentHeader}>
+                            <View style={{ flex: 1 }}>
+                              <Text style={styles.commentAuthor} numberOfLines={1}>{comment.user}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                              <Text style={styles.commentTime}>{comment.time}</Text>
+                              {(currentUserId === Number(comment.userId) || (currentUser && Number(comment.userId) === Number(currentUser.id))) && (
+                                <TouchableOpacity onPress={() => setCommentMenuVisible({ visible: true, comment })}>
+                                  <Ionicons name="ellipsis-horizontal" size={16} color="#94a3b8" />
+                                </TouchableOpacity>
+                              )}
+                            </View>
+                          </View>
+
+                          <Text style={styles.commentText}>
+                            {comment.mention && <Text style={{ color: '#78C89F', fontWeight: 'bold' }}>@{comment.mention} </Text>}
+                            {comment.text}
+                          </Text>
+
+                          <View style={styles.commentActions}>
+                            <TouchableOpacity onPress={() => { setReplyingTo(comment); setEditingComment(null); setNewComment(''); focusInput(); }}>
+                              <Text style={styles.actionLink}>Balas</Text>
                             </TouchableOpacity>
-                          )}
+                          </View>
                         </View>
                       </View>
 
-                      <Text style={styles.commentText}>
-                        {comment.mention && <Text style={{ color: '#78C89F', fontWeight: 'bold' }}>@{comment.mention} </Text>}
-                        {comment.text}
-                      </Text>
-
-                      <View style={styles.commentActions}>
-                        <TouchableOpacity onPress={() => { setReplyingTo(comment); setEditingComment(null); setNewComment(''); focusInput(); }}>
-                          <Text style={styles.actionLink}>Balas</Text>
+                      {/* Tombol Toggle Balasan (Hanya muncul di komentar utama yang punya balasan) */}
+                      {comment.depth === 0 && comment.hasReplies && (
+                        <TouchableOpacity
+                          style={[styles.expandButton, { marginLeft: 20 }]}
+                          onPress={() => toggleExpand(comment.id)}
+                        >
+                          <Ionicons
+                            name={isExpanded ? "chevron-up" : "chevron-down"}
+                            size={16}
+                            color="#78C89F"
+                          />
+                          <Text style={styles.expandButtonText}>
+                            {isExpanded ? 'Sembunyikan balasan' : `Lihat balasan`}
+                          </Text>
                         </TouchableOpacity>
-                      </View>
+                      )}
                     </View>
-                  </View>
-                ))}
+                  );
+                })}
                 {comments.length === 0 && <Text style={styles.noComments}>Belum ada komentar.</Text>}
               </View>
             </>
@@ -311,7 +363,7 @@ export default function PostDetailScreen() {
       <Modal visible={commentMenuVisible.visible} transparent animationType="fade">
         <TouchableOpacity style={styles.menuOverlay} activeOpacity={1} onPress={() => setCommentMenuVisible({ visible: false, comment: null })}>
           <View style={styles.menuBox}>
-            <TouchableOpacity style={styles.menuItem} onPress={() => { 
+            <TouchableOpacity style={styles.menuItem} onPress={() => {
                 const c = commentMenuVisible.comment;
                 setCommentMenuVisible({ visible: false, comment: null });
                 setEditingComment(c);
@@ -322,7 +374,7 @@ export default function PostDetailScreen() {
               <Ionicons name="create-outline" size={20} color="#334155" />
               <Text style={styles.menuText}>Edit Komentar</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => { 
+            <TouchableOpacity style={styles.menuItem} onPress={() => {
                 setTargetDelete(commentMenuVisible.comment);
                 setCommentMenuVisible({ visible: false, comment: null });
                 setConfirmVisible(true);
@@ -383,7 +435,32 @@ const styles = StyleSheet.create({
   stickyInputBar: { backgroundColor: '#fff', padding: 16, borderTopWidth: 1, borderTopColor: '#e2e8f0', elevation: 20 },
   commentSection: { backgroundColor: '#fff', borderRadius: 16, padding: 20 },
   commentTitle: { fontSize: 18, fontWeight: 'bold', color: '#2c473c', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', paddingBottom: 10 },
-  commentItem: { flexDirection: 'row', marginBottom: 18, gap: 10 },
+
+  commentWrapper: { position: 'relative' },
+  verticalLine: {
+    position: 'absolute',
+    top: 0,
+    bottom: 25, // Dihentikan sedikit sebelum bawah agar tidak menyentuh item selanjutnya
+    width: 2,
+    backgroundColor: '#cbd5e1',
+    borderRadius: 1
+  },
+
+  commentItem: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    gap: 10,
+    backgroundColor: '#f8fafc',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
   commentAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#f1f5f9' },
   commentContent: { flex: 1 },
   commentHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
@@ -392,6 +469,21 @@ const styles = StyleSheet.create({
   commentText: { color: '#475569', fontSize: 14, lineHeight: 20 },
   commentActions: { flexDirection: 'row', gap: 15, marginTop: 6 },
   actionLink: { fontSize: 12, fontWeight: 'bold', color: '#64748b' },
+
+  // Gaya untuk tombol Lihat Balasan
+  expandButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 16,
+    paddingVertical: 4
+  },
+  expandButtonText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#78C89F'
+  },
+
   noComments: { textAlign: 'center', color: '#94a3b8', fontStyle: 'italic', padding: 20 },
   contextBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f1f5f9', marginBottom: 8 },
   contextText: { fontSize: 12, color: '#78C89F', fontStyle: 'italic', fontWeight: '600' },
