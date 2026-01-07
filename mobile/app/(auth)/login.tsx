@@ -6,7 +6,6 @@ import {
   TextInput, 
   TouchableOpacity, 
   Image, 
-  StyleSheet, 
   ScrollView, 
   ActivityIndicator,
   StatusBar
@@ -19,26 +18,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import CustomPopup from '../../components/CustomPopup'; 
 
-// Import apiClient dan API_BASE_URL dari file config kamu
+// Import apiClient dan API_BASE_URL
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
-  // State untuk Focus Input
+  // PEMISAHAN LOADING STATE (Solusi Bug Loading)
+  const [isManualLoading, setIsManualLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
   const [focusUser, setFocusUser] = useState(false);
   const [focusPass, setFocusPass] = useState(false);
 
-  // State untuk Modal Popup
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<'success' | 'error'>('success');
   const [modalTitle, setModalTitle] = useState('');
   const [modalMessage, setModalMessage] = useState('');
 
-  // Konfigurasi Google Sign-In saat komponen pertama kali muncul
   useEffect(() => {
     GoogleSignin.configure({
       webClientId: '845303611060-f0660l7kgva0k0f610mag698b9a9b86u.apps.googleusercontent.com', 
@@ -59,7 +58,7 @@ export default function LoginScreen() {
       const role = await AsyncStorage.getItem('userRole');
       if (role === 'driver') {
         router.replace('/driver');
-      }else if (role === 'shelter') {
+      } else if (role === 'shelter') {
         router.replace('/(tabs)');
       } else {
         router.replace('/(tabs)');
@@ -68,51 +67,31 @@ export default function LoginScreen() {
   };
 
   const handleGoogleLogin = async () => {
-    setIsLoading(true);
+    setIsGoogleLoading(true);
     try {
       await GoogleSignin.hasPlayServices();
-
-      // biar sso nya hilang yang google
-      try {
-        await GoogleSignin.signOut();
-      } catch (e) {
-        // Abaikan jika user memang belum pernah login ke Google sebelumnya
-      }
+      try { await GoogleSignin.signOut(); } catch (e) {}
       const response = await GoogleSignin.signIn();
-      
-      // Ambil idToken
       const idToken = response.data?.idToken;
 
-      if (!idToken) {
-        throw new Error("Gagal mendapatkan Token dari Google");
-      }
+      if (!idToken) throw new Error("Gagal mendapatkan Token dari Google");
 
-      // Kirim ke backend (endpoint /auth/google sesuai diskusi sebelumnya)
       const result = await apiClient.post('/auth/google', { token: idToken });
-      
       const resData = result.data.data;
 
-      // Simpan session yang sama dengan login manual
       if (resData && resData.token) {
         await AsyncStorage.setItem('userToken', resData.token);
         await AsyncStorage.setItem('userRole', String(resData.role || 'user'));
         await AsyncStorage.setItem('userId', String(resData.id || ''));
         await AsyncStorage.setItem('username', String(resData.username || resData.name));
-        
         showModal('success', 'Berhasil Masuk!', 'Selamat datang di CatTake melalui Google.');
       }
-
     } catch (error: any) {
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log("User membatalkan login");
-      } else if (error.code === statusCodes.IN_PROGRESS) {
-        console.log("Proses login sedang berjalan");
-      } else {
-        console.error("Gagal Login Google:", error);
-        showModal('error', 'Login Google Gagal', error.response?.data?.error || 'Terjadi kesalahan saat verifikasi ke server.');
+      if (error.code !== statusCodes.SIGN_IN_CANCELLED) {
+        showModal('error', 'Login Google Gagal', error.response?.data?.error || 'Terjadi kesalahan.');
       }
     } finally {
-      setIsLoading(false);
+      setIsGoogleLoading(false);
     }
   };
 
@@ -121,15 +100,9 @@ export default function LoginScreen() {
       showModal('error', 'Perhatian', 'Mohon isi Email/Username dan Password.');
       return;
     }
-
-    setIsLoading(true);
-
+    setIsManualLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        identifier, 
-        password,
-      });
-
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, { identifier, password });
       const resData = response.data.data; 
 
       if (resData && resData.token) {
@@ -137,105 +110,74 @@ export default function LoginScreen() {
         await AsyncStorage.setItem('userRole', String(resData.role || 'user'));
         await AsyncStorage.setItem('userId', String(resData.id || ''));
         await AsyncStorage.setItem('username', String(resData.username || identifier));
-        
         showModal('success', 'Berhasil Masuk!', 'Selamat datang kembali di CatTake.');
       } else {
-        showModal('error', 'Login Gagal', 'Data user tidak ditemukan dalam respon server.');
+        showModal('error', 'Login Gagal', 'Data tidak ditemukan.');
       }
-      
     } catch (error: any) {
-      let errorMessage = 'Login gagal. Cek kredensial atau server.';
-      if (error.response) {
-        errorMessage = error.response.data?.error || errorMessage;
-      } else if (error.request) {
-        errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
-      }
-      showModal('error', 'Login Gagal', errorMessage);
+      showModal('error', 'Login Gagal', error.response?.data?.error || 'Login gagal.');
     } finally {
-      setIsLoading(false);
+      setIsManualLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-[#f3f4f6]">
       <StatusBar barStyle="light-content" />
       
       {/* Background Gradient */}
-      <View style={styles.headerContainer}>
+      <View className="absolute top-0 left-0 right-0 h-[65%] z-0">
         <LinearGradient
           colors={['#3A5F50', '#578d76']}
           start={{ x: 0, y: 1 }}
           end={{ x: 1, y: 0 }}
-          style={styles.gradientHeader}
+          className="flex-1 justify-end"
         >
-           <Svg
-            height={120}
-            width="100%"
-            viewBox="0 0 1440 320"
-            style={styles.svgCurve}
-            preserveAspectRatio="none"
-          >
-            <Path
-              fill="#f3f4f6"
-              d="M0,160L48,170.7C96,181,192,203,288,213.3C384,224,480,224,576,197.3C672,171,768,117,864,112C960,107,1056,149,1152,165.3C1248,181,1344,171,1392,165.3L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-            />
+           <Svg height={120} width="100%" viewBox="0 0 1440 320" className="mb-[-1px]" preserveAspectRatio="none">
+            <Path fill="#f3f4f6" d="M0,160L48,170.7C96,181,192,203,288,213.3C384,224,480,224,576,197.3C672,171,768,117,864,112C960,107,1056,149,1152,165.3C1248,181,1344,171,1392,165.3L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" />
           </Svg>
         </LinearGradient>
       </View>
 
-      {/* Logo */}
-      <View style={styles.fixedLogoContainer}>
+      {/* 1. PERBAIKAN LOGO: Pakai style langsung biar pasti BUAT (60 = setengah dari 120) */}
+      <View className="absolute top-[50px] left-0 right-0 items-center z-10">
         <Image 
           source={require('../../assets/images/catTakePutih.png')} 
-          style={styles.logo}
+          style={{ width: 120, height: 120, borderRadius: 60 }} 
           resizeMode="contain"
         />
       </View>
 
-      {/* Main Content */}
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent} 
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.card}>
-          <Text style={styles.title}>Login</Text>
-          <Text style={styles.subtitle}>Please enter your details</Text>
+      <ScrollView className="flex-1" contentContainerStyle={{ alignItems: 'center', paddingTop: 200, paddingBottom: 40, paddingHorizontal: 20 }} showsVerticalScrollIndicator={false}>
+        <View className="bg-white w-full max-w-[420px] rounded-[30px] p-[32px] shadow-2xl items-center" style={{ elevation: 8, shadowColor: '#000' }}>
+          <Text className="text-[28px] font-bold text-[#1F1F1F] mb-[8px]">Login</Text>
+          <Text className="text-[14px] text-[#9CA3AF] mb-[32px]">Please enter your details</Text>
 
-          <View style={styles.formContainer}>
-            
+          <View className="w-full gap-[20px]">
             {/* Input Username */}
-            <View style={styles.inputGroup}>
-              <View style={styles.inputIcon}>
-                <FontAwesome 
-                    name="user" 
-                    size={18} 
-                    color={focusUser ? '#EBCD5E' : '#9CA3AF'} 
-                />
+            <View className="relative justify-center">
+              <View className="absolute left-[16px] z-10">
+                <FontAwesome name="user" size={18} color={focusUser ? '#EBCD5E' : '#9CA3AF'} />
               </View>
               <TextInput
-                style={[styles.input, focusUser && styles.inputFocused]}
+                className={`bg-[#F9FAFB] border-2 rounded-[12px] py-[14px] px-[16px] pl-[44px] text-[14px] text-[#374151] font-[500] ${focusUser ? 'border-[#EBCD5E]' : 'border-transparent'}`}
                 placeholder="Username"
                 placeholderTextColor="#9CA3AF"
                 value={identifier}
                 onChangeText={setIdentifier}
-                autoCapitalize="none"
                 onFocus={() => setFocusUser(true)}
                 onBlur={() => setFocusUser(false)}
+                editable={!isManualLoading && !isGoogleLoading}
               />
             </View>
 
             {/* Input Password */}
-            <View style={styles.inputGroup}>
-              <View style={styles.inputIcon}>
-                <FontAwesome 
-                    name="lock" 
-                    size={18} 
-                    color={focusPass ? '#EBCD5E' : '#9CA3AF'} 
-                />
+            <View className="relative justify-center">
+              <View className="absolute left-[16px] z-10">
+                <FontAwesome name="lock" size={18} color={focusPass ? '#EBCD5E' : '#9CA3AF'} />
               </View>
               <TextInput
-                style={[styles.input, focusPass && styles.inputFocused]}
+                className={`bg-[#F9FAFB] border-2 rounded-[12px] py-[14px] px-[16px] pl-[44px] text-[14px] text-[#374151] font-[500] ${focusPass ? 'border-[#EBCD5E]' : 'border-transparent'}`}
                 placeholder="Password"
                 placeholderTextColor="#9CA3AF"
                 secureTextEntry
@@ -243,233 +185,62 @@ export default function LoginScreen() {
                 onChangeText={setPassword}
                 onFocus={() => setFocusPass(true)}
                 onBlur={() => setFocusPass(false)}
+                editable={!isManualLoading && !isGoogleLoading}
               />
             </View>
             
-            <TouchableOpacity onPress={handleLogin} activeOpacity={0.8} style={styles.buttonWrapper}>
-              <LinearGradient
-                colors={['#FBC02D', '#E0C048']}
-                style={styles.mainButton}
+            {/* 2. PERBAIKAN TOMBOL: Gunakan borderRadius: 9999 di style untuk meyakinkan NativeWind */}
+            <TouchableOpacity 
+              onPress={handleLogin} 
+              activeOpacity={0.8} 
+              disabled={isManualLoading || isGoogleLoading}
+              className={`mt-[16px] self-center shadow-lg ${(isManualLoading || isGoogleLoading) ? 'opacity-50' : ''}`}
+              style={{ borderRadius: 9999, elevation: 5, shadowColor: '#EBCD5E' }}
+            >
+              <LinearGradient 
+                colors={['#FBC02D', '#E0C048']} 
+                style={{ borderRadius: 9999, width: 160, paddingVertical: 12, alignItems: 'center', justifyContent: 'center' }}
               >
-                {isLoading ? (
+                {isManualLoading ? (
                   <ActivityIndicator color="#1F1F1F" />
                 ) : (
-                  <Text style={styles.buttonText}>Login</Text>
+                  <Text className="text-[#111827] font-bold text-[16px]">Login</Text>
                 )}
               </LinearGradient>
             </TouchableOpacity>
           </View>
             
-          <View style={styles.divider}>
-            <View style={styles.line} />
-            <Text style={styles.orText}>or</Text>
-            <View style={styles.line} />
+          <View className="flex-row items-center w-full my-[24px] gap-[12px]">
+            <View className="flex-1 h-[1px] bg-[#E5E7EB]" />
+            <Text className="text-[#9CA3AF] text-[14px] font-[500]">or</Text>
+            <View className="flex-1 h-[1px] bg-[#E5E7EB]" />
           </View>
             
-          {/* TOMBOL GOOGLE SUDAH TERSAMBUNG */}
           <TouchableOpacity 
-            style={styles.googleButton} 
+            className={`flex-row items-center justify-center w-full bg-white border border-[#E5E7EB] py-[12px] rounded-[12px] gap-[12px] ${(isManualLoading || isGoogleLoading) ? 'opacity-50' : ''}`}
             onPress={handleGoogleLogin}
-            disabled={isLoading}
+            disabled={isManualLoading || isGoogleLoading}
           >
-            {isLoading ? (
+            {isGoogleLoading ? (
                 <ActivityIndicator color="#4B5563" />
             ) : (
               <>
-                <Image 
-                  source={{ uri: 'https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png' }} 
-                  style={styles.googleIcon} 
-                />
-                <Text style={styles.googleText}>Sign In with Google</Text>
+                <Image source={{ uri: 'https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png' }} className="w-[20px] h-[20px]" />
+                <Text className="text-[#4B5563] text-[14px] font-[600]">Sign In with Google</Text>
               </>
             )}
           </TouchableOpacity>
             
-          <View style={styles.footerContainer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => router.push('/signup')}>
-                <Text style={styles.linkText}>Sign Up</Text>
+          <View className="mt-[32px] flex-row">
+            <Text className="text-[14px] text-[#6B7280]">Don't have an account? </Text>
+            <TouchableOpacity onPress={() => router.push('/signup')} disabled={isManualLoading || isGoogleLoading}>
+                <Text className="text-[14px] text-[#E0C048] font-bold">Sign Up</Text>
             </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
 
-      {/* Modal Popup Custom */}
-      <CustomPopup
-        visible={modalVisible}
-        onClose={handleModalClose}
-        title={modalTitle}
-        message={modalMessage}
-        type={modalType}
-      />
+      <CustomPopup visible={modalVisible} onClose={handleModalClose} title={modalTitle} message={modalMessage} type={modalType} />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f3f4f6', 
-  },
-  headerContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '65%', 
-    zIndex: 0, 
-  },
-  gradientHeader: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  svgCurve: {
-    marginBottom: -1,
-  },
-  fixedLogoContainer: {
-    position: 'absolute',
-    top: 50, 
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  logo: {
-    width: 120, 
-    height: 120,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    alignItems: 'center',
-    paddingTop: 200, 
-    paddingBottom: 40,
-    paddingHorizontal: 20,
-  },
-  card: {
-    backgroundColor: 'white',
-    width: '100%',
-    maxWidth: 420,
-    borderRadius: 30,
-    padding: 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 8,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1F1F1F',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    marginBottom: 32,
-  },
-  formContainer: {
-    width: '100%',
-    gap: 20,
-  },
-  inputGroup: {
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  inputIcon: {
-    position: 'absolute',
-    left: 16,
-    zIndex: 1,
-  },
-  input: {
-    backgroundColor: '#F9FAFB',
-    borderWidth: 2, 
-    borderColor: 'transparent',
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    paddingLeft: 44,
-    fontSize: 14,
-    color: '#374151',
-    fontWeight: '500',
-  },
-  inputFocused: {
-    borderColor: '#EBCD5E',
-  },
-  buttonWrapper: {
-    marginTop: 16,
-    alignSelf: 'center',
-    shadowColor: '#EBCD5E',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 14,
-    elevation: 5,
-    borderRadius: 9999,
-  },
-  mainButton: {
-    width: 160,
-    paddingVertical: 12,
-    borderRadius: 9999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    color: '#111827',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    marginVertical: 24,
-    gap: 12,
-  },
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E5E7EB',
-  },
-  orText: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  googleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    paddingVertical: 12,
-    borderRadius: 12,
-    gap: 12,
-  },
-  googleIcon: {
-    width: 20,
-    height: 20,
-  },
-  googleText: {
-    color: '#4B5563',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  footerContainer: {
-    marginTop: 32,
-    flexDirection: 'row',
-  },
-  footerText: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  linkText: {
-    fontSize: 14,
-    color: '#E0C048',
-    fontWeight: 'bold',
-  },
-});
