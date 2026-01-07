@@ -65,7 +65,7 @@ export default function HistoryScreen() {
     if (s === 'failed' || s === 'cancelled') return 'GAGAL';
     if (s === 'assigned') return 'DITUGASKAN';
     if (s === 'in_transit') return 'DIJEMPUT';
-    return status?.toUpperCase() || 'BERHASIL';
+    return status ? status.toUpperCase().replace('_', ' ') : 'MENUNGGU';
   };
 
   const fetchHistory = async () => {
@@ -97,11 +97,12 @@ export default function HistoryScreen() {
           dateObj: parseCustomDate(a.appliedDate) 
         })),
         
-        // 3. Pemetaan Riwayat Laporan (Rescue)
         ...(rescues.data || []).map((r: any) => ({ 
           ...r, 
           type: 'rescue', 
           title: `Laporan ${r.report_type === 'stray' ? 'Kucing Liar' : 'Kucing Hilang'}`,
+          // INI KUNCINYA: Ambil status penugasan driver, kalau gak ada baru ambil status laporan
+          status: r.assignment_status || r.status || 'pending', 
           dateObj: new Date(r.created_at) 
         }))
       ];
@@ -130,7 +131,7 @@ export default function HistoryScreen() {
     const status = item.status?.toLowerCase();
     const isSuccess = ['approved', 'verified', 'completed'].includes(status);
     const isRejected = ['rejected', 'failed', 'cancelled'].includes(status);
-
+    const isProcess = ['assigned', 'in_transit'].includes(status); // Tambahkan kondisi proses (Biru)
     return (
       <View style={styles.donationCard}>
         <View style={styles.cardTopRow}>
@@ -143,11 +144,15 @@ export default function HistoryScreen() {
           </Text>
           <View style={[
             styles.statusBadge, 
-            isSuccess ? styles.bgSuccess : isRejected ? styles.bgRejected : styles.bgPending
+            isSuccess ? styles.bgSuccess : 
+            isRejected ? styles.bgRejected : 
+            isProcess ? { backgroundColor: '#DBEAFE' } : styles.bgPending // Jadi Biru kalau diproses
           ]}>
             <Text style={[
               styles.statusText, 
-              isSuccess ? styles.textSuccess : isRejected ? styles.textRejected : styles.textPending
+              isSuccess ? styles.textSuccess : 
+              isRejected ? styles.textRejected : 
+              isProcess ? { color: '#1E40AF' } : styles.textPending // Teks Biru kalau diproses
             ]}>
               {getStatusLabel(item.status)}
             </Text>
