@@ -358,6 +358,20 @@ class RescueService {
         return true;
     }
 
+    static async clearChatMessages(trackingId) {
+        // 1. Cari dulu ID assignment-nya (karena tabel chat pakai ID integer)
+        const findQuery = `SELECT id FROM rescue_assignments WHERE tracking_id = $1 OR CAST(id AS TEXT) = $1`;
+        const findRes = await db.query(findQuery, [trackingId]);
+        
+        if (findRes.rows.length === 0) throw new Error("Assignment tidak ditemukan");
+        const assignmentIntId = findRes.rows[0].id;
+
+        // 2. Hapus semua chat untuk assignment tersebut
+        const query = `DELETE FROM chat_messages WHERE assignment_id = $1`;
+        await db.query(query, [assignmentIntId]);
+        return true;
+    }
+
     static async getShelterRescuedCats(shelterId) {
         const query = `
             SELECT 

@@ -192,6 +192,17 @@ class RescueController {
         }
     }
 
+    static async clearChat(req, reply) {
+        try {
+            const { trackingId } = req.params;
+            // Kita panggil service untuk hapus semua chat berdasarkan trackingId
+            await RescueService.clearChatMessages(trackingId); 
+            return reply.send({ message: 'Semua pesan chat berhasil dibersihkan.' });
+        } catch (error) {
+            return reply.code(500).send({ error: error.message });
+        }
+    }
+
     // GET /api/v1/rescue/driver/tasks
    static async getDriverTasks(req, reply) {
         try {

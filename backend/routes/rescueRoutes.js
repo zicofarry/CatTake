@@ -35,6 +35,7 @@ async function rescueRoutes(fastify, options) {
     fastify.get('/chat/:id', RescueController.getChats);
     fastify.post('/chat', RescueController.sendChat);
     fastify.delete('/chat/:messageId', RescueController.deleteChat);
+    fastify.delete('/chat/clear/:trackingId', RescueController.clearChat);
     
     // [BARU] Get List Rescue di Shelter
     fastify.get('/shelter-history', RescueController.getShelterRescuedCats);

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, Text, ScrollView, TouchableOpacity, ActivityIndicator, 
   Alert, Linking, Platform, StatusBar, StyleSheet, Modal, 
-  Dimensions, TextInput, KeyboardAvoidingView 
+  Dimensions, TextInput, KeyboardAvoidingView, Keyboard 
 } from 'react-native';
 import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
@@ -13,7 +13,7 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient, { API_BASE_URL } from '@/api/apiClient';
-
+import ConfirmModal from '@/components/ConfirmModal';
 const BASE_SERVER_URL = API_BASE_URL?.replace('/api/v1', '');
 
 export default function TrackingPage() {
@@ -39,7 +39,29 @@ export default function TrackingPage() {
   const [showChatModal, setShowChatModal] = useState(false);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setIsKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+  const [confirmModal, setConfirmModal] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    type: 'danger' as 'danger' | 'warning',
+    icon: 'trash-outline' as any
+  });
   
   // --- INITIAL LOAD ---
   useEffect(() => {
@@ -134,6 +156,40 @@ export default function TrackingPage() {
       fetchChatMessages();
     } catch (e) { Alert.alert("Error", "Gagal mengirim pesan"); }
   };
+
+  const deleteMessage = (messageId: number) => {
+    setConfirmModal({
+      visible: true,
+      title: "Hapus Pesan?",
+      message: "Pesan yang dihapus tidak bisa dikembalikan.",
+      type: 'danger',
+      icon: 'trash-outline',
+      onConfirm: async () => {
+        try {
+          await apiClient.delete(`/rescue/chat/${messageId}`);
+          fetchChatMessages();
+          setConfirmModal(prev => ({ ...prev, visible: false }));
+        } catch (e) { console.warn("Gagal hapus"); }
+      }
+    });
+  };
+
+  const clearAllChat = () => {
+    setConfirmModal({
+      visible: true,
+      title: "Bersihkan Chat?",
+      message: "Semua riwayat chat di sesi ini akan dihapus permanen.",
+      type: 'warning',
+      icon: 'refresh-circle-outline',
+      onConfirm: async () => {
+        try {
+          await apiClient.delete(`/rescue/chat/clear/${trackingData.id}`);
+          setChatMessages([]);
+          setConfirmModal(prev => ({ ...prev, visible: false }));
+        } catch (e) { console.warn("Gagal clear chat"); }
+      }
+    });
+  };
   
   // Fungsi ini memetakan nama file dari DB ke folder statis backend yang tepat
   const resolveImg = (path: string) => {
@@ -223,60 +279,98 @@ export default function TrackingPage() {
         </TouchableOpacity>
       </View>
 
-    {/* --- MODAL CHAT (Seperti di Vue) --- */}
+      {/* --- MODAL CHAT --- */}
       <Modal visible={showChatModal} animationType="slide" transparent>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-black/50 justify-end">
-          <View className="bg-white h-[80%] rounded-t-[40px] overflow-hidden">
-            {/* Header Chat */}
-            <View className="bg-[#3A5F50] p-5 flex-row items-center gap-4">
-              <TouchableOpacity onPress={() => setShowChatModal(false)}>
-                <Ionicons name="arrow-back" size={24} color="white" />
-              </TouchableOpacity>
-              <Image 
-                source={{ uri: resolveImg(role === 'driver' ? trackingData.laporan.foto_profil : trackingData.kurir.foto) }} 
-                className="w-10 h-10 rounded-full border-2 border-white"
-              />
-              <View>
-                <Text className="text-white font-bold text-lg">{role === 'driver' ? trackingData.laporan.pemilik : trackingData.kurir.nama}</Text>
-                <Text className="text-white/70 text-[10px] uppercase">Chat Real-time</Text>
+        {/* Overlay Hitam Transparan */}
+        <View className="flex-1 bg-black/50 justify-end">
+          
+          {/* 1. Kontainer Putih Modal (Tinggi Statis 85%) */}
+          <View className="bg-white h-[85%] rounded-t-[40px] overflow-hidden">
+            
+            {/* 2. Header Chat (DI LUAR KAV agar tidak ikut naik/geser) */}
+            <View className="bg-[#3A5F50] p-5 flex-row items-center justify-between">
+              <View className="flex-row items-center gap-4">
+                <TouchableOpacity onPress={() => setShowChatModal(false)}>
+                  <Ionicons name="arrow-back" size={24} color="white" />
+                </TouchableOpacity>
+                <View>
+                  <Text className="text-white font-bold text-lg">
+                    {role === 'driver' ? trackingData.laporan.pemilik : trackingData.kurir.nama}
+                  </Text>
+                  <Text className="text-white/70 text-[10px] uppercase font-bold">Chat Real-time</Text>
+                </View>
               </View>
-            </View>
-
-            {/* List Pesan */}
-            <ScrollView 
-              ref={chatScrollRef}
-              className="flex-1 bg-slate-50 p-4"
-              onContentSizeChange={() => chatScrollRef.current?.scrollToEnd({ animated: true })}
-            >
-              {chatMessages.map((msg, index) => {
-                const isMe = msg.sender_id === userId;
-                return (
-                  <View key={index} className={`mb-4 flex-row ${isMe ? 'justify-end' : 'justify-start'}`}>
-                    <View className={`max-w-[80%] p-3 rounded-2xl ${isMe ? 'bg-[#EBCD5E] rounded-tr-none' : 'bg-white rounded-tl-none border border-slate-100'}`}>
-                      <Text className="text-[#1F1F1F] text-sm leading-5">{msg.message}</Text>
-                      <Text className="text-[9px] opacity-40 mt-1 text-right">
-                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </Text>
-                    </View>
-                  </View>
-                );
-              })}
-            </ScrollView>
-
-            {/* Input Chat */}
-            <View className="p-4 bg-white border-t border-slate-100 flex-row items-center gap-3">
-              <TextInput 
-                className="flex-1 bg-slate-100 rounded-full px-5 py-3 text-sm"
-                placeholder="Ketik pesan..."
-                value={chatInput}
-                onChangeText={setChatInput}
-              />
-              <TouchableOpacity onPress={sendMessage} className="bg-[#4E7C68] w-12 h-12 rounded-full items-center justify-center">
-                <Ionicons name="send" size={20} color="white" />
+              
+              <TouchableOpacity onPress={clearAllChat} className="bg-red-500/20 p-2 rounded-lg">
+                <MaterialIcons name="delete-sweep" size={22} color="#ff7675" />
               </TouchableOpacity>
             </View>
+
+            {/* 3. KeyboardAvoidingView (Hanya membungkus List Chat & Input) */}
+            <KeyboardAvoidingView 
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+              style={{ flex: 1 }}
+              // offset 0 biasanya cukup untuk Android jika behavior-nya 'height'
+              keyboardVerticalOffset={Platform.OS === 'android' ? (isKeyboardVisible ? 140 : 0) : 0}            >
+              {/* List Pesan (Gunakan flex-1 agar dia otomatis mengecil saat keyboard muncul) */}
+              <ScrollView 
+                ref={chatScrollRef}
+                className="flex-1 bg-slate-50 p-4"
+                onContentSizeChange={() => chatScrollRef.current?.scrollToEnd({ animated: true })}
+              >
+                {chatMessages.map((msg, index) => {
+                  const isMe = msg.sender_id === userId;
+                  return (
+                    <View key={index} className={`mb-4 flex-row ${isMe ? 'justify-end' : 'justify-start'}`}>
+                      {/* Lebar chat fix: hapus flex-1 pada Text, ganti ke flex-shrink */}
+                      <View className={`max-w-[85%] p-3 rounded-2xl ${isMe ? 'bg-[#EBCD5E] rounded-tr-none' : 'bg-white rounded-tl-none border border-slate-100'}`}>
+                        <View className="flex-row items-start">
+                          <Text className="text-[#1F1F1F] text-sm leading-5 flex-shrink mr-2">{msg.message}</Text>
+                          {isMe && (
+                            <TouchableOpacity onPress={() => deleteMessage(msg.id)} className="mt-1">
+                              <Ionicons name="trash-outline" size={13} color="#C0392B" />
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                        <Text className="text-[9px] opacity-40 mt-1 text-right">
+                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+
+              {/* Input Field (Akan nempel di atas keyboard secara dinamis) */}
+              <View 
+                style={{ 
+                  // Sesuaikan padding agar lebih nempel saat keyboard muncul
+                  paddingBottom: Platform.OS === 'ios' ? insets.bottom + 10 : (isKeyboardVisible ? 10 : 25) 
+                }}
+                className="p-4 bg-white border-t border-slate-100 flex-row items-center gap-3"
+              >
+                <TextInput 
+                  className="flex-1 bg-slate-100 rounded-full px-5 py-3 text-sm"
+                  style={{ 
+                    color: '#1F1F1F', // KUNCI UTAMA: Set warna hitam pekat di sini secara eksplisit
+                    textAlignVertical: 'center' 
+                  }}
+                  placeholder="Ketik pesan..."
+                  placeholderTextColor="#94a3b8"
+                  value={chatInput}
+                  onChangeText={setChatInput}
+                />
+                <TouchableOpacity 
+                  onPress={sendMessage} 
+                  className="bg-[#4E7C68] w-12 h-12 rounded-full items-center justify-center"
+                >
+                  <Ionicons name="send" size={20} color="white" />
+                </TouchableOpacity>
+              </View>
+            </KeyboardAvoidingView>
+
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
       
       {/* --- MAP SECTION (FIXED HEIGHT) --- */}
@@ -451,7 +545,7 @@ export default function TrackingPage() {
                 <View className="bg-slate-50 rounded-[24px] p-6 border border-slate-100 shadow-sm">
                     <Text className="font-bold text-lg text-[#1F1F1F] mb-4">Detail Laporan</Text>
                     <View className="gap-3">
-                        <InfoItem label="Jenis" value={trackingData.laporan.jenis === 'stray' ? 'Kucing Liar' : 'Kucing Hilang'} />
+                        <InfoItem label="Jenis" value={trackingData.laporan.jenis === 'stray' ? 'Laporan Penemuan Kucing Liar' : 'Laporan Penemuan Kucing Hilang'} />
                         <InfoItem label="Lokasi Kejadian" value={trackingData.laporan.lokasi} />
                         <InfoItem label="Keterangan" value={trackingData.laporan.deskripsi} />
                         
@@ -470,6 +564,19 @@ export default function TrackingPage() {
             </ScrollView>
         </View>
     )}
+    {/* --- TAMBAHKAN INI DI PALING BAWAH SEBELUM </View> TERAKHIR --- */}
+      <ConfirmModal 
+        visible={confirmModal.visible}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        icon={confirmModal.icon}
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal(prev => ({ ...prev, visible: false }))}
+        // Opsional: sesuaikan teks tombol jika perlu
+        confirmText={confirmModal.title.includes("Bersihkan") ? "Ya, Bersihkan" : "Ya, Hapus"}
+        cancelText="Batal"
+      />
     </View>
   );
 }
