@@ -7,6 +7,10 @@ import { useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
 
+// Import Komponen Modal
+import CustomPopup from '../../components/CustomPopup';
+import ConfirmModal from '../../components/ConfirmModal';
+
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://192.168.1.5:3000';
 
 function resolveImageUrl(path: string | null) {
@@ -34,6 +38,17 @@ export default function ShelterRescuePage() {
   const [showDriverModal, setShowDriverModal] = useState(false);
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // --- STATE MODAL BARU ---
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupConfig, setPopupConfig] = useState({ title: '', message: '', type: 'success' as 'success' | 'error' | 'info' });
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [pendingDriver, setPendingDriver] = useState<{id: number, name: string} | null>(null);
+
+  const showPopup = (title: string, message: string, type: 'success' | 'error' | 'info') => {
+    setPopupConfig({ title, message, type });
+    setPopupVisible(true);
+  };
 
   useEffect(() => {
     fetchData();
@@ -68,22 +83,29 @@ export default function ShelterRescuePage() {
     setShowDriverModal(true);
   };
 
-  const assignDriver = async (driverId: number) => {
-    if (!selectedReportId) return;
+  // --- LOGIC KONFIRMASI BARU ---
+  const triggerAssignConfirm = (driverId: number, driverName: string) => {
+    setPendingDriver({ id: driverId, name: driverName });
+    setConfirmVisible(true);
+  };
+
+  const assignDriver = async () => {
+    if (!selectedReportId || !pendingDriver) return;
     
+    setConfirmVisible(false);
     setIsSubmitting(true);
     try {
       await apiClient.post('/rescue/accept', {
         reportId: selectedReportId,
-        driverId: driverId
+        driverId: pendingDriver.id
       });
       
-      Alert.alert("Berhasil", "Driver telah ditugaskan!");
+      showPopup("Berhasil", "Driver telah ditugaskan!", "success");
       setShowDriverModal(false);
       fetchData(); 
       setActiveTab('tasks'); 
     } catch (error: any) {
-      Alert.alert("Gagal", error.response?.data?.error || "Terjadi kesalahan.");
+      showPopup("Gagal", error.response?.data?.error || "Terjadi kesalahan.", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -216,7 +238,7 @@ export default function ShelterRescuePage() {
                     data={drivers}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={({item}) => (
-                        <TouchableOpacity style={[styles.driverItem, !item.is_available && {opacity: 0.5}]} onPress={() => item.is_available && assignDriver(item.id)} disabled={!item.is_available || isSubmitting}>
+                        <TouchableOpacity style={[styles.driverItem, !item.is_available && {opacity: 0.5}]} onPress={() => item.is_available && triggerAssignConfirm(item.id, item.full_name)} disabled={!item.is_available || isSubmitting}>
                             <Image source={{ uri: resolveImageUrl(item.profile_picture) || 'https://via.placeholder.com/50' }} style={styles.driverAvatar} />
                             <View style={{flex:1}}>
                                 <Text style={styles.itemDriverName}>{item.full_name}</Text>
@@ -229,6 +251,26 @@ export default function ShelterRescuePage() {
             </View>
         </View>
       </Modal>
+
+      {/* COMPONENT MODAL BARU */}
+      <ConfirmModal
+        visible={confirmVisible}
+        onClose={() => setConfirmVisible(false)}
+        onConfirm={assignDriver}
+        title="Tugaskan Driver?"
+        message={`Yakin ingin menugaskan ${pendingDriver?.name} untuk menjemput laporan ini?`}
+        confirmText="Ya, Tugaskan"
+        type="warning"
+        icon="car-outline"
+      />
+
+      <CustomPopup
+        visible={popupVisible}
+        onClose={() => setPopupVisible(false)}
+        title={popupConfig.title}
+        message={popupConfig.message}
+        type={popupConfig.type}
+      />
 
     </View>
     </>
