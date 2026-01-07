@@ -21,7 +21,8 @@ export default function ShelterHomeScreen() {
   const [dashboardData, setDashboardData] = useState({
     incoming_rescue: 0,
     pending_adoption: 0,
-    managed_cats: 0
+    managed_cats: 0,
+    is_verified_shelter: false
   });
 
   useEffect(() => {
@@ -30,32 +31,20 @@ export default function ShelterHomeScreen() {
 
   const fetchData = async () => {
     try {
-      const id = await AsyncStorage.getItem('userId');
-      if (id) {
-        // 1. Ambil Profil Shelter (Nama & Status Verifikasi)
-        const profileRes = await apiClient.get(`/users/profile/${id}/shelter`);
-        setShelterName(profileRes.data.name || 'Partner');
-        setIsVerified(profileRes.data.is_verified_shelter || false);
-
-        // 2. Ambil Statistik Dashboard (Endpoint sama dengan Vue)
-        try {
-            const dashRes = await apiClient.get('/dashboard'); // Pastikan endpoint ini ada di backend
-            setDashboardData(dashRes.data.data);
-        } catch (err) {
-            console.log("Endpoint /dashboard error, pakai data manual/fallback");
-            // Fallback: Hitung manual jika endpoint dashboard khusus belum ada
-            const catsRes = await apiClient.get(`/cats/shelter/${id}`);
-            const rescueRes = await apiClient.get('/rescue/shelter-history'); // Asumsi ada endpoint ini
-            
-            setDashboardData({
-                incoming_rescue: rescueRes.data ? rescueRes.data.filter((r:any) => r.status === 'pending').length : 0,
-                pending_adoption: 0, // Perlu endpoint khusus
-                managed_cats: catsRes.data.length || 0
-            });
-        }
-      }
+      const dashRes = await apiClient.get('/dashboard');
+      // Sesuai dengan Vue: response.data.data
+      const dataFromServer = dashRes.data.data;
+      // console.log("RAW DASHBOARD DATA:", JSON.stringify(dashRes.data, null, 2));
+      // Update state dengan data dari server
+      setDashboardData(dataFromServer);
+      
+      // Jika kamu ingin tetap menyimpan shelterName secara terpisah
+      // Pastikan mengambil dari field yang benar (biasanya 'name' atau 'username')
+      setShelterName(dataFromServer.shelter_name || 'Partner'); 
+      
     } catch (error) {
-      console.error("Gagal load data shelter:", error);
+      console.error("Gagal load dashboard:", error);
+      // Fallback logic tetap dipertahankan jika perlu
     } finally {
       setRefreshing(false);
     }
@@ -159,12 +148,12 @@ export default function ShelterHomeScreen() {
                     <Text style={styles.statusLabel}>STATUS AKUN</Text>
                     <View style={{flexDirection: 'row', alignItems: 'center', gap: 5}}>
                         <Ionicons 
-                            name={isVerified ? "checkmark-circle" : "time"} 
+                            name={dashboardData.is_verified_shelter ? "checkmark-circle" : "time"} 
                             size={14} 
-                            color={isVerified ? "#EBCD5E" : "#fef08a"} 
+                            color={dashboardData.is_verified_shelter ? "#EBCD5E" : "#fef08a"} 
                         />
-                        <Text style={[styles.statusValue, { color: isVerified ? "#EBCD5E" : "#fef08a" }]}>
-                            {isVerified ? 'Terverifikasi' : 'Menunggu Verifikasi'}
+                        <Text style={[styles.statusValue, { color: dashboardData.is_verified_shelter ? "#EBCD5E" : "#fef08a" }]}>
+                            {dashboardData.is_verified_shelter ? 'Terverifikasi' : 'Menunggu Verifikasi'}
                         </Text>
                     </View>
                 </View>
