@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, FlatList, ActivityIndicator,
-  StatusBar, ImageBackground, TouchableOpacity, TextInput, StyleSheet
+  StatusBar, ImageBackground, TouchableOpacity, TextInput, StyleSheet, Keyboard
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,7 +17,7 @@ export default function AllSheltersScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [shelters, setShelters] = useState<any[]>([]);
-  const [filteredShelters, setFilteredShelters] = useState<any[]>([]);
+  //const [filteredShelters, setFilteredShelters] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -60,16 +60,28 @@ export default function AllSheltersScreen() {
     }
   };
 
-  const handleSearch = (text: string) => {
-    setSearchQuery(text);
-    if (text === '') {
-      setFilteredShelters(shelters);
-    } else {
-      const filtered = shelters.filter((s: any) => 
-        s.shelter_name.toLowerCase().includes(text.toLowerCase())
-      );
-      setFilteredShelters(filtered);
-    }
+  // const handleSearch = (text: string) => {
+  //   setSearchQuery(text);
+  //   if (text === '') {
+  //     setFilteredShelters(shelters);
+  //   } else {
+  //     const filtered = shelters.filter((s: any) => 
+  //       s.shelter_name.toLowerCase().includes(text.toLowerCase())
+  //     );
+  //     setFilteredShelters(filtered);
+  //   }
+  // };
+
+  const filteredShelters = React.useMemo(() => {
+    if (!searchQuery) return shelters;
+    return shelters.filter((s: any) => 
+      s.shelter_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, shelters]);
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    Keyboard.dismiss(); // Pastikan import Keyboard
   };
 
   // ==========================================
@@ -114,11 +126,20 @@ export default function AllSheltersScreen() {
                 placeholderTextColor="#9ca3af"
                 className="flex-1 ml-2 text-white text-[14px]"
                 value={searchQuery}
-                onChangeText={handleSearch}
+                onChangeText={setSearchQuery} // <--- Ganti jadi setSearchQuery langsung
               />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={handleClearSearch}>
+                   <Ionicons name="close-circle" size={18} color="#d1d5db" />
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         }
+
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
+        
         renderItem={({ item }) => (
           <TouchableOpacity 
             activeOpacity={0.8}

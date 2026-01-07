@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react'; // 1. Tambah useMemo
 import { 
   View, 
   Text, 
@@ -13,7 +13,8 @@ import {
   StatusBar,
   ScrollView,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  Keyboard // 2. Tambah Keyboard
 } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -109,6 +110,24 @@ export default function CommunityScreen() {
     fetchSidebar();
   }, []);
 
+  // --- 3. LOGIKA FILTER SEARCHING (Judul, Isi, Author, Username) ---
+  const filteredPosts = useMemo(() => {
+    if (!searchQuery) return posts;
+    const lowerQuery = searchQuery.toLowerCase();
+    
+    return posts.filter((p: any) => {
+      // Gabungkan semua teks yang bisa dicari
+      const combinedText = (
+        (p.title || '') + " " + 
+        (p.description || '') + " " + 
+        (p.author || '') + " " +    // Nama Akun (misal: Zico)
+        (p.username || '')          // Username (misal: @zico123)
+      ).toLowerCase();
+      
+      return combinedText.includes(lowerQuery);
+    });
+  }, [searchQuery, posts]);
+
   const handleLike = async (id: number) => {
     try {
       setPosts(current => current.map(p => p.id === id ? {
@@ -146,14 +165,12 @@ export default function CommunityScreen() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      // Tutup form postingan
       setModalVisible(false);
       setNewPostTitle('');
       setNewPostContent('');
       setImage(null);
       fetchPosts();
 
-      // Tampilkan popup sukses
       showPopup('success', 'Hore! 🐾', 'Postingan kamu berhasil diterbitkan di komunitas.');
     } catch (e) {
       showPopup('error', 'Gagal', 'Gagal memposting. Pastikan kamu sudah login.');
@@ -218,7 +235,6 @@ export default function CommunityScreen() {
 
   const SorotanTab = () => (
     <ScrollView style={styles.sorotanContainer} showsVerticalScrollIndicator={false}>
-      {/* Bagian event, missing cats, dll tetap sama */}
       <View style={styles.sideCard}>
         <Text style={styles.sideTitle}>Event Mendatang</Text>
         {sidebarData.events.length === 0 ? <Text style={styles.emptySide}>Belum ada event.</Text> :
@@ -327,6 +343,7 @@ export default function CommunityScreen() {
           <Text style={styles.mainTitle}>Komunitas</Text>
           <Text style={styles.mainSub}>Tempat berbagi cerita & menolong kucing bersama</Text>
 
+          {/* 4. SEARCH BOX RESPONSIVE + CLEAR BUTTON */}
           <View style={styles.searchBox}>
             <Ionicons name="search" size={18} color="#9ca3af" />
             <TextInput
@@ -335,7 +352,16 @@ export default function CommunityScreen() {
               style={styles.searchInputs}
               value={searchQuery}
               onChangeText={setSearchQuery}
+              returnKeyType="search"
             />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => {
+                setSearchQuery('');
+                Keyboard.dismiss();
+              }}>
+                <Ionicons name="close-circle" size={18} color="#cbd5e1" />
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.tabBar}>
@@ -352,13 +378,22 @@ export default function CommunityScreen() {
           {activeTab === 'untukAnda' ? (
             loading ? <ActivityIndicator color="#78C89F" style={{marginTop:20}} /> :
             <FlatList
-              data={posts.filter((p: any) => (p.title + p.description).toLowerCase().includes(searchQuery.toLowerCase()))}
-              renderItem={renderPostItem}
-              keyExtractor={(item: any) => item.id.toString()}
-              contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
-              showsVerticalScrollIndicator={false}
-              ListEmptyComponent={<Text style={styles.empty}>Belum ada postingan yang cocok.</Text>}
-            />
+            data={posts.filter((p: any) => {
+              const query = searchQuery.toLowerCase();
+              const titleMatch = p.title && p.title.toLowerCase().includes(query);
+              const descMatch = p.description && p.description.toLowerCase().includes(query);
+              const authorMatch = p.author && p.author.toLowerCase().includes(query);     // Cari Nama
+              const usernameMatch = p.username && p.username.toLowerCase().includes(query); // Cari Username
+              
+              // Kembalikan true jika salah satu field cocok
+              return titleMatch || descMatch || authorMatch || usernameMatch;
+            })}
+            renderItem={renderPostItem}
+            keyExtractor={(item: any) => item.id.toString()}
+            contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={<Text style={styles.empty}>Belum ada postingan yang cocok.</Text>}
+          />
           ) : <SorotanTab />}
         </View>
 
@@ -421,7 +456,6 @@ export default function CommunityScreen() {
           </View>
         </Modal>
 
-        {/* --- KOMPONEN CUSTOM POPUP --- */}
         <CustomPopup
           visible={popupVisible}
           onClose={() => setPopupVisible(false)}

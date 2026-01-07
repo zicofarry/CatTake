@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { 
   View, Text, FlatList, TouchableOpacity, Image, StyleSheet,
-  TextInput, ActivityIndicator, RefreshControl
+  TextInput, ActivityIndicator, RefreshControl, Keyboard
 } from 'react-native';
 import { useRouter, Stack, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -40,9 +40,17 @@ export default function ChatListScreen() {
     fetchInbox();
   }, []);
 
-  const filteredChats = chats.filter((item: any) => 
-    item.name?.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const filteredChats = useMemo(() => {
+    if (!searchText) return chats;
+    return chats.filter((item: any) => 
+      item.name?.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }, [chats, searchText]);
+
+  const handleClearSearch = () => {
+    setSearchText('');
+    Keyboard.dismiss();
+  };
 
   const renderItem = ({ item }: { item: any }) => {
     // 1. Resolve URL Cloudinary
@@ -119,6 +127,11 @@ export default function ChatListScreen() {
             value={searchText}
             onChangeText={setSearchText}
           />
+          {searchText.length > 0 && (
+            <TouchableOpacity onPress={handleClearSearch}>
+              <Ionicons name="close-circle" size={18} color="#ccc" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -132,6 +145,10 @@ export default function ChatListScreen() {
             renderItem={renderItem}
             contentContainerStyle={styles.listPadding}
             showsVerticalScrollIndicator={false}
+
+            keyboardDismissMode="on-drag"
+            keyboardShouldPersistTaps="handled"
+            
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={THEME_COLOR} colors={[THEME_COLOR]} />
             }
