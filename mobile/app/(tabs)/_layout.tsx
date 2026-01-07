@@ -1,41 +1,42 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../../constants/Colors';
-import { View, StyleSheet,  } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function TabLayout() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null); //
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null); // Tambahkan state role
 
-  // Cek status login saat komponen dimuat
+  // Cek status login dan role saat komponen dimuat
   useEffect(() => {
-    const checkLoginStatus = async () => {
+    const checkUserStatus = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
-        setIsLoggedIn(!!token); // true jika ada token, false jika tidak
+        const role = await AsyncStorage.getItem('userRole'); // Ambil role dari AsyncStorage
+        
+        setIsLoggedIn(!!token);
+        setUserRole(role);
       } catch (error) {
         setIsLoggedIn(false);
+        setUserRole(null);
       }
     };
-    checkLoginStatus();
+    checkUserStatus();
   }, []);
 
-  // Jika status login sedang dicek, kita bisa mengembalikan null atau loading
   if (isLoggedIn === null) return null;
 
   return (
     <Tabs
       screenOptions={{
-        // Warna aktif hijau sesuai Colors.success (#10b981)
         tabBarActiveTintColor: '#10b981',
         tabBarInactiveTintColor: '#9ca3af',
         headerShown: false,
-        // Desain flat dengan tinggi yang cukup dan padding bawah
         tabBarStyle: {
           height: 85,
           paddingBottom: 25,
-          paddingTop: 0, // Dibuat 0 agar indikator garis menempel ke atas
+          paddingTop: 0,
           backgroundColor: '#ffffff',
           borderTopWidth: 1,
           borderTopColor: '#e5e7eb',
@@ -45,7 +46,7 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',
-          marginTop: 8, // Mengatur jarak teks dengan ikon
+          marginTop: 8,
         }
       }}
     >
@@ -71,23 +72,24 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 3. LAPOR (Dibuat rata & memiliki indikator yang sama) */}
+      {/* 3. LAPOR - Disembunyikan jika role adalah 'shelter' */}
       <Tabs.Screen
         name="report"
         options={{
           title: 'Lapor',
+          href: userRole === 'shelter' ? null : undefined, // LOGIKA: Jika shelter, hilangkan tab
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name={focused ? "medkit" : "medkit-outline"} color={color} focused={focused} />
           ),
         }}
       />
 
-      {/* 4. CHAT - Disembunyikan dengan href: null jika belum login */}
+      {/* 4. CHAT */}
       <Tabs.Screen
         name="chat"
         options={{
           title: 'Chat',
-          href: isLoggedIn ? undefined : null, // Kuncinya di sini
+          href: isLoggedIn ? undefined : null,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name={focused ? "chatbubble" : "chatbubble-outline"} color={color} focused={focused} />
           ),
@@ -109,20 +111,17 @@ export default function TabLayout() {
       <Tabs.Screen name="donation" options={{ href: null }} />
       <Tabs.Screen name="faq" options={{ href: null }} />
       <Tabs.Screen name="adopt" options={{ href: null }} />
-      <Tabs.Screen name="history" options={{href: null }}/>
-      <Tabs.Screen name="halloffame" options={{href: null }}/>
+      <Tabs.Screen name="history" options={{ href: null }} />
+      <Tabs.Screen name="halloffame" options={{ href: null }} />
       <Tabs.Screen name="all-shelters" options={{ href: null }} />
     </Tabs>
   );
 }
 
-/**
- * Komponen Helper untuk Ikon dengan Indikator Garis Atas
- */
+// ... komponen TabIcon dan styles tetap sama ...
 function TabIcon({ name, color, focused }: { name: any; color: string; focused: boolean }) {
   return (
     <View style={styles.iconContainer}>
-      {/* Garis Indikator Hijau (Hanya muncul jika aktif) */}
       {focused && <View style={styles.activeIndicator} />}
       <Ionicons name={name} size={24} color={color} style={{ marginTop: 10 }} />
     </View>
@@ -139,9 +138,9 @@ const styles = StyleSheet.create({
   activeIndicator: {
     position: 'absolute',
     top: 30,
-    width: 40, // Lebar garis indikator
-    height: 3, // Ketebalan garis
-    backgroundColor: '#10b981', // Hijau indikator
+    width: 40,
+    height: 3,
+    backgroundColor: '#10b981',
     borderBottomLeftRadius: 2,
     borderBottomRightRadius: 2,
   },
