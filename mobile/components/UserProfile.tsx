@@ -13,57 +13,50 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import apiClient, { resolveImageUrl } from '@/api/apiClient';
 import { Colors } from '@/constants/Colors';
-// IMPORT KOMPONEN MODAL YANG KEMARIN
+// IMPORT KOMPONEN POPUP & MODAL
 import CustomPopup from '@/components/CustomPopup';
+import ConfirmModal from '@/components/ConfirmModal';
 
-export default function UserProfile() { 
+export default function UserProfile() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [userData, setUserData] = useState<any>(null);
   const [formData, setFormData] = useState({
-    full_name: '', 
-    bio: '', 
-    gender: '', 
-    birth_date: '', 
+    full_name: '',
+    bio: '',
+    gender: '',
+    birth_date: '',
   });
 
   const [quests, setQuests] = useState([]);
   const [achievements, setAchievements] = useState([]);
 
-  // Tambahan state untuk modal
+  // State untuk visibilitas modal
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
-  // State untuk CustomPopup klaim
   const [claimPopupVisible, setClaimPopupVisible] = useState(false);
-  // State untuk CustomPopup edit sukses
   const [editSuccessVisible, setEditSuccessVisible] = useState(false);
 
   // --- HELPER DATE (STRICT STRING MANIPULATION) ---
   const formatDateIndonesia = (dateString) => {
     if (!dateString) return '-';
-    
-    // Ambil hanya tanggal (hilangkan jam jika ada)
+
     const pureDate = dateString.split('T')[0];
-    
-    // Pisahkan angka berdasarkan "-" atau "/"
     const parts = pureDate.split(/[-/]/);
     if (parts.length !== 3) return dateString;
 
     let day, monthIndex, year;
 
-    // CEK: Jika bagian pertama (index 0) panjangnya 4 angka, berarti itu TAHUN (YYYY-MM-DD)
     if (parts[0].length === 4) {
       year = parts[0];
       monthIndex = parseInt(parts[1], 10) - 1;
       day = parts[2];
-    } 
-    // Jika bagian terakhir (index 2) panjangnya 4 angka, berarti itu TAHUN (DD-MM-YYYY)
-    else {
+    } else {
       day = parts[0];
       monthIndex = parseInt(parts[1], 10) - 1;
       year = parts[2];
@@ -74,13 +67,10 @@ export default function UserProfile() {
       'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
 
-    // Pastikan day selalu 2 digit (misal: 01)
     const formattedDay = String(day).padStart(2, '0');
-
-    // HASIL AKHIR: Tanggal Bulan Tahun
     return `${formattedDay} ${months[monthIndex]} ${year}`;
   };
-  
+
   useFocusEffect(
     useCallback(() => {
       fetchProfile();
@@ -95,25 +85,22 @@ export default function UserProfile() {
       const data = response.data;
 
       setUserData(data);
-
       setQuests(data.quests || []);
       setAchievements(data.achievements || []);
 
-      // FIX TANGGAL: Ambil teks aslinya saja (YYYY-MM-DD)
       let dateFix = '';
       if (data.birth_date) {
         const d = new Date(data.birth_date);
-        // Gunakan getUTCDate agar tidak terpengaruh jam (timezone)
         const day = String(d.getUTCDate()).padStart(2, '0');
         const month = String(d.getUTCMonth() + 1).padStart(2, '0');
         const year = d.getUTCFullYear();
-        dateFix = `${day}-${month}-${year}`; // Jadi 30-01-2000
+        dateFix = `${day}-${month}-${year}`;
       }
 
       setFormData({
         full_name: data.name || data.full_name || '',
         bio: data.bio || '',
-        gender: data.gender || 'male', // Pastikan gender masuk ke state
+        gender: data.gender || 'male',
         birth_date: dateFix,
       });
 
@@ -130,27 +117,21 @@ export default function UserProfile() {
     setIsSubmitting(true);
     try {
       const userId = await AsyncStorage.getItem('userId');
-      
-      const parts = formData.birth_date.split('-'); 
-    
-      // 2. Susun manual menjadi YYYY-MM-DD (Contoh: 2000-01-30)
-      // Ini adalah STRING MURNI, tidak akan terpengaruh Timezone
+      const parts = formData.birth_date.split('-');
       const dateForBackend = `${parts[2]}-${parts[1]}-${parts[0]}`;
 
       const payload = {
-        full_name: formData.full_name, // Pastikan key ini sama dengan backend
+        full_name: formData.full_name,
         bio: formData.bio,
-        gender: formData.gender,      // Pastikan gender dikirim
-        birth_date: dateForBackend,   // Kirim string hasil susunan manual
+        gender: formData.gender,
+        birth_date: dateForBackend,
         role: 'individu'
       };
 
-      console.log("PAYLOAD SIAP KIRIM:", payload);
       await apiClient.patch(`/users/profile/${userId}`, payload);
-      // GANTI ALERT JADI POPUP KOMPONEN
       setEditSuccessVisible(true);
       setIsEditing(false);
-      fetchProfile(); 
+      fetchProfile();
     } catch (error: any) {
       Alert.alert('Gagal', 'Pastikan format tanggal DD-MM-YYYY');
     } finally {
@@ -181,10 +162,10 @@ export default function UserProfile() {
       });
       data.append('role', 'individu');
 
-      await apiClient.post(`/users/profile/${userId}/photo`, data, { 
+      await apiClient.post(`/users/profile/${userId}/photo`, data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      fetchProfile(); 
+      fetchProfile();
     } catch (error) {
       Alert.alert('Gagal', 'Gagal upload foto.');
     } finally {
@@ -195,7 +176,6 @@ export default function UserProfile() {
   const handleClaim = async (id: number) => {
     try {
       await apiClient.post(`/gamification/claim/${id}`);
-      // Pake modal komponen yang kemarin
       setClaimPopupVisible(true);
       fetchProfile();
     } catch (error: any) {
@@ -205,8 +185,8 @@ export default function UserProfile() {
 
   if (loading && !refreshing) return <View style={styles.center}><ActivityIndicator size="large" color={Colors.primary} /></View>;
 
-  const finalAvatar = userData?.photo?.startsWith('http') 
-    ? userData.photo 
+  const finalAvatar = userData?.photo?.startsWith('http')
+    ? userData.photo
     : resolveImageUrl(userData?.photo, 'profile');
 
   return (
@@ -214,17 +194,17 @@ export default function UserProfile() {
       <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
       <LinearGradient colors={['#E8EAE3', '#A9C2B7']} style={styles.mainContainer}>
         <View style={{ flex: 1, paddingTop: insets.top }}>
-          
+
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.replace('/(tabs)')} style={styles.backBtn}>
               <Ionicons name="arrow-back" size={24} color="#374151" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Profil Individu</Text>
-            <TouchableOpacity 
-              onPress={isEditing ? handleSaveChanges : () => setIsEditing(true)} 
+            <TouchableOpacity
+              onPress={isEditing ? handleSaveChanges : () => setIsEditing(true)}
               style={[styles.editBtn, isEditing && {backgroundColor: Colors.primary}]}
             >
-              {isSubmitting ? <ActivityIndicator size="small" color="#fff" /> : 
+              {isSubmitting ? <ActivityIndicator size="small" color="#fff" /> :
                 <Text style={[styles.editBtnText, isEditing && {color: '#fff'}]}>{isEditing ? 'Simpan' : 'Edit'}</Text>
               }
             </TouchableOpacity>
@@ -236,7 +216,6 @@ export default function UserProfile() {
                 <Image source={finalAvatar ? { uri: finalAvatar } : require('@/assets/images/null.png')} style={styles.avatar} />
                 <TouchableOpacity style={styles.cameraIcon} onPress={pickImage}><FontAwesome name="camera" size={16} color="white" /></TouchableOpacity>
               </View>
-              {/* Menampilkan Nama Lengkap di bawah Foto */}
               <Text style={styles.userName}>{formData.full_name || 'User'}</Text>
               <View style={styles.xpBadge}>
                 <MaterialCommunityIcons name="trophy" size={16} color="#B45309" />
@@ -245,15 +224,19 @@ export default function UserProfile() {
             </View>
 
             <View style={styles.formCard}>
-              <Text style={styles.sectionLabel}>📝 Data Akun</Text>
-              
+              {/* HEADER DATA AKUN - STYLE SHELTER PROFILE */}
+              <View className="flex-row items-center gap-2 mb-4">
+                <Ionicons name="person-circle" size={18} color="#3A5F50" />
+                <Text className="text-base font-bold text-[#3A5F50]">Data Akun</Text>
+              </View>
+
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Nama Lengkap</Text>
                 {isEditing ? (
-                  <TextInput 
-                    style={styles.input} 
-                    value={formData.full_name} 
-                    onChangeText={(v) => setFormData({...formData, full_name: v})} 
+                  <TextInput
+                    style={styles.input}
+                    value={formData.full_name}
+                    onChangeText={(v) => setFormData({...formData, full_name: v})}
                   />
                 ) : (
                   <Text style={styles.valueText}>{formData.full_name || '-'}</Text>
@@ -263,16 +246,15 @@ export default function UserProfile() {
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Tanggal Lahir</Text>
                 {isEditing ? (
-                  <TextInput 
-                    style={styles.input} 
-                    value={formData.birth_date} 
-                    placeholder="Contoh: 30-01-2000" 
-                    keyboardType="numeric" 
-                    onChangeText={(v) => setFormData({...formData, birth_date: v})} 
+                  <TextInput
+                    style={styles.input}
+                    value={formData.birth_date}
+                    placeholder="Contoh: 30-01-2000"
+                    keyboardType="numeric"
+                    onChangeText={(v) => setFormData({...formData, birth_date: v})}
                   />
                 ) : (
                   <Text style={styles.valueText}>
-                    {/* Menggunakan fungsi formatter untuk tampilan rapi */}
                     {formData.birth_date ? formatDateIndonesia(formData.birth_date) : '-'}
                   </Text>
                 )}
@@ -283,8 +265,8 @@ export default function UserProfile() {
                 {isEditing ? (
                   <View style={styles.radioGroup}>
                     {['male', 'female'].map((g) => (
-                      <TouchableOpacity 
-                        key={g} 
+                      <TouchableOpacity
+                        key={g}
                         style={[styles.radioBtn, formData.gender === g && styles.radioActive]}
                         onPress={() => setFormData({...formData, gender: g})}
                       >
@@ -302,11 +284,11 @@ export default function UserProfile() {
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Bio</Text>
                 {isEditing ? (
-                  <TextInput 
-                    style={styles.input} 
-                    value={formData.bio} 
-                    multiline 
-                    onChangeText={(v) => setFormData({...formData, bio: v})} 
+                  <TextInput
+                    style={styles.input}
+                    value={formData.bio}
+                    multiline
+                    onChangeText={(v) => setFormData({...formData, bio: v})}
                   />
                 ) : (
                   <Text style={styles.valueText}>{formData.bio || 'Belum ada bio.'}</Text>
@@ -314,15 +296,18 @@ export default function UserProfile() {
               </View>
             </View>
 
-            {/* QUEST SECTION: Ditambah ScrollView agar tidak kepanjangan */}
             <View style={styles.formCard}>
-              <Text style={styles.sectionLabel}>📜 Quest (Misi)</Text>
-              <ScrollView 
-                style={{ maxHeight: 180 }} 
-                nestedScrollEnabled={true} 
+              {/* HEADER QUEST - STYLE SHELTER PROFILE */}
+              <View className="flex-row items-center gap-2 mb-4">
+                <Ionicons name="flag" size={18} color="#3A5F50" />
+                <Text className="text-base font-bold text-[#3A5F50]">Quest (Misi)</Text>
+              </View>
+              <ScrollView
+                style={{ maxHeight: 180 }}
+                nestedScrollEnabled={true}
                 showsVerticalScrollIndicator={true}
               >
-                {quests.length === 0 ? <Text style={styles.emptyText}>Tidak ada misi aktif.</Text> : 
+                {quests.length === 0 ? <Text style={styles.emptyText}>Tidak ada misi aktif.</Text> :
                   quests.map((q: any, i: number) => (
                     <View key={i} style={styles.questItem}>
                       <Text style={styles.questName}>{q.name}</Text>
@@ -334,12 +319,15 @@ export default function UserProfile() {
               </ScrollView>
             </View>
 
-            {/* ACHIEVEMENT SECTION: Ditambah ScrollView agar tidak kepanjangan */}
             <View style={styles.formCard}>
-              <Text style={styles.sectionLabel}>🏅 Pencapaian</Text>
-              <ScrollView 
-                style={{ maxHeight: 250 }} 
-                nestedScrollEnabled={true} 
+              {/* HEADER PENCAPAIAN - STYLE SHELTER PROFILE */}
+              <View className="flex-row items-center gap-2 mb-4">
+                <Ionicons name="trophy" size={18} color="#3A5F50" />
+                <Text className="text-base font-bold text-[#3A5F50]">Pencapaian</Text>
+              </View>
+              <ScrollView
+                style={{ maxHeight: 250 }}
+                nestedScrollEnabled={true}
                 showsVerticalScrollIndicator={true}
               >
                 {achievements.length === 0 ? <Text style={styles.emptyText}>Belum ada achievement.</Text> :
@@ -360,36 +348,31 @@ export default function UserProfile() {
               </ScrollView>
             </View>
 
-            <TouchableOpacity style={styles.logoutBtn} onPress={() => setLogoutModalVisible(true)}><Text style={styles.logoutText}>Sign Out</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.logoutBtn} onPress={() => setLogoutModalVisible(true)}><Text style={styles.logoutText}>Keluar</Text></TouchableOpacity>
           </ScrollView>
         </View>
 
-        {/* MODAL KONFIRMASI LOGOUT */}
-        <Modal visible={logoutModalVisible} transparent animationType="fade" onRequestClose={() => setLogoutModalVisible(false)}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalIconContainer}>
-                <Ionicons name="log-out" size={30} color="white" />
-              </View>
-              <Text style={styles.modalTitle}>Keluar Akun</Text>
-              <Text style={styles.modalSub}>Yakin ingin keluar dari akun anda?</Text>
-              <View style={styles.modalFooter}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => setLogoutModalVisible(false)}>
-                  <Text style={styles.cancelText}>Batal</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.confirmBtn} onPress={() => { setLogoutModalVisible(false); router.replace('/(auth)/login'); }}>
-                  <Text style={styles.confirmText}>Keluar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
+        {/* --- KOMPONEN CONFIRM MODAL LOGOUT --- */}
+        <ConfirmModal
+          visible={logoutModalVisible}
+          onClose={() => setLogoutModalVisible(false)}
+          onConfirm={() => {
+            setLogoutModalVisible(false);
+            router.replace('/(auth)/login');
+          }}
+          title="Keluar Akun"
+          message="Yakin ingin keluar dari akun Anda?"
+          confirmText="Keluar"
+          cancelText="Batal"
+          type="danger"
+          icon="log-out-outline"
+        />
 
         {/* --- KOMPONEN POPUP KLAIM --- */}
         <CustomPopup
           visible={claimPopupVisible}
           onClose={() => setClaimPopupVisible(false)}
-          title="Hore! 🏆"
+          title="Hore! 🎊"
           message="Poin berhasil diklaim!"
           type="success"
         />
@@ -427,16 +410,14 @@ const styles = StyleSheet.create({
   inputGroup: { marginBottom: 15 },
   label: { fontSize: 12, color: '#6b7280', fontWeight: 'bold', marginBottom: 5, textTransform: 'uppercase' },
   input: { borderBottomWidth: 1, borderBottomColor: Colors.primary, paddingVertical: 5, fontSize: 16, color: '#1f2937' },
-  disabledInput: { borderBottomWidth: 0, color: '#4b5563' },
   valueText: { fontSize: 16, color: '#1f2937', fontWeight: '500' },
-  
-  // Gaya Radio Button untuk Gender
+
   radioGroup: { flexDirection: 'row', gap: 10, marginTop: 5 },
   radioBtn: { flex: 1, padding: 10, borderRadius: 10, borderWidth: 1, borderColor: '#ddd', alignItems: 'center' },
   radioActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   radioText: { fontWeight: 'bold', color: '#64748b' },
 
-  questItem: { marginBottom: 15 },
+  questItem: { marginBottom: 5 },
   questName: { fontWeight: 'bold', color: '#374151', fontSize: 13 },
   progressBg: { height: 8, backgroundColor: '#e5e7eb', borderRadius: 4, marginVertical: 5 },
   progressFill: { height: '100%', backgroundColor: '#15803d', borderRadius: 4 },
@@ -450,16 +431,4 @@ const styles = StyleSheet.create({
   logoutText: { color: '#ef4444', fontWeight: 'bold', fontSize: 16 },
   emptyText: { textAlign: 'center', color: '#9ca3af', fontStyle: 'italic', fontSize: 12 },
   backBtn: { padding: 5 },
-
-  // STYLES UNTUK MODAL (Sesuai Driver Page)
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' },
-  modalContent: { backgroundColor: '#fff', width: '85%', paddingHorizontal: 25, paddingBottom: 25, paddingTop: 50, borderRadius: 30, alignItems: 'center', position: 'relative', elevation: 10 },
-  modalIconContainer: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#ef4444', justifyContent: 'center', alignItems: 'center', position: 'absolute', top: -40, borderWidth: 4, borderColor: '#fff' },
-  modalTitle: { fontSize: 24, fontWeight: 'bold', color: '#1f2937', marginBottom: 10, textAlign: 'center' },
-  modalSub: { fontSize: 16, color: '#6b7280', textAlign: 'center', marginBottom: 30, lineHeight: 22 },
-  modalFooter: { flexDirection: 'row', gap: 12, width: '100%' },
-  cancelBtn: { flex: 1, paddingVertical: 16, borderRadius: 15, backgroundColor: '#f3f4f6', alignItems: 'center' },
-  cancelText: { fontSize: 16, fontWeight: 'bold', color: '#6b7280' },
-  confirmBtn: { flex: 1, paddingVertical: 16, borderRadius: 15, backgroundColor: '#ef4444', alignItems: 'center' },
-  confirmText: { fontSize: 16, fontWeight: 'bold', color: '#fff' }
 });
