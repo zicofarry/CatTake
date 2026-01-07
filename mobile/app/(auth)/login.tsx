@@ -143,15 +143,15 @@ export default function LoginScreen() {
       <View className="absolute top-[50px] left-0 right-0 items-center z-10">
         <Image 
           source={require('../../assets/images/catTakePutih.png')} 
-          style={{ width: 120, height: 120, borderRadius: 60 }} 
+          style={{ width: 150, height: 150, borderRadius: 60 }}
           resizeMode="contain"
         />
       </View>
 
       <ScrollView className="flex-1" contentContainerStyle={{ alignItems: 'center', paddingTop: 200, paddingBottom: 40, paddingHorizontal: 20 }} showsVerticalScrollIndicator={false}>
         <View className="bg-white w-full max-w-[420px] rounded-[30px] p-[32px] shadow-2xl items-center" style={{ elevation: 8, shadowColor: '#000' }}>
-          <Text className="text-[28px] font-bold text-[#1F1F1F] mb-[8px]">Login</Text>
-          <Text className="text-[14px] text-[#9CA3AF] mb-[32px]">Please enter your details</Text>
+          <Text className="text-[28px] font-bold text-[#1F1F1F] mb-[8px]">Masuk</Text>
+          <Text className="text-[14px] text-[#9CA3AF] mb-[32px]">Masukkan detail Anda</Text>
 
           <View className="w-full gap-[20px]">
             {/* Input Username */}
@@ -204,7 +204,7 @@ export default function LoginScreen() {
                 {isManualLoading ? (
                   <ActivityIndicator color="#1F1F1F" />
                 ) : (
-                  <Text className="text-[#111827] font-bold text-[16px]">Login</Text>
+                  <Text className="text-[#111827] font-bold text-[16px]">Masuk</Text>
                 )}
               </LinearGradient>
             </TouchableOpacity>
@@ -212,7 +212,7 @@ export default function LoginScreen() {
             
           <View className="flex-row items-center w-full my-[24px] gap-[12px]">
             <View className="flex-1 h-[1px] bg-[#E5E7EB]" />
-            <Text className="text-[#9CA3AF] text-[14px] font-[500]">or</Text>
+            <Text className="text-[#9CA3AF] text-[14px] font-[500]">atau</Text>
             <View className="flex-1 h-[1px] bg-[#E5E7EB]" />
           </View>
             
@@ -226,15 +226,15 @@ export default function LoginScreen() {
             ) : (
               <>
                 <Image source={{ uri: 'https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png' }} className="w-[20px] h-[20px]" />
-                <Text className="text-[#4B5563] text-[14px] font-[600]">Sign In with Google</Text>
+                <Text className="text-[#4B5563] text-[14px] font-[600]">Masuk dengan Google</Text>
               </>
             )}
           </TouchableOpacity>
             
           <View className="mt-[32px] flex-row">
-            <Text className="text-[14px] text-[#6B7280]">Don't have an account? </Text>
+            <Text className="text-[14px] text-[#6B7280]">Belum punya akun? </Text>
             <TouchableOpacity onPress={() => router.push('/signup')} disabled={isManualLoading || isGoogleLoading}>
-                <Text className="text-[14px] text-[#E0C048] font-bold">Sign Up</Text>
+                <Text className="text-[14px] text-[#E0C048] font-bold">Daftar disini</Text>
             </TouchableOpacity>
           </View>
         </View>

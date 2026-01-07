@@ -184,9 +184,9 @@ export default function SignupScreen() {
 
       <View style={styles.fixedLogoContainer}>
         <Image 
-            source={require('../../assets/images/catTakePutih.png')} 
-            style={styles.logo}
-            resizeMode="contain"
+          source={require('../../assets/images/catTakePutih.png')}
+          style={{ width: 150, height: 150, borderRadius: 60 }}
+          resizeMode="contain"
         />
       </View>
 
@@ -196,8 +196,8 @@ export default function SignupScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.card}>
-          <Text style={styles.title}>Sign Up</Text>
-          <Text style={styles.subtitle}>Create your account today</Text>
+          <Text style={styles.title}>Daftar</Text>
+          <Text style={styles.subtitle}>Buat akun kamu sekarang</Text>
 
           <View style={styles.formContainer}>
             <View>
@@ -224,7 +224,7 @@ export default function SignupScreen() {
               </View>
               <TextInput
                 style={[styles.input, focusEmail && styles.inputFocused]}
-                placeholder="Email Address"
+                placeholder="Alamat Email"
                 placeholderTextColor="#9CA3AF"
                 keyboardType="email-address"
                 value={email}
@@ -328,7 +328,7 @@ export default function SignupScreen() {
                 {isLoading ? (
                   <ActivityIndicator color="#1F1F1F" />
                 ) : (
-                  <Text style={styles.buttonText}>Sign Up</Text>
+                  <Text style={styles.buttonText}>Daftar</Text>
                 )}
               </LinearGradient>
             </TouchableOpacity>
@@ -336,7 +336,7 @@ export default function SignupScreen() {
 
           <View style={styles.divider}>
             <View style={styles.line} />
-            <Text style={styles.orText}>or</Text>
+            <Text style={styles.orText}>atau</Text>
             <View style={styles.line} />
           </View>
             
@@ -353,15 +353,15 @@ export default function SignupScreen() {
                   source={{ uri: 'https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png' }} 
                   style={styles.googleIcon} 
                 />
-                <Text style={styles.googleText}>Sign Up with Google</Text>
+                <Text style={styles.googleText}>Daftar dengan Google</Text>
               </>
             )}
           </TouchableOpacity>
             
           <View style={styles.footerContainer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
+            <Text style={styles.footerText}>Sudah punya akun? </Text>
             <TouchableOpacity onPress={() => router.push('/login')}>
-                <Text style={styles.linkText}>Login</Text>
+                <Text style={styles.linkText}>Masuk disini</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   headerContainer: { position: 'absolute', top: 0, left: 0, right: 0, height: '65%', zIndex: 0 },
   gradientHeader: { flex: 1, justifyContent: 'flex-end' },
   svgCurve: { marginBottom: -1 },
-  fixedLogoContainer: { position: 'absolute', top: 40, left: 0, right: 0, alignItems: 'center' },
+  fixedLogoContainer: { position: 'absolute', top: 50, left: 0, right: 0, alignItems: 'center' },
   logo: { width: 144, height: 144 },
   scrollView: { flex: 1 },
   scrollContent: { alignItems: 'center', paddingTop: 220, paddingBottom: 40, paddingHorizontal: 20 },
