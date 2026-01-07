@@ -139,7 +139,7 @@ export default function AdoptionForm() {
         {/* Ringkasan Kucing */}
         <View className="flex-row items-center bg-white p-4 rounded-3xl mb-5 shadow-sm">
           <Image 
-            source={{ uri: `${serverUrl}/public/img/cats/${cat.photo}` }} 
+            source={{ uri: `${cat.photo}` }}
             className="w-16 h-16 rounded-2xl mr-4"
           />
           <View>
@@ -159,12 +159,12 @@ export default function AdoptionForm() {
         
         {expanded.data && (
           <View className="bg-white p-4 rounded-b-2xl -mt-2 border-x border-b border-gray-100">
-            <TextInput className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-3" placeholder="Nama Lengkap" value={form.name} onChangeText={(t) => setForm({...form, name: t})} />
-            <TextInput className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-3" placeholder="NIK" keyboardType="numeric" value={form.nik} onChangeText={(t) => setForm({...form, nik: t})} />
-            <TextInput className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-3" placeholder="Nomor Handphone" keyboardType="phone-pad" value={form.phone} onChangeText={(t) => setForm({...form, phone: t})} />
-            <TextInput className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-3" placeholder="Email" keyboardType="email-address" value={form.email} onChangeText={(t) => setForm({...form, email: t})} />
-            <TextInput className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-3" placeholder="Pekerjaan" value={form.job} onChangeText={(t) => setForm({...form, job: t})} />
-            <TextInput className="bg-gray-50 p-3 rounded-xl border border-gray-200 h-20" placeholder="Alamat" multiline value={form.address} onChangeText={(t) => setForm({...form, address: t})} />
+            <TextInput className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-3" placeholder="Nama Lengkap" placeholderTextColor="#9ca3af" value={form.name} onChangeText={(t) => setForm({...form, name: t})} />
+            <TextInput className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-3" placeholder="NIK" placeholderTextColor="#9ca3af" keyboardType="numeric" value={form.nik} onChangeText={(t) => setForm({...form, nik: t})} />
+            <TextInput className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-3" placeholder="Nomor Handphone" placeholderTextColor="#9ca3af" keyboardType="phone-pad" value={form.phone} onChangeText={(t) => setForm({...form, phone: t})} />
+            <TextInput className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-3" placeholder="Email" placeholderTextColor="#9ca3af" keyboardType="email-address" value={form.email} onChangeText={(t) => setForm({...form, email: t})} />
+            <TextInput className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-3" placeholder="Pekerjaan" placeholderTextColor="#9ca3af" value={form.job} onChangeText={(t) => setForm({...form, job: t})} />
+            <TextInput className="bg-gray-50 p-3 rounded-xl border border-gray-200 h-20" placeholder="Alamat" placeholderTextColor="#9ca3af" multiline value={form.address} onChangeText={(t) => setForm({...form, address: t})} />
           </View>
         )}
 

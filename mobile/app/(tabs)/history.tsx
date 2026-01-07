@@ -154,7 +154,7 @@ export default function HistoryScreen() {
               isRejected ? styles.textRejected : 
               isProcess ? { color: '#1E40AF' } : styles.textPending // Teks Biru kalau diproses
             ]}>
-              {(item.status || 'SUCCESS').toUpperCase()}
+              {getStatusLabel(item.status)}
             </Text>
           </View>
         </View>
