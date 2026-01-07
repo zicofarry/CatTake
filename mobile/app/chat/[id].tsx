@@ -9,23 +9,42 @@ import {
   KeyboardAvoidingView, 
   Platform,
   SafeAreaView,
-  ActivityIndicator
+  ActivityIndicator,
+  Keyboard // Ditambahkan
 } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // Ditambahkan
 import apiClient from '@/api/apiClient';
 
 export default function ChatRoomScreen() {
-  const { id, name } = useLocalSearchParams(); 
+  const { id, name } = useLocalSearchParams();
+  const insets = useSafeAreaInsets(); // Untuk menghitung area aman layar
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false); // State baru dari contoh track
   const flatListRef = useRef<FlatList>(null);
+
+  // --- LOGIKA TRACKING KEYBOARD (Dari track/[id].tsx) ---
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setIsKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const fetchHistory = async () => {
     try {
       const response = await apiClient.get(`/chat/history/${id}`);
-      setMessages(response.data.data); 
+      setMessages(response.data.data);
     } catch (error) {
       console.error("Gagal memuat chat:", error);
     } finally {
@@ -43,7 +62,7 @@ export default function ChatRoomScreen() {
     if (!inputText.trim()) return;
 
     const messageToSend = inputText;
-    setInputText(''); // Clear input segera agar responsif
+    setInputText('');
 
     try {
       const response = await apiClient.post('/chat/send', {
@@ -51,18 +70,16 @@ export default function ChatRoomScreen() {
         message: messageToSend
       });
 
-      // FIX: Memaksa properti 'position' menjadi 'me' agar bubble langsung di kanan
-      // Ini memperbaiki bug bubble muncul di kiri (delay)
       const newMessage = {
         ...response.data.data,
-        position: 'me' 
+        position: 'me'
       };
 
       setMessages(prev => [...prev, newMessage]);
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (error) {
       console.error("Gagal mengirim pesan:", error);
-      setInputText(messageToSend); // Kembalikan teks jika gagal
+      setInputText(messageToSend);
     }
   };
 
@@ -73,47 +90,56 @@ export default function ChatRoomScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Stack.Screen 
-        options={{ 
+      <Stack.Screen
+        options={{
           headerTitle: (name as string) || 'Chat',
-          headerStyle: { backgroundColor: '#3A5F50' }, // Samakan warna header
+          headerStyle: { backgroundColor: '#3A5F50' },
           headerTintColor: '#fff',
-        }} 
+        }}
       />
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#3A5F50" style={{ flex: 1 }} />
-      ) : (
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyExtractor={item => item.id ? item.id.toString() : Math.random().toString()}
-          renderItem={({ item }) => (
-            <View style={[styles.bubbleWrapper, item.position === 'me' ? styles.right : styles.left]}>
-              <View style={[styles.bubble, item.position === 'me' ? styles.bubbleRight : styles.bubbleLeft]}>
-                <Text style={[styles.text, item.position === 'me' ? styles.textRight : styles.textLeft]}>
-                  {item.message}
-                </Text>
-                <Text style={[styles.time, item.position === 'me' ? {color: 'rgba(255,255,255,0.7)'} : {color: '#999'}]}>
-                  {formatTime(item.created_at)}
-                </Text>
+      {/* PERBAIKAN: KeyboardAvoidingView dengan offset dinamis seperti di track/[id].tsx */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'android' ? (isKeyboardVisible ? 80 : 0) : 90}
+      >
+        {loading ? (
+          <ActivityIndicator size="large" color="#3A5F50" style={{ flex: 1 }} />
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={item => item.id ? item.id.toString() : Math.random().toString()}
+            renderItem={({ item }) => (
+              <View style={[styles.bubbleWrapper, item.position === 'me' ? styles.right : styles.left]}>
+                <View style={[styles.bubble, item.position === 'me' ? styles.bubbleRight : styles.bubbleLeft]}>
+                  <Text style={[styles.text, item.position === 'me' ? styles.textRight : styles.textLeft]}>
+                    {item.message}
+                  </Text>
+                  <Text style={[styles.time, item.position === 'me' ? {color: 'rgba(255,255,255,0.7)'} : {color: '#999'}]}>
+                    {formatTime(item.created_at)}
+                  </Text>
+                </View>
               </View>
-            </View>
-          )}
-          contentContainerStyle={styles.listContent}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
-          ListEmptyComponent={<Text style={{textAlign:'center', marginTop: 20, color:'#999'}}>Mulai percakapan...</Text>}
-        />
-      )}
+            )}
+            contentContainerStyle={styles.listContent}
+            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+            ListEmptyComponent={<Text style={{textAlign:'center', marginTop: 20, color:'#999'}}>Mulai percakapan...</Text>}
+          />
+        )}
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={ Platform.OS === "ios" ? 90 : 0}>
-        <View style={styles.inputBar}>
+        {/* Input Bar dengan padding dinamis menyesuaikan insets dan keyboard */}
+        <View style={[
+          styles.inputBar,
+          { paddingBottom: Platform.OS === 'ios' ? insets.bottom + 10 : (isKeyboardVisible ? 10 : 25) }
+        ]}>
           <TextInput
             style={styles.input}
             value={inputText}
             onChangeText={setInputText}
             placeholder="Tulis pesan..."
-            placeholderTextColor="#999"
+            placeholderTextColor="#94a3b8"
           />
           <TouchableOpacity onPress={sendMessage} style={styles.sendBtn} disabled={!inputText.trim()}>
             <Ionicons name="send" size={20} color="white" />
@@ -137,21 +163,22 @@ const styles = StyleSheet.create({
   textLeft: { color: '#333' },
   textRight: { color: 'white' },
   time: { fontSize: 10, marginTop: 4, alignSelf: 'flex-end' },
-  inputBar: { 
-    flexDirection: 'row', 
-    padding: 10, 
-    backgroundColor: 'white', 
+  inputBar: {
+    flexDirection: 'row',
+    padding: 10,
+    backgroundColor: 'white',
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: '#eee'
   },
-  input: { 
-    flex: 1, 
-    backgroundColor: '#f5f5f5', 
-    borderRadius: 20, 
-    padding: 10, 
+  input: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 20,
+    padding: 10,
     paddingHorizontal: 16,
-    maxHeight: 100
+    maxHeight: 100,
+    color: '#1F1F1F'
   },
   sendBtn: { 
     marginLeft: 10, 

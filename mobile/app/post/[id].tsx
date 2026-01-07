@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, ImageBackground, TextInput, TouchableOpacity,
   ScrollView, Image, Dimensions, ActivityIndicator, Alert,
-  Platform, Keyboard
+  Platform, Keyboard, KeyboardAvoidingView // Ditambahkan
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
@@ -25,10 +25,26 @@ export default function PostDetailScreen() {
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false); // State baru dari track/[id].tsx
 
   // States untuk fitur reply & edit
   const [replyingTo, setReplyingTo] = useState<any>(null);
   const [editingComment, setEditingComment] = useState<any>(null);
+
+  // --- LOGIKA TRACKING KEYBOARD (Sesuai contoh track/[id].tsx) ---
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setIsKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const resolveImageUrl = (path: string) => {
     if (!path || path === 'NULL' || path === 'NULL.JPG' || path === 'null') return 'https://i.pravatar.cc/150';
@@ -118,10 +134,8 @@ export default function PostDetailScreen() {
     ]);
   };
 
-  // Fokus ke input saat balas/edit dan scroll ke atas sedikit agar terlihat
   const focusInput = () => {
     inputRef.current?.focus();
-    scrollRef.current?.scrollTo({ y: 200, animated: true });
   };
 
   useEffect(() => { fetchData(); }, [id]);
@@ -130,111 +144,124 @@ export default function PostDetailScreen() {
 
   return (
     <ImageBackground source={require('../../assets/images/background.png')} style={styles.container} resizeMode="repeat">
-      <ScrollView
-        ref={scrollRef}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60, paddingBottom: insets.bottom + 20 }]}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+      {/* PERBAIKAN: Menggunakan KeyboardAvoidingView dengan offset dinamis dari track/[id].tsx */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        // Offset disesuaikan: Android butuh offset saat keyboard tampil (140) seperti di track
+        keyboardVerticalOffset={Platform.OS === 'android' ? (isKeyboardVisible ? 0 : -50) : 0}
       >
-        <TouchableOpacity style={[styles.backButton, { top: insets.top + 10 }]} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={20} color="#fff" />
-          <Text style={styles.backButtonText}>Kembali</Text>
-        </TouchableOpacity>
+        <ScrollView
+          ref={scrollRef}
+          // Tambahkan paddingBottom ekstra agar konten ScrollView tidak tertutup input sticky
+          contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60, paddingBottom: 120 }]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <TouchableOpacity style={[styles.backButton, { top: insets.top + 10 }]} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={20} color="#fff" />
+            <Text style={styles.backButtonText}>Kembali</Text>
+          </TouchableOpacity>
 
-        {post && (
-          <>
-            {/* Card Postingan */}
-            <View style={styles.card}>
-              <View style={styles.authorSection}>
-                <View style={styles.authorRow}>
-                  <Image source={{ uri: resolveImageUrl(post.profileImg) }} style={styles.avatar} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.authorName} numberOfLines={1}>{post.author}</Text>
-                    <Text style={styles.authorUsername}>@{post.username} · {post.time}</Text>
-                  </View>
-                </View>
-                {currentUser && Number(post.authorId) === Number(currentUser.id) && (
-                  <TouchableOpacity onPress={() => Alert.alert("Opsi Post", "Menu delete post", [{text:"Hapus", onPress: async ()=> { await apiClient.delete(`/community/posts/${id}`); router.back(); }}])}>
-                    <Ionicons name="ellipsis-vertical" size={22} color="#64748b" />
-                  </TouchableOpacity>
-                )}
-              </View>
-              <Text style={styles.title}>{post.title}</Text>
-              {post.postImg && <Image source={{ uri: resolveImageUrl(post.postImg) }} style={styles.postImage} />}
-              <Text style={styles.description}>{post.description}</Text>
-            </View>
-
-            {/* FIELD KOMENTAR (DIREPOSISI KE SINI) */}
-            <View style={styles.inlineInputCard}>
-              {(replyingTo || editingComment) && (
-                <View style={styles.contextBar}>
-                  <Text style={styles.contextText}>
-                    {replyingTo ? `Membalas @${replyingTo.user}` : `Mengedit komentar...`}
-                  </Text>
-                  <TouchableOpacity onPress={() => { setReplyingTo(null); setEditingComment(null); setNewComment(''); }}>
-                    <Ionicons name="close-circle" size={20} color="#64748b" />
-                  </TouchableOpacity>
-                </View>
-              )}
-              <View style={styles.inputContainer}>
-                <TextInput
-                  ref={inputRef}
-                  style={styles.inputField}
-                  placeholder="Gimana menurut kamu?"
-                  placeholderTextColor="#9ca3af"
-                  value={newComment}
-                  onChangeText={setNewComment}
-                  multiline
-                />
-                <TouchableOpacity style={styles.sendButton} onPress={handleCommentAction} disabled={isSubmitting}>
-                  {isSubmitting ? <ActivityIndicator size="small" color="#1e293b"/> : <Ionicons name="paper-plane" size={20} color="#1e293b" />}
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Section Daftar Komentar */}
-            <View style={styles.commentSection}>
-              <Text style={styles.commentTitle}><FontAwesome5 name="comments" size={18} /> Komentar ({post.comments})</Text>
-
-              {getOrganizedComments().map((comment) => (
-                <View key={comment.id} style={[styles.commentItem, { marginLeft: comment.depth * 25 }]}>
-                  <Image source={{ uri: resolveImageUrl(comment.profileImg) }} style={[styles.commentAvatar, comment.depth > 0 && { width:32, height:32 }]} />
-                  <View style={styles.commentContent}>
-                    <View style={styles.commentHeader}>
-                       <View style={{flex: 1, paddingRight: 8}}>
-                          <Text style={styles.commentAuthor} numberOfLines={1}>{comment.user}</Text>
-                       </View>
-                       <Text style={styles.commentTime} numberOfLines={1}>{comment.time}</Text>
-                    </View>
-
-                    <Text style={styles.commentText}>
-                      {comment.mention && <Text style={{color: '#3b82f6', fontWeight: '600'}}>@{comment.mention} </Text>}
-                      {comment.text}
-                    </Text>
-
-                    <View style={styles.commentActions}>
-                      <TouchableOpacity onPress={() => { setReplyingTo(comment); setEditingComment(null); setNewComment(''); focusInput(); }}>
-                        <Text style={styles.actionLink}>Balas</Text>
-                      </TouchableOpacity>
-                      {currentUser && Number(comment.userId) === Number(currentUser.id) && (
-                        <>
-                          <TouchableOpacity onPress={() => { setEditingComment(comment); setReplyingTo(null); setNewComment(comment.text); focusInput(); }}>
-                            <Text style={styles.actionLink}>Edit</Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity onPress={() => deleteComment(comment.id)}>
-                            <Text style={[styles.actionLink, {color: '#ef4444'}]}>Hapus</Text>
-                          </TouchableOpacity>
-                        </>
-                      )}
+          {post && (
+            <>
+              {/* Card Postingan */}
+              <View style={styles.card}>
+                <View style={styles.authorSection}>
+                  <View style={styles.authorRow}>
+                    <Image source={{ uri: resolveImageUrl(post.profileImg) }} style={styles.avatar} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.authorName} numberOfLines={1}>{post.author}</Text>
+                      <Text style={styles.authorUsername}>@{post.username} · {post.time}</Text>
                     </View>
                   </View>
+                  {currentUser && Number(post.authorId) === Number(currentUser.id) && (
+                    <TouchableOpacity onPress={() => Alert.alert("Opsi Post", "Menu delete post", [{text:"Hapus", onPress: async ()=> { await apiClient.delete(`/community/posts/${id}`); router.back(); }}])}>
+                      <Ionicons name="ellipsis-vertical" size={22} color="#64748b" />
+                    </TouchableOpacity>
+                  )}
                 </View>
-              ))}
-              {comments.length === 0 && <Text style={styles.noComments}>Belum ada komentar.</Text>}
+                <Text style={styles.title}>{post.title}</Text>
+                {post.postImg && <Image source={{ uri: resolveImageUrl(post.postImg) }} style={styles.postImage} />}
+                <Text style={styles.description}>{post.description}</Text>
+              </View>
+
+              {/* Section Daftar Komentar */}
+              <View style={styles.commentSection}>
+                <Text style={styles.commentTitle}><FontAwesome5 name="comments" size={18} /> Komentar ({post.comments})</Text>
+
+                {getOrganizedComments().map((comment) => (
+                  <View key={comment.id} style={[styles.commentItem, { marginLeft: comment.depth * 25 }]}>
+                    <Image source={{ uri: resolveImageUrl(comment.profileImg) }} style={[styles.commentAvatar, comment.depth > 0 && { width:32, height:32 }]} />
+                    <View style={styles.commentContent}>
+                      <View style={styles.commentHeader}>
+                         <View style={{flex: 1, paddingRight: 8}}>
+                            <Text style={styles.commentAuthor} numberOfLines={1}>{comment.user}</Text>
+                         </View>
+                         <Text style={styles.commentTime} numberOfLines={1}>{comment.time}</Text>
+                      </View>
+
+                      <Text style={styles.commentText}>
+                        {comment.mention && <Text style={{color: '#3b82f6', fontWeight: '600'}}>@{comment.mention} </Text>}
+                        {comment.text}
+                      </Text>
+
+                      <View style={styles.commentActions}>
+                        <TouchableOpacity onPress={() => { setReplyingTo(comment); setEditingComment(null); setNewComment(''); focusInput(); }}>
+                          <Text style={styles.actionLink}>Balas</Text>
+                        </TouchableOpacity>
+                        {currentUser && Number(comment.userId) === Number(currentUser.id) && (
+                          <>
+                            <TouchableOpacity onPress={() => { setEditingComment(comment); setReplyingTo(null); setNewComment(comment.text); focusInput(); }}>
+                              <Text style={styles.actionLink}>Edit</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => deleteComment(comment.id)}>
+                              <Text style={[styles.actionLink, {color: '#ef4444'}]}>Hapus</Text>
+                            </TouchableOpacity>
+                          </>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                ))}
+                {comments.length === 0 && <Text style={styles.noComments}>Belum ada komentar.</Text>}
+              </View>
+            </>
+          )}
+        </ScrollView>
+
+        {/* PERBAIKAN: Input Bar Sticky dengan padding dinamis (Mengikuti pola chat/track) */}
+        <View style={[
+          styles.stickyInputBar,
+          { paddingBottom: Platform.OS === 'ios' ? insets.bottom + 10 : (isKeyboardVisible ? 10 : 25) }
+        ]}>
+          {(replyingTo || editingComment) && (
+            <View style={styles.contextBar}>
+              <Text style={styles.contextText}>
+                {replyingTo ? `Membalas @${replyingTo.user}` : `Mengedit komentar...`}
+              </Text>
+              <TouchableOpacity onPress={() => { setReplyingTo(null); setEditingComment(null); setNewComment(''); }}>
+                <Ionicons name="close-circle" size={20} color="#64748b" />
+              </TouchableOpacity>
             </View>
-          </>
-        )}
-      </ScrollView>
+          )}
+          <View style={styles.inputContainer}>
+            <TextInput
+              ref={inputRef}
+              style={styles.inputField}
+              placeholder="Gimana menurut kamu?"
+              placeholderTextColor="#9ca3af"
+              value={newComment}
+              onChangeText={setNewComment}
+              multiline={false} // Diatur false agar konsisten seperti Chat saat terangkat
+              style={{ color: '#1F1F1F', flex: 1, backgroundColor: '#f8fafc', borderRadius: 12, paddingHorizontal: 15, paddingVertical: 10, fontSize: 14, borderWidth: 1, borderColor: '#e2e8f0'}}
+            />
+            <TouchableOpacity style={styles.sendButton} onPress={handleCommentAction} disabled={isSubmitting}>
+              {isSubmitting ? <ActivityIndicator size="small" color="#1e293b"/> : <Ionicons name="paper-plane" size={20} color="#1e293b" />}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 }
@@ -243,19 +270,19 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#2c473c' },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#2c473c' },
   scrollContent: { padding: 16 },
-    backButton: {
-      position: 'absolute',
-      left: 16,
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: 'rgba(45, 74, 69, 0.8)',
-      paddingVertical: 8,
-      paddingHorizontal: 16,
-      borderRadius: 20,
-      borderWidth: 1.2,
-      borderColor: '#FFFFFF', // hijau outline
-      zIndex: 10,
-    },
+  backButton: {
+    position: 'absolute',
+    left: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(45, 74, 69, 0.8)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1.2,
+    borderColor: '#FFFFFF',
+    zIndex: 10,
+  },
   backButtonText: { color: '#fff', fontWeight: 'bold', marginLeft: 8 },
   card: { backgroundColor: '#fff', borderRadius: 16, padding: 20, marginBottom: 16, elevation: 4 },
   authorSection: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
@@ -267,9 +294,18 @@ const styles = StyleSheet.create({
   postImage: { width: '100%', height: 250, borderRadius: 12, marginBottom: 16 },
   description: { fontSize: 15, color: '#374151', lineHeight: 22 },
 
-  // Gaya baru untuk input field yang tidak melayang
-  inlineInputCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 16, elevation: 2 },
-  inputLabel: { fontSize: 14, fontWeight: 'bold', color: '#2c473c', marginBottom: 10 },
+  // GAYA STICKY (Sesuai sistem chat)
+  stickyInputBar: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    elevation: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4
+  },
 
   commentSection: { backgroundColor: '#fff', borderRadius: 16, padding: 20 },
   commentTitle: { fontSize: 18, fontWeight: 'bold', color: '#2c473c', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', paddingBottom: 10 },
@@ -287,6 +323,5 @@ const styles = StyleSheet.create({
   contextBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f1f5f9', marginBottom: 8 },
   contextText: { fontSize: 12, color: '#3b82f6', fontStyle: 'italic', fontWeight: '600' },
   inputContainer: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  inputField: { flex: 1, backgroundColor: '#f8fafc', borderRadius: 12, paddingHorizontal: 15, paddingVertical: 10, maxHeight: 100, fontSize: 14, borderWidth: 1, borderColor: '#e2e8f0'},
   sendButton: { backgroundColor: '#EBCD5E', width: 45, height: 45, borderRadius: 22.5, justifyContent: 'center', alignItems: 'center' }
 });
