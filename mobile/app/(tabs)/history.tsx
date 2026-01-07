@@ -65,7 +65,7 @@ export default function HistoryScreen() {
     if (s === 'failed' || s === 'cancelled') return 'GAGAL';
     if (s === 'assigned') return 'DITUGASKAN';
     if (s === 'in_transit') return 'DIJEMPUT';
-    return status ? status.toUpperCase().replace('_', ' ') : 'MENUNGGU';
+    return status ? status.toUpperCase().replace('_', ' ') : 'BERHASIL';
   };
 
   const fetchHistory = async () => {
