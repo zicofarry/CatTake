@@ -195,13 +195,17 @@ export default function ShelterRescuePage() {
                             <Text style={styles.emptyText}>Belum ada tugas yang sedang berjalan.</Text>
                         ) : (
                             myTasks.map((task) => (
-                                <View key={task.assignment_id} style={styles.taskCard}>
+                                <TouchableOpacity 
+                                    key={task.id} // 1. Ubah key jadi task.id
+                                    style={styles.taskCard}
+                                    // 2. Tambahkan onPress ke halaman tracking dengan tracking_id
+                                    onPress={() => router.push(`/track/${task.tracking_id}`)}
+                                >
                                     <View style={styles.taskHeader}>
                                         <View style={[styles.statusPill, task.assignment_status === 'completed' ? styles.bgGreen : task.assignment_status === 'in_transit' ? styles.bgYellow : styles.bgBlue]}>
                                             <Text style={[styles.statusText, task.assignment_status === 'completed' ? styles.textGreen : task.assignment_status === 'in_transit' ? styles.textYellow : styles.textBlue]}>
-                                                {/* PERBAIKAN: Menggunakan pemetaan bahasa Indonesia */}
                                                 {task.assignment_status === 'assigned' ? 'DITUGASKAN' : 
-                                                 task.assignment_status === 'in_transit' ? 'DIJEMPUT' : 'SELESAI'}
+                                                task.assignment_status === 'in_transit' ? 'DIJEMPUT' : 'SELESAI'}
                                             </Text>
                                         </View>
                                         <View style={{flexDirection:'row', alignItems:'center', gap:4}}><Ionicons name="car" size={12} color="#666" /><Text style={styles.driverName}>{task.driver_name}</Text></View>
@@ -213,8 +217,12 @@ export default function ShelterRescuePage() {
                                             <Text style={styles.taskDesc} numberOfLines={2}>{task.description}</Text>
                                         </View>
                                     </View>
-                                    <View style={styles.taskFooter}><Text style={{fontSize:10, color:'#999'}}>ID Tracking: {task.tracking_id}</Text></View>
-                                </View>
+                                    <View style={styles.taskFooter}>
+                                        <Text style={{fontSize:10, color:'#999'}}>ID Tracking: {task.tracking_id}</Text>
+                                        {/* 3. Opsional: Tambah panah kecil biar tau bisa diklik */}
+                                        <Ionicons name="chevron-forward" size={12} color="#999" />
+                                    </View>
+                                </TouchableOpacity> // 4. Jangan lupa tutup dengan TouchableOpacity
                             ))
                         )}
                     </>
