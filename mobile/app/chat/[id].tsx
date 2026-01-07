@@ -94,7 +94,7 @@ export default function ChatRoomScreen() {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'android' ? (isKeyboardVisible ? 80 : 0) : 90}
+        keyboardVerticalOffset={Platform.OS === 'android' ? (isKeyboardVisible ? 90 : 0) : 90}
       >
         {loading ? (
           <ActivityIndicator size="large" color="#3A5F50" style={{ flex: 1 }} />
