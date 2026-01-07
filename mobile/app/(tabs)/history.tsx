@@ -54,6 +54,20 @@ export default function HistoryScreen() {
     return new Date(dateStr);
   };
 
+  // --- HELPER STATUS BAHASA INDONESIA ---
+  const getStatusLabel = (status: string) => {
+    const s = status?.toLowerCase();
+    if (s === 'pending') return 'MENUNGGU';
+    if (s === 'approved') return 'DISETUJUI';
+    if (s === 'verified') return 'TERVERIFIKASI';
+    if (s === 'completed') return 'SELESAI';
+    if (s === 'rejected') return 'DITOLAK';
+    if (s === 'failed' || s === 'cancelled') return 'GAGAL';
+    if (s === 'assigned') return 'DITUGASKAN';
+    if (s === 'in_transit') return 'DIJEMPUT';
+    return status?.toUpperCase() || 'BERHASIL';
+  };
+
   const fetchHistory = async () => {
     try {
       setLoading(true);
@@ -135,7 +149,7 @@ export default function HistoryScreen() {
               styles.statusText, 
               isSuccess ? styles.textSuccess : isRejected ? styles.textRejected : styles.textPending
             ]}>
-              {(item.status || 'SUCCESS').toUpperCase()}
+              {getStatusLabel(item.status)}
             </Text>
           </View>
         </View>

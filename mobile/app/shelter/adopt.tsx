@@ -8,6 +8,8 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
+import CustomPopup from '../../components/CustomPopup';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const serverUrl = API_BASE_URL ? API_BASE_URL.replace('/api/v1', '') : 'http://192.168.1.5:3000';
 
@@ -33,6 +35,18 @@ export default function ShelterAdoptionDashboard() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
+  // --- STATE NOTIFIKASI & HELPER ---
+  const [popup, setPopup] = useState({ visible: false, title: '', message: '', type: 'success' as 'success' | 'error' });
+  const [confirm, setConfirm] = useState({ visible: false, id: 0, status: '' as 'approved' | 'rejected' });
+
+  const getStatusLabel = (status: string) => {
+    const s = status?.toLowerCase();
+    if (s === 'pending') return 'MENUNGGU';
+    if (s === 'approved') return 'DISETUJUI';
+    if (s === 'rejected') return 'DITOLAK';
+    return status?.toUpperCase();
+  };
+
   useEffect(() => {
     fetchReports();
   }, []);
@@ -44,34 +58,26 @@ export default function ShelterAdoptionDashboard() {
       setReports(response.data);
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Gagal mengambil data laporan adopsi');
+      setPopup({ visible: true, title: 'Error', message: 'Gagal mengambil data laporan adopsi', type: 'error' });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerification = async (id: number, status: 'approved' | 'rejected') => {
-    const actionText = status === 'approved' ? 'menyetujui' : 'menolak';
-    
-    Alert.alert(
-      'Konfirmasi',
-      `Apakah Anda yakin ingin ${actionText} adopsi ini?`,
-      [
-        { text: 'Batal', style: 'cancel' },
-        { 
-          text: 'Ya, Proses', 
-          onPress: async () => {
-            try {
-              await apiClient.patch(`/adopt/verify/${id}`, { status });
-              Alert.alert('Berhasil', `Status adopsi berhasil diperbarui.`);
-              fetchReports();
-            } catch (error) {
-              Alert.alert('Error', 'Gagal memproses verifikasi.');
-            }
-          }
-        }
-      ]
-    );
+  const handleVerification = (id: number, status: 'approved' | 'rejected') => {
+    setConfirm({ visible: true, id, status });
+  };
+
+  const processVerification = async () => {
+    const { id, status } = confirm;
+    setConfirm({ ...confirm, visible: false });
+    try {
+      await apiClient.patch(`/adopt/verify/${id}`, { status });
+      setPopup({ visible: true, title: 'Berhasil', message: 'Status adopsi berhasil diperbarui.', type: 'success' });
+      fetchReports();
+    } catch (error) {
+      setPopup({ visible: true, title: 'Error', message: 'Gagal memproses verifikasi.', type: 'error' });
+    }
   };
 
   const openDocument = async (url: string) => {
@@ -162,7 +168,7 @@ export default function ShelterAdoptionDashboard() {
                                 <View style={styles.statusRow}>
                                     <View style={[styles.statusPill, { backgroundColor: report.status === 'pending' ? '#fef9c3' : report.status === 'approved' ? '#dcfce7' : '#fef2f2' }]}>
                                         <Text style={[styles.statusPillText, { color: report.status === 'pending' ? '#a16207' : report.status === 'approved' ? '#15803d' : '#b91c1c' }]}>
-                                            {report.status.toUpperCase()}
+                                            {getStatusLabel(report.status)}
                                         </Text>
                                     </View>
                                     <Text style={styles.dateText}>{report.date}</Text>
@@ -228,6 +234,23 @@ export default function ShelterAdoptionDashboard() {
             ))
         )}
       </ScrollView>
+      <ConfirmModal
+        visible={confirm.visible}
+        title="Konfirmasi"
+        message={`Apakah Anda yakin ingin ${confirm.status === 'approved' ? 'menyetujui' : 'menolak'} adopsi ini?`}
+        onConfirm={processVerification}
+        onClose={() => setConfirm({ ...confirm, visible: false })}
+        type={confirm.status === 'approved' ? 'warning' : 'danger'}
+        confirmText="Ya, Proses"
+      />
+
+      <CustomPopup
+        visible={popup.visible}
+        title={popup.title}
+        message={popup.message}
+        type={popup.type}
+        onClose={() => setPopup({ ...popup, visible: false })}
+      />
     </View>
     </>
   );
