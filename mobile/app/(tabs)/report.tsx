@@ -1,26 +1,26 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
-  Image, ImageBackground, Alert, Modal, ActivityIndicator,
-  RefreshControl, Dimensions, StatusBar
+  Image, ImageBackground, ActivityIndicator,
+  RefreshControl, Dimensions, StatusBar, Modal
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router'; 
+import { useRouter } from 'expo-router';
 import apiClient, { API_BASE_URL } from '@/api/apiClient';
 
 // Import komponen pendukung
 import LocationPicker from '@/components/LocationPicker';
 import CustomPopup from '@/components/CustomPopup';
+import ConfirmModal from '@/components/ConfirmModal';
 
 const { width } = Dimensions.get('window');
 const BASE_SERVER_URL = API_BASE_URL?.replace('/api/v1', '');
 
 export default function ReportScreen() {
   const insets = useSafeAreaInsets();
-  const router = useRouter(); 
+  const router = useRouter();
   const mapRef = useRef<any>(null);
 
   // --- STATES ---
@@ -35,14 +35,14 @@ export default function ReportScreen() {
     lat: -6.9175,
     long: 107.6191,
     lost_cat_id: null as number | null,
-    name: '', 
-    age: '', 
-    breed: '', 
-    color: '', 
+    name: '',
+    age: '',
+    breed: '',
+    color: '',
     reward: '',
-    shareToCommunity: false // Field sinkron dengan Vue
+    shareToCommunity: false
   });
-  
+
   const [selectedImage, setSelectedImage] = useState<any>(null);
   const [mapModalVisible, setMapModalVisible] = useState(false);
   const [tempCoords, setTempCoords] = useState({ lat: -6.9175, lng: 107.6191 });
@@ -54,11 +54,15 @@ export default function ReportScreen() {
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // --- STATE POPUP ---
+  // --- STATE POPUP & MODAL ---
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<'success' | 'error'>('success');
   const [modalTitle, setModalTitle] = useState('');
   const [modalMessage, setModalMessage] = useState('');
+
+  // State untuk ConfirmModal
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingCatId, setPendingCatId] = useState<number | null>(null);
 
   const showModal = (type: 'success' | 'error', title: string, message: string) => {
     setModalType(type);
@@ -120,12 +124,15 @@ export default function ReportScreen() {
     } catch (e) { console.error(e); }
   };
 
-  const handleUpdateLostCatStatus = async (catId: number, newStatus: string) => {
+  const handleUpdateLostCatStatus = async () => {
+    if (!pendingCatId) return;
     try {
-      await apiClient.post(`/rescue/return-owner`, { lostCatId: catId });
-      showModal("success", "Sukses", "Status berhasil diperbarui. Senang anabul Anda sudah kembali!");
-      fetchUserHistory(); // Refresh data
+      await apiClient.post(`/rescue/return-owner`, { lostCatId: pendingCatId });
+      setShowConfirmModal(false);
+      showModal("success", "Alhamdulillah!", "Status berhasil diperbarui. Senang anabul Anda sudah kembali!");
+      fetchUserHistory();
     } catch (e) {
+      setShowConfirmModal(false);
       showModal("error", "Error", "Gagal memperbarui status.");
     }
   };
@@ -201,16 +208,15 @@ export default function ReportScreen() {
   };
 
   return (
-    <ImageBackground 
-      source={require('../../assets/images/background.png')} 
+    <ImageBackground
+      source={require('../../assets/images/background.png')}
       style={{ flex: 1, backgroundColor: '#2c473c' }}
       resizeMode="repeat"
-      imageStyle={{ opacity: 1 }} // Opacity gambar diset ke 1 (Maksimal Jelas)
+      imageStyle={{ opacity: 1 }}
     >
-      {/* Background overlay diturunkan ke 0.4 agar gambar dibelakang kelihatan muncul */}
       <View style={{ flex: 1, backgroundColor: 'rgba(44, 71, 60, 0.1)', paddingTop: insets.top }}>
         <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-        
+
         <ScrollView
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />}
           contentContainerStyle={{ paddingBottom: 100 }}
@@ -261,10 +267,9 @@ export default function ReportScreen() {
               </View>
 
               <View className="bg-white rounded-[35px] p-6 shadow-xl">
-                
-                {/* Checkbox Community (Khusus My Lost - Seperti Vue) */}
+
                 {activeReportType === 'my_lost' && (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     onPress={() => setForm({...form, shareToCommunity: !form.shareToCommunity})}
                     className="flex-row items-center gap-3 bg-yellow-50 p-4 rounded-2xl border border-yellow-200 mb-6"
                   >
@@ -277,7 +282,6 @@ export default function ReportScreen() {
                   </TouchableOpacity>
                 )}
 
-                {/* Search Logic */}
                 {activeReportType === 'missing' && (
                   <View className="z-50 mb-4">
                     <Text className="text-sm font-bold text-slate-800 mb-2">Cari Data Kucing Hilang</Text>
@@ -315,15 +319,14 @@ export default function ReportScreen() {
                   </View>
                 )}
 
-                {/* Grid Input Nama & Umur (Seimbang) */}
                 {activeReportType === 'my_lost' && (
                   <View className="gap-3 mb-4">
                     <View className="flex-row gap-3">
                       <View className="flex-1">
                         <Text className="text-xs font-bold text-slate-600 mb-1">Nama Kucing</Text>
-                        <TextInput 
-                          className="bg-slate-100 rounded-xl p-3.5 text-sm text-slate-800" 
-                          placeholder="Misal: Mochi" 
+                        <TextInput
+                          className="bg-slate-100 rounded-xl p-3.5 text-sm text-slate-800"
+                          placeholder="Misal: Mochi"
                           placeholderTextColor="#94a3b8"
                           value={form.name}
                           onChangeText={t => setForm({ ...form, name: t })}
@@ -331,9 +334,9 @@ export default function ReportScreen() {
                       </View>
                       <View className="flex-1">
                         <Text className="text-xs font-bold text-slate-600 mb-1">Umur (Bulan)</Text>
-                        <TextInput 
-                          className="bg-slate-100 rounded-xl p-3.5 text-sm text-slate-800" 
-                          placeholder="Misal: 12" 
+                        <TextInput
+                          className="bg-slate-100 rounded-xl p-3.5 text-sm text-slate-800"
+                          placeholder="Misal: 12"
                           placeholderTextColor="#94a3b8"
                           keyboardType="numeric"
                           value={form.age}
@@ -344,19 +347,19 @@ export default function ReportScreen() {
                     <View className="flex-row gap-3">
                       <View className="flex-1">
                         <Text className="text-xs font-bold text-slate-600 mb-1">Ras</Text>
-                        <TextInput 
-                          className="bg-slate-100 rounded-xl p-3.5 text-sm text-slate-800" 
-                          placeholder="Domestik/Persia" 
-                          placeholderTextColor="#94a3b8" 
+                        <TextInput
+                          className="bg-slate-100 rounded-xl p-3.5 text-sm text-slate-800"
+                          placeholder="Domestik/Persia"
+                          placeholderTextColor="#94a3b8"
                           value={form.breed}
                           onChangeText={t => setForm({ ...form, breed: t })}
                         />
                       </View>
                       <View className="flex-1">
                         <Text className="text-xs font-bold text-slate-600 mb-1">Warna</Text>
-                        <TextInput 
-                          className="bg-slate-100 rounded-xl p-3.5 text-sm text-slate-800" 
-                          placeholder="Oren/Putih" 
+                        <TextInput
+                          className="bg-slate-100 rounded-xl p-3.5 text-sm text-slate-800"
+                          placeholder="Oren/Putih"
                           placeholderTextColor="#94a3b8"
                           value={form.color}
                           onChangeText={t => setForm({ ...form, color: t })}
@@ -365,9 +368,9 @@ export default function ReportScreen() {
                     </View>
                     <View>
                       <Text className="text-xs font-bold text-slate-600 mb-1">Imbalan (Opsional)</Text>
-                      <TextInput 
-                        className="bg-slate-100 rounded-xl p-3.5 text-sm text-slate-800" 
-                        placeholder="Rp 0" 
+                      <TextInput
+                        className="bg-slate-100 rounded-xl p-3.5 text-sm text-slate-800"
+                        placeholder="Rp 0"
                         placeholderTextColor="#94a3b8"
                         keyboardType="numeric"
                         value={form.reward}
@@ -396,7 +399,6 @@ export default function ReportScreen() {
                   />
                 </View>
 
-                {/* Ganti Label Conditional */}
                 <Text className="text-sm font-bold text-slate-800 mb-2">
                   {activeReportType === 'my_lost' ? 'Ciri-ciri Khusus' : 'Deskripsi Kondisi'}
                 </Text>
@@ -449,11 +451,11 @@ export default function ReportScreen() {
                             {isLostCat ? `Anabul Hilang: ${item.name}` : `Laporan Penemuan #${item.id}`}
                           </Text>
                           <View className={`px-2 py-0.5 rounded-md ${
-                            (item.status === 'returned' || item.assignment_status === 'completed') 
+                            (item.status === 'returned' || item.assignment_status === 'completed')
                             ? 'bg-emerald-100' : 'bg-amber-100'
                           }`}>
                             <Text className={`text-[8px] font-bold ${
-                              (item.status === 'returned' || item.assignment_status === 'completed') 
+                              (item.status === 'returned' || item.assignment_status === 'completed')
                               ? 'text-emerald-700' : 'text-amber-700'
                             }`}>
                               {(item.status || item.assignment_status || 'PENDING').replace('_', ' ').toUpperCase()}
@@ -471,18 +473,17 @@ export default function ReportScreen() {
                         </Text>
                       </View>
                     </View>
-                    {/* --- TOMBOL AKSI KHUSUS LOST CAT --- */}
+
                     {isLostCat && item.status === 'at_shelter' && (
                       <View className="mt-4 gap-2">
-                        {/* Tombol Chat ke Shelter */}
-                        <TouchableOpacity 
+                        <TouchableOpacity
                           onPress={() => {
                             if (item.shelter_assigned_id) {
                               router.push({
                                 pathname: "/chat/[id]",
-                                params: { 
-                                  id: `${item.shelter_assigned_id}`, 
-                                  name: item.shelter_name || 'Admin Shelter' 
+                                params: {
+                                  id: `${item.shelter_assigned_id}`,
+                                  name: item.shelter_name || 'Admin Shelter'
                                 }
                               });
                             } else {
@@ -495,12 +496,11 @@ export default function ReportScreen() {
                           <Text className="text-white font-bold text-xs uppercase">Chat Shelter</Text>
                         </TouchableOpacity>
 
-                        {/* Tombol Konfirmasi Selesai */}
-                        <TouchableOpacity 
-                          onPress={() => Alert.alert("Konfirmasi", "Apakah kucing sudah kembali ke tangan Anda?", [
-                            { text: "Belum", style: "cancel" },
-                            { text: "Sudah", onPress: () => handleUpdateLostCatStatus(item.id, 'returned') }
-                          ])}
+                        <TouchableOpacity
+                          onPress={() => {
+                            setPendingCatId(item.id);
+                            setShowConfirmModal(true);
+                          }}
                           className="bg-emerald-600 py-3 rounded-xl flex-row items-center justify-center gap-2"
                         >
                           <Ionicons name="checkmark-circle" size={16} color="white" />
@@ -509,9 +509,8 @@ export default function ReportScreen() {
                       </View>
                     )}
 
-                    {/* Tombol Lacak (Hanya untuk temuan penjemputan) */}
                     {!isLostCat && (item.assignment_status === 'assigned' || item.assignment_status === 'in_transit') && (
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         onPress={() => router.push(`/track/${item.tracking_id}`)}
                         className="mt-4 bg-teal-600 py-2.5 rounded-xl flex-row items-center justify-center gap-2"
                       >
@@ -537,7 +536,7 @@ export default function ReportScreen() {
             </View>
 
             <View style={{ flex: 1 }}>
-              <LocationPicker 
+              <LocationPicker
                 latitude={tempCoords.lat}
                 longitude={tempCoords.lng}
                 onPress={(e: any) => {
@@ -548,7 +547,7 @@ export default function ReportScreen() {
                   }
                 }}
               />
-              
+
               <View className="absolute bottom-10 left-5 right-5 bg-white p-5 rounded-[30px] shadow-2xl">
                 <Text className="text-[10px] text-gray-400 uppercase font-bold text-center mb-1">Alamat Terpilih</Text>
                 <Text className="text-sm font-semibold text-slate-700 mb-5 text-center" numberOfLines={3}>
@@ -568,6 +567,7 @@ export default function ReportScreen() {
           </View>
         </Modal>
 
+        {/* Komponen Popup & Modal */}
         <CustomPopup
           visible={modalVisible}
           onClose={() => {
@@ -580,6 +580,18 @@ export default function ReportScreen() {
           title={modalTitle}
           message={modalMessage}
           type={modalType}
+        />
+
+        <ConfirmModal
+          visible={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={handleUpdateLostCatStatus}
+          title="Konfirmasi Penemuan"
+          message="Apakah kucing Anda benar-benar sudah kembali ke tangan Anda?"
+          confirmText="Ya, Sudah Kembali"
+          cancelText="Belum"
+          type="info"
+          icon="checkmark-done-circle"
         />
       </View>
     </ImageBackground>
