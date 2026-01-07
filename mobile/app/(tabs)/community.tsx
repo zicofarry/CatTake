@@ -21,13 +21,16 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import apiClient, { resolveImageUrl } from '@/api/apiClient';
 
+// IMPORT CUSTOM POPUP
+import CustomPopup from '@/components/CustomPopup';
+
 const { width } = Dimensions.get('window');
 
 export default function CommunityScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState('untukAnda'); 
+  const [activeTab, setActiveTab] = useState('untukAnda');
   const [searchQuery, setSearchQuery] = useState('');
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,11 +43,25 @@ export default function CommunityScreen() {
     fact: null
   });
 
+  // State untuk Modal Buat Postingan
   const [modalVisible, setModalVisible] = useState(false);
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [image, setImage] = useState(null);
+
+  // --- STATE UNTUK CUSTOM POPUP (BERHASIL/GAGAL) ---
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupType, setPopupType] = useState<'success' | 'error' | 'info'>('success');
+  const [popupTitle, setPopupTitle] = useState('');
+  const [popupMessage, setPopupMessage] = useState('');
+
+  const showPopup = (type: 'success' | 'error' | 'info', title: string, message: string) => {
+    setPopupType(type);
+    setPopupTitle(title);
+    setPopupMessage(message);
+    setPopupVisible(true);
+  };
 
   const fetchPosts = async () => {
     try {
@@ -68,11 +85,10 @@ export default function CommunityScreen() {
   };
 
   const pickImage = async () => {
-    // Minta izin akses galeri
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+
     if (status !== 'granted') {
-      Alert.alert('Izin Ditolak', 'Maaf, kami butuh izin galeri untuk mengupload foto.');
+      showPopup('error', 'Izin Ditolak', 'Maaf, kami butuh izin galeri untuk mengupload foto.');
       return;
     }
 
@@ -96,20 +112,20 @@ export default function CommunityScreen() {
   const handleLike = async (id: number) => {
     try {
       setPosts(current => current.map(p => p.id === id ? {
-        ...p, 
-        isLiked: !p.isLiked, 
+        ...p,
+        isLiked: !p.isLiked,
         likes: p.isLiked ? (parseInt(p.likes) || 1) - 1 : (parseInt(p.likes) || 0) + 1
       } : p));
-      
+
       await apiClient.post(`/community/posts/${id}/like`);
     } catch (e) {
-      fetchPosts(); 
+      fetchPosts();
     }
   };
 
   const handleCreatePost = async () => {
-    if (!newPostContent) return Alert.alert("Peringatan", "Konten tidak boleh kosong");
-    
+    if (!newPostContent) return showPopup('error', 'Peringatan', 'Konten cerita tidak boleh kosong ya!');
+
     setIsSubmitting(true);
     try {
       const formData = new FormData();
@@ -119,24 +135,28 @@ export default function CommunityScreen() {
         const filename = image.split('/').pop();
         const match = /\.(\w+)$/.exec(filename);
         const type = match ? `image/${match[1]}` : `image`;
-        
-        formData.append('postImg', { 
-          uri: image, 
-          name: filename, 
-          type 
+
+        formData.append('postImg', {
+          uri: image,
+          name: filename,
+          type
         } as any);
       }
-      await apiClient.post('/community/posts', formData, { 
-        headers: { 'Content-Type': 'multipart/form-data' } 
+      await apiClient.post('/community/posts', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
+      // Tutup form postingan
       setModalVisible(false);
       setNewPostTitle('');
       setNewPostContent('');
+      setImage(null);
       fetchPosts();
-      Alert.alert("Sukses", "Postingan berhasil dibuat");
+
+      // Tampilkan popup sukses
+      showPopup('success', 'Hore! 🐾', 'Postingan kamu berhasil diterbitkan di komunitas.');
     } catch (e) {
-      Alert.alert("Error", "Gagal memposting. Pastikan Anda sudah login.");
+      showPopup('error', 'Gagal', 'Gagal memposting. Pastikan kamu sudah login.');
     } finally {
       setIsSubmitting(false);
     }
@@ -148,14 +168,20 @@ export default function CommunityScreen() {
 
     return (
       <View style={styles.card}>
-        <TouchableOpacity 
-          onPress={() => router.push(`/post/${item.id}`)} 
+        <TouchableOpacity
+          onPress={() => router.push(`/post/${item.id}`)}
           activeOpacity={0.7}
         >
           <View style={styles.cardHeader}>
+<<<<<<< Updated upstream
             <Image 
               source={authorAvatar ? { uri: authorAvatar } : require('../../assets/images/null.png')} 
               style={styles.avatar} 
+=======
+            <Image
+              source={authorAvatar ? { uri: authorAvatar } : require('../../assets/images/Ellipse.png')}
+              style={styles.avatar}
+>>>>>>> Stashed changes
             />
             <View style={styles.headerTextContainer}>
               <View style={styles.nameRow}>
@@ -176,16 +202,16 @@ export default function CommunityScreen() {
 
         <View style={styles.cardFooter}>
           <TouchableOpacity style={styles.actionButton} onPress={() => handleLike(item.id)}>
-            <Ionicons 
-              name={item.isLiked ? "heart" : "heart-outline"} 
-              size={20} 
-              color={item.isLiked ? "#FF5757" : "#6b7280"} 
+            <Ionicons
+              name={item.isLiked ? "heart" : "heart-outline"}
+              size={20}
+              color={item.isLiked ? "#FF5757" : "#6b7280"}
             />
             <Text style={[styles.actionText, item.isLiked && {color:'#FF5757'}]}>{item.likes || 0}</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.actionButton} 
+
+          <TouchableOpacity
+            style={styles.actionButton}
             onPress={() => router.push(`/post/${item.id}`)}
           >
             <Ionicons name="chatbubble-outline" size={18} color="#6b7280" />
@@ -198,6 +224,7 @@ export default function CommunityScreen() {
 
   const SorotanTab = () => (
     <ScrollView style={styles.sorotanContainer} showsVerticalScrollIndicator={false}>
+      {/* Bagian event, missing cats, dll tetap sama */}
       <View style={styles.sideCard}>
         <Text style={styles.sideTitle}>Event Mendatang</Text>
         {sidebarData.events.length === 0 ? <Text style={styles.emptySide}>Belum ada event.</Text> :
@@ -240,8 +267,8 @@ export default function CommunityScreen() {
             </View>
           ))
         }
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
             style={{ marginTop: 8, paddingVertical: 10, backgroundColor: '#f0fdf4', borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#dcfce7' }}
             onPress={() => router.push('/community/lost-cats')}
         >
@@ -256,9 +283,9 @@ export default function CommunityScreen() {
           return (
             <View key={i} style={styles.leaderItem}>
               <View>
-                <Image 
-                  source={memberPhoto ? { uri: memberPhoto } : require('../../assets/images/null.png')} 
-                  style={styles.leaderAvatar} 
+                <Image
+                  source={memberPhoto ? { uri: memberPhoto } : require('../../assets/images/null.png')}
+                  style={styles.leaderAvatar}
                 />
                 {i < 3 && (
                   <View style={[styles.badge, { backgroundColor: i===0?'#fbbf24':i===1?'#9ca3af':'#f97316' }]}>
@@ -279,11 +306,11 @@ export default function CommunityScreen() {
         <View style={styles.sideCard}>
           <Text style={styles.sideTitle}>Fakta Kucing</Text>
           <View style={styles.factRow}>
-            <Image 
-              source={sidebarData.fact.image && sidebarData.fact.image !== '/img/logoFaktaKucing.png' 
-                ? { uri: resolveImageUrl(sidebarData.fact.image, 'post') } 
-                : require('../../assets/images/logoFaktaKucing.png')} 
-              style={styles.factImg} 
+            <Image
+              source={sidebarData.fact.image && sidebarData.fact.image !== '/img/logoFaktaKucing.png'
+                ? { uri: resolveImageUrl(sidebarData.fact.image, 'post') }
+                : require('../../assets/images/logoFaktaKucing.png')}
+              style={styles.factImg}
             />
             <Text style={styles.factText}>{sidebarData.fact.fact}</Text>
           </View>
@@ -294,22 +321,26 @@ export default function CommunityScreen() {
   );
 
   return (
-    <ImageBackground 
-      source={require('../../assets/images/background.png')} 
+    <ImageBackground
+      source={require('../../assets/images/background.png')}
       style={styles.fullBackground}
+<<<<<<< Updated upstream
       resizeMode="repeat" 
+=======
+      resizeMode="repeat"
+>>>>>>> Stashed changes
     >
       <View style={styles.safeContainer}>
         <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-        
+
         <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
           <Text style={styles.mainTitle}>Komunitas</Text>
           <Text style={styles.mainSub}>Tempat berbagi cerita & menolong kucing bersama</Text>
-          
+
           <View style={styles.searchBox}>
             <Ionicons name="search" size={18} color="#9ca3af" />
-            <TextInput 
-              placeholder="Cari di komunitas..." 
+            <TextInput
+              placeholder="Cari di komunitas..."
               placeholderTextColor="#9ca3af"
               style={styles.searchInputs}
               value={searchQuery}
@@ -330,7 +361,7 @@ export default function CommunityScreen() {
         <View style={styles.content}>
           {activeTab === 'untukAnda' ? (
             loading ? <ActivityIndicator color="#78C89F" style={{marginTop:20}} /> :
-            <FlatList 
+            <FlatList
               data={posts.filter((p: any) => (p.title + p.description).toLowerCase().includes(searchQuery.toLowerCase()))}
               renderItem={renderPostItem}
               keyExtractor={(item: any) => item.id.toString()}
@@ -345,6 +376,7 @@ export default function CommunityScreen() {
           <Ionicons name="add" size={32} color="#fff" />
         </TouchableOpacity>
 
+        {/* Modal Form Buat Postingan */}
         <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -356,20 +388,20 @@ export default function CommunityScreen() {
               </View>
               <View style={styles.modalBody}>
                 <Text style={styles.label}>JUDUL</Text>
-                <TextInput 
-                  placeholder="Judul menarik..." 
-                  style={styles.input} 
-                  value={newPostTitle} 
-                  onChangeText={setNewPostTitle} 
+                <TextInput
+                  placeholder="Judul menarik..."
+                  style={styles.input}
+                  value={newPostTitle}
+                  onChangeText={setNewPostTitle}
                 />
                 <Text style={styles.label}>CERITA KAMU</Text>
-                <TextInput 
-                  placeholder="Ceritakan pengalamanmu..." 
-                  multiline 
+                <TextInput
+                  placeholder="Ceritakan pengalamanmu..."
+                  multiline
                   numberOfLines={4}
-                  style={[styles.input, { height: 120, textAlignVertical: 'top' }]} 
-                  value={newPostContent} 
-                  onChangeText={setNewPostContent} 
+                  style={[styles.input, { height: 120, textAlignVertical: 'top' }]}
+                  value={newPostContent}
+                  onChangeText={setNewPostContent}
                 />
                 <TouchableOpacity style={styles.imageUploadBox} onPress={pickImage}>
                   {image ? (
@@ -386,8 +418,8 @@ export default function CommunityScreen() {
                 <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.btnCancel}>
                   <Text style={{fontWeight:'bold', color:'#6b7280'}}>Batal</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.postBtn, isSubmitting && {opacity: 0.7}]} 
+                <TouchableOpacity
+                  style={[styles.postBtn, isSubmitting && {opacity: 0.7}]}
                   onPress={handleCreatePost}
                   disabled={isSubmitting}
                 >
@@ -399,6 +431,15 @@ export default function CommunityScreen() {
           </View>
         </Modal>
 
+        {/* --- KOMPONEN CUSTOM POPUP --- */}
+        <CustomPopup
+          visible={popupVisible}
+          onClose={() => setPopupVisible(false)}
+          type={popupType}
+          title={popupTitle}
+          message={popupMessage}
+        />
+
       </View>
     </ImageBackground>
   );
@@ -406,7 +447,6 @@ export default function CommunityScreen() {
 
 const styles = StyleSheet.create({
   fullBackground: { flex: 1, backgroundColor: '#2c473c' },
-  // ... (Sisa styles tetap sama seperti yang kamu berikan)
   safeContainer: { flex: 1 },
   header: { padding: 20 }, 
   mainTitle: { fontSize: 30, fontWeight: 'bold', color: '#fff' },
