@@ -112,7 +112,7 @@ class AdoptionController {
                 return reply.code(400).send({ error: 'Invalid status' });
             }
 
-            await AdoptionService.verifyAdoption(id, status, shelterId);
+            await AdoptionService.verifyAdoption(id, status, shelterId, reason);
             
             return reply.send({ status: 'success', message: `Adoption request ${status}` });
         } catch (error) {
