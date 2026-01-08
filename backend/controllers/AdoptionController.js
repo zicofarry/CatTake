@@ -105,7 +105,7 @@ class AdoptionController {
     static async verifyAdoption(req, reply) {
         try {
             const { id } = req.params; // ID Adopsi
-            const { status } = req.body; // 'approved' atau 'rejected'
+            const { status, reason } = req.body; // 'approved' atau 'rejected'
             const shelterId = req.user.id;
 
             if (!['approved', 'rejected', 'completed'].includes(status)) {
