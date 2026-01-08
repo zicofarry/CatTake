@@ -162,7 +162,7 @@ export default function SignupScreen() {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <LinearGradient
-          colors={['#000000ff', '#578d76']}
+          colors={['#243d2eff', '#578d76']}
           start={{ x: 0, y: 1 }}
           end={{ x: 1, y: 0 }}
           style={styles.gradientHeader}
