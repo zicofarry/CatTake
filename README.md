@@ -3,7 +3,7 @@
 
 ![CatTake Logo](frontend/src/assets/img/cattake.png)
 
-**CatTake** adalah platform berbasis web yang menghubungkan masyarakat (pecinta kucing), shelter, dan driver untuk menciptakan ekosistem penyelamatan kucing yang terintegrasi. Aplikasi ini memfasilitasi pelaporan kucing terlantar, proses adopsi yang terverifikasi, donasi transparan, serta sistem gamifikasi untuk meningkatkan partisipasi komunitas.
+**CatTake** adalah platform terintegrasi (Web & Mobile) yang menghubungkan masyarakat (pecinta kucing), shelter, dan driver untuk menciptakan ekosistem penyelamatan kucing yang terintegrasi. Aplikasi ini memfasilitasi pelaporan kucing terlantar, proses adopsi yang terverifikasi, donasi transparan, serta sistem gamifikasi untuk meningkatkan partisipasi komunitas.
 
 ---
 
@@ -17,14 +17,16 @@
     - [4. 🎮 Gamifikasi \& Komunitas](#4--gamifikasi--komunitas)
     - [5. 🚚 Manajemen Driver](#5--manajemen-driver)
   - [🛠 Teknologi yang Digunakan](#-teknologi-yang-digunakan)
-    - [Frontend](#frontend)
-    - [Backend](#backend)
     - [Database](#database)
+    - [Backend](#backend)
+    - [Frontend (Web)](#frontend-web)
+    - [Mobile App](#mobile-app)
   - [💻 Prasyarat Sistem](#-prasyarat-sistem)
   - [🚀 Panduan Instalasi](#-panduan-instalasi)
     - [1. Instalasi Database (PostgreSQL)](#1-instalasi-database-postgresql)
     - [2. Instalasi Backend](#2-instalasi-backend)
     - [3. Instalasi Frontend](#3-instalasi-frontend)
+    - [4. Setup Mobile App](#4-setup-mobile-app)
   - [▶️ Cara Menjalankan Aplikasi](#️-cara-menjalankan-aplikasi)
   - [🔄 Alur Kode \& Arsitektur](#-alur-kode--arsitektur)
   - [🗄️ Struktur Database](#️-struktur-database)
@@ -60,22 +62,28 @@
 
 ## 🛠 Teknologi yang Digunakan
 
-### Frontend
-- **Framework:** Vue 3 (Composition API)
-- **Build Tool:** Vite
-- **Styling:** Tailwind CSS
-- **Maps:** Leaflet.js
-- **State/Network:** Axios, JWT Decode
+### Database
+- **RDBMS:** PostgreSQL
 
 ### Backend
 - **Runtime:** Node.js
 - **Framework:** Fastify
 - **Database Driver:** `pg` (node-postgres)
 - **Authentication:** JWT (JSON Web Token) & Google OAuth
-- **File Handling:** `@fastify/multipart`
+  
+### Frontend (Web)
+- **Framework:** Vue 3 (Composition API)
+- **Build Tool:** Vite
+- **Styling:** Tailwind CSS
+- **Maps:** Leaflet.js
+- **State/Network:** Axios, JWT Decode
+  
+### Mobile App
+- **Framework:** React Native & Expo (SDK 54)
+- **Routing:** Expo Router (File-based)
+- **Styling:** NativeWind (Tailwind CSS for Mobile)
+- **Maps:** React Native Maps & Google Maps SDK
 
-### Database
-- **RDBMS:** PostgreSQL
 
 ---
 
@@ -91,7 +99,7 @@ Sebelum memulai, pastikan perangkat Anda telah terinstal:
     * *Mac:* Gunakan `brew install postgresql`.
     * *Linux:* `sudo apt install postgresql postgresql-contrib`.
 3.  **Git** (Untuk kloning repositori).
-
+4.  **Expo Go** (Untuk menjalankan aplikasi mobile di smartphone)
 ---
 
 ## 🚀 Panduan Instalasi
@@ -135,6 +143,16 @@ Sebelum menjalankan aplikasi, kita perlu menyiapkan database.
     });
     ```
 
+4.  **Konfigurasi Environment:**
+    Buat file `.env` di dalam folder `backend/` dan isi sebagai berikut:
+    ```properties
+    CLOUDINARY_CLOUD_NAME=YOUR_CLOUD_NAME
+    CLOUDINARY_API_KEY=YOUR_API_KEY
+    CLOUDINARY_API_SECRET=YOUR_API_SECRET
+    GOOGLE_WEB_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
+    JWT_SECRET=YOUR_SECRET_KEY
+    ```
+
 ### 3. Instalasi Frontend
 
 1.  Buka terminal baru, masuk ke direktori frontend:
@@ -151,6 +169,27 @@ Sebelum menjalankan aplikasi, kita perlu menyiapkan database.
     VITE_API_BASE_URL="http://localhost:3000/api/v1"
     ```
 
+### 4. Setup Mobile App
+
+1.  Buka terminal baru, masuk ke direktori frontend:
+    ```bash
+    cd mobile
+    ```
+2.  Instal dependensi:
+    ```bash
+    npm install
+    ```
+3.  **Konfigurasi Environment:**
+    Buat file `.env` di dalam folder `mobile/` dan isi sebagai berikut:
+    ```properties
+    # Gunakan IP Address laptop kamu agar bisa diakses dari HP (Expo Go)
+    EXPO_PUBLIC_API_URL="http://192.168.x.x:3000/api/v1"
+
+    # Google Maps Keys (Wajib untuk fitur peta)
+    ANDROID_MAPS_API_KEY=isi_key_google_maps_kamu
+    IOS_MAPS_API_KEY=isi_key_google_maps_kamu
+    ```
+
 ---
 
 ## ▶️ Cara Menjalankan Aplikasi
@@ -165,14 +204,23 @@ nodemon server.js
 
 *Server akan berjalan di `http://localhost:3000`*
 
-**Terminal 2 (Frontend Client):**
+**Terminal 2 (Frontend Web):**
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-*Aplikasi akan dapat diakses di `http://localhost:5173` (atau port lain yang ditampilkan)*
+*Website akan dapat diakses di `http://localhost:5173` (atau port lain yang ditampilkan)*
+
+**Terminal 3 (Mobile App):**
+
+```bash
+cd mobile
+npx expo start
+```
+
+*Aplikasi akan dapat diakses di Expo Go melalui barcode yang discan atau melalui link yang diberikan*
 
 -----
 
